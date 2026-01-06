@@ -496,6 +496,7 @@ class ProbeWizard {
             
         } catch (err) {
             this.updateStatus(`Error: ${err.message}`, 'error');
+            this.showErrorRecovery(err);
             this.onError(err);
             
             // Make sure we're in a safe state
@@ -887,6 +888,193 @@ class ProbeWizard {
         html += '</table></div>';
         resultsEl.innerHTML = html;
         resultsEl.style.display = 'block';
+    }
+    
+    // ================================================================
+    // Error Recovery UI
+    // ================================================================
+    
+    showErrorRecovery(error) {
+        const message = error.message || error;
+        const recovery = this.getRecoveryOptions(message);
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay probe-error-modal';
+        modal.innerHTML = `
+            <div class="modal modal-sm">
+                <div class="modal-header error-header">
+                    <span class="error-icon">⚠️</span>
+                    <h3>Probe Error</h3>
+                    <button class="btn-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="error-message">${message}</p>
+                    <div class="recovery-options">
+                        <h4>Recovery Options:</h4>
+                        <ul>
+                            ${recovery.suggestions.map(s => `<li>${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer recovery-buttons">
+                    ${recovery.actions.map(a => 
+                        `<button class="btn ${a.class}" data-action="${a.action}">${a.label}</button>`
+                    ).join('')}
+                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Dismiss</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Bind action buttons
+        modal.querySelectorAll('[data-action]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const action = btn.dataset.action;
+                modal.remove();
+                await this.executeRecoveryAction(action);
+            });
+        });
+        
+        setTimeout(() => modal.classList.add('active'), 10);
+    }
+    
+    getRecoveryOptions(message) {
+        const lower = message.toLowerCase();
+        
+        // Default recovery
+        const recovery = {
+            suggestions: [],
+            actions: []
+        };
+        
+        // Probe didn't make contact
+        if (lower.includes('did not') || lower.includes('no contact') || lower.includes('timeout')) {
+            recovery.suggestions = [
+                'Check that the probe is properly connected',
+                'Verify probe polarity (NC/NO configuration)',
+                'Increase probe travel distance in settings',
+                'Check that the probe tip can reach the surface',
+                'Make sure workpiece is properly secured'
+            ];
+            recovery.actions = [
+                { action: 'retry', label: '🔄 Retry Probe', class: 'btn-primary' },
+                { action: 'retract-z', label: '⬆️ Retract Z', class: 'btn-warning' }
+            ];
+        }
+        // Probe already triggered
+        else if (lower.includes('already triggered')) {
+            recovery.suggestions = [
+                'The probe input is reading as triggered before movement',
+                'Check for short circuit in probe wiring',
+                'Verify probe is not stuck in triggered position',
+                'Check grblHAL probe pin configuration ($6 setting)'
+            ];
+            recovery.actions = [
+                { action: 'check-probe', label: '🔍 Check Probe Status', class: 'btn-primary' },
+                { action: 'invert-probe', label: '⚡ Toggle Probe Invert', class: 'btn-secondary' }
+            ];
+        }
+        // Alarm state
+        else if (lower.includes('alarm')) {
+            recovery.suggestions = [
+                'Machine is in alarm state and must be cleared',
+                'Usually caused by limit switch activation or reset during motion',
+                'Home the machine after clearing alarm'
+            ];
+            recovery.actions = [
+                { action: 'unlock', label: '🔓 Unlock ($X)', class: 'btn-warning' },
+                { action: 'home', label: '🏠 Home Machine', class: 'btn-primary' }
+            ];
+        }
+        // Connection issues
+        else if (lower.includes('connected') || lower.includes('connection')) {
+            recovery.suggestions = [
+                'Lost connection to the machine',
+                'Check USB cable or WiFi connection',
+                'Power cycle the controller if needed'
+            ];
+            recovery.actions = [
+                { action: 'reconnect', label: '🔌 Reconnect', class: 'btn-primary' }
+            ];
+        }
+        // Generic error
+        else {
+            recovery.suggestions = [
+                'An unexpected error occurred during probing',
+                'Check machine status and try again',
+                'Review console log for more details'
+            ];
+            recovery.actions = [
+                { action: 'retry', label: '🔄 Retry', class: 'btn-primary' },
+                { action: 'status', label: '📊 Check Status', class: 'btn-secondary' }
+            ];
+        }
+        
+        return recovery;
+    }
+    
+    async executeRecoveryAction(action) {
+        try {
+            switch (action) {
+                case 'retry':
+                    this.updateStatus('Retrying probe...', 'info');
+                    setTimeout(() => this.startProbe(), 500);
+                    break;
+                    
+                case 'retract-z':
+                    this.updateStatus('Retracting Z axis...', 'info');
+                    await this.grbl.sendAndWait('G91');
+                    await this.grbl.sendAndWait('G0 Z10');
+                    await this.grbl.sendAndWait('G90');
+                    this.updateStatus('Z retracted 10mm', 'success');
+                    break;
+                    
+                case 'unlock':
+                    this.updateStatus('Unlocking machine...', 'info');
+                    await this.grbl.sendAndWait('$X');
+                    this.updateStatus('Machine unlocked - home required', 'warning');
+                    break;
+                    
+                case 'home':
+                    this.updateStatus('Homing machine...', 'info');
+                    this.grbl.home();
+                    break;
+                    
+                case 'check-probe':
+                    this.updateStatus('Checking probe status...', 'info');
+                    await this.grbl.send('?');
+                    const state = this.grbl.state;
+                    const probeStatus = state.probeTriggered ? '⚡ TRIGGERED' : '✓ Ready';
+                    this.updateStatus(`Probe status: ${probeStatus}`, state.probeTriggered ? 'warning' : 'success');
+                    break;
+                    
+                case 'invert-probe':
+                    this.updateStatus('Toggling probe invert...', 'info');
+                    // Get current $6 value and toggle bit
+                    const result = await this.grbl.sendAndWait('$6');
+                    // Toggle probe invert - this varies by grblHAL version
+                    this.updateStatus('Check $6 setting in console', 'info');
+                    break;
+                    
+                case 'reconnect':
+                    this.updateStatus('Reconnecting...', 'info');
+                    await this.grbl.disconnect();
+                    setTimeout(() => this.grbl.connect(), 1000);
+                    break;
+                    
+                case 'status':
+                    await this.grbl.send('?');
+                    await this.grbl.send('$I');
+                    this.updateStatus('Status requested - check console', 'info');
+                    break;
+                    
+                default:
+                    this.updateStatus(`Unknown action: ${action}`, 'warning');
+            }
+        } catch (e) {
+            this.updateStatus(`Recovery action failed: ${e.message}`, 'error');
+        }
     }
     
     // ================================================================

@@ -1385,6 +1385,11 @@ How much ${direction} would you like it? You can say:
             return { success: true, response };
         }
         
+        // Handle large jog confirmation
+        if (context.type === 'confirm_large_jog') {
+            return await this.processLargeJogConfirmResponse(context, input);
+        }
+        
         // Handle fuzzy match confirmation
         if (context.type === 'confirm_fuzzy') {
             return await this.processFuzzyConfirmResponse(context, input);
@@ -1414,6 +1419,52 @@ How much ${direction} would you like it? You can say:
         // Unknown context type, clear it
         this.pendingContext = null;
         return this.conversationalResponse(input);
+    }
+    
+    async processLargeJogConfirmResponse(context, input) {
+        const text = input.trim().toLowerCase();
+        
+        // Check for yes/confirmation
+        if (/\b(yes|yeah|yep|yup|confirm|do it|go|proceed)\b/i.test(text)) {
+            this.pendingContext = null;
+            
+            // Execute the large jog with override
+            const feed = context.axis === 'Z' ? 1000 : 3000;
+            const gcode = `$J=G91 ${context.axis}${context.distance} F${feed}`;
+            
+            if (this.grbl) {
+                this.grbl.send(gcode);
+            }
+            this.onCommand({ action: 'gcode', gcode });
+            
+            const response = `✅ Executing large jog: ${context.axis}${context.distance > 0 ? '+' : ''}${context.distance}mm`;
+            this.onResponse(response);
+            return { success: true, response, gcode };
+        }
+        
+        // Check for no/rejection
+        if (/\b(no|nope|nah|cancel|abort|don't|dont)\b/i.test(text)) {
+            this.pendingContext = null;
+            const response = '👍 Large move cancelled.';
+            this.onResponse(response);
+            return { success: true, response };
+        }
+        
+        // Maybe they want a different distance
+        const numMatch = text.match(/(\d+(?:\.\d+)?)/);
+        if (numMatch) {
+            const newDistance = parseFloat(numMatch[1]);
+            this.pendingContext = null;
+            // Process as a new jog with the corrected distance
+            return await this.executeAction('jog', { 
+                axis: context.axis, 
+                distance: context.distance > 0 ? newDistance : -newDistance 
+            }, input);
+        }
+        
+        const response = `Say **"yes"** to confirm the ${Math.abs(context.distance)}mm move, **"no"** to cancel, or specify a different distance.`;
+        this.onResponse(response);
+        return { success: false, response };
     }
     
     async processFuzzyConfirmResponse(context, input) {
@@ -2014,9 +2065,18 @@ Command: ${command}
                     // Check limits before jogging
                     const limitCheck = this.checkMoveLimits(params.axis, params.distance, true);
                     if (!limitCheck.safe) {
+                        // If it requires confirmation (large move), set up pending context
+                        if (limitCheck.requiresConfirmation) {
+                            this.pendingContext = {
+                                type: 'confirm_large_jog',
+                                axis: params.axis,
+                                distance: params.distance,
+                                timestamp: Date.now()
+                            };
+                        }
                         response = limitCheck.message;
                         this.onResponse(response);
-                        return { success: false, response };
+                        return { success: false, response, needsConfirmation: limitCheck.requiresConfirmation };
                     }
                     
                     const feed = params.axis === 'Z' ? 1000 : 3000;
@@ -3333,16 +3393,44 @@ I'll respond to all commands directly without a wake word.`);
     // ================================================================
     
     /**
+     * Maximum allowed single jog distance (safety against voice misrecognition)
+     * e.g., prevents "jog X 1000" when you said "jog X 10"
+     */
+    maxSingleJogDistance = {
+        X: 100,  // mm - max single jog in X
+        Y: 100,  // mm - max single jog in Y
+        Z: 50    // mm - max single jog in Z (more conservative)
+    };
+    
+    /**
      * Check if a proposed move is within machine limits
      * @param {string} axis - 'X', 'Y', or 'Z'
      * @param {number} value - Distance (relative) or position (absolute)
      * @param {boolean} isRelative - true for jog/G91, false for G90
-     * @returns {{ safe: boolean, message?: string, warning?: string }}
+     * @returns {{ safe: boolean, message?: string, warning?: string, requiresConfirmation?: boolean }}
      */
     checkMoveLimits(axis, value, isRelative = false) {
         // If limits enforcement is disabled, allow everything
         if (!this.enforceLimits) {
             return { safe: true };
+        }
+        
+        const axisUpper = axis.toUpperCase();
+        
+        // SAFETY: Check for excessive single-move distance (voice misrecognition protection)
+        if (isRelative) {
+            const absValue = Math.abs(value);
+            const maxJog = this.maxSingleJogDistance[axisUpper] || 100;
+            
+            if (absValue > maxJog) {
+                return {
+                    safe: false,
+                    requiresConfirmation: true,
+                    message: `⚠️ **Large move detected:** ${axis}${value > 0 ? '+' : ''}${value}mm exceeds safety limit of ${maxJog}mm.\n\n` +
+                             `This might be a voice misrecognition. Say **"yes"** to confirm, or try a smaller move.\n\n` +
+                             `💡 *To allow larger moves: "set max jog ${axis} to ${absValue}"*`
+                };
+            }
         }
         
         // Get current position from grbl
@@ -3391,6 +3479,22 @@ I'll respond to all commands directly without a wake word.`);
         }
         
         return { safe: true };
+    }
+    
+    /**
+     * Set the maximum single jog distance for safety
+     * @param {string} axis - 'X', 'Y', 'Z', or 'all'
+     * @param {number} distance - Maximum distance in mm
+     */
+    setMaxJogDistance(axis, distance) {
+        const axisUpper = axis.toUpperCase();
+        if (axisUpper === 'ALL') {
+            this.maxSingleJogDistance.X = distance;
+            this.maxSingleJogDistance.Y = distance;
+            this.maxSingleJogDistance.Z = distance;
+        } else if (this.maxSingleJogDistance[axisUpper] !== undefined) {
+            this.maxSingleJogDistance[axisUpper] = distance;
+        }
     }
     
     /**

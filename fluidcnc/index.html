@@ -426,7 +426,10 @@
 
                     <!-- WCS Selection -->
                     <div class="wcs-section">
-                        <span class="section-title">Work Offset</span>
+                        <div class="section-title-row">
+                            <span class="section-title">Work Offset</span>
+                            <button id="wcs-manager-btn" class="btn btn-xs btn-ghost" title="Manage WCS">⚙️</button>
+                        </div>
                         <div class="wcs-buttons">
                             <button class="btn-wcs active" data-wcs="G54">G54</button>
                             <button class="btn-wcs" data-wcs="G55">G55</button>
@@ -444,6 +447,11 @@
         <footer class="footer">
             <div class="footer-left">
                 <span id="status-message" class="status-message">Ready</span>
+            </div>
+            <div class="footer-center">
+                <button id="keyboard-help-btn" class="btn btn-xs btn-ghost" title="Keyboard Shortcuts (?)">
+                    ⌨️ Shortcuts
+                </button>
             </div>
             <div class="footer-right">
                 <span id="buffer-display" class="buffer-info">Buf: 0</span>
@@ -710,12 +718,103 @@
     <!-- Notifications Container -->
     <div id="notifications" class="notifications-container"></div>
 
+    <!-- WCS Manager Modal -->
+    <div id="wcs-manager-modal" class="modal hidden">
+        <div class="modal-content modal-medium">
+            <div class="modal-header">
+                <h2>📍 Work Coordinate Systems</h2>
+                <button class="btn-close" onclick="document.getElementById('wcs-manager-modal').classList.add('hidden')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Manage work offsets (G54-G59). Each WCS stores an XYZ offset from machine zero.</p>
+                <table class="wcs-table" id="wcs-table">
+                    <thead>
+                        <tr>
+                            <th>WCS</th>
+                            <th>X Offset</th>
+                            <th>Y Offset</th>
+                            <th>Z Offset</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr data-wcs="G54">
+                            <td><button class="btn-wcs-select active" data-wcs="G54">G54</button></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g54-x" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g54-y" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g54-z" step="0.001" value="0"></td>
+                            <td>
+                                <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G54')" title="Set from current position">📍</button>
+                                <button class="btn btn-xs" onclick="app.clearWcs('G54')" title="Clear offset">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr data-wcs="G55">
+                            <td><button class="btn-wcs-select" data-wcs="G55">G55</button></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g55-x" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g55-y" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g55-z" step="0.001" value="0"></td>
+                            <td>
+                                <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G55')" title="Set from current position">📍</button>
+                                <button class="btn btn-xs" onclick="app.clearWcs('G55')" title="Clear offset">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr data-wcs="G56">
+                            <td><button class="btn-wcs-select" data-wcs="G56">G56</button></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g56-x" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g56-y" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g56-z" step="0.001" value="0"></td>
+                            <td>
+                                <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G56')" title="Set from current position">📍</button>
+                                <button class="btn btn-xs" onclick="app.clearWcs('G56')" title="Clear offset">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr data-wcs="G57">
+                            <td><button class="btn-wcs-select" data-wcs="G57">G57</button></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g57-x" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g57-y" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g57-z" step="0.001" value="0"></td>
+                            <td>
+                                <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G57')" title="Set from current position">📍</button>
+                                <button class="btn btn-xs" onclick="app.clearWcs('G57')" title="Clear offset">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr data-wcs="G58">
+                            <td><button class="btn-wcs-select" data-wcs="G58">G58</button></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g58-x" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g58-y" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g58-z" step="0.001" value="0"></td>
+                            <td>
+                                <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G58')" title="Set from current position">📍</button>
+                                <button class="btn btn-xs" onclick="app.clearWcs('G58')" title="Clear offset">🗑️</button>
+                            </td>
+                        </tr>
+                        <tr data-wcs="G59">
+                            <td><button class="btn-wcs-select" data-wcs="G59">G59</button></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g59-x" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g59-y" step="0.001" value="0"></td>
+                            <td><input type="number" class="wcs-input" id="wcs-g59-z" step="0.001" value="0"></td>
+                            <td>
+                                <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G59')" title="Set from current position">📍</button>
+                                <button class="btn btn-xs" onclick="app.clearWcs('G59')" title="Clear offset">🗑️</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="app.refreshWcsValues()">🔄 Refresh from Machine</button>
+                <button class="btn btn-primary" onclick="app.applyWcsValues(); document.getElementById('wcs-manager-modal').classList.add('hidden')">Apply & Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <!-- Three.js for 3D visualization (optional, fallback to 2D canvas if unavailable) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
     <script src="gcode-parser.js"></script>
     <script src="visualizer.js"></script>
     <script src="visualizer-3d.js"></script>
+    <script src="visualizer-enhanced.js"></script>
     <script src="grblhal.js"></script>
     <script src="ai-assistant.js"></script>
     <script src="macros.js"></script>
@@ -733,6 +832,8 @@
     <script src="conversational-gcode.js"></script>
     <script src="sd-card.js"></script>
     <script src="chatter-detection.js"></script>
+    <script src="step-loss-detection.js"></script>
+    <script src="motion-planner.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

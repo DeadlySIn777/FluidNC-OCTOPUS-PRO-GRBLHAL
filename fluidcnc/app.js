@@ -127,7 +127,9 @@ class FluidCNCApp {
             // Wizard containers
             'probe-wizard-container', 'surfacing-container',
             // Macro buttons
-            'macro-container'
+            'macro-container',
+            // Help
+            'keyboard-help-btn'
         ];
         
         ids.forEach(id => {
@@ -161,6 +163,9 @@ class FluidCNCApp {
             onAlarm: (alarm) => this.onGrblAlarm(alarm),
             onProgress: (info) => this.onStreamProgress(info)
         });
+
+        // Start state persistence
+        this.grbl.startStatePersistence(5000);
 
         // Disable USB button if WebSerial isn't available
         if (this.elements.usbConnectBtn && !GrblHAL.isWebSerialSupported()) {
@@ -223,6 +228,13 @@ class FluidCNCApp {
     onGrblConnect() {
         this.connected = true;
         const connType = this.grbl.getConnectionType ? this.grbl.getConnectionType() : 'websocket';
+        
+        // Apply saved state if available (helps restore WCO after refresh)
+        const savedState = this.grbl.loadSavedState();
+        if (savedState) {
+            this.grbl.applySavedState(savedState);
+            this.log('Restored saved machine state', 'info');
+        }
         
         // Hide overlay and show app
         this.showApp();
@@ -334,34 +346,212 @@ class FluidCNCApp {
         }
         
         this.log('Demo mode started - no real CNC connection', 'info');
-        this.showNotification('Demo Mode Active', 'info');
+        this.showNotification('Demo Mode Active - Watch the show! 🎬', 'info');
         
-        // Start simulated status updates
+        // Load demo G-code and start simulation
+        this._loadDemoGCode();
         this._startDemoSimulation();
     }
     
-    _startDemoSimulation() {
-        let simX = 0, simY = 0, simZ = 0;
-        this.demoInterval = setInterval(() => {
-            // Simulate slight position changes
-            simX += (Math.random() - 0.5) * 0.1;
-            simY += (Math.random() - 0.5) * 0.1;
-            simZ += (Math.random() - 0.5) * 0.05;
+    _loadDemoGCode() {
+        // Generate a nice demo toolpath - a spiral pocket
+        const demoGCode = this._generateDemoGCode();
+        
+        // Load into visualizer
+        if (this.visualizer) {
+            this.visualizer.loadGCode(demoGCode);
             
+            // Set up stock if enhanced visualizer
+            if (this.visualizerType === 'enhanced3d') {
+                this.visualizer.setStock({ x: 100, y: 100, z: 20 }, { x: 50, y: 50, z: 0 });
+                this.visualizer.setMaterialType('wood');
+                this.visualizer.resetMaterial();
+            }
+        }
+        
+        // Store for simulation
+        this._demoGCode = demoGCode.split('\n').filter(l => l.trim() && !l.startsWith(';'));
+        this._demoLineIndex = 0;
+        this._demoPosition = { x: 0, y: 0, z: 5 };
+        this._demoFeed = 0;
+        this._demoSpindle = 0;
+        this._demoState = 'idle';
+    }
+    
+    _generateDemoGCode() {
+        // Generate a spiral pocket cut - looks impressive!
+        const lines = [
+            '; Demo G-code - Spiral Pocket',
+            '; Stock: 100x100x20mm',
+            'G21 ; mm mode',
+            'G90 ; absolute',
+            'G17 ; XY plane',
+            '',
+            '; Rapid to start',
+            'G0 Z10',
+            'G0 X75 Y100',
+            '',
+            '; Start spindle',
+            'M3 S12000',
+            'G4 P2 ; dwell',
+            '',
+            '; Plunge to first depth',
+            'G0 Z2',
+            'G1 Z-3 F300',
+            ''
+        ];
+        
+        // Generate spiral from outside in
+        const centerX = 100, centerY = 100;
+        const startRadius = 40;
+        const endRadius = 5;
+        const depthPerPass = 3;
+        const totalDepth = 15;
+        const stepover = 4;
+        
+        for (let depth = depthPerPass; depth <= totalDepth; depth += depthPerPass) {
+            lines.push(`; Depth pass: ${depth}mm`);
+            lines.push(`G1 Z${-depth} F300`);
+            
+            // Spiral inward
+            for (let r = startRadius; r >= endRadius; r -= stepover) {
+                const points = 36; // Points per circle
+                for (let i = 0; i <= points; i++) {
+                    const angle = (i / points) * Math.PI * 2;
+                    // Gradually decrease radius
+                    const currentR = r - (stepover * i / points);
+                    const x = centerX + Math.cos(angle) * currentR;
+                    const y = centerY + Math.sin(angle) * currentR;
+                    lines.push(`G1 X${x.toFixed(3)} Y${y.toFixed(3)} F2000`);
+                }
+            }
+            
+            // Retract and reposition for next pass
+            if (depth < totalDepth) {
+                lines.push('G0 Z2');
+                lines.push(`G0 X${centerX + startRadius} Y${centerY}`);
+            }
+        }
+        
+        // Generate a star pattern for visual interest
+        lines.push('');
+        lines.push('; Star cutout');
+        lines.push('G0 Z5');
+        lines.push('G0 X60 Y100');
+        lines.push('G1 Z-8 F300');
+        
+        const starPoints = 5;
+        const outerR = 15;
+        const innerR = 7;
+        
+        for (let i = 0; i <= starPoints * 2; i++) {
+            const angle = (i / (starPoints * 2)) * Math.PI * 2 - Math.PI / 2;
+            const r = (i % 2 === 0) ? outerR : innerR;
+            const x = 60 + Math.cos(angle) * r;
+            const y = 100 + Math.sin(angle) * r;
+            lines.push(`G1 X${x.toFixed(3)} Y${y.toFixed(3)} F1500`);
+        }
+        
+        // End program
+        lines.push('');
+        lines.push('; Finish');
+        lines.push('G0 Z20');
+        lines.push('G0 X0 Y0');
+        lines.push('M5 ; spindle off');
+        lines.push('M30');
+        
+        return lines.join('\n');
+    }
+    
+    _startDemoSimulation() {
+        // Simulate machining through the G-code
+        let simProgress = 0;
+        
+        this.demoInterval = setInterval(() => {
+            if (!this._demoGCode || this._demoLineIndex >= this._demoGCode.length) {
+                // Restart demo
+                this._demoLineIndex = 0;
+                this._demoPosition = { x: 0, y: 0, z: 5 };
+                simProgress = 0;
+                
+                // Reset material for visual
+                if (this.visualizerType === 'enhanced3d') {
+                    this.visualizer?.resetMaterial?.();
+                }
+                return;
+            }
+            
+            // Process several lines per tick for speed
+            for (let i = 0; i < 3 && this._demoLineIndex < this._demoGCode.length; i++) {
+                const line = this._demoGCode[this._demoLineIndex];
+                this._processDemoLine(line);
+                this._demoLineIndex++;
+            }
+            
+            // Calculate progress
+            simProgress = (this._demoLineIndex / this._demoGCode.length) * 100;
+            
+            // Determine state based on what we're doing
+            const isCutting = this._demoSpindle > 0 && this._demoFeed > 0 && this._demoPosition.z < 0;
+            this._demoState = isCutting ? 'Run' : (this._demoSpindle > 0 ? 'Run' : 'Idle');
+            
+            // Update UI with simulated status
             this.onGrblStatus({
-                status: 'Idle',
-                mpos: { x: simX, y: simY, z: simZ },
-                wpos: { x: simX, y: simY, z: simZ },
-                feed: 0,
-                feedRate: 0,
-                spindle: 0,
-                spindleSpeed: 0,
-                coolant: { flood: false, mist: false },
+                status: this._demoState,
+                mpos: { ...this._demoPosition },
+                wpos: { ...this._demoPosition },
+                feed: this._demoFeed,
+                feedRate: this._demoFeed,
+                spindle: this._demoSpindle,
+                spindleSpeed: this._demoSpindle,
+                coolant: { flood: false, mist: this._demoSpindle > 0 },
                 feedOverride: 100,
                 rapidOverride: 100,
                 spindleOverride: 100
             });
-        }, 500);
+            
+            // Update progress bar
+            if (this.elements.progressFill) {
+                this.elements.progressFill.style.width = `${simProgress}%`;
+            }
+            if (this.elements.jobProgress) {
+                this.elements.jobProgress.textContent = `Demo: ${simProgress.toFixed(0)}%`;
+            }
+            
+        }, 50); // 20 updates per second for smooth animation
+    }
+    
+    _processDemoLine(line) {
+        if (!line || line.startsWith(';')) return;
+        
+        const upper = line.toUpperCase();
+        
+        // Parse G-codes
+        if (upper.includes('G0') || upper.includes('G1')) {
+            const isRapid = upper.includes('G0');
+            
+            // Extract coordinates
+            const xMatch = line.match(/X(-?\d+\.?\d*)/i);
+            const yMatch = line.match(/Y(-?\d+\.?\d*)/i);
+            const zMatch = line.match(/Z(-?\d+\.?\d*)/i);
+            const fMatch = line.match(/F(\d+\.?\d*)/i);
+            
+            if (xMatch) this._demoPosition.x = parseFloat(xMatch[1]);
+            if (yMatch) this._demoPosition.y = parseFloat(yMatch[1]);
+            if (zMatch) this._demoPosition.z = parseFloat(zMatch[1]);
+            if (fMatch) this._demoFeed = parseFloat(fMatch[1]);
+            
+            if (isRapid) this._demoFeed = 5000;
+        }
+        
+        // Spindle control
+        if (upper.includes('M3') || upper.includes('M03')) {
+            const sMatch = line.match(/S(\d+)/i);
+            this._demoSpindle = sMatch ? parseInt(sMatch[1]) : 12000;
+        }
+        if (upper.includes('M5') || upper.includes('M05')) {
+            this._demoSpindle = 0;
+        }
     }
     
     stopDemo() {
@@ -370,7 +560,14 @@ class FluidCNCApp {
             this.demoInterval = null;
         }
         this.demoMode = false;
+        this._demoGCode = null;
+        this._demoLineIndex = 0;
         this.showOverlay();
+        
+        // Clear visualizer
+        if (this.visualizer) {
+            this.visualizer.clear?.();
+        }
     }
     
     onGrblStatus(state) {
@@ -421,9 +618,30 @@ class FluidCNCApp {
             this.elements.coolantMist.classList.toggle('active', state.coolant?.mist === true);
         }
         
-        // Update visualizer with tool position
+        // Update visualizer with tool position and machining data
         if (this.visualizer && state.wpos) {
-            this.visualizer.setToolPosition(state.wpos.x, state.wpos.y, state.wpos.z);
+            const feedRate = state.feedRate || state.feed || 0;
+            const spindleSpeed = state.spindleSpeed || state.spindle || 0;
+            
+            // Enhanced visualizer supports additional parameters
+            if (typeof this.visualizer.setToolPosition === 'function') {
+                if (this.visualizerType === 'enhanced3d') {
+                    this.visualizer.setToolPosition(
+                        state.wpos.x, 
+                        state.wpos.y, 
+                        state.wpos.z,
+                        feedRate,
+                        spindleSpeed
+                    );
+                    
+                    // Set machining state based on feed rate and spindle
+                    const isMachining = feedRate > 0 && spindleSpeed > 0 && 
+                                       (state.status === 'Run' || state.status === 'Hold');
+                    this.visualizer.setMachiningState(isMachining);
+                } else {
+                    this.visualizer.setToolPosition(state.wpos.x, state.wpos.y, state.wpos.z);
+                }
+            }
         }
     }
     
@@ -448,20 +666,123 @@ class FluidCNCApp {
     }
     
     // ================================================================
-    // Visualizer Setup
+    // Visualizer Setup - Use Enhanced 3D if available
     // ================================================================
     
     setupVisualizer() {
-        if (typeof GCodeVisualizer === 'undefined') {
-            console.warn('GCodeVisualizer not loaded');
+        const container = this.elements.visualizerCanvas?.parentElement || 
+                         document.getElementById('visualizer-container') ||
+                         document.querySelector('.canvas-wrapper');
+        
+        if (!container) {
+            console.warn('Visualizer container not found');
             return;
         }
         
-        this.visualizer = new GCodeVisualizer({
-            canvas: this.elements.visualizerCanvas,
-            workArea: this.workArea,
-            gridSize: 10
+        // Try to use the enhanced 3D visualizer first
+        if (typeof EnhancedVisualizer !== 'undefined') {
+            console.log('[App] Using Enhanced 3D Visualizer with premium effects');
+            this.visualizer = new EnhancedVisualizer({
+                container: container,
+                workArea: this.workArea,
+                gridSize: 10,
+                stock: { x: 200, y: 150, z: 25 },
+                stockPosition: { x: 50, y: 50, z: 0 }
+            });
+            this.visualizerType = 'enhanced3d';
+        }
+        // Fall back to basic 3D
+        else if (typeof GCodeVisualizer3D !== 'undefined') {
+            console.log('[App] Using 3D Visualizer');
+            this.visualizer = new GCodeVisualizer3D({
+                container: container,
+                workArea: this.workArea,
+                gridSize: 10
+            });
+            this.visualizerType = '3d';
+        }
+        // Fall back to 2D canvas
+        else if (typeof GCodeVisualizer !== 'undefined') {
+            console.log('[App] Using 2D Canvas Visualizer');
+            this.visualizer = new GCodeVisualizer({
+                canvas: this.elements.visualizerCanvas,
+                workArea: this.workArea,
+                gridSize: 10
+            });
+            this.visualizerType = '2d';
+        } else {
+            console.warn('No visualizer available');
+            return;
+        }
+        
+        // Create visualizer toolbar controls
+        this.createVisualizerControls();
+    }
+    
+    createVisualizerControls() {
+        const toolbar = document.querySelector('.visualizer-toolbar');
+        if (!toolbar) return;
+        
+        // Check if controls already exist
+        if (toolbar.querySelector('.view-presets')) return;
+        
+        // Add view preset buttons
+        const viewPresets = document.createElement('div');
+        viewPresets.className = 'view-presets';
+        viewPresets.innerHTML = `
+            <button class="view-preset-btn active" data-view="isometric">3D</button>
+            <button class="view-preset-btn" data-view="top">Top</button>
+            <button class="view-preset-btn" data-view="front">Front</button>
+            <button class="view-preset-btn" data-view="right">Side</button>
+        `;
+        
+        viewPresets.querySelectorAll('.view-preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                viewPresets.querySelectorAll('.view-preset-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.visualizer?.setView?.(btn.dataset.view);
+            });
         });
+        
+        // Add material selector if enhanced visualizer
+        if (this.visualizerType === 'enhanced3d') {
+            const materialSelector = document.createElement('div');
+            materialSelector.className = 'material-selector';
+            materialSelector.innerHTML = `
+                <button class="material-btn wood active" data-material="wood" title="Wood"></button>
+                <button class="material-btn aluminum" data-material="aluminum" title="Aluminum"></button>
+                <button class="material-btn steel" data-material="steel" title="Steel"></button>
+                <button class="material-btn plastic" data-material="plastic" title="Plastic"></button>
+                <button class="material-btn foam" data-material="foam" title="Foam"></button>
+            `;
+            
+            materialSelector.querySelectorAll('.material-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    materialSelector.querySelectorAll('.material-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.visualizer?.setMaterialType?.(btn.dataset.material);
+                });
+            });
+            
+            // Add cinematic toggle
+            const cinematicToggle = document.createElement('div');
+            cinematicToggle.className = 'cinematic-toggle';
+            cinematicToggle.innerHTML = `
+                <span class="toggle-icon">🎬</span>
+                <span class="toggle-label">Cinematic</span>
+            `;
+            cinematicToggle.addEventListener('click', () => {
+                cinematicToggle.classList.toggle('active');
+                this.visualizer?.setCinematicMode?.(cinematicToggle.classList.contains('active'));
+            });
+            
+            const vizControls = toolbar.querySelector('.viz-controls') || toolbar;
+            vizControls.appendChild(materialSelector);
+            vizControls.appendChild(cinematicToggle);
+        }
+        
+        const vizControls = toolbar.querySelector('.viz-controls') || toolbar;
+        vizControls.insertBefore(viewPresets, vizControls.firstChild);
     }
     
     // ================================================================
@@ -697,6 +1018,272 @@ class FluidCNCApp {
             document.getElementById('monitoring-container'),
             this.grbl
         );
+        
+        // Setup step loss detection if available
+        this.setupStepLossDetection();
+    }
+    
+    // ================================================================
+    // Step Loss Detection Setup (Unconventional Methods)
+    // ================================================================
+    
+    setupStepLossDetection() {
+        if (typeof StepLossDetection === 'undefined') {
+            console.warn('StepLossDetection not loaded - step loss features unavailable');
+            return;
+        }
+        
+        this.stepLoss = new StepLossDetection({
+            grbl: this.grbl,
+            chatterSystem: this.chatterDetection || null,  // Pass chatter system if available
+            
+            // Callbacks
+            onStallDetected: (axis, method, confidence) => {
+                this.handleStallDetected(axis, method, confidence);
+            },
+            onWarning: (message, severity) => {
+                this.log(`⚠️ Step Loss Warning: ${message}`, 
+                         severity > 0.7 ? 'error' : 'warning');
+            },
+            onResonanceZone: (feedRate) => {
+                this.log(`🔊 Resonance zone detected at ${feedRate} mm/min - avoiding`, 'warning');
+            },
+            onThermalDrift: (axis, driftMM) => {
+                this.log(`🌡️ Thermal drift on ${axis}: ${driftMM.toFixed(3)}mm compensated`, 'info');
+            }
+        });
+        
+        // Start monitoring (it will wait for connections)
+        this.stepLoss.start().then(status => {
+            if (status.activeMethodCount === 0) {
+                this.log('⚠️ Step Loss Detection: No sensors connected yet', 'warning');
+            } else {
+                this.log(`🔧 Step Loss Detection: ${status.activeMethodCount} methods active`, 'info');
+            }
+        }).catch(e => {
+            console.error('Step loss detection failed to start:', e);
+        });
+        
+        // Create step loss status panel
+        this.createStepLossPanel();
+    }
+    
+    createStepLossPanel() {
+        const panel = document.createElement('div');
+        panel.id = 'step-loss-panel';
+        panel.className = 'step-loss-panel';
+        panel.innerHTML = `
+            <div class="step-loss-header">
+                <span class="step-loss-title">🔍 Step Loss Monitor</span>
+                <span class="step-loss-status" id="step-loss-status">IDLE</span>
+            </div>
+            <div class="step-loss-gauges">
+                <div class="gauge" id="gauge-x">
+                    <div class="gauge-label">X</div>
+                    <div class="gauge-bar"><div class="gauge-fill" id="load-x"></div></div>
+                    <div class="gauge-value" id="load-x-val">0%</div>
+                </div>
+                <div class="gauge" id="gauge-y">
+                    <div class="gauge-label">Y</div>
+                    <div class="gauge-bar"><div class="gauge-fill" id="load-y"></div></div>
+                    <div class="gauge-value" id="load-y-val">0%</div>
+                </div>
+                <div class="gauge" id="gauge-z">
+                    <div class="gauge-label">Z</div>
+                    <div class="gauge-bar"><div class="gauge-fill" id="load-z"></div></div>
+                    <div class="gauge-value" id="load-z-val">0%</div>
+                </div>
+            </div>
+            <div class="step-loss-controls">
+                <button id="btn-learn-mode" title="Learn normal vibration patterns">📚 Learn</button>
+                <button id="btn-verify-position" title="Probe reference point">📍 Verify</button>
+                <button id="btn-step-loss-settings" title="Configure detection">⚙️</button>
+            </div>
+        `;
+        
+        // Insert after monitoring container
+        const monitoringPanel = document.getElementById('monitoring-container');
+        if (monitoringPanel) {
+            monitoringPanel.parentNode.insertBefore(panel, monitoringPanel.nextSibling);
+        } else {
+            document.querySelector('.main-content')?.appendChild(panel);
+        }
+        
+        // Bind panel events
+        document.getElementById('btn-learn-mode')?.addEventListener('click', () => {
+            this.startStepLossLearning();
+        });
+        
+        document.getElementById('btn-verify-position')?.addEventListener('click', () => {
+            this.verifyPositionWithProbe();
+        });
+        
+        // Update panel periodically
+        setInterval(() => this.updateStepLossPanel(), 250);
+    }
+    
+    updateStepLossPanel() {
+        if (!this.stepLoss) return;
+        
+        const status = this.stepLoss.getStatus();
+        
+        // Update status indicator
+        const statusEl = document.getElementById('step-loss-status');
+        if (statusEl) {
+            statusEl.textContent = status.state;
+            statusEl.className = `step-loss-status ${status.state.toLowerCase()}`;
+        }
+        
+        // Update load gauges
+        ['x', 'y', 'z'].forEach(axis => {
+            const load = status.loads?.[axis] || 0;
+            const fillEl = document.getElementById(`load-${axis}`);
+            const valEl = document.getElementById(`load-${axis}-val`);
+            
+            if (fillEl) {
+                fillEl.style.width = `${Math.min(100, load)}%`;
+                fillEl.className = `gauge-fill ${load > 80 ? 'danger' : load > 50 ? 'warning' : 'normal'}`;
+            }
+            if (valEl) {
+                valEl.textContent = `${Math.round(load)}%`;
+            }
+        });
+    }
+    
+    handleStallDetected(axis, method, confidence) {
+        // Try to pause motion if connected
+        if (this.grbl && this.connected) {
+            try {
+                this.grbl.send('!');  // Feed hold
+            } catch (e) {
+                console.warn('Could not send feed hold:', e);
+            }
+        }
+        
+        // Alert user with modal
+        const modal = document.createElement('div');
+        modal.className = 'modal stall-alert';
+        
+        const isConnected = this.grbl && this.connected;
+        
+        modal.innerHTML = `
+            <div class="modal-content stall-modal">
+                <h2>⚠️ STALL DETECTED</h2>
+                <p><strong>${axis.toUpperCase()}-Axis</strong> appears to have lost steps!</p>
+                <p>Detection method: <em>${method}</em></p>
+                <p>Confidence: <strong>${(confidence * 100).toFixed(0)}%</strong></p>
+                ${!isConnected ? '<p class="warning-text">⚠️ Machine not connected - cannot send commands</p>' : ''}
+                <div class="stall-actions">
+                    <button id="stall-dismiss" class="btn-secondary">Dismiss</button>
+                    ${isConnected ? `
+                        <button id="stall-resume" class="btn-warning">Resume (risky)</button>
+                        <button id="stall-rehome" class="btn-primary">Re-home Machine</button>
+                        <button id="stall-verify" class="btn-success">Verify Position</button>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Bind dismiss (always available)
+        modal.querySelector('#stall-dismiss').onclick = () => {
+            modal.remove();
+        };
+        
+        // Bind actions only if connected
+        if (isConnected) {
+            modal.querySelector('#stall-resume').onclick = () => {
+                this.grbl.send('~');  // Cycle start
+                modal.remove();
+            };
+            
+            modal.querySelector('#stall-rehome').onclick = () => {
+                this.grbl.send('$H');  // Home
+                modal.remove();
+            };
+            
+            modal.querySelector('#stall-verify').onclick = () => {
+                this.verifyPositionWithProbe();
+                modal.remove();
+            };
+        }
+        
+        // Log the event
+        this.log(`🚨 STALL on ${axis.toUpperCase()}-axis (${method}, ${(confidence*100).toFixed(0)}% confidence)`, 'error');
+        
+        // Play alert sound
+        this.playStallAlert();
+    }
+    
+    playStallAlert() {
+        // Generate alert tone using Web Audio
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.frequency.value = 880;
+            osc.type = 'square';
+            gain.gain.value = 0.3;
+            
+            osc.start();
+            
+            // Beep pattern: 3 short beeps
+            let beepCount = 0;
+            const beepInterval = setInterval(() => {
+                gain.gain.value = gain.gain.value > 0 ? 0 : 0.3;
+                beepCount++;
+                if (beepCount >= 6) {
+                    clearInterval(beepInterval);
+                    osc.stop();
+                }
+            }, 150);
+        } catch (e) {
+            console.warn('Could not play stall alert:', e);
+        }
+    }
+    
+    async startStepLossLearning() {
+        if (!this.stepLoss) return;
+        
+        this.log('📚 Starting step loss learning mode - running calibration moves...', 'info');
+        
+        // Run through learning routine
+        await this.stepLoss.startLearningMode({
+            testMoves: [
+                { axis: 'X', distance: 50, feed: 1000 },
+                { axis: 'Y', distance: 50, feed: 1000 },
+                { axis: 'Z', distance: 20, feed: 500 },
+                { axis: 'X', distance: 50, feed: 3000 },
+                { axis: 'Y', distance: 50, feed: 3000 },
+            ],
+            progressCallback: (pct, msg) => {
+                this.log(`📚 Learning: ${msg} (${pct.toFixed(0)}%)`, 'info');
+            }
+        });
+        
+        this.log('✅ Step loss learning complete - patterns saved', 'info');
+    }
+    
+    async verifyPositionWithProbe() {
+        if (!this.stepLoss || !this.probeWizard) {
+            this.log('Position verification requires probe wizard', 'warning');
+            return;
+        }
+        
+        this.log('📍 Verifying position at reference point...', 'info');
+        
+        const drift = await this.stepLoss.verifyReferencePoint();
+        
+        if (drift) {
+            this.log(`📍 Position drift detected: X=${drift.x?.toFixed(3) || 0}mm, Y=${drift.y?.toFixed(3) || 0}mm, Z=${drift.z?.toFixed(3) || 0}mm`, 
+                     Math.abs(drift.x || 0) > 0.1 ? 'error' : 'info');
+        } else {
+            this.log('✅ Position verified - no significant drift', 'info');
+        }
     }
     
     toggleMonitoring() {
@@ -1043,6 +1630,20 @@ class FluidCNCApp {
 
         // Settings button
         this.elements.settingsBtn?.addEventListener('click', () => this.openSettings());
+        
+        // Keyboard shortcuts help button
+        this.elements.keyboardHelpBtn?.addEventListener('click', () => this.showKeyboardShortcuts());
+        
+        // WCS Manager button
+        document.getElementById('wcs-manager-btn')?.addEventListener('click', () => this.openWcsManager());
+        
+        // WCS quick-select buttons
+        document.querySelectorAll('.btn-wcs[data-wcs]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const wcs = btn.dataset.wcs;
+                this.selectWcs(wcs);
+            });
+        });
         
         // Jog mode toggle
         this.elements.jogModeStep?.addEventListener('click', () => this.setJogMode('step'));
@@ -2101,41 +2702,61 @@ class FluidCNCApp {
         const modal = document.createElement('div');
         modal.className = 'modal-overlay keyboard-shortcuts-modal';
         modal.innerHTML = `
-            <div class="modal">
+            <div class="modal modal-lg">
                 <div class="modal-header">
-                    <h2>⌨️ Keyboard Shortcuts</h2>
+                    <h2>⌨️ Keyboard Shortcuts & Controls</h2>
                     <button class="btn-close" onclick="this.closest('.modal-overlay').remove()">×</button>
                 </div>
                 <div class="modal-body shortcuts-grid">
                     <div class="shortcut-section">
-                        <h3>Navigation</h3>
+                        <h3>🎮 Navigation (Jog)</h3>
                         <div class="shortcut-row"><kbd>←</kbd><kbd>→</kbd> Jog X axis</div>
                         <div class="shortcut-row"><kbd>↑</kbd><kbd>↓</kbd> Jog Y axis</div>
                         <div class="shortcut-row"><kbd>PgUp</kbd><kbd>PgDn</kbd> Jog Z axis</div>
                         <div class="shortcut-row"><kbd>Shift</kbd> + arrows = 10x speed</div>
+                        <div class="shortcut-row"><kbd>Esc</kbd> Cancel jog / Stop job</div>
                     </div>
                     <div class="shortcut-section">
-                        <h3>Job Control</h3>
-                        <div class="shortcut-row"><kbd>Space</kbd> Pause/Resume</div>
-                        <div class="shortcut-row"><kbd>Esc</kbd> Stop / Cancel jog</div>
-                        <div class="shortcut-row"><kbd>Ctrl+O</kbd> Open G-code file</div>
-                    </div>
-                    <div class="shortcut-section">
-                        <h3>Machine</h3>
+                        <h3>🔧 Machine Control</h3>
                         <div class="shortcut-row"><kbd>H</kbd> Home all axes</div>
                         <div class="shortcut-row"><kbd>U</kbd> Unlock ($X)</div>
-                        <div class="shortcut-row"><kbd>0</kbd> Zero all axes</div>
+                        <div class="shortcut-row"><kbd>0</kbd> Zero all axes (WCS)</div>
                         <div class="shortcut-row"><kbd>V</kbd> Toggle vacuum</div>
+                        <div class="shortcut-row"><kbd>Space</kbd> Pause / Resume job</div>
                     </div>
                     <div class="shortcut-section">
-                        <h3>View</h3>
-                        <div class="shortcut-row"><kbd>?</kbd> Show this help</div>
+                        <h3>📁 Files & View</h3>
+                        <div class="shortcut-row"><kbd>Ctrl</kbd>+<kbd>O</kbd> Open G-code file</div>
                         <div class="shortcut-row"><kbd>F</kbd> Fit view to toolpath</div>
                         <div class="shortcut-row"><kbd>T</kbd> Top view</div>
                         <div class="shortcut-row"><kbd>I</kbd> Isometric view</div>
+                        <div class="shortcut-row"><kbd>?</kbd> Show this help</div>
+                    </div>
+                    <div class="shortcut-section">
+                        <h3>🤖 AI Assistant Voice</h3>
+                        <div class="shortcut-row">Click <kbd>🎤</kbd> to start voice</div>
+                        <div class="shortcut-row">"home the machine"</div>
+                        <div class="shortcut-row">"jog left 10 millimeters"</div>
+                        <div class="shortcut-row">"set spindle to 12000"</div>
+                        <div class="shortcut-row">"probe Z" or "find top"</div>
+                    </div>
+                </div>
+                <div class="shortcuts-footer">
+                    <h4>💡 AI Natural Language Examples</h4>
+                    <div class="ai-examples">
+                        <code>"move up 5mm"</code>
+                        <code>"spindle on at 18k"</code>
+                        <code>"what's my position?"</code>
+                        <code>"run the job"</code>
+                        <code>"go to X10 Y20"</code>
+                        <code>"set feed to 1500"</code>
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="show-tips-startup" ${localStorage.getItem('showKeyboardTips') !== 'false' ? 'checked' : ''}>
+                        Show tips on startup
+                    </label>
                     <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove()">Got it!</button>
                 </div>
             </div>
@@ -2143,6 +2764,11 @@ class FluidCNCApp {
         
         document.body.appendChild(modal);
         setTimeout(() => modal.classList.add('active'), 10);
+        
+        // Handle checkbox change
+        modal.querySelector('#show-tips-startup')?.addEventListener('change', (e) => {
+            localStorage.setItem('showKeyboardTips', e.target.checked);
+        });
         
         // Close on click outside
         modal.addEventListener('click', (e) => {
@@ -2157,6 +2783,212 @@ class FluidCNCApp {
             }
         };
         document.addEventListener('keydown', escHandler);
+    }
+    
+    // ================================================================
+    // Work Coordinate System (WCS) Management
+    // ================================================================
+    
+    /**
+     * Select a work coordinate system (G54-G59)
+     */
+    selectWcs(wcs) {
+        if (!this.grbl?.connected) {
+            this.showNotification('Not connected', 'warning');
+            return;
+        }
+        
+        // Send the WCS command
+        this.grbl.send(wcs);
+        this.log(`Selected ${wcs}`, 'info');
+        
+        // Update button states
+        document.querySelectorAll('.btn-wcs').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.wcs === wcs);
+        });
+        document.querySelectorAll('.btn-wcs-select').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.wcs === wcs);
+        });
+        
+        this.currentWcs = wcs;
+        this.showNotification(`Work offset: ${wcs}`, 'success');
+    }
+    
+    /**
+     * Open the WCS Manager modal
+     */
+    openWcsManager() {
+        const modal = document.getElementById('wcs-manager-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            // Refresh values from machine when opening
+            this.refreshWcsValues();
+        }
+    }
+    
+    /**
+     * Refresh WCS values from the machine
+     */
+    async refreshWcsValues() {
+        if (!this.grbl?.connected) {
+            this.showNotification('Connect to machine first', 'warning');
+            return;
+        }
+        
+        this.log('Reading work coordinate offsets...', 'info');
+        
+        // Request coordinate system parameters (G54 = $#)
+        // grblHAL stores WCS offsets in $# response
+        try {
+            await this.grbl.sendAndWait('$#');
+            
+            // Parse the stored WCS offsets from grbl state or response
+            // This is populated from the $# response parsing
+            const wcsOffsets = this.grbl.wcsOffsets || {};
+            
+            ['G54', 'G55', 'G56', 'G57', 'G58', 'G59'].forEach(wcs => {
+                const offset = wcsOffsets[wcs] || { x: 0, y: 0, z: 0 };
+                const prefix = `wcs-${wcs.toLowerCase()}`;
+                
+                const xInput = document.getElementById(`${prefix}-x`);
+                const yInput = document.getElementById(`${prefix}-y`);
+                const zInput = document.getElementById(`${prefix}-z`);
+                
+                if (xInput) xInput.value = offset.x?.toFixed(3) || '0';
+                if (yInput) yInput.value = offset.y?.toFixed(3) || '0';
+                if (zInput) zInput.value = offset.z?.toFixed(3) || '0';
+            });
+            
+            this.showNotification('WCS values refreshed', 'success');
+        } catch (e) {
+            this.log(`Failed to read WCS: ${e.message}`, 'error');
+            this.showNotification('Failed to read WCS offsets', 'error');
+        }
+    }
+    
+    /**
+     * Set WCS offset from current machine position
+     */
+    setWcsFromCurrent(wcs) {
+        if (!this.grbl?.connected) {
+            this.showNotification('Not connected', 'warning');
+            return;
+        }
+        
+        const mpos = this.grbl.state.mpos;
+        const p = this.wcsToP(wcs);
+        
+        // G10 L2 sets offset so that work position = 0 at current machine position
+        // G10 L20 sets the current work position to the specified value (usually 0)
+        this.grbl.send(`G10 L2 P${p} X${mpos.x} Y${mpos.y} Z${mpos.z}`);
+        
+        this.log(`Set ${wcs} origin from current position`, 'info');
+        this.showNotification(`${wcs} set to current position`, 'success');
+        
+        // Refresh the display
+        setTimeout(() => this.refreshWcsValues(), 500);
+    }
+    
+    /**
+     * Clear a WCS offset (set to 0,0,0)
+     */
+    clearWcs(wcs) {
+        if (!this.grbl?.connected) {
+            this.showNotification('Not connected', 'warning');
+            return;
+        }
+        
+        const p = this.wcsToP(wcs);
+        this.grbl.send(`G10 L2 P${p} X0 Y0 Z0`);
+        
+        this.log(`Cleared ${wcs} offset`, 'info');
+        this.showNotification(`${wcs} cleared`, 'success');
+        
+        // Update the input fields
+        const prefix = `wcs-${wcs.toLowerCase()}`;
+        ['x', 'y', 'z'].forEach(axis => {
+            const input = document.getElementById(`${prefix}-${axis}`);
+            if (input) input.value = '0';
+        });
+    }
+    
+    /**
+     * Apply WCS values from the input fields to the machine
+     */
+    applyWcsValues() {
+        if (!this.grbl?.connected) {
+            this.showNotification('Not connected', 'warning');
+            return;
+        }
+        
+        ['G54', 'G55', 'G56', 'G57', 'G58', 'G59'].forEach(wcs => {
+            const prefix = `wcs-${wcs.toLowerCase()}`;
+            const x = parseFloat(document.getElementById(`${prefix}-x`)?.value) || 0;
+            const y = parseFloat(document.getElementById(`${prefix}-y`)?.value) || 0;
+            const z = parseFloat(document.getElementById(`${prefix}-z`)?.value) || 0;
+            
+            const p = this.wcsToP(wcs);
+            this.grbl.send(`G10 L2 P${p} X${x} Y${y} Z${z}`);
+        });
+        
+        this.log('Applied WCS offsets to machine', 'info');
+        this.showNotification('WCS offsets applied', 'success');
+    }
+    
+    /**
+     * Convert WCS name to P number for G10 command
+     */
+    wcsToP(wcs) {
+        const map = { 'G54': 1, 'G55': 2, 'G56': 3, 'G57': 4, 'G58': 5, 'G59': 6 };
+        return map[wcs] || 1;
+    }
+    
+    // ================================================================
+    // Service Worker Update Notification
+    // ================================================================
+    
+    showUpdateNotification(version, message) {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = `
+            <div class="update-content">
+                <span class="update-icon">🔄</span>
+                <div class="update-text">
+                    <strong>Update Available!</strong>
+                    <p>${message}</p>
+                </div>
+                <button class="btn btn-primary btn-sm update-refresh">Refresh Now</button>
+                <button class="btn-close update-dismiss">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animate in
+        setTimeout(() => notification.classList.add('visible'), 10);
+        
+        // Handle refresh button
+        notification.querySelector('.update-refresh').addEventListener('click', () => {
+            // Tell the service worker to skip waiting and take over
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+            }
+            window.location.reload();
+        });
+        
+        // Handle dismiss
+        notification.querySelector('.update-dismiss').addEventListener('click', () => {
+            notification.classList.remove('visible');
+            setTimeout(() => notification.remove(), 300);
+        });
+        
+        // Auto-hide after 30 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.classList.remove('visible');
+                setTimeout(() => notification.remove(), 300);
+            }
+        }, 30000);
     }
 }
 
@@ -2206,6 +3038,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('chatterEspIp', e.target.value);
             });
         }
+    }
+    
+    // Listen for service worker update notifications
+    if (navigator.serviceWorker) {
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data.type === 'SW_UPDATED') {
+                app?.showUpdateNotification?.(event.data.version, event.data.message);
+            }
+        });
+        
+        // Check for waiting service worker on load
+        navigator.serviceWorker.ready.then((registration) => {
+            if (registration.waiting) {
+                app?.showUpdateNotification?.('new', 'A new version is available!');
+            }
+        });
     }
 });
 

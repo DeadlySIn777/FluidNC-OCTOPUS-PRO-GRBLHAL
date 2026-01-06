@@ -21,6 +21,10 @@ class ChatterDetection {
         this.ws = null;
         this.connected = false;
         this.reconnectInterval = 5000;
+        this.reconnectBaseInterval = 5000;  // Base reconnect delay
+        this.reconnectMaxInterval = 60000;  // Max 60 seconds between attempts
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 20;     // Give up after 20 attempts
         this.reconnectTimer = null;
         this.pingInterval = null;
         
@@ -327,6 +331,7 @@ class ChatterDetection {
             this.ws.onopen = () => {
                 console.log('[Chatter] Connected to ESP32');
                 this.connected = true;
+                this.reconnectAttempts = 0;  // Reset on successful connection
                 this.hideWarning();
                 this.onConnect();
                 
@@ -414,12 +419,22 @@ class ChatterDetection {
         this.showWarning();
         this.onDisconnect();
         
-        // Schedule reconnect
-        if (!this.reconnectTimer) {
+        // Schedule reconnect with exponential backoff
+        if (!this.reconnectTimer && this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            // Exponential backoff: 5s, 7.5s, 11.25s, ... up to 60s max
+            const delay = Math.min(
+                this.reconnectBaseInterval * Math.pow(1.5, this.reconnectAttempts - 1),
+                this.reconnectMaxInterval
+            );
+            console.log(`[Chatter] Reconnecting in ${Math.round(delay/1000)}s (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
             this.reconnectTimer = setTimeout(() => {
                 this.reconnectTimer = null;
                 this.connect();
-            }, this.reconnectInterval);
+            }, delay);
+        } else if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+            console.warn('[Chatter] Max reconnection attempts reached. Click panel to retry.');
+            this.showReconnectButton();
         }
     }
     
@@ -1659,6 +1674,40 @@ class ChatterDetection {
         
         const dot = document.getElementById('chatter-status-dot');
         if (dot) dot.classList.add('connected');
+        
+        // Hide reconnect button if it exists
+        const reconnectBtn = document.getElementById('chatter-reconnect-btn');
+        if (reconnectBtn) reconnectBtn.remove();
+    }
+    
+    showReconnectButton() {
+        // Add a reconnect button when max attempts reached
+        const warning = document.getElementById('chatter-warning');
+        if (!warning) return;
+        
+        // Check if button already exists
+        if (document.getElementById('chatter-reconnect-btn')) return;
+        
+        const btn = document.createElement('button');
+        btn.id = 'chatter-reconnect-btn';
+        btn.textContent = '🔄 Retry Connection';
+        btn.style.cssText = `
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        `;
+        btn.onclick = () => {
+            this.reconnectAttempts = 0;  // Reset attempts
+            btn.remove();
+            this.connect();
+        };
+        warning.appendChild(btn);
     }
     
     // Update material/tool display

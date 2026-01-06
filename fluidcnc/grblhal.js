@@ -158,6 +158,11 @@ class GrblHAL {
         
         // Error/Command log buffer for debugging
         this.errorLog = [];
+        
+        // Offline command queue
+        this.offlineQueue = [];
+        this.offlineQueueEnabled = true;
+        this.offlineQueueMaxSize = 100;
         this.commandLog = [];
         this.maxLogEntries = 500;
     }
@@ -304,6 +309,13 @@ class GrblHAL {
                 this._applyDefaultSettings();
             }, 1000);
             
+            // Process any queued offline commands
+            setTimeout(() => {
+                if (this.hasQueuedCommands()) {
+                    this.processOfflineQueue();
+                }
+            }, 1500);
+            
             this.emit('connect', { type: 'serial', baudRate: this.baudRate });
             return true;
             
@@ -419,6 +431,13 @@ class GrblHAL {
         setTimeout(() => {
             this._applyDefaultSettings();
         }, 500);
+        
+        // Process any queued offline commands
+        setTimeout(() => {
+            if (this.hasQueuedCommands()) {
+                this.processOfflineQueue();
+            }
+        }, 1000);
         
         this.emit('connect', { type: 'websocket', host: this.host });
     }
@@ -795,7 +814,11 @@ class GrblHAL {
     // ================================================================
     
     send(cmd, options = {}) {
+        // Queue command if offline and queuing is enabled
         if (!this.connected) {
+            if (this.offlineQueueEnabled && !options.noQueue) {
+                return this.queueOfflineCommand(cmd, options);
+            }
             this.logError('SEND', 'Cannot send - not connected', { command: cmd });
             return false;
         }
@@ -884,6 +907,9 @@ class GrblHAL {
             return false;
         }
         
+        // Lock to prevent race conditions during setup
+        this._streamLock = true;
+        
         this.streamQueue = lines
             .map(l => l.split(';')[0].split('(')[0].trim())
             .filter(l => l.length > 0);
@@ -891,18 +917,30 @@ class GrblHAL {
         this.streamIndex = 0;
         this.streaming = true;
         this.streamPaused = false;
+        this.streamStopping = false;  // New: flag for graceful stop
         this.streamCallbacks = callbacks;
         this.bufferUsed = 0;
         this.pendingCommands = [];
+        this.streamStartTime = Date.now();
+        this.streamErrors = [];
         
+        this._streamLock = false;
         this._sendFromQueue();
         return true;
     }
     
     _sendFromQueue() {
-        if (!this.streaming || this.streamPaused) return;
+        // Check all abort conditions first
+        if (!this.streaming || this.streamPaused || this.streamStopping || this._streamLock) {
+            return;
+        }
         
         while (this.streamIndex < this.streamQueue.length) {
+            // Check abort conditions inside loop too
+            if (this.streamStopping || !this.streaming) {
+                break;
+            }
+            
             const cmd = this.streamQueue[this.streamIndex];
             const cmdLen = cmd.length + 1;
             
@@ -921,21 +959,36 @@ class GrblHAL {
         }
         
         // Done when all commands sent AND acknowledged
-        if (this.streamIndex >= this.streamQueue.length && this.pendingCommands.length === 0) {
-            this.streaming = false;
-            if (this.streamCallbacks?.onComplete) {
-                this.streamCallbacks.onComplete();
-            }
+        if (this.streamIndex >= this.streamQueue.length && this.pendingCommands.length === 0 && !this.streamStopping) {
+            this._completeStream();
         }
     }
     
+    _completeStream() {
+        const duration = Date.now() - (this.streamStartTime || Date.now());
+        this.streaming = false;
+        this.streamStopping = false;
+        
+        if (this.streamCallbacks?.onComplete) {
+            this.streamCallbacks.onComplete({
+                duration,
+                linesExecuted: this.streamIndex,
+                errors: this.streamErrors.length > 0 ? this.streamErrors : null
+            });
+        }
+        
+        this.streamCallbacks = null;
+    }
+    
     pauseStream() {
+        if (!this.streaming) return;
         this.streamPaused = true;
         this.send('!'); // Feed hold
         this.streamCallbacks?.onPause?.();
     }
     
     resumeStream() {
+        if (!this.streaming) return;
         this.streamPaused = false;
         this.send('~'); // Cycle start
         this._sendFromQueue();
@@ -943,17 +996,46 @@ class GrblHAL {
     }
     
     stopStream() {
-        this.streaming = false;
+        // Set stopping flag to prevent race conditions
+        this.streamStopping = true;
         this.streamPaused = false;
-        this.streamQueue = [];
-        this.streamIndex = 0;
-        this.pendingCommands = [];
-        this.bufferUsed = 0;
         
-        this.send('!');
-        setTimeout(() => this.send('\x18'), 100);
-        
-        this.streamCallbacks?.onStop?.();
+        // Give a small delay for any in-flight operations
+        setTimeout(() => {
+            this.streaming = false;
+            this.streamStopping = false;
+            this.streamQueue = [];
+            this.streamIndex = 0;
+            this.pendingCommands = [];
+            this.bufferUsed = 0;
+            
+            this.send('!');
+            setTimeout(() => this.send('\x18'), 100);
+            
+            this.streamCallbacks?.onStop?.();
+            this.streamCallbacks = null;
+        }, 10);
+    }
+    
+    /**
+     * Check if streaming is in progress
+     */
+    isStreaming() {
+        return this.streaming && !this.streamStopping;
+    }
+    
+    /**
+     * Get current stream progress
+     */
+    getStreamProgress() {
+        if (!this.streaming) return null;
+        return {
+            current: this.streamIndex,
+            total: this.streamQueue.length,
+            percent: this.streamQueue.length > 0 ? (this.streamIndex / this.streamQueue.length) * 100 : 0,
+            paused: this.streamPaused,
+            elapsed: Date.now() - (this.streamStartTime || Date.now())
+        };
     }
     
     // ================================================================
@@ -1259,6 +1341,141 @@ class GrblHAL {
     getMachineLimits() { return { ...this.machineLimits }; }
     
     // ================================================================
+    // State Persistence (survives page refresh)
+    // ================================================================
+    
+    /**
+     * Save current machine state to localStorage
+     * Called periodically and on significant state changes
+     */
+    saveState() {
+        const stateToSave = {
+            timestamp: Date.now(),
+            wpos: this.state.wpos,
+            mpos: this.state.mpos,
+            wco: this.state.wco,
+            wcs: this.state.wcs,
+            units: this.state.units,
+            tool: this.state.tool,
+            lastStatus: this.state.status,
+            override: this.state.override,
+            host: this.host,
+            connectionType: this.connectionType,
+            machineLimits: this.machineLimits
+        };
+        
+        try {
+            localStorage.setItem('fluidcnc_machine_state', JSON.stringify(stateToSave));
+        } catch (e) {
+            console.warn('[grblHAL] Failed to save state:', e);
+        }
+    }
+    
+    /**
+     * Load saved state from localStorage
+     * Returns the saved state or null if none exists
+     */
+    loadSavedState() {
+        try {
+            const saved = localStorage.getItem('fluidcnc_machine_state');
+            if (!saved) return null;
+            
+            const state = JSON.parse(saved);
+            
+            // Only use state if it's less than 1 hour old
+            if (Date.now() - state.timestamp > 3600000) {
+                console.log('[grblHAL] Saved state expired, ignoring');
+                return null;
+            }
+            
+            return state;
+        } catch (e) {
+            console.warn('[grblHAL] Failed to load saved state:', e);
+            return null;
+        }
+    }
+    
+    /**
+     * Apply saved state (e.g., restore WCO after reconnect)
+     */
+    applySavedState(savedState) {
+        if (!savedState) return;
+        
+        // Restore work coordinate offset if we have it
+        if (savedState.wco) {
+            this.state.wco = { ...savedState.wco };
+        }
+        
+        // Restore WCS (G54-G59)
+        if (savedState.wcs) {
+            this.state.wcs = savedState.wcs;
+        }
+        
+        // Restore machine limits
+        if (savedState.machineLimits) {
+            this.machineLimits = { ...savedState.machineLimits };
+        }
+        
+        console.log('[grblHAL] Applied saved state from', new Date(savedState.timestamp).toLocaleTimeString());
+    }
+    
+    /**
+     * Clear saved state
+     */
+    clearSavedState() {
+        try {
+            localStorage.removeItem('fluidcnc_machine_state');
+        } catch (e) {
+            console.warn('[grblHAL] Failed to clear saved state:', e);
+        }
+    }
+    
+    /**
+     * Start periodic state saving
+     */
+    startStatePersistence(intervalMs = 5000) {
+        this._stateSaveInterval = setInterval(() => {
+            if (this.connected && this.state.status !== 'Unknown') {
+                this.saveState();
+            }
+        }, intervalMs);
+        
+        // Also save on visibility change (tab hidden = likely refresh coming)
+        this._visibilityHandler = () => {
+            if (document.visibilityState === 'hidden' && this.connected) {
+                this.saveState();
+            }
+        };
+        document.addEventListener('visibilitychange', this._visibilityHandler);
+        
+        // Save before unload
+        this._beforeUnloadHandler = () => {
+            if (this.connected) {
+                this.saveState();
+            }
+        };
+        window.addEventListener('beforeunload', this._beforeUnloadHandler);
+    }
+    
+    /**
+     * Stop periodic state saving
+     */
+    stopStatePersistence() {
+        if (this._stateSaveInterval) {
+            clearInterval(this._stateSaveInterval);
+            this._stateSaveInterval = null;
+        }
+        if (this._visibilityHandler) {
+            document.removeEventListener('visibilitychange', this._visibilityHandler);
+            this._visibilityHandler = null;
+        }
+        if (this._beforeUnloadHandler) {
+            window.removeEventListener('beforeunload', this._beforeUnloadHandler);
+            this._beforeUnloadHandler = null;
+        }
+    }
+    
+    // ================================================================
     // Static helpers
     // ================================================================
     
@@ -1322,6 +1539,113 @@ class GrblHAL {
         }
         
         return Math.ceil(totalTime);
+    }
+    
+    // ================================================================
+    // Offline Command Queue
+    // ================================================================
+    
+    /**
+     * Queue a command for execution when connection is restored
+     */
+    queueOfflineCommand(cmd, options = {}) {
+        if (this.offlineQueue.length >= this.offlineQueueMaxSize) {
+            console.warn('[grblHAL] Offline queue full, dropping oldest command');
+            this.offlineQueue.shift();
+        }
+        
+        const queuedCmd = {
+            command: cmd.trim(),
+            options: options,
+            timestamp: Date.now(),
+            id: ++this.commandId
+        };
+        
+        this.offlineQueue.push(queuedCmd);
+        console.log(`[grblHAL] Command queued for offline (${this.offlineQueue.length}): ${cmd}`);
+        
+        // Emit event for UI notification
+        this.emit('message', `📋 Queued: ${cmd} (${this.offlineQueue.length} pending)`);
+        
+        return { queued: true, position: this.offlineQueue.length };
+    }
+    
+    /**
+     * Get current offline queue
+     */
+    getOfflineQueue() {
+        return [...this.offlineQueue];
+    }
+    
+    /**
+     * Clear offline queue
+     */
+    clearOfflineQueue() {
+        const count = this.offlineQueue.length;
+        this.offlineQueue = [];
+        console.log(`[grblHAL] Cleared ${count} queued commands`);
+        return count;
+    }
+    
+    /**
+     * Process queued commands after reconnection
+     */
+    async processOfflineQueue() {
+        if (this.offlineQueue.length === 0) {
+            return { processed: 0, failed: 0 };
+        }
+        
+        if (!this.connected) {
+            console.warn('[grblHAL] Cannot process queue - not connected');
+            return { processed: 0, failed: 0, error: 'Not connected' };
+        }
+        
+        const queueCopy = [...this.offlineQueue];
+        this.offlineQueue = [];
+        
+        console.log(`[grblHAL] Processing ${queueCopy.length} queued commands...`);
+        this.emit('message', `▶️ Executing ${queueCopy.length} queued commands...`);
+        
+        let processed = 0;
+        let failed = 0;
+        
+        for (const item of queueCopy) {
+            try {
+                // Small delay between commands for buffer safety
+                await new Promise(r => setTimeout(r, 50));
+                
+                const success = this.send(item.command, { ...item.options, noQueue: true });
+                if (success) {
+                    processed++;
+                } else {
+                    failed++;
+                    console.warn(`[grblHAL] Queued command failed: ${item.command}`);
+                }
+            } catch (e) {
+                failed++;
+                console.error(`[grblHAL] Error executing queued command:`, e);
+            }
+        }
+        
+        console.log(`[grblHAL] Queue processed: ${processed} ok, ${failed} failed`);
+        this.emit('message', `✅ Queue complete: ${processed} executed, ${failed} failed`);
+        
+        return { processed, failed };
+    }
+    
+    /**
+     * Enable/disable offline queuing
+     */
+    setOfflineQueueEnabled(enabled) {
+        this.offlineQueueEnabled = enabled;
+        console.log(`[grblHAL] Offline queue ${enabled ? 'enabled' : 'disabled'}`);
+    }
+    
+    /**
+     * Check if there are queued commands
+     */
+    hasQueuedCommands() {
+        return this.offlineQueue.length > 0;
     }
 }
 
