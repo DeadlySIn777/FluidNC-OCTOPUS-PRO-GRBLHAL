@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ESP32 Chatter System Wiring Guide</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #111a33;
+      --text: #e9eefc;
+      --muted: #b8c2e0;
+      --border: #2a3a6b;
+      --accent: #7aa2ff;
+      --warn: #ffd166;
+      --danger: #ff6b6b;
+      --ok: #4ce0a8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    header {
+      padding: 24px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(122,162,255,0.14), transparent);
+    }
+    header h1 { margin: 0 0 6px 0; font-size: 22px; }
+    header p { margin: 0; color: var(--muted); max-width: 980px; }
+
+    main { padding: 16px; max-width: 1100px; margin: 0 auto; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    h2 { margin: 0 0 10px 0; font-size: 16px; }
+    h3 { margin: 14px 0 8px 0; font-size: 14px; color: var(--text); }
+    p { margin: 8px 0; color: var(--muted); }
+    ul { margin: 8px 0 0 18px; color: var(--muted); }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th { text-align: left; color: var(--text); background: rgba(122,162,255,0.08); }
+    tr:last-child td { border-bottom: none; }
+
+    .note {
+      border-left: 3px solid var(--accent);
+      padding: 10px 12px;
+      background: rgba(122,162,255,0.08);
+      border-radius: 10px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+    .warn {
+      border-left-color: var(--warn);
+      background: rgba(255,209,102,0.10);
+    }
+    .danger {
+      border-left-color: var(--danger);
+      background: rgba(255,107,107,0.10);
+    }
+
+    .svgwrap {
+      background: rgba(0,0,0,0.22);
+      border: 1px dashed rgba(122,162,255,0.35);
+      border-radius: 10px;
+      padding: 8px;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    .k {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--text);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 1px 6px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    footer {
+      padding: 18px 16px 28px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ESP32 CNC Chatter System – Wiring Guide</h1>
+    <p>
+      Clean, practical wiring for the ESP32 chatter detector (MPU‑6050 + INMP441 + ACS712) and UART into a BTT Octopus Pro running grblHAL.
+      This page is designed to be “follow-along” with a multimeter.
+    </p>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Quick safety rules <span class="pill">read first</span></h2>
+      <ul>
+        <li>ESP32 GPIO is <b>3.3V logic</b>. Never feed 5V into an ESP32 GPIO pin.</li>
+        <li>Use a <b>common ground</b> between ESP32 and Octopus Pro UART.</li>
+        <li>For any “voltage sensor”, ensure the ADC pin never exceeds <b>3.3V</b>.</li>
+        <li>If you’re working inside mains/VFD wiring: disconnect power and be safe.</li>
+      </ul>
+    </div>
+
+    <div class="grid" style="margin-top:12px;">
+      <section class="card">
+        <h2>ESP32 ↔ Sensors (what goes where)</h2>
+
+        <h3>MPU‑6050 (8‑pin module) – what pins you actually need</h3>
+        <p>Many MPU‑6050 breakout boards expose 8 pins: <span class="k">VCC</span>, <span class="k">GND</span>, <span class="k">SCL</span>, <span class="k">SDA</span>, <span class="k">XDA</span>, <span class="k">XCL</span>, <span class="k">AD0</span>, <span class="k">INT</span>.</p>
+        <table>
+          <thead>
+            <tr><th>MPU‑6050 pin</th><th>Connect to ESP32</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>VCC</td><td>3.3V</td><td>Use 3.3V unless your module explicitly supports 5V and level-shifts (most do, but safest is 3.3V).</td></tr>
+            <tr><td>GND</td><td>GND</td><td>Common ground.</td></tr>
+            <tr><td>SDA</td><td>GPIO 21</td><td>I2C data.</td></tr>
+            <tr><td>SCL</td><td>GPIO 22</td><td>I2C clock.</td></tr>
+            <tr><td>INT</td><td>(optional)</td><td>Not required by this project (polling works). Leave unconnected unless code enables interrupts.</td></tr>
+            <tr><td>AD0</td><td>GND (recommended)</td><td>Sets I2C address: GND = 0x68, 3.3V = 0x69. Use GND unless you have two MPU‑6050s.</td></tr>
+            <tr><td>XDA / XCL</td><td>Leave unconnected</td><td>Aux I2C passthrough pins; not needed.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <b>Bottom line:</b> For an 8‑wire MPU‑6050, you typically connect only <span class="k">VCC</span>, <span class="k">GND</span>, <span class="k">SDA</span>, <span class="k">SCL</span>. Optionally tie <span class="k">AD0</span> to GND.
+        </div>
+
+        <h3>INMP441 (I2S mic)</h3>
+        <table>
+          <thead>
+            <tr><th>INMP441 pin</th><th>ESP32 GPIO</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>VCC</td><td>3.3V</td><td>Do not use 5V.</td></tr>
+            <tr><td>GND</td><td>GND</td><td>Common ground.</td></tr>
+            <tr><td>SD (data)</td><td>GPIO 32</td><td>I2S data in.</td></tr>
+            <tr><td>WS (LRCLK)</td><td>GPIO 25</td><td>I2S word select.</td></tr>
+            <tr><td>SCK (BCLK)</td><td>GPIO 26</td><td>I2S clock.</td></tr>
+            <tr><td>L/R</td><td>GND</td><td>Left channel select.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>ACS712 current sensor (spindle load) — ACS712T ELC‑30A (30A)</h3>
+        <table>
+          <thead>
+            <tr><th>ACS712 pin</th><th>ESP32</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>VCC</td><td>5V (VIN)</td><td>Most ACS712 modules are powered from 5V.</td></tr>
+            <tr><td>GND</td><td>GND</td><td>Common ground.</td></tr>
+            <tr><td>OUT</td><td>GPIO 34 (ADC1)</td><td><b>ADC pin must stay ≤ 3.3V</b>. Add a divider if your module output can exceed 3.3V.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note warn">
+          <b>Important:</b> The ACS712 output is centered around VCC/2. Many modules can swing up near ~4.5V when powered at 5V.
+          Protect the ESP32 ADC with a simple divider (example below) if you’re not sure.
+          <br/>
+          For the ACS712T ELC‑30A (30A), typical sensitivity is ~66mV/A at 5V supply. With the 10k/20k divider below (0.666×),
+          the ESP32 ADC effectively sees ~44mV/A.
+        </div>
+
+        <h3>Optional: “Voltage sensor” (measuring 12V/24V/48V safely)</h3>
+        <p>If you mean a common “0–25V voltage sensor module” (a resistor divider board): it’s just a divider feeding an ADC.</p>
+        <table>
+          <thead>
+            <tr><th>Voltage sensor module</th><th>ESP32</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>V+ / VIN</td><td>Measure point (+)</td><td>Example: 24V PSU positive.</td></tr>
+            <tr><td>GND</td><td>ESP32 GND</td><td>Common ground required.</td></tr>
+            <tr><td>S / OUT</td><td>GPIO 34 (or another ADC1 pin)</td><td>Ensure divider keeps OUT ≤ 3.3V.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note danger">
+          <b>Do NOT measure VFD motor output</b> with an ESP32 voltage sensor module. Measure only safe DC rails (12/24/48V) unless you use proper isolation.
+        </div>
+
+        <div class="note">
+          <b>If your goal is “VFD/spindle telemetry” (recommended approaches):</b>
+          <ul style="margin:8px 0 0 18px;">
+            <li><b>Modbus/RS‑485</b> (best): many VFDs can report frequency, RPM, output current, DC bus voltage, faults. This is the safest and most useful data for automation.</li>
+            <li><b>Analog monitor output</b> (often labeled <span class="k">AM</span>/<span class="k">FM</span> + <span class="k">ACM</span>): typically 0–10V or 0–5V representing frequency or current. This can be read by an ADC <b>only if</b> you scale to ≤3.3V and follow the VFD manual.</li>
+            <li><b>Speed pulse/tach output</b>: some VFDs expose a digital “frequency output” (open collector). This is ideal for RPM feedback using a GPIO + pullup (no analog scaling needed).</li>
+          </ul>
+          <div style="margin-top:8px;">
+            If you tell me your VFD model and which terminal labels it has (AM/FM/AVI/ACM/VI/VR/RS485), I can map pins 1:1.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>ESP32 ↔ Octopus Pro UART (TX/RX)</h2>
+        <p>This project uses ESP32 UART2 so you don’t interfere with the USB programming port.</p>
+
+        <table>
+          <thead>
+            <tr><th>Signal</th><th>ESP32 pin</th><th>Octopus Pro pin</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ESP32 TX → Octopus RX</td><td>GPIO 17</td><td>PA1 (UART4_RX) via EXP1 pin 8</td><td>Cross TX→RX.</td></tr>
+            <tr><td>ESP32 RX ← Octopus TX</td><td>GPIO 16</td><td>PA0 (UART4_TX) via EXP1 pin 10</td><td>Cross RX←TX.</td></tr>
+            <tr><td>GND</td><td>GND</td><td>GND</td><td>Must share ground.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="svgwrap" aria-label="Simple UART diagram">
+          <svg width="940" height="220" viewBox="0 0 940 220" xmlns="http://www.w3.org/2000/svg" role="img">
+            <defs>
+              <style>
+                .box{fill:#101a33;stroke:#2a3a6b;stroke-width:2;}
+                .txt{fill:#e9eefc;font: 14px system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+                .mut{fill:#b8c2e0;font: 12px system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+                .wire{stroke:#7aa2ff;stroke-width:3;}
+                .gnd{stroke:#4ce0a8;stroke-width:3;}
+              </style>
+            </defs>
+            <rect class="box" x="20" y="30" width="360" height="160" rx="12"/>
+            <rect class="box" x="560" y="30" width="360" height="160" rx="12"/>
+            <text class="txt" x="40" y="60">ESP32 DevKit (UART2)</text>
+            <text class="mut" x="40" y="85">GPIO17 = TX</text>
+            <text class="mut" x="40" y="105">GPIO16 = RX</text>
+            <text class="mut" x="40" y="125">GND</text>
+
+            <text class="txt" x="580" y="60">BTT Octopus Pro (grblHAL)</text>
+            <text class="mut" x="580" y="85">EXP1 pin 8  = PA1 (UART4_RX)</text>
+            <text class="mut" x="580" y="105">EXP1 pin 10 = PA0 (UART4_TX)</text>
+            <text class="mut" x="580" y="125">GND</text>
+
+            <line class="wire" x1="220" y1="82" x2="740" y2="82" />
+            <text class="mut" x="390" y="70">TX → RX</text>
+
+            <line class="wire" x1="220" y1="102" x2="740" y2="102" />
+            <text class="mut" x="390" y="120">RX ← TX</text>
+
+            <line class="gnd" x1="220" y1="122" x2="740" y2="122" />
+            <text class="mut" x="390" y="145">GND ↔ GND</text>
+          </svg>
+        </div>
+
+        <div class="note">
+          Baud rate should match grblHAL (commonly <span class="k">115200</span>). If you see garbage characters, baud mismatch is the first thing to check.
+        </div>
+
+        <h3>About the Octopus “WiFi” socket (AI‑THINKER ESP‑01)</h3>
+        <p>If you’re using the Octopus Pro WiFi socket with an ESP‑01 module, it uses Octopus UART1:</p>
+        <table>
+          <thead>
+            <tr><th>Octopus WiFi socket</th><th>STM32 pin</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>WiFi TX</td><td>PA9</td><td>UART1_TX (goes to ESP RX)</td></tr>
+            <tr><td>WiFi RX</td><td>PA10</td><td>UART1_RX (comes from ESP TX)</td></tr>
+            <tr><td>3.3V</td><td>—</td><td>Power for ESP‑01 (3.3V only)</td></tr>
+            <tr><td>GND</td><td>—</td><td>Ground</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note warn">
+          The WiFi socket expects an ESP‑01 style module. An ESP32 DevKit typically does <b>not</b> plug into that socket directly.
+        </div>
+      </section>
+
+      <!-- VFD MODBUS SECTION -->
+      <section class="card">
+        <h2>VFD Modbus RS‑485 Telemetry (Optional but Recommended)</h2>
+        <p>
+          Most 1.5kW–2.2kW spindle kits from Amazon/AliExpress include a <b>Huanyang or clone VFD</b> with RS‑485 Modbus support.
+          This gives you the richest telemetry: actual frequency, output current, DC bus voltage, and fault codes—directly from the VFD.
+        </p>
+
+        <h3>Hardware needed</h3>
+        <ul style="margin-left:18px;">
+          <li><b>RS‑485 transceiver module</b> (MAX485, SP3485, or similar). Ideally isolated (ADM2587E) for noisy VFD environments.</li>
+          <li>3 wires from ESP32 to RS‑485 module, 2–3 wires from RS‑485 module to VFD.</li>
+        </ul>
+
+        <h3>Wiring: ESP32 ↔ RS‑485 module ↔ VFD</h3>
+        <table>
+          <thead>
+            <tr><th>ESP32 pin</th><th>RS‑485 module</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>GPIO 13</td><td>DI (driver input)</td><td>ESP32 TX → RS‑485 TX</td></tr>
+            <tr><td>GPIO 14</td><td>RO (receiver output)</td><td>ESP32 RX ← RS‑485 RX</td></tr>
+            <tr><td>GPIO 27</td><td>DE + RE (tied together)</td><td>Direction enable (high = transmit)</td></tr>
+            <tr><td>GND</td><td>GND</td><td>Common ground</td></tr>
+            <tr><td>3.3V <i>or</i> 5V</td><td>VCC</td><td>Check module spec (most work with both)</td></tr>
+          </tbody>
+        </table>
+
+        <table style="margin-top:12px;">
+          <thead>
+            <tr><th>RS‑485 module</th><th>VFD terminal</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A</td><td>RS+ (or D+ or A)</td><td>Differential pair +</td></tr>
+            <tr><td>B</td><td>RS- (or D- or B)</td><td>Differential pair -</td></tr>
+            <tr><td>GND (optional)</td><td>GND / COM</td><td>Helps reduce noise; check VFD manual</td></tr>
+          </tbody>
+        </table>
+
+        <div class="note">
+          <b>Common Huanyang VFD parameters (set on VFD panel):</b>
+          <ul style="margin:8px 0 0 18px;">
+            <li><span class="k">PD163</span> = 1 (communication mode)</li>
+            <li><span class="k">PD164</span> = 1 (slave address = 1)</li>
+            <li><span class="k">PD165</span> = 1 (baud 9600) or 2 (19200)</li>
+          </ul>
+          The firmware defaults to slave address 1 @ 9600 baud. Adjust in <span class="k">vfd_modbus.h</span> if your VFD differs.
+        </div>
+
+        <h3>Enabling in firmware</h3>
+        <p>In <span class="k">main.cpp</span>, uncomment these lines in <span class="k">setup()</span>:</p>
+        <pre style="background:#0b1020;padding:10px;border-radius:8px;overflow-x:auto;"><code>vfd.begin();
+vfd.setSpindleConfig(400.0f, 24000.0f, 4);  // maxFreq, maxRPM, poles</code></pre>
+        <p>After flashing, the TFT and web UI will show VFD data (frequency, current, DC bus, faults).</p>
+
+        <div class="note warn">
+          <b>Troubleshooting RS‑485:</b> If you get no data, double-check A↔RS+ and B↔RS-. Some modules swap labeling.
+          Try swapping A/B if you see 100% failures in the diagnostics panel.
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:12px;">
+      <h2>Voltage divider examples (protecting GPIO34 ADC)</h2>
+      <p>ESP32 ADC pins (like GPIO34) should be kept ≤ 3.3V. A divider is two resistors:</p>
+      <p>
+        Vout = Vin × (R2 / (R1 + R2))
+      </p>
+      <table>
+        <thead>
+          <tr><th>Use case</th><th>Example divider</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Limit ACS712 OUT (just in case)</td>
+            <td>R1=10k, R2=20k</td>
+            <td>Scales by 0.666 (5V → 3.33V max-ish). Add a small cap (e.g. 0.01µF) from ADC to GND for noise.</td>
+          </tr>
+          <tr>
+            <td>Measure 24V rail</td>
+            <td>R1=100k, R2=15k</td>
+            <td>24V → ~3.13V. Keep resistors high to reduce current draw.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note danger">
+        Only do this if you’re comfortable with electronics. If you’re unsure, tell me what “voltage sensor” board you bought (a link/photo/label like “0-25V”), and I’ll map its pins 1:1.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>
+      Source pin map used here matches the project wiring documented in <a href="../README.md">README.md</a> (chatter-esp32).
+    </div>
+  </footer>
+</body>
+</html>

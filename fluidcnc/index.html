@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0f">
+    <title>FluidCNC</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Connection Overlay -->
+    <div id="connection-overlay" class="overlay">
+        <div class="overlay-content">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" width="80" height="80">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#00d4ff"/>
+                                <stop offset="100%" style="stop-color:#00ff88"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#logoGrad)" stroke-width="3"/>
+                        <path d="M30,50 L45,35 L45,45 L70,45 L70,55 L45,55 L45,65 Z" fill="url(#logoGrad)"/>
+                        <circle cx="50" cy="50" r="8" fill="url(#logoGrad)"/>
+                    </svg>
+                </div>
+                <h1 class="logo">FluidCNC</h1>
+                <p class="tagline">Modern CNC Control for grblHAL</p>
+            </div>
+            <div class="input-group">
+                <input type="text" id="ip-input" placeholder="192.168.1.100" autocomplete="off" spellcheck="false">
+                <span class="port-label">:81</span>
+            </div>
+            <div class="btn-connect-group">
+                <button id="connect-btn" class="btn btn-primary">
+                    <span class="btn-icon-left">🔗</span> Connect
+                </button>
+                <button id="usb-connect-btn" class="btn btn-secondary" title="USB via WebSerial (Chrome/Edge)">
+                    <span class="btn-icon-left">🔌</span> USB
+                </button>
+                <button id="demo-btn" class="btn btn-secondary">Demo</button>
+            </div>
+            <p class="hint">Enter grblHAL IP or try Demo mode</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="app-logo">
+                    <svg viewBox="0 0 100 100" width="28" height="28">
+                        <defs><linearGradient id="hLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00d4ff"/><stop offset="100%" style="stop-color:#00ff88"/></linearGradient></defs>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#hLogoGrad)" stroke-width="4"/>
+                        <path d="M30,50 L45,35 L45,45 L70,45 L70,55 L45,55 L45,65 Z" fill="url(#hLogoGrad)"/>
+                    </svg>
+                    <span class="app-title">FluidCNC</span>
+                </div>
+                <div id="machine-state" class="machine-state idle">IDLE</div>
+            </div>
+            <div class="header-center">
+                <div class="feed-display">
+                    <span class="feed-label">F</span>
+                    <span id="live-feed" class="feed-value">0</span>
+                </div>
+                <div class="spindle-display">
+                    <span class="spindle-label">S</span>
+                    <span id="live-spindle" class="spindle-value">0</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div id="connection-indicator" class="connection-indicator disconnected" title="Click to reconnect">
+                    <span class="conn-dot"></span>
+                    <span id="connection-type-icon" class="conn-type-icon"></span>
+                    <span id="connection-status" class="conn-text">Offline</span>
+                </div>
+                <button id="header-connect-btn" class="btn btn-sm" title="WiFi Connect">📶</button>
+                <button id="header-usb-btn" class="btn btn-sm" title="USB Connect">🔌</button>
+                <button id="settings-btn" class="btn-icon" title="Settings">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel - Position & Controls -->
+            <section class="panel position-panel">
+                <div class="panel-content">
+                    <!-- Coordinate Toggle -->
+                    <div class="coord-toggle">
+                        <button id="wcs-btn" class="btn btn-toggle active">Work</button>
+                        <button id="mcs-btn" class="btn btn-toggle">Machine</button>
+                    </div>
+
+                    <!-- Position Display -->
+                    <div class="position-display">
+                        <div class="axis-row x">
+                            <span class="axis-label">X</span>
+                            <div class="axis-values">
+                                <span id="pos-x" class="axis-value">0.000</span>
+                                <span id="wpos-x" class="axis-value-work hidden">0.000</span>
+                            </div>
+                            <button class="btn-zero zero-btn" data-axis="x">ZERO</button>
+                        </div>
+                        <div class="axis-row y">
+                            <span class="axis-label">Y</span>
+                            <div class="axis-values">
+                                <span id="pos-y" class="axis-value">0.000</span>
+                                <span id="wpos-y" class="axis-value-work hidden">0.000</span>
+                            </div>
+                            <button class="btn-zero zero-btn" data-axis="y">ZERO</button>
+                        </div>
+                        <div class="axis-row z">
+                            <span class="axis-label">Z</span>
+                            <div class="axis-values">
+                                <span id="pos-z" class="axis-value">0.000</span>
+                                <span id="wpos-z" class="axis-value-work hidden">0.000</span>
+                            </div>
+                            <button class="btn-zero zero-btn" data-axis="z">ZERO</button>
+                        </div>
+                    </div>
+
+                    <!-- Machine Status Badge -->
+                    <div class="machine-status-bar">
+                        <span id="machine-status" class="status-badge status-idle">Idle</span>
+                        <span id="feed-rate" class="status-value">F: 0</span>
+                        <span id="spindle-speed" class="status-value">S: 0</span>
+                    </div>
+
+                    <!-- Coolant & Vacuum Controls -->
+                    <div class="coolant-section">
+                        <span class="section-title">Coolant</span>
+                        <div class="coolant-controls">
+                            <button id="coolant-flood" class="coolant-btn">💧 Flood</button>
+                            <button id="coolant-mist" class="coolant-btn">🌫️ Mist</button>
+                            <button id="coolant-off" class="coolant-btn">❌ Off</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Vacuum/Dust Shoe Control -->
+                    <div class="vacuum-section">
+                        <span class="section-title">Vacuum</span>
+                        <div class="vacuum-controls">
+                            <button id="vacuum-toggle" class="vacuum-btn" title="Toggle dust collection (M64/M65 P0) [V]">
+                                <span class="vacuum-icon">🌀</span>
+                                <span class="vacuum-label">Vacuum</span>
+                                <kbd class="shortcut-hint">V</kbd>
+                            </button>
+                            <button id="dustshoe-toggle" class="vacuum-btn dustshoe" title="Raise/lower dust shoe (M64/M65 P1)">
+                                <span class="dustshoe-icon">🔽</span>
+                                <span class="dustshoe-label">Shoe</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button id="estop-btn" class="btn-estop" title="Emergency Stop [Esc]">
+                            <span class="estop-icon">⛔</span>
+                            <span>E-STOP</span>
+                            <kbd class="shortcut-hint danger">Esc</kbd>
+                        </button>
+                        <button id="home-btn" class="btn-action" title="Home all axes [H]">
+                            <span class="icon">🏠</span>
+                            <span class="label">Home All</span>
+                            <kbd class="shortcut-hint">H</kbd>
+                        </button>
+                        <button id="unlock-btn" class="btn-action" title="Unlock machine [U]">
+                            <span class="icon">🔓</span>
+                            <span class="label">Unlock</span>
+                            <kbd class="shortcut-hint">U</kbd>
+                        </button>
+                        <button id="zero-all-btn" class="btn-action" title="Zero all axes [0]">
+                            <span class="icon">⊙</span>
+                            <span class="label">Zero All</span>
+                            <kbd class="shortcut-hint">0</kbd>
+                        </button>
+                    </div>
+
+                    <!-- Spindle Control -->
+                    <div class="spindle-control">
+                        <div class="spindle-header">
+                            <span class="section-title">Spindle</span>
+                            <span id="spindle-rpm" class="spindle-rpm-value">0</span>
+                            <span class="rpm-unit">RPM</span>
+                        </div>
+                        <input type="range" id="spindle-slider" class="spindle-slider" min="0" max="24000" step="100" value="0">
+                        <div class="rpm-presets">
+                            <button class="rpm-preset" data-rpm="6000">6K</button>
+                            <button class="rpm-preset" data-rpm="12000">12K</button>
+                            <button class="rpm-preset" data-rpm="18000">18K</button>
+                            <button class="rpm-preset" data-rpm="24000">24K</button>
+                        </div>
+                        <div class="spindle-buttons">
+                            <button id="spindle-cw" class="btn btn-spindle">CW ↻</button>
+                            <button id="spindle-ccw" class="btn btn-spindle">CCW ↺</button>
+                            <button id="spindle-stop" class="btn btn-spindle-stop">STOP</button>
+                        </div>
+                    </div>
+
+                    <!-- Goto Presets -->
+                    <div class="goto-presets">
+                        <span class="section-title">Go To</span>
+                        <div class="preset-buttons">
+                            <button class="btn-preset" data-goto="origin">Origin</button>
+                            <button class="btn-preset" data-goto="park">Park</button>
+                            <button class="btn-preset" data-goto="probe">Probe</button>
+                            <button class="btn-preset" data-goto="toolchange">ATC</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Panel - Tabs -->
+            <section class="panel center-panel">
+                <div class="tab-header">
+                    <button class="tab-btn active" data-tab="jog">Jog</button>
+                    <button class="tab-btn" data-tab="visualizer">3D View</button>
+                    <button class="tab-btn" data-tab="console">Console</button>
+                    <button class="tab-btn" data-tab="gcode">G-Code</button>
+                </div>
+                <div class="tab-container">
+                    <!-- Jog Tab -->
+                    <div id="jog-tab" class="tab-content active">
+                        <div class="jog-control">
+                            <div class="jog-grid">
+                                <div class="jog-xy">
+                                    <div class="jog-spacer"></div>
+                                    <button class="jog-btn y-plus" data-jog="Y+">Y+</button>
+                                    <div class="jog-spacer"></div>
+                                    <button class="jog-btn x-minus" data-jog="X-">X-</button>
+                                    <button id="xy-zero-btn" class="jog-btn jog-center">XY<br>Zero</button>
+                                    <button class="jog-btn x-plus" data-jog="X+">X+</button>
+                                    <div class="jog-spacer"></div>
+                                    <button class="jog-btn y-minus" data-jog="Y-">Y-</button>
+                                    <div class="jog-spacer"></div>
+                                </div>
+                                <div class="jog-z">
+                                    <button class="jog-btn z-plus" data-jog="Z+">Z+</button>
+                                    <button id="z-zero-btn" class="jog-btn jog-center">Z<br>Zero</button>
+                                    <button class="jog-btn z-minus" data-jog="Z-">Z-</button>
+                                </div>
+                            </div>
+                            <div class="jog-options">
+                                <div class="jog-mode-group">
+                                    <span class="mode-label">Mode:</span>
+                                    <button id="jog-mode-step" class="btn-mode active">Step</button>
+                                    <button id="jog-mode-cont" class="btn-mode">Hold</button>
+                                </div>
+                                <div class="step-group">
+                                    <span class="step-label">Step:</span>
+                                    <div class="step-buttons">
+                                        <button class="btn-step jog-step-btn" data-step="0.01">0.01</button>
+                                        <button class="btn-step jog-step-btn" data-step="0.1">0.1</button>
+                                        <button class="btn-step jog-step-btn active" data-step="1">1</button>
+                                        <button class="btn-step jog-step-btn" data-step="10">10</button>
+                                        <button class="btn-step jog-step-btn" data-step="100">100</button>
+                                    </div>
+                                </div>
+                                <div class="feed-group">
+                                    <span class="feed-label-jog">Feed:</span>
+                                    <input type="range" id="jog-feed" min="100" max="5000" value="1000" step="100">
+                                    <span id="jog-feed-value" class="feed-value-jog">1000</span>
+                                </div>
+                                <p class="jog-hint">Use arrow keys + PageUp/Down to jog. Escape to cancel.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualizer Tab -->
+                    <div id="visualizer-tab" class="tab-content">
+                        <div class="visualizer-container">
+                            <div class="visualizer-toolbar">
+                                <div class="viz-controls">
+                                    <button id="viz-reset" class="btn-viz" title="Reset View">⟲</button>
+                                    <button id="viz-top" class="btn-viz" title="Top View">⬆</button>
+                                    <button id="viz-front" class="btn-viz" title="Front View">◯</button>
+                                    <button id="viz-iso" class="btn-viz active" title="Isometric">◇</button>
+                                    <button id="viz-fit" class="btn-viz" title="Fit to View">⛶</button>
+                                </div>
+                                <div class="viz-info">
+                                    <span id="gcode-bounds">No file loaded</span>
+                                    <span id="gcode-time">--:--</span>
+                                </div>
+                            </div>
+                            <div class="canvas-wrapper">
+                                <canvas id="visualizer-canvas"></canvas>
+                                <div class="viz-legend">
+                                    <span class="legend-rapid">━ Rapid</span>
+                                    <span class="legend-cut">━ Cut</span>
+                                    <span class="legend-tool">● Tool</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Console Tab -->
+                    <div id="console-tab" class="tab-content">
+                        <div class="console-container">
+                            <div id="console-output" class="console-output"></div>
+                            <div class="console-input-row">
+                                <input type="text" id="console-input" placeholder="Enter G-code command..." autocomplete="off" spellcheck="false">
+                                <button id="console-send" class="btn btn-primary">Send</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- G-Code Tab -->
+                    <div id="gcode-tab" class="tab-content">
+                        <div class="gcode-container">
+                            <div class="gcode-toolbar">
+                                <button id="btn-open" class="btn btn-primary">📂 Open</button>
+                                <button id="btn-save" class="btn btn-secondary">💾 Save</button>
+                                <input type="file" id="file-input" accept=".nc,.gcode,.ngc,.tap,.txt" hidden>
+                                <span id="gcode-filename" class="loaded-filename">No file loaded</span>
+                            </div>
+                            <div class="gcode-editor-wrap">
+                                <div id="gcode-highlight"></div>
+                                <textarea id="gcode-editor" spellcheck="false" placeholder="Paste or type G-code here..."></textarea>
+                            </div>
+                            <div class="gcode-stats">
+                                <div class="stat"><span class="stat-label">Lines:</span><span id="total-lines">0</span></div>
+                                <div class="stat"><span class="stat-label">Time:</span><span id="job-eta">--:--</span></div>
+                                <div class="stat"><span id="job-progress">Ready</span></div>
+                            </div>
+                            <div class="job-controls">
+                                <button class="btn btn-success gcode-start">▶ Start</button>
+                                <button class="btn btn-warning gcode-pause">⏸ Pause</button>
+                                <button class="btn btn-danger gcode-stop">⏹ Stop</button>
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div class="progress-bar">
+                                    <div id="progress-bar" class="progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel - Tools & Job -->
+            <section class="panel right-panel">
+                <div class="panel-content">
+                    <!-- Tool Selection -->
+                    <div class="tool-section">
+                        <div class="section-header">
+                            <span class="section-title">ATC Tools</span>
+                            <span id="current-tool" class="current-tool">T0</span>
+                        </div>
+                        <div class="tool-grid">
+                            <button class="btn-tool" data-tool="1" title="Change to Tool 1 [ATC]">T1</button>
+                            <button class="btn-tool" data-tool="2" title="Change to Tool 2 [ATC]">T2</button>
+                            <button class="btn-tool" data-tool="3" title="Change to Tool 3 [ATC]">T3</button>
+                            <button class="btn-tool" data-tool="4" title="Change to Tool 4 [ATC]">T4</button>
+                            <button class="btn-tool" data-tool="5" title="Change to Tool 5 [ATC]">T5</button>
+                        </div>
+                        
+                        <!-- ATC Manual Controls -->
+                        <div class="atc-controls">
+                            <button id="atc-lid-open" class="btn btn-sm" title="Open dust cover lid (180°)">🔓 Open Lid</button>
+                            <button id="atc-lid-close" class="btn btn-sm" title="Close dust cover lid">🔒 Close Lid</button>
+                            <button id="atc-loosen" class="btn btn-sm btn-warning" title="Spin CCW to loosen">↺ Loosen</button>
+                            <button id="atc-tighten" class="btn btn-sm btn-success" title="Spin CW to tighten">↻ Tighten</button>
+                        </div>
+                        <div class="atc-controls">
+                            <button id="atc-simulate" class="btn btn-sm btn-secondary" title="Show tool change G-code without executing">🧪 Simulate</button>
+                            <button id="atc-config" class="btn btn-sm btn-secondary" title="Configure ATC positions">⚙️ Config</button>
+                        </div>
+                        
+                        <div class="tool-actions">
+                            <button id="probe-tool-btn" class="btn btn-tool-action">📏 Measure Tool</button>
+                            <button id="touchoff-btn" class="btn btn-tool-action btn-accent" id="btn-probe">🎯 Probe</button>
+                            <button id="btn-surfacing" class="btn btn-tool-action">🔲 Surface</button>
+                            <button id="btn-tool-table" class="btn btn-tool-action">📋 Tool Table</button>
+                        </div>
+                    </div>
+
+                    <!-- Job Control -->
+                    <div class="job-section">
+                        <span class="section-title">Job Control</span>
+                        <div class="job-buttons">
+                            <button id="btn-start" class="btn btn-run">▶ Run</button>
+                            <button id="btn-pause" class="btn btn-pause" disabled>⏸</button>
+                            <button id="btn-stop" class="btn btn-stop" disabled>⏹</button>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span><span id="current-line">0</span> / <span id="progress-total">0</span></span>
+                                <span id="progress-text">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overrides -->
+                    <div class="overrides-section">
+                        <span class="section-title">Overrides</span>
+                        <div class="override-row">
+                            <span class="override-label">Feed</span>
+                            <input type="range" id="feed-override" min="10" max="200" value="100">
+                            <span id="override-feed-val" class="override-value">100%</span>
+                        </div>
+                        <div class="override-row">
+                            <span class="override-label">Rapid</span>
+                            <input type="range" id="rapid-override" min="25" max="100" value="100" step="25">
+                            <span id="override-rapid-val" class="override-value">100%</span>
+                        </div>
+                        <div class="override-row">
+                            <span class="override-label">Spindle</span>
+                            <input type="range" id="spindle-override" min="10" max="200" value="100">
+                            <span id="override-spindle-val" class="override-value">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- WCS Selection -->
+                    <div class="wcs-section">
+                        <span class="section-title">Work Offset</span>
+                        <div class="wcs-buttons">
+                            <button class="btn-wcs active" data-wcs="G54">G54</button>
+                            <button class="btn-wcs" data-wcs="G55">G55</button>
+                            <button class="btn-wcs" data-wcs="G56">G56</button>
+                            <button class="btn-wcs" data-wcs="G57">G57</button>
+                            <button class="btn-wcs" data-wcs="G58">G58</button>
+                            <button class="btn-wcs" data-wcs="G59">G59</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <span id="status-message" class="status-message">Ready</span>
+            </div>
+            <div class="footer-right">
+                <span id="buffer-display" class="buffer-info">Buf: 0</span>
+                <span class="version-info">v1.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button id="close-settings" class="btn-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="settings-tab active" data-settings-tab="machine">Machine</button>
+                    <button class="settings-tab" data-settings-tab="atc">ATC</button>
+                    <button class="settings-tab" data-settings-tab="probing">Probing</button>
+                    <button class="settings-tab" data-settings-tab="ui">UI</button>
+                </div>
+                <div class="settings-content">
+                    <!-- Machine Settings -->
+                    <div id="machine-settings" class="settings-panel active">
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <h3>Work Envelope</h3>
+                                <div class="setting-row">
+                                    <label>Max X</label>
+                                    <input type="number" id="setting-max-x" value="400">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Max Y</label>
+                                    <input type="number" id="setting-max-y" value="400">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Max Z</label>
+                                    <input type="number" id="setting-max-z" value="200">
+                                    <span>mm</span>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <h3>Safe Heights</h3>
+                                <div class="setting-row">
+                                    <label>Safe Z</label>
+                                    <input type="number" id="setting-safe-z" value="50">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Rapid Feed</label>
+                                    <input type="number" id="setting-rapid-feed" value="5000">
+                                    <span>mm/min</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ATC Settings -->
+                    <div id="atc-settings" class="settings-panel">
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <h3>Tool Rack Position</h3>
+                                <div class="setting-row">
+                                    <label>Rack X (Tool 1)</label>
+                                    <input type="number" id="setting-atc-x" value="350">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Rack Y</label>
+                                    <input type="number" id="setting-atc-y" value="0">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Tool Spacing</label>
+                                    <input type="number" id="setting-tool-spacing" value="50.4" step="0.1">
+                                    <span>mm</span>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <h3>Z Heights</h3>
+                                <div class="setting-row">
+                                    <label>Approach Z</label>
+                                    <input type="number" id="setting-atc-z" value="-5">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Pocket Z</label>
+                                    <input type="number" id="setting-pocket-z" value="-80">
+                                    <span>mm</span>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <h3>Tool Setter</h3>
+                                <div class="setting-row">
+                                    <label>Setter X</label>
+                                    <input type="number" id="setting-setter-x" value="0">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Setter Y</label>
+                                    <input type="number" id="setting-setter-y" value="380">
+                                    <span>mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Probing Settings -->
+                    <div id="probing-settings" class="settings-panel">
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <h3>Probe Speeds</h3>
+                                <div class="setting-row">
+                                    <label>Fast Probe</label>
+                                    <input type="number" id="setting-probe-fast" value="500">
+                                    <span>mm/min</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Slow Probe</label>
+                                    <input type="number" id="setting-probe-feed" value="100">
+                                    <span>mm/min</span>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <h3>Touch Plate</h3>
+                                <div class="setting-row">
+                                    <label>Plate Thickness</label>
+                                    <input type="number" id="setting-plate-thick" value="15" step="0.1">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Tool Diameter</label>
+                                    <input type="number" id="setting-tool-dia" value="6.35" step="0.01">
+                                    <span>mm</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UI Settings -->
+                    <div id="ui-settings" class="settings-panel">
+                        <div class="settings-grid">
+                            <div class="setting-group">
+                                <h3>Appearance</h3>
+                                <div class="setting-row">
+                                    <label>Dark Mode</label>
+                                    <input type="checkbox" id="setting-dark-mode" checked>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Animations</label>
+                                    <input type="checkbox" id="setting-animations" checked>
+                                </div>
+                            </div>
+                            <div class="setting-group">
+                                <h3>Jog Defaults</h3>
+                                <div class="setting-row">
+                                    <label>Default Step</label>
+                                    <input type="number" id="setting-default-step" value="1" step="0.1">
+                                    <span>mm</span>
+                                </div>
+                                <div class="setting-row">
+                                    <label>Default Feed</label>
+                                    <input type="number" id="setting-default-jog-feed" value="1000">
+                                    <span>mm/min</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="reset-settings" class="btn btn-secondary">Reset Defaults</button>
+                <button id="save-settings" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Probe Wizard Modal -->
+    <div id="probe-modal" class="modal-overlay hidden">
+        <div class="modal modal-medium">
+            <div class="modal-header">
+                <h2>🎯 Touch Off Wizard</h2>
+                <button class="modal-close btn-close">✕</button>
+            </div>
+            <div class="modal-body" id="probe-wizard-container">
+                <!-- Rendered by ProbeWizard -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Surfacing Wizard Modal -->
+    <div id="surfacing-modal" class="modal-overlay hidden">
+        <div class="modal modal-medium">
+            <div class="modal-header">
+                <h2>🔲 Surfacing Wizard</h2>
+                <button class="modal-close btn-close">✕</button>
+            </div>
+            <div class="modal-body" id="surfacing-container">
+                <!-- Rendered by SurfacingWizard -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Tool Table Modal -->
+    <div id="tools-modal" class="modal-overlay hidden">
+        <div class="modal modal-large">
+            <div class="modal-header">
+                <h2>🛠️ Tool Library</h2>
+                <button class="modal-close btn-close">✕</button>
+            </div>
+            <div class="modal-body">
+                <table class="tool-table">
+                    <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>Description</th>
+                            <th>Diameter</th>
+                            <th>Length</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tool-table-body">
+                        <!-- Rendered by app.js -->
+                    </tbody>
+                </table>
+                <div class="tool-table-actions">
+                    <button id="probe-all-tools" class="btn btn-primary">📏 Probe All Tools</button>
+                    <button id="atc-test" class="btn btn-secondary">🔄 ATC Test Cycle</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant Panel (Floating) -->
+    <div id="ai-panel" class="ai-panel collapsed">
+        <div class="ai-header" onclick="document.getElementById('ai-panel').classList.toggle('collapsed')">
+            <span class="ai-icon">🤖</span>
+            <span class="ai-title">AI Assistant</span>
+            <button id="ai-voice-btn" class="btn-icon ai-voice" title="Voice Commands" onclick="event.stopPropagation()">🎤</button>
+            <span class="ai-toggle">▼</span>
+        </div>
+        <div class="ai-body">
+            <div id="ai-output" class="ai-output">
+                <div class="chat-message chat-assistant">
+                    👋 Hi! I'm your CNC AI assistant. Try:
+                    <ul>
+                        <li>"jog X 10" - move axis</li>
+                        <li>"what feeds for aluminum with 6mm"</li>
+                        <li>"analyze gcode"</li>
+                        <li>"help" for more</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="ai-input-row">
+                <input type="text" id="ai-input" placeholder="Ask me anything..." autocomplete="off">
+                <button class="btn btn-primary btn-send" onclick="app.sendAIMessage()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <!-- Scripts -->
+    <!-- Three.js for 3D visualization (optional, fallback to 2D canvas if unavailable) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+    <script src="gcode-parser.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="visualizer-3d.js"></script>
+    <script src="grblhal.js"></script>
+    <script src="ai-assistant.js"></script>
+    <script src="macros.js"></script>
+    <script src="probe-wizard.js"></script>
+    <script src="monitoring.js"></script>
+    <script src="job-queue.js"></script>
+    <script src="surface-scanner.js"></script>
+    <script src="vector-importer.js"></script>
+    <script src="parametric-macros.js"></script>
+    <script src="feeds-speeds.js"></script>
+    <script src="gcode-simulator.js"></script>
+    <script src="job-recovery.js"></script>
+    <script src="settings-manager.js"></script>
+    <script src="trinamic-config.js"></script>
+    <script src="conversational-gcode.js"></script>
+    <script src="sd-card.js"></script>
+    <script src="chatter-detection.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

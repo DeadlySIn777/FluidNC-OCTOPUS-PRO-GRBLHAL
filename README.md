@@ -155,9 +155,31 @@ pio run -e btt_octopus_pro_v11_f446 -t upload
 
 ---
 
-## 🌐 Web Interface
+## 🌐 FluidCNC Web Controller
 
-This firmware works with [FluidCNC Web UI](https://github.com/user/fluidcnc) for browser-based CNC control.
+This repository includes a **complete web-based CNC controller** with advanced features:
+
+### Features
+- 🎮 **Responsive Jog Controls** - Touch-friendly jogging with variable step sizes
+- 📊 **Real-time 3D Visualization** - See your toolpath as it cuts
+- 🤖 **AI G-Code Assistant** - Natural language to G-code conversion
+- 📈 **Feeds & Speeds Calculator** - Material-aware cutting parameters
+- 🔧 **Chatter Detection System** - ESP32-based vibration monitoring with auto feed reduction
+
+### Documentation
+- **Quick Start Guide**: [fluidcnc/chatter-esp32/docs/QUICK_START.md](fluidcnc/chatter-esp32/docs/QUICK_START.md) (English & Español)
+- **Wiring Guide**: [fluidcnc/chatter-esp32/docs/wiring.html](fluidcnc/chatter-esp32/docs/wiring.html)
+- **ESP32 Firmware**: [fluidcnc/chatter-esp32/README.md](fluidcnc/chatter-esp32/README.md)
+
+### Chatter Detection Hardware (~$30)
+| Component | Purpose |
+|-----------|---------|
+| ESP32 DevKit 38-pin | Main processor |
+| MPU-6050 | Vibration sensor |
+| INMP441 | Acoustic sensor |
+| ACS712-30A | Current sensor |
+| GC9A01 1.28" TFT | Status display |
+| MAX485 *(optional)* | VFD Modbus telemetry |
 
 ---
 

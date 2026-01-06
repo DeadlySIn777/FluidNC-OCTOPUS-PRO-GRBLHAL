@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FluidCNC Parser Smoke Test</title>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #0b1020; color: #e8eefc; }
+    header { padding: 12px 16px; border-bottom: 1px solid #223056; }
+    main { display: grid; grid-template-columns: 520px 1fr; gap: 12px; padding: 12px; }
+    .card { background: #0f1833; border: 1px solid #223056; border-radius: 10px; overflow: hidden; }
+    .card h2 { margin: 0; padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #223056; }
+    .card .content { padding: 10px 12px; }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.35; }
+    textarea { width: 100%; height: 240px; background: #0b1020; color: #e8eefc; border: 1px solid #223056; border-radius: 8px; padding: 10px; box-sizing: border-box; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    button { background: #223056; color: #e8eefc; border: 1px solid #2f4172; border-radius: 8px; padding: 8px 10px; cursor: pointer; }
+    button:hover { background: #2a3a6b; }
+    .row { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+    .muted { color: #b8c2e0; font-size: 12px; }
+    #vizWrap { height: 520px; }
+    #viz { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <div><b>FluidCNC</b> — parser + 2D visualizer smoke test (no Node required)</div>
+    <div class="muted">Verifies segment schema (rapid/cut/arc), arc metadata, and G20/G21 scaling.</div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Sample G-code</h2>
+      <div class="content">
+        <textarea id="gcode"></textarea>
+        <div class="row">
+          <button id="run">Parse + Render</button>
+          <span class="muted" id="status"></span>
+        </div>
+        <div class="row">
+          <button id="loadDefault">Load default sample</button>
+          <button id="loadInches">Load inches (G20) sample</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2D Visualizer + Parser Output</h2>
+      <div class="content">
+        <div id="vizWrap" class="card" style="margin-bottom: 12px;">
+          <h2 style="border-bottom: 1px solid #223056;">Canvas toolpath</h2>
+          <div class="content" style="padding:0; height: 470px;">
+            <canvas id="viz"></canvas>
+          </div>
+        </div>
+        <pre id="out"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script src="../gcode-parser.js"></script>
+  <script src="../visualizer.js"></script>
+  <script>
+    const DEFAULT_SAMPLE = `
+G21
+G90
+G0 X0 Y0 Z5
+G1 Z-1 F300
+G1 X30 Y0 F600
+G2 X30 Y30 I0 J15
+G1 X0 Y30
+G3 X0 Y0 I-15 J0
+G0 Z5
+`;
+
+    const INCHES_SAMPLE = `
+G20
+G90
+G0 X0 Y0 Z0.2
+G1 Z-0.04 F12
+G1 X1.0 Y0.0 F24
+G2 X1.0 Y1.0 I0.0 J0.5
+G1 X0.0 Y1.0
+G3 X0.0 Y0.0 I-0.5 J0.0
+G0 Z0.2
+`;
+
+    const gcodeEl = document.getElementById('gcode');
+    const outEl = document.getElementById('out');
+    const statusEl = document.getElementById('status');
+
+    const viz = new GCodeVisualizer({ canvas: document.getElementById('viz') });
+
+    function validateResult(result) {
+      const segments = result?.toolPath || [];
+      const typesOk = segments.every(s => ['rapid','cut','arc'].includes(s.type));
+      const arcOk = segments.filter(s => s.type === 'arc').every(s => s.center && Number.isFinite(s.center.x) && Number.isFinite(s.center.y) && typeof s.clockwise === 'boolean');
+      return { typesOk, arcOk, segmentCount: segments.length };
+    }
+
+    function run() {
+      try {
+        const gcode = gcodeEl.value || '';
+        const result = viz.loadGCode(gcode);
+        const validation = validateResult(result);
+
+        const preview = (result.toolPath || []).slice(0, 12);
+        outEl.textContent = JSON.stringify({
+          validation,
+          bounds: result.bounds,
+          stats: result.stats,
+          firstSegments: preview
+        }, null, 2);
+
+        statusEl.textContent = `Segments: ${validation.segmentCount} | typesOk=${validation.typesOk} | arcsOk=${validation.arcOk}`;
+      } catch (e) {
+        statusEl.textContent = 'Error: ' + (e && e.message ? e.message : String(e));
+        outEl.textContent = (e && e.stack) ? e.stack : String(e);
+      }
+    }
+
+    document.getElementById('run').addEventListener('click', run);
+    document.getElementById('loadDefault').addEventListener('click', () => { gcodeEl.value = DEFAULT_SAMPLE.trim(); run(); });
+    document.getElementById('loadInches').addEventListener('click', () => { gcodeEl.value = INCHES_SAMPLE.trim(); run(); });
+
+    // initial load
+    gcodeEl.value = DEFAULT_SAMPLE.trim();
+    run();
+  </script>
+</body>
+</html>
