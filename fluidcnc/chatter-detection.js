@@ -173,6 +173,10 @@ class ChatterDetection {
                 adcOk: true,        // Current sensor OK
                 adcErr: 0,
                 adcErrStr: 'OK',
+                vfdOk: undefined,   // VFD OK (undefined = not enabled)
+                vfdErr: 0,
+                vfdErrStr: 'OK',
+                vfdFault: null,     // VFD fault string if any
                 allOk: true         // All sensors OK
             }
         };
@@ -1831,6 +1835,24 @@ class ChatterDetection {
             adcEl.style.color = adcOk ? '#44ff44' : '#ff4444';
         }
         
+        // VFD (Modbus RS-485) - only show if enabled
+        const vfdRow = document.getElementById('diag-vfd-row');
+        const vfdEl = document.getElementById('diag-sensor-vfd');
+        if (vfdRow && sensors.vfdOk !== undefined) {
+            vfdRow.style.display = 'flex';
+            if (vfdEl) {
+                const vfdOk = sensors.vfd === 'OK' || sensors.vfdCode === 0;
+                let vfdStatus = vfdOk ? '✓ OK' : `✗ ${sensors.vfd || 'Error'}`;
+                if (sensors.vfdFault) {
+                    vfdStatus += ` (${sensors.vfdFault})`;
+                }
+                vfdEl.textContent = vfdStatus;
+                vfdEl.style.color = vfdOk ? '#44ff44' : '#ff4444';
+            }
+        } else if (vfdRow) {
+            vfdRow.style.display = 'none';
+        }
+        
         // All sensors summary
         const allEl = document.getElementById('diag-sensor-all');
         if (allEl) {
@@ -1853,6 +1875,13 @@ class ChatterDetection {
                 }
                 if (sensors.adcCode && sensors.adcCode !== 0) {
                     troubleshoot.push(`ACS712: ${sensors.adc} - Check ADC wiring (OUT→GPIO34) and power (5V)`);
+                }
+                if (sensors.vfdCode && sensors.vfdCode !== 0) {
+                    let vfdTip = `VFD: ${sensors.vfd} - Check RS-485 wiring (TX→GPIO13, RX→GPIO14, DE→GPIO27)`;
+                    if (sensors.vfdFault) {
+                        vfdTip += ` | Fault: ${sensors.vfdFault}`;
+                    }
+                    troubleshoot.push(vfdTip);
                 }
                 errorText.innerHTML = troubleshoot.join('<br>');
             } else {
@@ -2278,6 +2307,10 @@ class ChatterDetection {
                             <div class="diag-item">
                                 <span class="label">ACS712 (Current)</span>
                                 <span class="value" id="diag-sensor-adc" style="color:${this.state.sensors?.adcOk !== false ? '#44ff44' : '#ff4444'}">${this.state.sensors?.adcOk !== false ? '✓ OK' : '✗ ' + (this.state.sensors?.adcErrStr || 'Error')}</span>
+                            </div>
+                            <div class="diag-item" id="diag-vfd-row" style="display:${this.state.sensors?.vfdOk !== undefined ? 'flex' : 'none'}">
+                                <span class="label">VFD (Modbus)</span>
+                                <span class="value" id="diag-sensor-vfd" style="color:${this.state.sensors?.vfdOk !== false ? '#44ff44' : '#ff4444'}">${this.state.sensors?.vfdOk !== false ? '✓ OK' : '✗ ' + (this.state.sensors?.vfdErrStr || 'Error')}</span>
                             </div>
                             <div class="diag-item">
                                 <span class="label">All Sensors</span>

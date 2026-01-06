@@ -543,6 +543,21 @@ The ACS712 current sensor ADC is monitored for:
 | ACS712 | OUT_OF_RANGE (low) | Check 5V power to sensor, ADC wiring |
 | ACS712 | OUT_OF_RANGE (high) | Check voltage divider, may be missing |
 | ACS712 | STUCK | Sensor may be bypassed or wiring issue |
+| VFD | NOT_FOUND | Check RS-485 wiring (TX=13, RX=14, DE=27), verify VFD baud (PD165) |
+| VFD | TIMEOUT | No Modbus response - check slave address (PD164=1), A/B polarity |
+| VFD | INVALID_DATA | VFD fault active - check fault panel for specific error |
+
+### VFD Fault Codes
+
+When VFD reports a fault, it appears in the `vfdFault` field:
+
+| Fault | Code | Meaning | Fix |
+|-------|------|---------|-----|
+| OC | 1 | Overcurrent | Reduce cut depth, check spindle |
+| OV | 2 | Overvoltage | Check input power, braking resistor |
+| UV | 3 | Undervoltage | Check input power stability |
+| OH | 4 | Overheat | Improve VFD ventilation, reduce duty |
+| OL | 5 | Overload | Reduce cut load, check spindle |
 
 ---
 

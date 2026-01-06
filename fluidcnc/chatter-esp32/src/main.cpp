@@ -1704,7 +1704,16 @@ void sendWebSocketUpdate() {
     sensors["adcOk"] = health.adcOk;
     sensors["adcErr"] = (int)health.adcError;
     sensors["adcErrStr"] = getSensorErrorString(health.adcError);
-    sensors["allOk"] = health.mpuOk && health.i2sOk && health.adcOk;
+    // VFD health (only if enabled)
+    if (vfd.state.enabled) {
+        sensors["vfdOk"] = health.vfdOk;
+        sensors["vfdErr"] = (int)health.vfdError;
+        sensors["vfdErrStr"] = getSensorErrorString(health.vfdError);
+        if (vfd.state.faultCode > 0) {
+            sensors["vfdFault"] = vfd.state.faultString;
+        }
+    }
+    sensors["allOk"] = health.mpuOk && health.i2sOk && health.adcOk && (!vfd.state.enabled || health.vfdOk);
     
     String output;
     serializeJson(doc, output);
@@ -1972,7 +1981,15 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
             sensors["i2sCode"] = (int)health.i2sError;
             sensors["adc"] = health.adcOk ? "OK" : getSensorErrorString(health.adcError);
             sensors["adcCode"] = (int)health.adcError;
-            sensors["allOk"] = health.mpuOk && health.i2sOk && health.adcOk;
+            // VFD health (only if enabled)
+            if (vfd.state.enabled) {
+                sensors["vfd"] = health.vfdOk ? "OK" : getSensorErrorString(health.vfdError);
+                sensors["vfdCode"] = (int)health.vfdError;
+                if (vfd.state.faultCode > 0) {
+                    sensors["vfdFault"] = vfd.state.faultString;
+                }
+            }
+            sensors["allOk"] = health.mpuOk && health.i2sOk && health.adcOk && (!vfd.state.enabled || health.vfdOk);
             
             String out;
             serializeJson(diag, out);
@@ -2944,6 +2961,22 @@ void loop() {
     
     // Poll VFD Modbus telemetry (if enabled)
     vfd.poll();
+    
+    // Sync VFD health to SystemHealth struct
+    if (vfd.state.enabled) {
+        health.vfdOk = vfd.state.connected;
+        if (!vfd.state.connected) {
+            if (vfd.state.consecutiveFails > 5) {
+                health.vfdError = SENSOR_TIMEOUT;  // No response from VFD
+            } else {
+                health.vfdError = SENSOR_NOT_FOUND;  // Not initialized or first fails
+            }
+        } else if (vfd.state.faultCode > 0) {
+            health.vfdError = SENSOR_INVALID_DATA;  // VFD fault active
+        } else {
+            health.vfdError = SENSOR_OK;
+        }
+    }
     
     // Use VFD RPM if available (more accurate than grblHAL commanded RPM)
     if (vfd.state.enabled && vfd.state.connected && vfd.state.rpm > 0) {
