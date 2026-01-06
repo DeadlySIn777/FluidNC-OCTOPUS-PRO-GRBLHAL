@@ -48,16 +48,61 @@ VFDModbus vfd;
 // ============================================================================
 // SYSTEM HEALTH MONITORING
 // ============================================================================
+
+// Sensor error codes (for troubleshooting)
+enum SensorError {
+    SENSOR_OK = 0,
+    SENSOR_NOT_FOUND = 1,
+    SENSOR_TIMEOUT = 2,
+    SENSOR_INVALID_DATA = 3,
+    SENSOR_STUCK = 4,        // Same value for too long
+    SENSOR_OUT_OF_RANGE = 5
+};
+
+const char* getSensorErrorString(SensorError err) {
+    switch(err) {
+        case SENSOR_OK: return "OK";
+        case SENSOR_NOT_FOUND: return "Not found - check wiring";
+        case SENSOR_TIMEOUT: return "Timeout - no response";
+        case SENSOR_INVALID_DATA: return "Invalid data received";
+        case SENSOR_STUCK: return "Stuck - same value too long";
+        case SENSOR_OUT_OF_RANGE: return "Out of range";
+        default: return "Unknown error";
+    }
+}
+
 struct SystemHealth {
+    // Sensor status
     bool mpuOk = false;
     bool i2sOk = false;
     bool adcOk = false;
     bool wifiOk = false;
+    bool vfdOk = false;
+    
+    // Error codes (0 = OK)
+    SensorError mpuError = SENSOR_NOT_FOUND;
+    SensorError i2sError = SENSOR_NOT_FOUND;
+    SensorError adcError = SENSOR_NOT_FOUND;
+    SensorError vfdError = SENSOR_NOT_FOUND;
+    
+    // Last read timestamps (for timeout detection)
     unsigned long lastMpuRead = 0;
     unsigned long lastI2sRead = 0;
     unsigned long lastAdcRead = 0;
     unsigned long lastWifiCheck = 0;
+    
+    // Stuck detection (last values)
+    float lastMpuValue = 0;
+    int mpuStuckCount = 0;
+    float lastI2sValue = 0;
+    int i2sStuckCount = 0;
+    float lastAdcValue = 0;
+    int adcStuckCount = 0;
+    
+    // WiFi
     int wifiReconnectAttempts = 0;
+    
+    // System stats
     unsigned long uptime = 0;
     float cpuTemp = 0;
     uint32_t freeHeap = 0;
@@ -65,6 +110,20 @@ struct SystemHealth {
     unsigned long loopCount = 0;
     float loopsPerSecond = 0;
 } health;
+
+// Check if a sensor value is stuck (same value for too many reads)
+bool checkSensorStuck(float current, float& last, int& stuckCount, float tolerance = 0.001f) {
+    if (abs(current - last) < tolerance) {
+        stuckCount++;
+        if (stuckCount > 100) {  // ~5 seconds at 20Hz
+            return true;  // Stuck!
+        }
+    } else {
+        stuckCount = 0;
+    }
+    last = current;
+    return false;
+}
 
 // ============================================================================
 // TFT DISPLAY CONFIGURATION - 1.28" Round GC9A01 240x240
@@ -777,32 +836,83 @@ void readAudioSamples() {
     int32_t samples[AUDIO_FFT_SIZE];
     size_t bytesRead;
     
-    i2s_read(I2S_NUM_0, samples, sizeof(samples), &bytesRead, portMAX_DELAY);
+    esp_err_t err = i2s_read(I2S_NUM_0, samples, sizeof(samples), &bytesRead, pdMS_TO_TICKS(100));
     
+    if (err != ESP_OK || bytesRead == 0) {
+        health.i2sOk = false;
+        health.i2sError = SENSOR_TIMEOUT;
+        return;
+    }
+    
+    float sumAbs = 0;
     for (int i = 0; i < AUDIO_FFT_SIZE; i++) {
         // Convert 32-bit I2S to normalized double
         audioReal[i] = (double)(samples[i] >> 14) / 32768.0;
         audioImag[i] = 0;
+        sumAbs += abs(audioReal[i]);
+    }
+    
+    // Check for stuck/invalid data
+    float avgLevel = sumAbs / AUDIO_FFT_SIZE;
+    if (checkSensorStuck(avgLevel, health.lastI2sValue, health.i2sStuckCount, 0.0001f)) {
+        health.i2sOk = false;
+        health.i2sError = SENSOR_STUCK;
+    } else {
+        health.i2sOk = true;
+        health.i2sError = SENSOR_OK;
+        health.lastI2sRead = millis();
     }
 }
 
 void readAccelSamples() {
+    bool gotData = false;
+    float sumMag = 0;
+    
     for (int i = 0; i < ACCEL_FFT_SIZE; i++) {
         int16_t ax, ay, az;
         mpu.getAcceleration(&ax, &ay, &az);
+        
+        // Check if MPU returned valid data (not all zeros or all max)
+        if (ax != 0 || ay != 0 || az != 0) {
+            gotData = true;
+        }
         
         // Compute magnitude
         float magnitude = sqrt((float)ax*ax + (float)ay*ay + (float)az*az);
         accelReal[i] = magnitude / 32768.0;  // Normalize
         accelImag[i] = 0;
+        sumMag += magnitude;
         
         delayMicroseconds(1000000 / ACCEL_SAMPLE_RATE);
+    }
+    
+    if (!gotData) {
+        health.mpuOk = false;
+        health.mpuError = SENSOR_INVALID_DATA;
+    } else {
+        float avgMag = sumMag / ACCEL_FFT_SIZE;
+        if (checkSensorStuck(avgMag, health.lastMpuValue, health.mpuStuckCount, 10.0f)) {
+            health.mpuOk = false;
+            health.mpuError = SENSOR_STUCK;
+        } else {
+            health.mpuOk = true;
+            health.mpuError = SENSOR_OK;
+            health.lastMpuRead = millis();
+        }
     }
 }
 
 void readCurrentSamples() {
+    float sumVal = 0;
+    bool inRange = true;
+    
     for (int i = 0; i < CURRENT_FFT_SIZE; i++) {
         int adcValue = analogRead(CURRENT_ADC_PIN);
+        
+        // Check for out of range (stuck at 0 or max)
+        if (adcValue < 10 || adcValue > 4085) {
+            inRange = false;
+        }
         
         // Convert ADC reading to current using configured slope/offset.
         // NOTE: The firmware rectifies (abs) and then RMS-es the samples; this is meant to track load changes,
@@ -812,6 +922,7 @@ void readCurrentSamples() {
         
         currentReal[i] = abs(current);  // Rectify AC
         currentImag[i] = 0;
+        sumVal += currentReal[i];
         
         delayMicroseconds(1000000 / CURRENT_SAMPLE_RATE);
     }
@@ -822,6 +933,20 @@ void readCurrentSamples() {
         sumSq += currentReal[i] * currentReal[i];
     }
     state.currentAmps = sqrt(sumSq / CURRENT_FFT_SIZE);
+    
+    // Check sensor health
+    float avgCurrent = sumVal / CURRENT_FFT_SIZE;
+    if (!inRange) {
+        health.adcOk = false;
+        health.adcError = SENSOR_OUT_OF_RANGE;
+    } else if (checkSensorStuck(avgCurrent, health.lastAdcValue, health.adcStuckCount, 0.01f)) {
+        health.adcOk = false;
+        health.adcError = SENSOR_STUCK;
+    } else {
+        health.adcOk = true;
+        health.adcError = SENSOR_OK;
+        health.lastAdcRead = millis();
+    }
     
     // Calibration mode
     if (state.calibrating) {
@@ -1568,6 +1693,19 @@ void sendWebSocketUpdate() {
         }
     }
     
+    // Sensor health status (for UI diagnostics)
+    JsonObject sensors = doc.createNestedObject("sensors");
+    sensors["mpuOk"] = health.mpuOk;
+    sensors["mpuErr"] = (int)health.mpuError;
+    sensors["mpuErrStr"] = getSensorErrorString(health.mpuError);
+    sensors["i2sOk"] = health.i2sOk;
+    sensors["i2sErr"] = (int)health.i2sError;
+    sensors["i2sErrStr"] = getSensorErrorString(health.i2sError);
+    sensors["adcOk"] = health.adcOk;
+    sensors["adcErr"] = (int)health.adcError;
+    sensors["adcErrStr"] = getSensorErrorString(health.adcError);
+    sensors["allOk"] = health.mpuOk && health.i2sOk && health.adcOk;
+    
     String output;
     serializeJson(doc, output);
     ws.textAll(output);
@@ -1825,6 +1963,16 @@ void onWsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client,
             diag["chatterEvents"] = state.totalChatterEvents;
             diag["cuttingTime"] = state.totalCuttingTime / 1000;
             diag["maxScore"] = state.maxChatterScore;
+            
+            // Sensor health status
+            JsonObject sensors = diag.createNestedObject("sensors");
+            sensors["mpu"] = health.mpuOk ? "OK" : getSensorErrorString(health.mpuError);
+            sensors["mpuCode"] = (int)health.mpuError;
+            sensors["i2s"] = health.i2sOk ? "OK" : getSensorErrorString(health.i2sError);
+            sensors["i2sCode"] = (int)health.i2sError;
+            sensors["adc"] = health.adcOk ? "OK" : getSensorErrorString(health.adcError);
+            sensors["adcCode"] = (int)health.adcError;
+            sensors["allOk"] = health.mpuOk && health.i2sOk && health.adcOk;
             
             String out;
             serializeJson(diag, out);

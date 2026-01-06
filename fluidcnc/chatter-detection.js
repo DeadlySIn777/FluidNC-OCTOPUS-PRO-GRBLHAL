@@ -160,6 +160,20 @@ class ChatterDetection {
                 dcv: 0,             // DC bus voltage (V)
                 fault: 0,           // Fault code (0 = none)
                 faultStr: ''        // Human-readable fault
+            },
+            
+            // Sensor health status (NEW!)
+            sensors: {
+                mpuOk: true,        // Accelerometer OK
+                mpuErr: 0,          // Error code
+                mpuErrStr: 'OK',    // Error string
+                i2sOk: true,        // Microphone OK
+                i2sErr: 0,
+                i2sErrStr: 'OK',
+                adcOk: true,        // Current sensor OK
+                adcErr: 0,
+                adcErrStr: 'OK',
+                allOk: true         // All sensors OK
             }
         };
         
@@ -1791,6 +1805,62 @@ class ChatterDetection {
         }
     }
     
+    // Update sensor health display in diagnostics panel
+    updateSensorHealthUI(sensors) {
+        // MPU-6050 (Accelerometer)
+        const mpuEl = document.getElementById('diag-sensor-mpu');
+        if (mpuEl) {
+            const mpuOk = sensors.mpu === 'OK' || sensors.mpuCode === 0;
+            mpuEl.textContent = mpuOk ? '✓ OK' : `✗ ${sensors.mpu || 'Error'}`;
+            mpuEl.style.color = mpuOk ? '#44ff44' : '#ff4444';
+        }
+        
+        // INMP441 (Microphone)
+        const i2sEl = document.getElementById('diag-sensor-i2s');
+        if (i2sEl) {
+            const i2sOk = sensors.i2s === 'OK' || sensors.i2sCode === 0;
+            i2sEl.textContent = i2sOk ? '✓ OK' : `✗ ${sensors.i2s || 'Error'}`;
+            i2sEl.style.color = i2sOk ? '#44ff44' : '#ff4444';
+        }
+        
+        // ACS712 (Current sensor)
+        const adcEl = document.getElementById('diag-sensor-adc');
+        if (adcEl) {
+            const adcOk = sensors.adc === 'OK' || sensors.adcCode === 0;
+            adcEl.textContent = adcOk ? '✓ OK' : `✗ ${sensors.adc || 'Error'}`;
+            adcEl.style.color = adcOk ? '#44ff44' : '#ff4444';
+        }
+        
+        // All sensors summary
+        const allEl = document.getElementById('diag-sensor-all');
+        if (allEl) {
+            allEl.textContent = sensors.allOk ? '✓ All OK' : '⚠️ Issues Detected';
+            allEl.style.color = sensors.allOk ? '#44ff44' : '#ff4444';
+        }
+        
+        // Error detail panel
+        const errorDetail = document.getElementById('sensor-error-detail');
+        const errorText = document.getElementById('sensor-error-text');
+        if (errorDetail && errorText) {
+            if (!sensors.allOk) {
+                errorDetail.style.display = 'block';
+                let troubleshoot = [];
+                if (sensors.mpuCode && sensors.mpuCode !== 0) {
+                    troubleshoot.push(`MPU-6050: ${sensors.mpu} - Check I2C wiring (SDA→GPIO21, SCL→GPIO22)`);
+                }
+                if (sensors.i2sCode && sensors.i2sCode !== 0) {
+                    troubleshoot.push(`INMP441: ${sensors.i2s} - Check I2S wiring (SD→GPIO32, WS→GPIO25, SCK→GPIO26)`);
+                }
+                if (sensors.adcCode && sensors.adcCode !== 0) {
+                    troubleshoot.push(`ACS712: ${sensors.adc} - Check ADC wiring (OUT→GPIO34) and power (5V)`);
+                }
+                errorText.innerHTML = troubleshoot.join('<br>');
+            } else {
+                errorDetail.style.display = 'none';
+            }
+        }
+    }
+    
     // Draw the real-time graph with zones and enhanced visualization
     drawGraph() {
         const canvas = document.getElementById('chatter-graph');
@@ -2195,6 +2265,32 @@ class ChatterDetection {
                     </div>
                     
                     <div class="diag-section">
+                        <h4>🔌 Sensor Health</h4>
+                        <div class="diag-grid" id="diag-sensors">
+                            <div class="diag-item">
+                                <span class="label">MPU-6050 (Accel)</span>
+                                <span class="value" id="diag-sensor-mpu" style="color:${this.state.sensors?.mpuOk !== false ? '#44ff44' : '#ff4444'}">${this.state.sensors?.mpuOk !== false ? '✓ OK' : '✗ ' + (this.state.sensors?.mpuErrStr || 'Error')}</span>
+                            </div>
+                            <div class="diag-item">
+                                <span class="label">INMP441 (Mic)</span>
+                                <span class="value" id="diag-sensor-i2s" style="color:${this.state.sensors?.i2sOk !== false ? '#44ff44' : '#ff4444'}">${this.state.sensors?.i2sOk !== false ? '✓ OK' : '✗ ' + (this.state.sensors?.i2sErrStr || 'Error')}</span>
+                            </div>
+                            <div class="diag-item">
+                                <span class="label">ACS712 (Current)</span>
+                                <span class="value" id="diag-sensor-adc" style="color:${this.state.sensors?.adcOk !== false ? '#44ff44' : '#ff4444'}">${this.state.sensors?.adcOk !== false ? '✓ OK' : '✗ ' + (this.state.sensors?.adcErrStr || 'Error')}</span>
+                            </div>
+                            <div class="diag-item">
+                                <span class="label">All Sensors</span>
+                                <span class="value" id="diag-sensor-all" style="color:${this.state.sensors?.allOk !== false ? '#44ff44' : '#ff4444'}">${this.state.sensors?.allOk !== false ? '✓ All OK' : '⚠️ Issues'}</span>
+                            </div>
+                        </div>
+                        <div id="sensor-error-detail" style="display:${this.state.sensors?.allOk === false ? 'block' : 'none'};margin-top:8px;padding:8px;background:rgba(255,68,68,0.2);border-radius:4px;font-size:11px;">
+                            <b>Troubleshooting:</b><br>
+                            <span id="sensor-error-text">Check wiring and connections.</span>
+                        </div>
+                    </div>
+                    
+                    <div class="diag-section">
                         <h4>Detection Settings</h4>
                         <div class="diag-grid">
                             <div class="diag-item"><span class="label">Material</span><span class="value" id="diag-material">${this.state.material}</span></div>
@@ -2364,6 +2460,11 @@ class ChatterDetection {
                 if (ar) ar.textContent = data.audioRange;
                 if (vr) vr.textContent = data.accelRange;
                 if (tpf) tpf.textContent = `${data.toothPassFreq} Hz`;
+                
+                // Update sensor health from diagnostic data
+                if (data.sensors) {
+                    this.updateSensorHealthUI(data.sensors);
+                }
                 return;
             }
 

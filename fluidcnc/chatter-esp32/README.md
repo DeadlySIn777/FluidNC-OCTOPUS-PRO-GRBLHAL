@@ -449,11 +449,100 @@ Boot sequence shows initialization progress and WiFi connection status.
 
 ## Calibration
 
+### Quick Start Calibration
+
 1. **Auto-Calibrate Idle Current**: Run spindle at operating RPM with no cut, click "AutoCal"
 2. **Learn Noise Floor**: With spindle running, click "Learn" (10 seconds)
 3. **Material Selection**: Choose correct material profile for proper frequency ranges
 4. **Test Cuts**: Make test cuts, observe scores, adjust threshold if needed
 5. **Save Settings**: Click "Save" to persist to flash (survives reboot)
+
+### How Learning Works (AI Adaptive Thresholds)
+
+The **"Learn"** button triggers a 10-second noise floor learning period:
+
+1. System collects ~200 samples over 10 seconds
+2. Calculates average "combined score" during this period
+3. Sets **noiseFloor** = average × 1.5 (with 0.05 minimum)
+4. Sets **adaptiveThreshold** = noiseFloor + 0.3
+
+This allows the system to **adapt to YOUR machine's specific vibration signature**. Different machines have different baseline noise levels due to:
+- Spindle bearings and motor characteristics
+- Frame rigidity and resonances
+- Mounting of sensors
+- Environmental vibration (floors, other machines)
+
+**When to re-learn:**
+- After moving sensors
+- After mechanical changes (new spindle, bearings, etc.)
+- If false positives increase
+- When switching between significantly different operations
+
+### How Auto-Calibration Works
+
+The **"AutoCal"** button performs current sensor calibration:
+
+1. **Requires spindle running at operating RPM with NO material contact**
+2. Samples current for 5 seconds
+3. Sets **idleCurrent** = measured average
+4. Sets **cuttingThreshold** = idleCurrent × 1.5
+5. Sets **baselineCurrent** = idleCurrent × 2.0
+
+This calibration is critical for:
+- Accurate cutting detection (spindle loaded vs. air cutting)
+- Tool breakage detection (sudden current drop)
+- Efficiency calculations
+- VFD power monitoring
+
+**Tip:** Run AutoCal after each VFD parameter change or spindle maintenance.
+
+---
+
+## Sensor Health Monitoring
+
+The system continuously monitors all sensors and reports specific error codes when issues occur.
+
+### Sensor Error Codes
+
+| Code | Name | Description | Common Cause |
+|------|------|-------------|--------------|
+| 0 | OK | Sensor working normally | - |
+| 1 | NOT_FOUND | Sensor not detected during init | Wiring issue, sensor not connected |
+| 2 | TIMEOUT | Sensor read timed out | I2S buffer issue, bad connection |
+| 3 | INVALID_DATA | Data received is invalid | Electrical noise, damaged sensor |
+| 4 | STUCK | Same value for 5+ seconds | Sensor frozen, driver issue |
+| 5 | OUT_OF_RANGE | Values at ADC limits | Wiring issue (shorted or open) |
+
+### Stuck Detection
+
+Each sensor's last 100 readings are checked for stuck values:
+- If value doesn't change more than tolerance for ~5 seconds, marked as STUCK
+- Audio/Accel tolerance: 1.0
+- ADC tolerance: 2 counts
+
+### Out of Range Detection (ADC)
+
+The ACS712 current sensor ADC is monitored for:
+- **Low extreme**: values 0-10 → likely shorted or sensor not powered
+- **High extreme**: values 4085-4095 → likely open circuit or sensor saturated
+
+### Viewing Sensor Health
+
+1. **WebSocket JSON**: Every update includes `sensors` object with status
+2. **Diagnostics Modal** (Alt+D): Shows per-sensor status with troubleshooting tips
+3. **TFT Display**: Sensor bars show A/V/I status during boot
+
+### Sensor Troubleshooting
+
+| Sensor | Error | Fix |
+|--------|-------|-----|
+| MPU-6050 | NOT_FOUND | Check I2C wiring (SDA=21, SCL=22), verify 3.3V power |
+| MPU-6050 | STUCK | Restart ESP32, check I2C pull-ups (4.7kΩ) |
+| INMP441 | NOT_FOUND | Check I2S wiring (BCK=26, WS=25, SD=33), verify 3.3V |
+| INMP441 | TIMEOUT | Restart ESP32, check L/R pin (GND for left channel) |
+| ACS712 | OUT_OF_RANGE (low) | Check 5V power to sensor, ADC wiring |
+| ACS712 | OUT_OF_RANGE (high) | Check voltage divider, may be missing |
+| ACS712 | STUCK | Sensor may be bypassed or wiring issue |
 
 ---
 
