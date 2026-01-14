@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Cableado CNC - BTT Octopus Pro + grblHAL</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-code: #1c2128;
+            --accent: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --border: #30363d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, var(--accent), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1em;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .badge-blue { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .badge-green { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        .badge-red { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        
+        nav {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        nav h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        nav ul {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            list-style: none;
+        }
+        
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: block;
+            transition: all 0.2s;
+        }
+        
+        nav a:hover {
+            background: var(--bg-code);
+            color: var(--accent);
+        }
+        
+        section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        section h2 {
+            color: var(--accent);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        section h2 .icon {
+            font-size: 1.3em;
+        }
+        
+        h3 {
+            color: var(--accent-green);
+            margin: 25px 0 15px 0;
+            font-size: 1.2em;
+        }
+        
+        h4 {
+            color: var(--accent-yellow);
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+        
+        .pin-x { color: #ff6b6b; font-weight: 600; }
+        .pin-y { color: #4ecdc4; font-weight: 600; }
+        .pin-z { color: #45b7d1; font-weight: 600; }
+        
+        code {
+            background: var(--bg-code);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: var(--accent-green);
+        }
+        
+        pre {
+            background: var(--bg-code);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+        }
+        
+        pre code {
+            padding: 0;
+            background: none;
+        }
+        
+        .wiring-diagram {
+            background: #0a0a0f;
+            padding: 25px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+            overflow-x: auto;
+            border: 2px solid var(--border);
+            margin: 20px 0;
+            white-space: pre;
+        }
+        
+        .warning-box {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid var(--accent-red);
+            border-left: 4px solid var(--accent-red);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning-box h4 {
+            color: var(--accent-red);
+            margin-top: 0;
+        }
+        
+        .info-box {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid var(--accent);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .info-box h4 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+        
+        .success-box {
+            background: rgba(63, 185, 80, 0.1);
+            border: 1px solid var(--accent-green);
+            border-left: 4px solid var(--accent-green);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .success-box h4 {
+            color: var(--accent-green);
+            margin-top: 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8em; }
+            section { padding: 20px; }
+            .wiring-diagram { font-size: 0.75em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 Guía de Cableado CNC</h1>
+            <p>BTT Octopus Pro v1.1 + grblHAL + FluidCNC UI + Sistema ML</p>
+            <div style="margin-top: 15px;">
+                <span class="badge badge-blue">STM32F429</span>
+                <span class="badge badge-green">grblHAL</span>
+                <span class="badge badge-yellow">RapidChange ATC</span>
+                <span class="badge badge-red">5 Herramientas</span>
+                <span class="badge badge-blue">🧠 Sistema ML</span>
+            </div>
+        </header>
+
+        <nav>
+            <h3>📑 Navegación Rápida</h3>
+            <ul>
+                <li><a href="#pines">📍 Asignación de Pines</a></li>
+                <li><a href="#motores">⚡ Motores Paso a Paso</a></li>
+                <li><a href="#husillo">🌀 Husillo y VFD</a></li>
+                <li><a href="#sondas">📏 Sondas y Palpador</a></li>
+                <li><a href="#auxiliares">🔌 Salidas Auxiliares</a></li>
+                <li><a href="#sensores">🎯 Sensores ESP32</a></li>
+                <li><a href="#seguridad">🛑 Parada de Emergencia</a></li>
+                <li><a href="#grblhal">⚙️ Configuración grblHAL</a></li>
+            </ul>
+        </nav>
+
+        <!-- Asignación de Pines -->
+        <section id="pines">
+            <h2><span class="icon">📍</span> Asignación de Pines</h2>
+            
+            <p>Mapeo completo de pines para BTT Octopus Pro v1.1 con firmware grblHAL.</p>
+
+            <h3>Motores Paso a Paso</h3>
+            <table>
+                <tr>
+                    <th>Eje</th>
+                    <th>Driver</th>
+                    <th>Pin Step</th>
+                    <th>Pin Dir</th>
+                    <th>Pin Enable</th>
+                    <th>Pin UART</th>
+                </tr>
+                <tr>
+                    <td class="pin-x">Eje X</td>
+                    <td>TMC2209</td>
+                    <td><code>PF13</code></td>
+                    <td><code>PF12</code></td>
+                    <td><code>PF14</code></td>
+                    <td><code>PC4</code></td>
+                </tr>
+                <tr>
+                    <td class="pin-y">Eje Y</td>
+                    <td>TMC2209</td>
+                    <td><code>PG0</code></td>
+                    <td><code>PG1</code></td>
+                    <td><code>PF15</code></td>
+                    <td><code>PD11</code></td>
+                </tr>
+                <tr>
+                    <td class="pin-z">Eje Z</td>
+                    <td>TMC2209</td>
+                    <td><code>PF11</code></td>
+                    <td><code>PG3</code></td>
+                    <td><code>PG5</code></td>
+                    <td><code>PC6</code></td>
+                </tr>
+            </table>
+
+            <h3>Límites y Sondas</h3>
+            <table>
+                <tr>
+                    <th>Función</th>
+                    <th>Conector</th>
+                    <th>Pin</th>
+                    <th>Tipo</th>
+                </tr>
+                <tr>
+                    <td>Límite X</td>
+                    <td>MIN1</td>
+                    <td><code>PG6</code></td>
+                    <td>NC a GND</td>
+                </tr>
+                <tr>
+                    <td>Límite Y</td>
+                    <td>MIN2</td>
+                    <td><code>PG9</code></td>
+                    <td>NC a GND</td>
+                </tr>
+                <tr>
+                    <td>Límite Z</td>
+                    <td>MIN3</td>
+                    <td><code>PG10</code></td>
+                    <td>NC a GND</td>
+                </tr>
+                <tr>
+                    <td>Sonda Z</td>
+                    <td>Z-PROBE Izq</td>
+                    <td><code>PB6</code></td>
+                    <td>Contacto a GND</td>
+                </tr>
+                <tr>
+                    <td>Medidor Herr.</td>
+                    <td>Z-PROBE Der</td>
+                    <td><code>PB7</code></td>
+                    <td>Contacto a GND</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Motores -->
+        <section id="motores">
+            <h2><span class="icon">⚡</span> Cableado de Motores</h2>
+
+            <h3>Conexión NEMA 23 (4 cables)</h3>
+            <div class="wiring-diagram">
+Motor NEMA 23                    Octopus Pro Motor Slot
+┌───────────┐                    ┌───────────────────┐
+│           │                    │  2B  2A  1A  1B   │
+│  ┌───┐    │                    │  ●   ●   ●   ●   │
+│  │   │    │   Negro  ─────────►│  2B              │
+│  └───┘    │   Verde  ─────────►│      2A          │
+│           │   Rojo   ─────────►│          1A      │
+│   ●●●●    │   Azul   ─────────►│              1B  │
+└───────────┘                    └───────────────────┘
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Identificación de Bobinas</h4>
+                <p>Los colores varían según fabricante. Para identificar bobinas:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Mide resistencia entre pares de cables</li>
+                    <li>Cables de la misma bobina: resistencia baja (1-5Ω)</li>
+                    <li>Cables de bobinas diferentes: resistencia infinita</li>
+                </ul>
+            </div>
+
+            <h3>Configuración TMC2209 (StallGuard)</h3>
+            <p>Los drivers TMC2209 proporcionan detección de carga vía StallGuard, que alimenta el sistema ML:</p>
+            <table>
+                <tr>
+                    <th>Parámetro</th>
+                    <th>Valor</th>
+                    <th>Descripción</th>
+                </tr>
+                <tr>
+                    <td>Corriente RMS</td>
+                    <td>1.4A - 2.0A</td>
+                    <td>Según motor NEMA 23</td>
+                </tr>
+                <tr>
+                    <td>Micropasos</td>
+                    <td>16 o 32</td>
+                    <td>Mayor suavidad de movimiento</td>
+                </tr>
+                <tr>
+                    <td>StallGuard</td>
+                    <td>60-70</td>
+                    <td>Umbral de detección de colisión</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Husillo -->
+        <section id="husillo">
+            <h2><span class="icon">🌀</span> Cableado de Husillo y VFD</h2>
+
+            <h3>Conexión Modbus RS485</h3>
+            <div class="wiring-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                    CONEXIÓN VFD MODBUS                          │
+│                                                                 │
+│   Octopus Pro               Adaptador RS485         VFD         │
+│   ┌──────────┐              ┌──────────┐         ┌─────────┐   │
+│   │ TX (PA9) │──────────────│ DI/TX    │─────────│ RS485+  │   │
+│   │ RX (PA10)│──────────────│ RO/RX    │─────────│ RS485-  │   │
+│   │ GND      │──────────────│ GND      │─────────│ GND     │   │
+│   └──────────┘              └──────────┘         └─────────┘   │
+│                                                                 │
+│   Configuración VFD:                                            │
+│   • ID Esclavo: 1                                               │
+│   • Velocidad: 9600 o 19200 baudios                            │
+│   • Protocolo: Modbus RTU                                       │
+│   • Control: RS485 (no panel)                                   │
+└─────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <div class="info-box">
+                <h4>ℹ️ Integración con Sistema ML</h4>
+                <p>El VFD proporciona datos al sistema de inteligencia ML:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li><strong>Corriente motor:</strong> Entrada para red neuronal</li>
+                    <li><strong>RPM actual:</strong> Verificación de velocidad</li>
+                    <li><strong>Temperatura:</strong> Protección térmica</li>
+                </ul>
+            </div>
+
+            <h3>Comandos G-code</h3>
+            <table>
+                <tr>
+                    <th>Comando</th>
+                    <th>Función</th>
+                </tr>
+                <tr>
+                    <td><code>M3 S12000</code></td>
+                    <td>Husillo CW a 12000 RPM</td>
+                </tr>
+                <tr>
+                    <td><code>M4 S12000</code></td>
+                    <td>Husillo CCW a 12000 RPM</td>
+                </tr>
+                <tr>
+                    <td><code>M5</code></td>
+                    <td>Detener husillo</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Sondas -->
+        <section id="sondas">
+            <h2><span class="icon">📏</span> Sondas y Medidor de Herramientas</h2>
+
+            <h3>Principio de Funcionamiento</h3>
+            <p>Cuando la herramienta toca el medidor metálico, completa un circuito:</p>
+            <div class="wiring-diagram">
+GND ← Cuerpo Husillo ← Herramienta ← Cuerpo Medidor → Entrada Sonda
+            </div>
+
+            <h3>Cableado del Medidor</h3>
+            <div class="wiring-diagram">
+┌──────────────────────────────────────────────────────────────────┐
+│                    CABLEADO MEDIDOR DE HERRAMIENTAS              │
+│                                                                  │
+│   Octopus Pro              Medidor de Herramientas               │
+│   ┌──────────┐            ┌─────────────────────┐               │
+│   │ PB7      │◄───────────│ Cable señal         │               │
+│   │ (Signal) │            │                     │               │
+│   │          │            │   ┌─────────────┐   │               │
+│   │ GND      │◄───────────│───│  Resorte    │   │               │
+│   │          │            │   │  metálico   │   │               │
+│   └──────────┘            │   └─────────────┘   │               │
+│                           │   Fijado a la mesa  │               │
+│                           └─────────────────────┘               │
+└──────────────────────────────────────────────────────────────────┘
+            </div>
+        </section>
+
+        <!-- Salidas Auxiliares -->
+        <section id="auxiliares">
+            <h2><span class="icon">🔌</span> Salidas Auxiliares (M62-M65)</h2>
+
+            <h3>Asignación de Puertos</h3>
+            <table>
+                <tr>
+                    <th>Puerto</th>
+                    <th>Pin</th>
+                    <th>Uso Típico</th>
+                    <th>Comando ON</th>
+                    <th>Comando OFF</th>
+                </tr>
+                <tr>
+                    <td>Aux 0</td>
+                    <td><code>PB10</code></td>
+                    <td>Aspiradora</td>
+                    <td><code>M64 P0</code></td>
+                    <td><code>M65 P0</code></td>
+                </tr>
+                <tr>
+                    <td>Aux 1</td>
+                    <td><code>PE5</code></td>
+                    <td>Protector polvo</td>
+                    <td><code>M64 P1</code></td>
+                    <td><code>M65 P1</code></td>
+                </tr>
+                <tr>
+                    <td>Aux 2</td>
+                    <td><code>PD12</code></td>
+                    <td>Lubricación</td>
+                    <td><code>M64 P2</code></td>
+                    <td><code>M65 P2</code></td>
+                </tr>
+                <tr>
+                    <td>Aux 3</td>
+                    <td><code>PD13</code></td>
+                    <td>Soplado aire</td>
+                    <td><code>M64 P3</code></td>
+                    <td><code>M65 P3</code></td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Sensores ESP32 -->
+        <section id="sensores">
+            <h2><span class="icon">🎯</span> Sensores ESP32 (Sistema ML)</h2>
+
+            <p>El Sistema de Inteligencia ML en FluidCNC utiliza sensores basados en ESP32 para detección de vibración en tiempo real y monitoreo de la máquina. Estos alimentan la red neuronal para predicción de calidad de corte.</p>
+
+            <div class="info-box">
+                <h4>ℹ️ Entradas de la Red Neuronal</h4>
+                <p>El sistema ML usa datos de sensores para predecir: <strong>Calidad de Corte</strong>, <strong>Riesgo de Vibración</strong>, y <strong>Tasa de Desgaste de Herramienta</strong>.</p>
+            </div>
+
+            <h3>Waveshare ESP32-S3 Touch LCD 1.46B (Sensor de Vibración)</h3>
+            <table>
+                <tr>
+                    <th>Característica</th>
+                    <th>Especificación</th>
+                    <th>Propósito</th>
+                </tr>
+                <tr>
+                    <td>MCU</td>
+                    <td>ESP32-S3</td>
+                    <td>Procesamiento + USB Serial</td>
+                </tr>
+                <tr>
+                    <td>Acelerómetro</td>
+                    <td>QMI8658 (IMU 6 ejes)</td>
+                    <td>Detección vibración (±16G)</td>
+                </tr>
+                <tr>
+                    <td>Pantalla</td>
+                    <td>LCD Redondo 1.46" (466×466)</td>
+                    <td>Nivel de vibración en tiempo real</td>
+                </tr>
+                <tr>
+                    <td>Conexión</td>
+                    <td>USB-C Serial @ 115200</td>
+                    <td>Datos a chatter-detection.js</td>
+                </tr>
+            </table>
+
+            <h4>Ubicación de Montaje</h4>
+            <div class="wiring-diagram">
+POSICIONES DE MONTAJE RECOMENDADAS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OPCIÓN 1: Montaje en Husillo (MEJOR)
+┌────────────────────────────┐
+│       ┌─────────────┐      │
+│       │   HUSILLO   │      │
+│       └──────┬──────┘      │
+│              │             │
+│    ┌─────────┴─────────┐   │
+│    │   SENSOR ESP32    │   │  ← Montar en abrazadera del husillo
+│    │  (Acelerómetro)   │   │    Más cerca de las fuerzas de corte
+│    └───────────────────┘   │
+│              │ USB         │
+└──────────────┼─────────────┘
+               ▼
+        Hub USB → LePotato
+
+OPCIÓN 2: Montaje en Pórtico
+┌────────────────────────────┐
+│  ┌───────────────────────┐ │
+│  │     PÓRTICO X         │ │
+│  │  ┌────────────────┐   │ │
+│  │  │  SENSOR ESP32  │   │ │  ← Montar en pórtico rígido
+│  │  └────────────────┘   │ │    Bueno para vibración general
+│  └───────────────────────┘ │
+└────────────────────────────┘
+            </div>
+
+            <h4>Formato de Datos Serial</h4>
+            <pre><code>// JSON enviado a 10Hz desde ESP32 a chatter-detection.js
+{
+    "audioLevel": 245,        // Nivel de audio FFT (0-1024)
+    "vibrationG": 0.45,       // Magnitud fuerza G
+    "accelX": 0.12,           // Aceleración X (G)
+    "accelY": -0.08,          // Aceleración Y (G)
+    "accelZ": 0.98,           // Aceleración Z (G)
+    "status": "running"       // "idle" | "running" | "alarm"
+}</code></pre>
+
+            <h3>XIAO ESP32S3 Sense (Cámara)</h3>
+            <table>
+                <tr>
+                    <th>Característica</th>
+                    <th>Especificación</th>
+                    <th>Propósito</th>
+                </tr>
+                <tr>
+                    <td>MCU</td>
+                    <td>ESP32-S3</td>
+                    <td>WiFi AP + Streaming cámara</td>
+                </tr>
+                <tr>
+                    <td>Cámara</td>
+                    <td>OV2640 (2MP)</td>
+                    <td>Monitoreo de máquina</td>
+                </tr>
+                <tr>
+                    <td>Micrófono</td>
+                    <td>PDM Digital</td>
+                    <td>Detección de vibración por audio</td>
+                </tr>
+                <tr>
+                    <td>Conexión</td>
+                    <td>USB (alimentación) + WiFi AP</td>
+                    <td>Stream a camera-module.js</td>
+                </tr>
+            </table>
+
+            <h4>Configuración WiFi</h4>
+            <pre><code>// La cámara crea su propia red WiFi
+SSID: FluidCNC-Camera
+Contraseña: fluidcnc123
+URL Cámara: http://192.168.4.1/stream</code></pre>
+
+            <h3>Flujo de Datos al Sistema ML</h3>
+            <div class="wiring-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                FLUJO DE DATOS INTELIGENCIA ML                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌────────────────┐     USB Serial      ┌───────────────────┐   │
+│  │ ESP32 Chatter  │ ──────────────────► │ chatter-detection │   │
+│  │ (Waveshare)    │     115200 baud     │     .js           │   │
+│  └────────────────┘                     └─────────┬─────────┘   │
+│                                                   │             │
+│  ┌────────────────┐     WiFi Stream     ┌────────┴────────┐    │
+│  │ ESP32 Cámara   │ ──────────────────► │ machine-        │    │
+│  │ (XIAO Sense)   │                     │ enhancements.js │    │
+│  └────────────────┘                     │ (Red Neuronal)  │    │
+│                                         └────────┬────────┘    │
+│  ┌────────────────┐     USB Serial      ┌────────┴────────┐    │
+│  │ Octopus Pro    │ ──────────────────► │   grblHAL       │    │
+│  │ (grblHAL)      │  Datos StallGuard   │   .js           │    │
+│  └────────────────┘                     └─────────────────┘    │
+│                                                                  │
+│  ┌────────────────┐     Modbus RS485    ┌─────────────────┐    │
+│  │ VFD Husillo    │ ──────────────────► │ Corriente, RPM  │    │
+│  │                │                     │ Temperatura     │    │
+│  └────────────────┘                     └─────────────────┘    │
+│                                                                  │
+│                      ┌───────────────────────────┐              │
+│                      │      Red Neuronal         │              │
+│  7 Entradas ───────► │      (7 → 12 → 3)         │ ───► 3 Sal  │
+│  audio, accel,       │      ReLU + Sigmoid       │     calidad │
+│  corriente, rpm,     │      Aprendizaje Online   │     chatter │
+│  avance, DOC, mat.   │                           │     desgaste│
+│                      └───────────────────────────┘              │
+└─────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <div class="success-box">
+                <h4>✅ Requisitos del Hub USB</h4>
+                <p>Use un <strong>hub USB 3.0 con alimentación</strong> para conectar todos los dispositivos a LePotato/Raspberry Pi:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Puerto 1: BTT Octopus Pro (grblHAL)</li>
+                    <li>Puerto 2: Sensor ESP32 Chatter</li>
+                    <li>Puerto 3: Cámara XIAO ESP32 (solo alimentación)</li>
+                    <li>Puerto 4: Disponible para expansión</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Parada de Emergencia -->
+        <section id="seguridad">
+            <h2><span class="icon">🛑</span> Parada de Emergencia (E-Stop)</h2>
+
+            <h3>Cableado (Normalmente Cerrado - NC)</h3>
+            <div class="wiring-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                     CABLEADO E-STOP                             │
+│                                                                 │
+│   Botón E-STOP Industrial (contacto NC)                         │
+│   ┌───────────────────┐                                        │
+│   │   ●───────────●   │ ◄── Cabeza tipo seta (presionar)       │
+│   │   │           │   │                                        │
+│   │   │   [NC]    │   │ ◄── Contactos normalmente cerrados     │
+│   │   │           │   │                                        │
+│   │   ●───────────●   │                                        │
+│   └───┬───────────┬───┘                                        │
+│       │           │                                             │
+│       ▼           ▼                                             │
+│    ESTOP_IN      GND                                            │
+│    (Octopus)   (Octopus)                                        │
+│                                                                 │
+│   COMPORTAMIENTO:                                               │
+│   • Liberado: Circuito CERRADO → Máquina funciona              │
+│   • Presionado: Circuito ABIERTO → ALARM:10 activada           │
+│   • Girar para liberar, luego enviar $X para desbloquear       │
+└─────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <h3>Manejo de Alarmas (Sistema ML)</h3>
+            <p>El sistema machine-enhancements.js maneja automáticamente los códigos de alarma:</p>
+            <table>
+                <tr>
+                    <th>Alarma</th>
+                    <th>Tipo</th>
+                    <th>Respuesta Automática</th>
+                </tr>
+                <tr>
+                    <td>ALARM:1</td>
+                    <td>Límite duro activado</td>
+                    <td>Detener movimiento, preservar posición</td>
+                </tr>
+                <tr>
+                    <td>ALARM:2</td>
+                    <td>Límite suave excedido</td>
+                    <td>Detener y alertar</td>
+                </tr>
+                <tr>
+                    <td>ALARM:9</td>
+                    <td>Fallo de homing</td>
+                    <td>Reintentar o intervención manual</td>
+                </tr>
+                <tr>
+                    <td>ALARM:10</td>
+                    <td>E-STOP presionado</td>
+                    <td>Parada total del sistema</td>
+                </tr>
+                <tr>
+                    <td>ALARM:13</td>
+                    <td>Error VFD/Husillo</td>
+                    <td>Parada de emergencia del husillo</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Configuración grblHAL -->
+        <section id="grblhal">
+            <h2><span class="icon">⚙️</span> Configuración grblHAL</h2>
+
+            <h3>Configuraciones Esenciales</h3>
+            <table>
+                <tr><th>Parámetro</th><th>Valor</th><th>Descripción</th></tr>
+                <tr><td><code>$0</code></td><td>10</td><td>Tiempo pulso step (µs)</td></tr>
+                <tr><td><code>$1</code></td><td>255</td><td>Retardo inactividad step (ms) - 255 = siempre activo</td></tr>
+                <tr><td><code>$5</code></td><td>0</td><td>Invertir pines límite</td></tr>
+                <tr><td><code>$6</code></td><td>0</td><td>Invertir pin sonda</td></tr>
+                <tr><td><code>$10</code></td><td>1</td><td>Máscara reporte estado</td></tr>
+            </table>
+
+            <h3>Configuraciones de Movimiento</h3>
+            <table>
+                <tr><th>Parámetro</th><th>X</th><th>Y</th><th>Z</th><th>Descripción</th></tr>
+                <tr><td><code>$100-102</code></td><td>800</td><td>800</td><td>800</td><td>Pasos/mm</td></tr>
+                <tr><td><code>$110-112</code></td><td>5000</td><td>5000</td><td>3000</td><td>Velocidad máx (mm/min)</td></tr>
+                <tr><td><code>$120-122</code></td><td>500</td><td>500</td><td>300</td><td>Aceleración (mm/s²)</td></tr>
+                <tr><td><code>$130-132</code></td><td>400</td><td>400</td><td>80</td><td>Recorrido máx (mm)</td></tr>
+            </table>
+
+            <h3>Configuraciones de Homing</h3>
+            <table>
+                <tr><th>Parámetro</th><th>Valor</th><th>Descripción</th></tr>
+                <tr><td><code>$22</code></td><td>1</td><td>Habilitar homing</td></tr>
+                <tr><td><code>$23</code></td><td>3</td><td>Invertir dirección homing (X & Y positivo)</td></tr>
+                <tr><td><code>$24</code></td><td>100</td><td>Avance lento homing (mm/min)</td></tr>
+                <tr><td><code>$25</code></td><td>1000</td><td>Búsqueda rápida homing (mm/min)</td></tr>
+                <tr><td><code>$27</code></td><td>2</td><td>Retroceso homing (mm)</td></tr>
+            </table>
+
+            <h3>Comandos Útiles</h3>
+            <table>
+                <tr><th>Comando</th><th>Descripción</th></tr>
+                <tr><td><code>$$</code></td><td>Ver todas las configuraciones</td></tr>
+                <tr><td><code>$I</code></td><td>Ver información de compilación</td></tr>
+                <tr><td><code>$H</code></td><td>Ejecutar ciclo de homing</td></tr>
+                <tr><td><code>$X</code></td><td>Desbloquear después de alarma</td></tr>
+                <tr><td><code>$RST=$</code></td><td>Restablecer valores por defecto</td></tr>
+            </table>
+        </section>
+
+        <footer>
+            <p>📄 Generado para el Proyecto FluidCNC | BTT Octopus Pro + grblHAL + Sistema ML</p>
+            <p>Última actualización: Enero 2026</p>
+            <p><a href="wiring-guide.html" style="color: var(--accent);">🇬🇧 English Version</a></p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+[Unit]
+Description=FluidCNC WebSocket Bridge Server
+Documentation=https://github.com/your-repo/fluidcnc
+After=network-online.target
+Wants=network-online.target
+# Wait for USB devices to enumerate
+After=systemd-udevd.service
+
+[Service]
+Type=simple
+User=pi
+Group=dialout
+WorkingDirectory=/home/pi/fluidcnc
+
+# Command to run
+ExecStart=/usr/bin/python3 /home/pi/fluidcnc/server.py --port 8080
+
+# Wait for USB enumeration before starting
+ExecStartPre=/bin/sleep 3
+
+# Restart on failure
+Restart=always
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fluidcnc
+
+# Environment
+Environment="PYTHONUNBUFFERED=1"
+
+# Security hardening (optional - comment out if causing issues)
+# NoNewPrivileges=true
+# ProtectSystem=strict
+# ProtectHome=read-only
+# ReadWritePaths=/home/pi/fluidcnc
+
+[Install]
+WantedBy=multi-user.target
+
+
+# =============================================================================
+# INSTALLATION INSTRUCTIONS (copy to /etc/systemd/system/fluidcnc.service):
+#
+# 1. Copy this file:
+#    sudo cp fluidcnc.service /etc/systemd/system/
+#
+# 2. Edit User/paths if needed:
+#    sudo nano /etc/systemd/system/fluidcnc.service
+#    - Change 'User=pi' to your username
+#    - Change '/home/pi/fluidcnc' to your FluidCNC installation path
+#
+# 3. Reload systemd:
+#    sudo systemctl daemon-reload
+#
+# 4. Enable auto-start on boot:
+#    sudo systemctl enable fluidcnc
+#
+# 5. Start the service:
+#    sudo systemctl start fluidcnc
+#
+# 6. Check status:
+#    sudo systemctl status fluidcnc
+#
+# 7. View logs:
+#    journalctl -u fluidcnc -f
+#
+# TROUBLESHOOTING:
+# - If service fails, check logs: journalctl -u fluidcnc -n 50
+# - Ensure user is in dialout group: sudo usermod -a -G dialout pi
+# - Verify serial port permissions: ls -la /dev/ttyACM* /dev/ttyUSB*
+# - Test manually first: python3 /home/pi/fluidcnc/server.py
+# =============================================================================

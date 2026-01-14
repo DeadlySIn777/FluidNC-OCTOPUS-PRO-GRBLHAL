@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0f">
+    <!-- Force no caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>FluidCNC</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=20260111a">
+    <!-- Emergency inline styles in case CSS fails -->
+    <style>
+        /* Ensure overlay content is always visible */
+        .overlay-content { 
+            background: #1a1a2e !important; 
+            color: white !important;
+            padding: 40px !important;
+            border-radius: 16px !important;
+            z-index: 10 !important;
+        }
+        .logo { color: #00d4ff !important; font-size: 2em !important; }
+        .btn { 
+            padding: 12px 24px !important; 
+            background: #00d4ff !important; 
+            color: #000 !important; 
+            border: none !important; 
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            margin: 5px !important;
+        }
+        .btn-secondary { background: #333 !important; color: white !important; }
+        /* Make sure alarm modal doesn't cover everything */
+        .modal-overlay.hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <!-- Clickable Alarm Badge (hidden when no alarm) -->
+    <button id="alarm-badge" class="alarm-badge hidden" onclick="app?.showAlarmDetails()" title="Click for alarm details">
+        ⚠️ ALARM
+    </button>
+
+    <!-- Alarm/Homing Required Modal -->
+    <div id="alarm-modal" class="modal-overlay hidden">
+        <div class="modal-content modal-alarm">
+            <div class="modal-header alarm-header">
+                <span class="alarm-icon">⚠️</span>
+                <h2 id="alarm-title">Machine Locked</h2>
+            </div>
+            <div class="modal-body">
+                <p id="alarm-message" class="alarm-message">Machine requires homing or unlock before operation.</p>
+                <div id="alarm-details" class="alarm-details"></div>
+                <div class="alarm-actions">
+                    <button class="btn btn-primary btn-large" onclick="app?.grbl?.home();">
+                        <span class="btn-icon">🏠</span> Home All Axes
+                    </button>
+                    <button class="btn btn-secondary btn-large" onclick="app?.grbl?.send('$HZ');">
+                        <span class="btn-icon">⬆️</span> Home Z Only
+                    </button>
+                    <button class="btn btn-warning btn-large" onclick="app?.grbl?.unlock();">
+                        <span class="btn-icon">🔓</span> Skip Homing (Unlock)
+                    </button>
+                </div>
+                <p class="alarm-hint">⚠️ Skipping homing means soft limits won't protect your machine!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Overlay -->
+    <div id="connection-overlay" class="overlay">
+        <div class="overlay-content">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" width="80" height="80">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#00d4ff"/>
+                                <stop offset="100%" style="stop-color:#00ff88"/>
+                            </linearGradient>
+                        </defs>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#logoGrad)" stroke-width="3"/>
+                        <path d="M30,50 L45,35 L45,45 L70,45 L70,55 L45,55 L45,65 Z" fill="url(#logoGrad)"/>
+                        <circle cx="50" cy="50" r="8" fill="url(#logoGrad)"/>
+                    </svg>
+                </div>
+                <h1 class="logo">FluidCNC</h1>
+                <p class="tagline">Modern CNC Control for grblHAL</p>
+            </div>
+            <div class="input-group" id="ip-input-group">
+                <input type="text" id="ip-input" placeholder="192.168.1.100" autocomplete="off" spellcheck="false">
+                <span class="port-label">:81</span>
+            </div>
+            <div class="btn-connect-group">
+                <button id="bridge-connect-btn" class="btn btn-primary" title="Connect via Bridge Server (recommended for remote)" onclick="app?.connectBridge();">
+                    <span class="btn-icon-left">🌐</span> Connect
+                </button>
+                <button id="connect-btn" class="btn btn-secondary" style="display:none" onclick="app?.connect('websocket');">
+                    <span class="btn-icon-left">📶</span> Direct WiFi
+                </button>
+                <button id="usb-connect-btn" class="btn btn-secondary" title="USB via WebSerial (Chrome/Edge)" onclick="app?.connect('serial');">
+                    <span class="btn-icon-left">🔌</span> USB
+                </button>
+                <button id="demo-btn" class="btn btn-secondary" onclick="app?.startDemo();">Demo</button>
+            </div>
+            <!-- SAFETY: E-STOP always visible even on connection overlay -->
+            <div class="overlay-estop-container">
+                <button id="overlay-estop-btn" class="btn-estop overlay-estop" title="Emergency Stop [Esc] - Always Available" onclick="(function(){ app?.grbl?.emergencyStop(); app?.showNotification?.('⚠️ E-STOP SENT - Check machine!', 'error'); })();">
+                    ⛔ EMERGENCY STOP
+                </button>
+            </div>
+            <p class="hint" id="connection-hint">Click Connect to control CNC from any device</p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="app-logo">
+                    <svg viewBox="0 0 100 100" width="28" height="28">
+                        <defs><linearGradient id="hLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#00d4ff"/><stop offset="100%" style="stop-color:#00ff88"/></linearGradient></defs>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#hLogoGrad)" stroke-width="4"/>
+                        <path d="M30,50 L45,35 L45,45 L70,45 L70,55 L45,55 L45,65 Z" fill="url(#hLogoGrad)"/>
+                    </svg>
+                    <span class="app-title">FluidCNC</span>
+                </div>
+                <div id="machine-state" class="machine-state idle">IDLE</div>
+            </div>
+            <div class="header-center">
+                <div class="feed-display">
+                    <span class="feed-label">F</span>
+                    <span id="live-feed" class="feed-value">0</span>
+                </div>
+                <div class="spindle-display">
+                    <span class="spindle-label">S</span>
+                    <span id="live-spindle" class="spindle-value">0</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div id="connection-indicator" class="connection-indicator disconnected" title="Click to reconnect">
+                    <span class="conn-dot"></span>
+                    <span id="connection-type-icon" class="conn-type-icon"></span>
+                    <span id="connection-status" class="conn-text">Offline</span>
+                </div>
+                <button id="header-connect-btn" class="btn btn-sm" title="WiFi Connect" onclick="app?.connect('websocket')">📶</button>
+                <button id="header-usb-btn" class="btn btn-sm" title="USB Connect" onclick="app?.connect('serial')">🔌</button>
+                <button id="header-config-btn" class="btn btn-sm" title="Configure Machine" onclick="app?.showMachineConfig()">⚙️</button>
+                <button id="keyboard-help-btn" class="btn-icon" title="Keyboard Shortcuts (?)" onclick="app?.switchTab('shortcuts')">⌨️</button>
+            </div>
+        </header>
+        
+        <!-- Navigation Sidebar -->
+        <nav class="sidebar-nav" id="sidebar-nav">
+            <div class="nav-group nav-main">
+                <button class="nav-tab active" data-tab="control" onclick="app?.switchTab('control')" title="Machine Control (Home)">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Control</span>
+                </button>
+                <button class="nav-tab" data-tab="gcode" onclick="app?.switchTab('gcode')" title="G-Code Editor (G)">
+                    <span class="nav-icon">📄</span>
+                    <span class="nav-label">G-Code</span>
+                </button>
+                <button class="nav-tab" data-tab="visualizer" onclick="app?.switchTab('visualizer')" title="3D Visualizer (3)">
+                    <span class="nav-icon">📐</span>
+                    <span class="nav-label">3D View</span>
+                </button>
+                <button class="nav-tab" data-tab="console" onclick="app?.switchTab('console')" title="Console (C)">
+                    <span class="nav-icon">💻</span>
+                    <span class="nav-label">Console</span>
+                </button>
+            </div>
+            <div class="nav-divider"></div>
+            <div class="nav-group nav-tools">
+                <button class="nav-tab" data-tab="camera" onclick="app?.camera?.showViewer?.(); app?.camera?.toggleStream?.()" title="ESP32 Camera View">
+                    <span class="nav-icon">📷</span>
+                    <span class="nav-label">Camera</span>
+                </button>
+                <button class="nav-tab" data-tab="probe" onclick="app?.switchTab('probe')" title="Probe & Touch Off">
+                    <span class="nav-icon">🎯</span>
+                    <span class="nav-label">Probe</span>
+                </button>
+                <button class="nav-tab" data-tab="tools" onclick="app?.switchTab('tools')" title="Tool Library">
+                    <span class="nav-icon">🛠️</span>
+                    <span class="nav-label">Tools</span>
+                </button>
+                <button class="nav-tab" data-tab="surfacing" onclick="app?.switchTab('surfacing')" title="Surfacing Wizard">
+                    <span class="nav-icon">🔲</span>
+                    <span class="nav-label">Surface</span>
+                </button>
+            </div>
+            <div class="nav-divider"></div>
+            <div class="nav-group nav-config">
+                <button class="nav-tab" data-tab="calibration" onclick="app?.switchTab('calibration')" title="Auto Calibration">
+                    <span class="nav-icon">🧠</span>
+                    <span class="nav-label">Calibrate</span>
+                </button>
+                <button class="nav-tab" data-tab="settings" onclick="app?.switchTab('settings')" title="Settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </button>
+                <button class="nav-tab" data-tab="wcs" onclick="app?.switchTab('wcs')" title="Work Coordinate Systems">
+                    <span class="nav-icon">📍</span>
+                    <span class="nav-label">WCS</span>
+                </button>
+            </div>
+            <div class="nav-spacer"></div>
+            <div class="nav-group nav-bottom">
+                <button class="nav-tab" data-tab="shortcuts" onclick="app?.switchTab('shortcuts')" title="Keyboard Shortcuts (?)">
+                    <span class="nav-icon">⌨️</span>
+                    <span class="nav-label">Keys</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Tab Panels Container -->
+        <div class="tab-panels-container">
+            <!-- CONTROL TAB (Main View) -->
+            <div id="tab-control" class="tab-panel active">
+                <main class="main-content">
+            <!-- Left Panel - Position & Controls -->
+            <section class="panel position-panel">
+                <div class="panel-content">
+                    <!-- Coordinate Toggle -->
+                    <div class="coord-toggle">
+                        <button id="wcs-btn" class="btn btn-toggle active" onclick="app?.showWorkCoords()">Work</button>
+                        <button id="mcs-btn" class="btn btn-toggle" onclick="app?.showMachineCoords()">Machine</button>
+                    </div>
+
+                    <!-- Position Display -->
+                    <div class="position-display">
+                        <div class="axis-row x">
+                            <span class="axis-label">X</span>
+                            <span id="limit-x" class="limit-indicator" title="X Limit Switch">●</span>
+                            <div class="axis-values">
+                                <span id="pos-x" class="axis-value">0.000</span>
+                                <span id="wpos-x" class="axis-value-work hidden">0.000</span>
+                            </div>
+                            <button class="btn-zero zero-btn" data-axis="x" onclick="app?.grbl?.setZero('X')">ZERO</button>
+                        </div>
+                        <div class="axis-row y">
+                            <span class="axis-label">Y</span>
+                            <span id="limit-y" class="limit-indicator" title="Y Limit Switch">●</span>
+                            <div class="axis-values">
+                                <span id="pos-y" class="axis-value">0.000</span>
+                                <span id="wpos-y" class="axis-value-work hidden">0.000</span>
+                            </div>
+                            <button class="btn-zero zero-btn" data-axis="y" onclick="app?.grbl?.setZero('Y')">ZERO</button>
+                        </div>
+                        <div class="axis-row z">
+                            <span class="axis-label">Z</span>
+                            <span id="limit-z" class="limit-indicator" title="Z Limit Switch">●</span>
+                            <div class="axis-values">
+                                <span id="pos-z" class="axis-value">0.000</span>
+                                <span id="wpos-z" class="axis-value-work hidden">0.000</span>
+                            </div>
+                            <button class="btn-zero zero-btn" data-axis="z" onclick="app?.grbl?.setZero('Z')">ZERO</button>
+                        </div>
+                    </div>
+
+                    <!-- Machine Status Badge -->
+                    <div class="machine-status-bar">
+                        <span id="machine-status" class="status-badge status-idle">Idle</span>
+                        <span id="feed-rate" class="status-value">F: 0</span>
+                        <span id="spindle-speed" class="status-value">S: 0</span>
+                    </div>
+
+                    <!-- Coolant & Vacuum Controls -->
+                    <div class="coolant-section">
+                        <span class="section-title">Coolant</span>
+                        <div class="coolant-controls">
+                            <button id="coolant-flood" class="coolant-btn" onclick="app?.grbl?.coolantFlood(true)">💧 Flood</button>
+                            <button id="coolant-mist" class="coolant-btn" onclick="app?.grbl?.coolantMist(true)">🌫️ Mist</button>
+                            <button id="coolant-off" class="coolant-btn" onclick="app?.grbl?.coolantOff()">❌ Off</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Vacuum/Dust Shoe Control -->
+                    <div class="vacuum-section">
+                        <span class="section-title">Vacuum</span>
+                        <div class="vacuum-controls">
+                            <button id="vacuum-toggle" class="vacuum-btn" title="Toggle dust collection (M64/M65 P0) [V]" onclick="app?.toggleVacuum()">
+                                <span class="vacuum-icon">🌀</span>
+                                <span class="vacuum-label">Vacuum</span>
+                                <kbd class="shortcut-hint">V</kbd>
+                            </button>
+                            <button id="dustshoe-toggle" class="vacuum-btn dustshoe" title="Raise/lower dust shoe (M64/M65 P1)" onclick="app?.toggleDustShoe()">
+                                <span class="dustshoe-icon">🔽</span>
+                                <span class="dustshoe-label">Shoe</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button id="estop-btn" class="btn-estop" title="Emergency Stop [Esc]" onclick="app?.grbl?.emergencyStop()">
+                            <span class="estop-icon">⛔</span>
+                            <span>E-STOP</span>
+                            <kbd class="shortcut-hint danger">Esc</kbd>
+                        </button>
+                        <button id="home-btn" class="btn-action" title="Home all axes [H]" onclick="app?.grbl?.home()">
+                            <span class="icon">🏠</span>
+                            <span class="label">Home All</span>
+                            <kbd class="shortcut-hint">H</kbd>
+                        </button>
+                        <button id="unlock-btn" class="btn-action" title="Unlock machine [U]" onclick="app?.grbl?.unlock()">
+                            <span class="icon">🔓</span>
+                            <span class="label">Unlock</span>
+                            <kbd class="shortcut-hint">U</kbd>
+                        </button>
+                        <button id="zero-all-btn" class="btn-action" title="Zero all axes [0]" onclick="app?.grbl?.setZero('XYZ')">
+                            <span class="icon">⊙</span>
+                            <span class="label">Zero All</span>
+                            <kbd class="shortcut-hint">0</kbd>
+                        </button>
+                    </div>
+
+                    <!-- Spindle Control -->
+                    <div class="spindle-control">
+                        <div class="spindle-header">
+                            <span class="section-title">Spindle</span>
+                            <span id="spindle-rpm" class="spindle-rpm-value">0</span>
+                            <span class="rpm-unit">RPM</span>
+                        </div>
+                        <input type="range" id="spindle-slider" class="spindle-slider" min="0" max="24000" step="100" value="0" oninput="document.getElementById('spindle-rpm').textContent=this.value">
+                        <div class="rpm-presets">
+                            <button class="rpm-preset" data-rpm="6000" onclick="app?.setSpindleSpeed(6000)">6K</button>
+                            <button class="rpm-preset" data-rpm="12000" onclick="app?.setSpindleSpeed(12000)">12K</button>
+                            <button class="rpm-preset" data-rpm="18000" onclick="app?.setSpindleSpeed(18000)">18K</button>
+                            <button class="rpm-preset" data-rpm="24000" onclick="app?.setSpindleSpeed(24000)">24K</button>
+                        </div>
+                        <div class="spindle-buttons">
+                            <button id="spindle-cw" class="btn btn-spindle" onclick="app?.grbl?.spindleOn(document.getElementById('spindle-slider').value,'cw')">CW ↻</button>
+                            <button id="spindle-ccw" class="btn btn-spindle" onclick="app?.grbl?.spindleOn(document.getElementById('spindle-slider').value,'ccw')">CCW ↺</button>
+                            <button id="spindle-stop" class="btn btn-spindle-stop" onclick="app?.grbl?.spindleOff()">STOP</button>
+                        </div>
+                    </div>
+
+                    <!-- Goto Presets -->
+                    <div class="goto-presets">
+                        <span class="section-title">Go To</span>
+                        <div class="preset-buttons">
+                            <button class="btn-preset" data-goto="origin" onclick="app?.gotoPreset('origin')">Origin</button>
+                            <button class="btn-preset" data-goto="park" onclick="app?.gotoPreset('park')">Park</button>
+                            <button class="btn-preset" data-goto="probe" onclick="app?.gotoPreset('probe')">Probe</button>
+                            <button class="btn-preset" data-goto="toolchange" onclick="app?.gotoPreset('toolchange')">ATC</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center Panel - Tabs -->
+            <section class="panel center-panel">
+                <div class="tab-header">
+                    <button class="tab-btn active" data-tab="jog" onclick="app?.switchTab?.('jog')">Jog</button>
+                    <button class="tab-btn" data-tab="visualizer" onclick="app?.switchTab?.('visualizer')">3D View</button>
+                    <button class="tab-btn" data-tab="console" onclick="app?.switchTab?.('console')">Console</button>
+                    <button class="tab-btn" data-tab="gcode" onclick="app?.switchTab?.('gcode')">G-Code</button>
+                </div>
+                <div class="tab-container">
+                    <!-- Jog Tab -->
+                    <div id="jog-tab" class="tab-content active">
+                        <div class="jog-control">
+                            <div class="jog-grid">
+                                <div class="jog-xy">
+                                    <div class="jog-spacer"></div>
+                                    <button class="jog-btn y-plus" data-jog="Y+" onmousedown="app?.startJog('Y+')" onmouseup="app?.stopJog()" onmouseleave="app?.stopJog()" ontouchstart="event.preventDefault();app?.startJog('Y+')" ontouchend="app?.stopJog()">Y+</button>
+                                    <div class="jog-spacer"></div>
+                                    <button class="jog-btn x-minus" data-jog="X-" onmousedown="app?.startJog('X-')" onmouseup="app?.stopJog()" onmouseleave="app?.stopJog()" ontouchstart="event.preventDefault();app?.startJog('X-')" ontouchend="app?.stopJog()">X-</button>
+                                    <button id="xy-zero-btn" class="jog-btn jog-center" onclick="app?.grbl?.setZero('XY')">XY<br>Zero</button>
+                                    <button class="jog-btn x-plus" data-jog="X+" onmousedown="app?.startJog('X+')" onmouseup="app?.stopJog()" onmouseleave="app?.stopJog()" ontouchstart="event.preventDefault();app?.startJog('X+')" ontouchend="app?.stopJog()">X+</button>
+                                    <div class="jog-spacer"></div>
+                                    <button class="jog-btn y-minus" data-jog="Y-" onmousedown="app?.startJog('Y-')" onmouseup="app?.stopJog()" onmouseleave="app?.stopJog()" ontouchstart="event.preventDefault();app?.startJog('Y-')" ontouchend="app?.stopJog()">Y-</button>
+                                    <div class="jog-spacer"></div>
+                                </div>
+                                <div class="jog-z">
+                                    <button class="jog-btn z-plus" data-jog="Z+" onmousedown="app?.startJog('Z+')" onmouseup="app?.stopJog()" onmouseleave="app?.stopJog()" ontouchstart="event.preventDefault();app?.startJog('Z+')" ontouchend="app?.stopJog()">Z+</button>
+                                    <button id="z-zero-btn" class="jog-btn jog-center" onclick="app?.grbl?.setZero('Z')">Z<br>Zero</button>
+                                    <button class="jog-btn z-minus" data-jog="Z-" onmousedown="app?.startJog('Z-')" onmouseup="app?.stopJog()" onmouseleave="app?.stopJog()" ontouchstart="event.preventDefault();app?.startJog('Z-')" ontouchend="app?.stopJog()">Z-</button>
+                                </div>
+                            </div>
+                            <div class="jog-options">
+                                <div class="jog-mode-group">
+                                    <span class="mode-label">Mode:</span>
+                                    <button id="jog-mode-step" class="btn-mode active" onclick="app?.setJogMode('step')">Step</button>
+                                    <button id="jog-mode-cont" class="btn-mode" onclick="app?.setJogMode('continuous')">Hold</button>
+                                </div>
+                                <div class="step-group">
+                                    <span class="step-label">Step:</span>
+                                    <div class="step-buttons">
+                                        <button class="btn-step jog-step-btn" data-step="0.01" onclick="app?.setJogStep(0.01)">0.01</button>
+                                        <button class="btn-step jog-step-btn" data-step="0.1" onclick="app?.setJogStep(0.1)">0.1</button>
+                                        <button class="btn-step jog-step-btn active" data-step="1" onclick="app?.setJogStep(1)">1</button>
+                                        <button class="btn-step jog-step-btn" data-step="10" onclick="app?.setJogStep(10)">10</button>
+                                        <button class="btn-step jog-step-btn" data-step="100" onclick="app?.setJogStep(100)">100</button>
+                                    </div>
+                                </div>
+                                <div class="feed-group">
+                                    <span class="feed-label-jog">Feed:</span>
+                                    <input type="range" id="jog-feed" min="100" max="5000" value="1000" step="100" oninput="app?.setJogFeed(this.value)">
+                                    <span id="jog-feed-value" class="feed-value-jog">1000</span>
+                                </div>
+                                <p class="jog-hint">Use arrow keys + PageUp/Down to jog. Escape to cancel.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visualizer Tab -->
+                    <div id="visualizer-tab" class="tab-content">
+                        <div class="visualizer-container">
+                            <div class="visualizer-toolbar">
+                                <div class="viz-controls">
+                                    <button id="viz-reset" class="btn-viz" title="Reset View" onclick="app?.visualizer?.resetView?.()">⟲</button>
+                                    <button id="viz-top" class="btn-viz" title="Top View" onclick="app?.visualizer?.setView?.('top')">⬆</button>
+                                    <button id="viz-front" class="btn-viz" title="Front View" onclick="app?.visualizer?.setView?.('front')">◯</button>
+                                    <button id="viz-iso" class="btn-viz active" title="Isometric" onclick="app?.visualizer?.setView?.('iso')">◇</button>
+                                    <button id="viz-fit" class="btn-viz" title="Fit to View" onclick="app?.visualizer?.fitToView?.()">⛶</button>
+                                </div>
+                                <div class="viz-info">
+                                    <span id="gcode-bounds">No file loaded</span>
+                                    <span id="gcode-time">--:--</span>
+                                </div>
+                            </div>
+                            <div class="canvas-wrapper">
+                                <canvas id="visualizer-canvas"></canvas>
+                                <div class="viz-legend">
+                                    <span class="legend-rapid">━ Rapid</span>
+                                    <span class="legend-cut">━ Cut</span>
+                                    <span class="legend-tool">● Tool</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Console Tab -->
+                    <div id="console-tab" class="tab-content">
+                        <div class="console-container">
+                            <div class="console-toolbar">
+                                <button class="btn btn-sm" onclick="app?.copyConsole?.()">📋 Copy</button>
+                                <button class="btn btn-sm" onclick="app?.clearConsole?.()">🗑️ Clear</button>
+                            </div>
+                            <div id="console-output" class="console-output"></div>
+                            <div class="console-input-row">
+                                <input type="text" id="console-input" placeholder="Enter G-code command..." autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter'){app?.sendConsoleCommand?.()}">
+                                <button id="console-send" class="btn btn-primary" onclick="app?.sendConsoleCommand?.()">Send</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- G-Code Tab -->
+                    <div id="gcode-tab" class="tab-content">
+                        <div class="gcode-container">
+                            <div class="gcode-toolbar">
+                                <button id="btn-open" class="btn btn-primary" onclick="document.getElementById('file-input')?.click()">📂 Open</button>
+                                <button id="btn-save" class="btn btn-secondary" onclick="app?.saveGCode?.()">💾 Save</button>
+                                <input type="file" id="file-input" accept=".nc,.gcode,.ngc,.tap,.txt" hidden onchange="app?.loadGCodeFile?.(this.files[0])">
+                                <span id="gcode-filename" class="loaded-filename">No file loaded</span>
+                            </div>
+                            <div class="gcode-editor-wrap">
+                                <div id="gcode-highlight"></div>
+                                <textarea id="gcode-editor" spellcheck="false" placeholder="Paste or type G-code here..."></textarea>
+                            </div>
+                            <div class="gcode-stats">
+                                <div class="stat"><span class="stat-label">Lines:</span><span id="total-lines">0</span></div>
+                                <div class="stat"><span class="stat-label">Time:</span><span id="job-eta">--:--</span></div>
+                                <div class="stat"><span id="job-progress">Ready</span></div>
+                            </div>
+                            <div class="job-controls">
+                                <button class="btn btn-success gcode-start" onclick="app?.startJob?.()">▶ Start</button>
+                                <button class="btn btn-warning gcode-pause" onclick="app?.pauseJob?.()">⏸ Pause</button>
+                                <button class="btn btn-danger gcode-stop" onclick="app?.stopJob?.()">⏹ Stop</button>
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div class="progress-bar">
+                                    <div id="progress-bar" class="progress-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel - Tools & Job -->
+            <section class="panel right-panel">
+                <div class="panel-content">
+                    <!-- Tool Selection -->
+                    <div class="tool-section">
+                        <div class="section-header">
+                            <span class="section-title">ATC Tools</span>
+                            <span id="current-tool" class="current-tool">T0</span>
+                        </div>
+                        <div class="tool-grid">
+                            <button class="btn-tool" data-tool="1" title="Change to Tool 1 [ATC]" onclick="app?.changeTool?.(1)">T1</button>
+                            <button class="btn-tool" data-tool="2" title="Change to Tool 2 [ATC]" onclick="app?.changeTool?.(2)">T2</button>
+                            <button class="btn-tool" data-tool="3" title="Change to Tool 3 [ATC]" onclick="app?.changeTool?.(3)">T3</button>
+                            <button class="btn-tool" data-tool="4" title="Change to Tool 4 [ATC]" onclick="app?.changeTool?.(4)">T4</button>
+                            <button class="btn-tool" data-tool="5" title="Change to Tool 5 [ATC]" onclick="app?.changeTool?.(5)">T5</button>
+                        </div>
+                        
+                        <!-- ATC Manual Controls -->
+                        <div class="atc-controls">
+                            <button id="atc-lid-open" class="btn btn-sm" title="Open dust cover lid (180°)" onclick="app?.atc?.openLid?.()">🔓 Open Lid</button>
+                            <button id="atc-lid-close" class="btn btn-sm" title="Close dust cover lid" onclick="app?.atc?.closeLid?.()">🔒 Close Lid</button>
+                            <button id="atc-loosen" class="btn btn-sm btn-warning" title="Spin CCW to loosen" onclick="app?.atc?.loosen?.()">↺ Loosen</button>
+                            <button id="atc-tighten" class="btn btn-sm btn-success" title="Spin CW to tighten" onclick="app?.atc?.tighten?.()">↻ Tighten</button>
+                        </div>
+                        <div class="atc-controls">
+                            <button id="atc-simulate" class="btn btn-sm btn-secondary" title="Show tool change G-code without executing" onclick="app?.atc?.simulate?.()">🧪 Simulate</button>
+                            <button id="atc-config" class="btn btn-sm btn-secondary" title="Configure ATC positions" onclick="app?.atc?.showConfig?.()">⚙️ Config</button>
+                        </div>
+                        
+                        <div class="tool-actions">
+                            <button id="probe-tool-btn" class="btn btn-tool-action" onclick="app?.probeWizard?.showMeasureToolModal?.()">📏 Measure Tool</button>
+                            <button id="touchoff-btn" class="btn btn-tool-action btn-accent" onclick="app?.switchTab?.('probe')">🎯 Probe</button>
+                            <button id="btn-surfacing" class="btn btn-tool-action" onclick="app?.switchTab?.('surfacing')">🔲 Surface</button>
+                            <button id="btn-tool-table" class="btn btn-tool-action" onclick="app?.switchTab?.('tools')">📋 Tool Table</button>
+                        </div>
+                    </div>
+
+                    <!-- Job Control -->
+                    <div class="job-section">
+                        <span class="section-title">Job Control</span>
+                        <div class="job-buttons">
+                            <button id="btn-start" class="btn btn-run" onclick="app?.startJob?.()">▶ Run</button>
+                            <button id="btn-pause" class="btn btn-pause" onclick="app?.pauseJob?.()">⏸</button>
+                            <button id="btn-stop" class="btn btn-stop" onclick="app?.stopJob?.()">⏹</button>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <div id="progress-fill" class="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span><span id="current-line">0</span> / <span id="progress-total">0</span></span>
+                                <span id="progress-text">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overrides -->
+                    <div class="overrides-section">
+                        <span class="section-title">Overrides</span>
+                        <div class="override-row">
+                            <span class="override-label">Feed</span>
+                            <input type="range" id="feed-override" min="10" max="200" value="100" oninput="app?.setFeedOverride?.(this.value);document.getElementById('override-feed-val').textContent=this.value+'%'">
+                            <span id="override-feed-val" class="override-value">100%</span>
+                        </div>
+                        <div class="override-row">
+                            <span class="override-label">Rapid</span>
+                            <input type="range" id="rapid-override" min="25" max="100" value="100" step="25" oninput="app?.setRapidOverride?.(this.value);document.getElementById('override-rapid-val').textContent=this.value+'%'">
+                            <span id="override-rapid-val" class="override-value">100%</span>
+                        </div>
+                        <div class="override-row">
+                            <span class="override-label">Spindle</span>
+                            <input type="range" id="spindle-override" min="10" max="200" value="100" oninput="app?.setSpindleOverride?.(this.value);document.getElementById('override-spindle-val').textContent=this.value+'%'">
+                            <span id="override-spindle-val" class="override-value">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- WCS Selection -->
+                    <div class="wcs-section">
+                        <div class="section-title-row">
+                            <span class="section-title">Work Offset</span>
+                            <button id="wcs-manager-btn" class="btn btn-xs btn-ghost" title="Manage WCS" onclick="app?.showWCSManager?.()">⚙️</button>
+                        </div>
+                        <div class="wcs-buttons">
+                            <button class="btn-wcs active" data-wcs="G54" onclick="app?.setWCS?.('G54')">G54</button>
+                            <button class="btn-wcs" data-wcs="G55" onclick="app?.setWCS?.('G55')">G55</button>
+                            <button class="btn-wcs" data-wcs="G56" onclick="app?.setWCS?.('G56')">G56</button>
+                            <button class="btn-wcs" data-wcs="G57" onclick="app?.setWCS?.('G57')">G57</button>
+                            <button class="btn-wcs" data-wcs="G58" onclick="app?.setWCS?.('G58')">G58</button>
+                            <button class="btn-wcs" data-wcs="G59" onclick="app?.setWCS?.('G59')">G59</button>
+                        </div>
+                    </div>
+
+                    <!-- Chatter Detection -->
+                    <div class="chatter-section">
+                        <div class="section-title-row">
+                            <span class="section-title">🎯 Chatter Detect</span>
+                            <span id="chatter-status-dot" class="chatter-dot disconnected" title="Not connected"></span>
+                        </div>
+                        <div class="chatter-display">
+                            <div class="chatter-main">
+                                <span id="chatter-state" class="chatter-state ok">OK</span>
+                                <div class="chatter-bar-container">
+                                    <div id="chatter-bar" class="chatter-bar" style="width: 0%"></div>
+                                </div>
+                                <span id="chatter-score" class="chatter-value">0%</span>
+                            </div>
+                            <div class="chatter-details">
+                                <div class="chatter-row">
+                                    <span class="chatter-label">Freq</span>
+                                    <span id="chatter-freq" class="chatter-value">--</span>
+                                </div>
+                                <div class="chatter-row">
+                                    <span class="chatter-label">Vib</span>
+                                    <span id="chatter-vib" class="chatter-value">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chatter-controls">
+                            <button id="chatter-connect-btn" class="btn btn-xs" onclick="app?.dualSerial?.connectChatter?.()">🔌 Connect ESP32</button>
+                            <label class="toggle-label">
+                                <input type="checkbox" id="chatter-auto-feed" checked onchange="app?.dualSerial && (app.dualSerial.autoFeedEnabled = this.checked)">
+                                <span>Auto Feed ↓</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Smart Machine -->
+                    <div class="smart-machine-section">
+                        <div class="section-title-row">
+                            <span class="section-title">🧠 Smart Machine</span>
+                            <span id="smart-machine-status" class="status-badge" title="Machine status">--</span>
+                        </div>
+                        <div class="smart-machine-info">
+                            <div class="smart-row">
+                                <span class="smart-label">Profile</span>
+                                <span id="smart-profile-name" class="smart-value">Uncalibrated</span>
+                            </div>
+                            <div class="smart-row">
+                                <span class="smart-label">Homed</span>
+                                <span id="smart-homed-status" class="smart-value">X:✗ Y:✗ Z:✗</span>
+                            </div>
+                            <div class="smart-row">
+                                <span class="smart-label">Load</span>
+                                <div class="load-bars">
+                                    <div class="load-bar-axis"><span>X</span><div class="load-bar"><div id="load-bar-x" class="load-fill"></div></div></div>
+                                    <div class="load-bar-axis"><span>Y</span><div class="load-bar"><div id="load-bar-y" class="load-fill"></div></div></div>
+                                    <div class="load-bar-axis"><span>Z</span><div class="load-bar"><div id="load-bar-z" class="load-fill"></div></div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="smart-machine-controls">
+                            <button id="smart-home-btn" class="btn btn-xs" onclick="app?.smartHome?.()">🏠 Smart Home</button>
+                            <button id="smart-calibrate-btn" class="btn btn-xs btn-accent" onclick="app?.showCalibrationWizard?.()">⚡ Calibrate</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+            </div>
+            <!-- END CONTROL TAB -->
+
+            <!-- PROBE TAB -->
+            <div id="tab-probe" class="tab-panel">
+                <div class="tab-panel-header">
+                    <h2>🎯 Touch Off & Probing</h2>
+                </div>
+                <div class="tab-panel-body" id="probe-wizard-container">
+                    <!-- Rendered by ProbeWizard -->
+                </div>
+            </div>
+
+            <!-- TOOLS TAB -->
+            <div id="tab-tools" class="tab-panel">
+                <div class="tab-panel-header">
+                    <h2>🛠️ Tool Library</h2>
+                </div>
+                <div class="tab-panel-body">
+                    <table class="tool-table">
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                                <th>Diameter</th>
+                                <th>Length</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tool-table-body">
+                            <!-- Rendered by app.js -->
+                        </tbody>
+                    </table>
+                    <div class="tool-table-actions">
+                        <button id="probe-all-tools" class="btn btn-primary">📏 Probe All Tools</button>
+                        <button id="atc-test" class="btn btn-secondary">🔄 ATC Test Cycle</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SURFACING TAB -->
+            <div id="tab-surfacing" class="tab-panel">
+                <div class="tab-panel-header">
+                    <h2>🔲 Surfacing Wizard</h2>
+                </div>
+                <div class="tab-panel-body" id="surfacing-container">
+                    <!-- Rendered by SurfacingWizard -->
+                </div>
+            </div>
+
+            <!-- CALIBRATION TAB -->
+            <div id="tab-calibration" class="tab-panel">
+                <div class="tab-panel-header">
+                    <h2>🧠 Smart Machine Calibration</h2>
+                </div>
+                <div class="tab-panel-body">
+                    <div class="calibration-wizard">
+                        <!-- Progress Steps -->
+                        <div class="calibration-steps">
+                            <div class="cal-step" data-step="1"><span class="step-num">1</span><span class="step-label">StallGuard</span></div>
+                            <div class="cal-step" data-step="2"><span class="step-num">2</span><span class="step-label">Envelope</span></div>
+                            <div class="cal-step" data-step="3"><span class="step-num">3</span><span class="step-label">Backlash</span></div>
+                            <div class="cal-step" data-step="4"><span class="step-num">4</span><span class="step-label">Dynamics</span></div>
+                            <div class="cal-step" data-step="5"><span class="step-num">5</span><span class="step-label">Verify</span></div>
+                        </div>
+
+                        <!-- Current Phase Display -->
+                        <div class="calibration-status">
+                            <div id="cal-phase-icon" class="cal-phase-icon">⏳</div>
+                            <h3 id="cal-phase-title">Ready to Calibrate</h3>
+                            <p id="cal-phase-desc">This wizard will automatically calibrate your machine using StallGuard feedback. 
+                               No limit switches required. The machine will probe its own limits and learn optimal settings.</p>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="calibration-progress">
+                            <div class="progress-bar-bg">
+                                <div id="cal-progress-bar" class="progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                            <span id="cal-progress-text">0%</span>
+                        </div>
+
+                        <!-- Real-time Data -->
+                        <div class="calibration-data" id="cal-realtime-data" style="display: none;">
+                            <div class="cal-data-grid">
+                                <div class="cal-data-item">
+                                    <label>Current Axis</label>
+                                    <span id="cal-current-axis">-</span>
+                                </div>
+                                <div class="cal-data-item">
+                                    <label>StallGuard Value</label>
+                                    <span id="cal-sg-value">-</span>
+                                </div>
+                                <div class="cal-data-item">
+                                    <label>Position</label>
+                                    <span id="cal-position">-</span>
+                                </div>
+                                <div class="cal-data-item">
+                                    <label>Detected</label>
+                                    <span id="cal-detected">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Summary -->
+                        <div class="calibration-results" id="cal-results" style="display: none;">
+                            <h4>📊 Calibration Results</h4>
+                            <div class="results-grid">
+                                <div class="result-section">
+                                    <h5>Work Envelope</h5>
+                                    <div class="result-row"><span>X Travel</span><span id="res-x-travel">-</span></div>
+                                    <div class="result-row"><span>Y Travel</span><span id="res-y-travel">-</span></div>
+                                    <div class="result-row"><span>Z Travel</span><span id="res-z-travel">-</span></div>
+                                </div>
+                                <div class="result-section">
+                                    <h5>StallGuard Thresholds</h5>
+                                    <div class="result-row"><span>X</span><span id="res-sg-x">-</span></div>
+                                    <div class="result-row"><span>Y</span><span id="res-sg-y">-</span></div>
+                                    <div class="result-row"><span>Z</span><span id="res-sg-z">-</span></div>
+                                </div>
+                                <div class="result-section">
+                                    <h5>Optimal Speeds (mm/min)</h5>
+                                    <div class="result-row"><span>X Max</span><span id="res-speed-x">-</span></div>
+                                    <div class="result-row"><span>Y Max</span><span id="res-speed-y">-</span></div>
+                                    <div class="result-row"><span>Z Max</span><span id="res-speed-z">-</span></div>
+                                </div>
+                                <div class="result-section">
+                                    <h5>Backlash (mm)</h5>
+                                    <div class="result-row"><span>X</span><span id="res-backlash-x">-</span></div>
+                                    <div class="result-row"><span>Y</span><span id="res-backlash-y">-</span></div>
+                                    <div class="result-row"><span>Z</span><span id="res-backlash-z">-</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Warnings -->
+                        <div class="calibration-warnings" id="cal-warnings" style="display: none;">
+                            <div class="warning-box">
+                                <span class="warning-icon">⚠️</span>
+                                <span id="cal-warning-text"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="calibration-actions">
+                            <button id="cal-start-btn" class="btn btn-primary btn-lg" onclick="app?.startCalibration?.()">
+                                ▶️ Start Full Calibration
+                            </button>
+                            <button id="cal-quick-btn" class="btn btn-secondary" onclick="app?.quickCalibration?.()">
+                                ⚡ Quick Tune (StallGuard only)
+                            </button>
+                            <button id="cal-stop-btn" class="btn btn-danger" style="display: none;" onclick="app?.stopCalibration?.()">
+                                ⏹️ Stop
+                            </button>
+                            <button id="cal-apply-btn" class="btn btn-success" style="display: none;" onclick="app?.applyCalibration?.()">
+                                ✅ Apply & Save
+                            </button>
+                        </div>
+                        <div class="cal-profile-actions">
+                            <button class="btn btn-ghost btn-sm" onclick="app?.exportMachineProfile?.()">📤 Export Profile</button>
+                            <button class="btn btn-ghost btn-sm" onclick="app?.importMachineProfile?.()">📥 Import Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS TAB -->
+            <div id="tab-settings" class="tab-panel">
+                <div class="tab-panel-header">
+                    <h2>⚙️ Settings</h2>
+                </div>
+                <div class="tab-panel-body">
+                    <div class="settings-tabs">
+                        <button class="settings-tab active" data-settings-tab="machine" onclick="app?.switchSettingsTab('machine')">Machine</button>
+                        <button class="settings-tab" data-settings-tab="smart" onclick="app?.switchSettingsTab('smart')">🧠 Smart</button>
+                        <button class="settings-tab" data-settings-tab="safety" onclick="app?.switchSettingsTab('safety')">🛡️ Safety</button>
+                        <button class="settings-tab" data-settings-tab="extras" onclick="app?.switchSettingsTab('extras')">🎮 Extras</button>
+                        <button class="settings-tab" data-settings-tab="limits" onclick="app?.switchSettingsTab('limits')">Limits</button>
+                        <button class="settings-tab" data-settings-tab="atc" onclick="app?.switchSettingsTab('atc')">ATC</button>
+                        <button class="settings-tab" data-settings-tab="probing" onclick="app?.switchSettingsTab('probing')">Probing</button>
+                        <button class="settings-tab" data-settings-tab="ui" onclick="app?.switchSettingsTab('ui')">UI</button>
+                    </div>
+                    <div class="settings-content">
+                        <!-- Machine Settings -->
+                        <div id="machine-settings" class="settings-panel active">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>Work Envelope</h3>
+                                    <div class="setting-row">
+                                        <label>Max X</label>
+                                        <input type="number" id="setting-max-x" value="400">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Max Y</label>
+                                        <input type="number" id="setting-max-y" value="400">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Max Z</label>
+                                        <input type="number" id="setting-max-z" value="200">
+                                        <span>mm</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Safe Heights</h3>
+                                    <div class="setting-row">
+                                        <label>Safe Z</label>
+                                        <input type="number" id="setting-safe-z" value="50">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Rapid Feed</label>
+                                        <input type="number" id="setting-rapid-feed" value="5000">
+                                        <span>mm/min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Smart Machine Settings -->
+                        <div id="smart-settings" class="settings-panel">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>TMC2209 Motor Currents</h3>
+                                    <div class="setting-row">
+                                        <label>X Current</label>
+                                        <input type="number" id="setting-x-current" value="1600" min="100" max="1600" step="100">
+                                        <span>mA</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Y Current</label>
+                                        <input type="number" id="setting-y-current" value="1600" min="100" max="1600" step="100">
+                                        <span>mA</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Z Current</label>
+                                        <input type="number" id="setting-z-current" value="1600" min="100" max="1600" step="100">
+                                        <span>mA</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Hold Current %</label>
+                                        <input type="number" id="setting-hold-current" value="22" min="5" max="50" step="1">
+                                        <span>%</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>StallGuard Sensitivity</h3>
+                                    <div class="setting-row">
+                                        <label>X Threshold</label>
+                                        <input type="number" id="setting-sg-x" value="60" min="0" max="255">
+                                        <span>0-255</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Y Threshold</label>
+                                        <input type="number" id="setting-sg-y" value="60" min="0" max="255">
+                                        <span>0-255</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Z Threshold</label>
+                                        <input type="number" id="setting-sg-z" value="70" min="0" max="255">
+                                        <span>0-255</span>
+                                    </div>
+                                    <p class="setting-hint">Lower = more sensitive (earlier stall detection)</p>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Smart Features</h3>
+                                    <div class="setting-row">
+                                        <label>Crash Detection</label>
+                                        <input type="checkbox" id="setting-crash-detect" checked>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Auto Recovery</label>
+                                        <select id="setting-crash-recovery">
+                                            <option value="auto">Auto (back off)</option>
+                                            <option value="rehome">Re-home</option>
+                                            <option value="manual">Manual only</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Position Monitor</label>
+                                        <input type="checkbox" id="setting-pos-monitor" checked>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Adaptive Feed Control</h3>
+                                    <div class="setting-row">
+                                        <label>Enable</label>
+                                        <input type="checkbox" id="setting-adaptive-feed">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Target Load</label>
+                                        <input type="number" id="setting-target-load" value="60" min="20" max="90">
+                                        <span>%</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Min Feed</label>
+                                        <input type="number" id="setting-min-feed" value="30" min="10" max="100">
+                                        <span>%</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Max Feed</label>
+                                        <input type="number" id="setting-max-feed" value="150" min="100" max="200">
+                                        <span>%</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group full-width">
+                                    <h3>Presets</h3>
+                                    <div class="preset-buttons">
+                                        <button class="btn btn-sm" onclick="app.applyMotorPreset?.('high-speed')">⚡ High Speed</button>
+                                        <button class="btn btn-sm" onclick="app.applyMotorPreset?.('high-torque')">💪 High Torque</button>
+                                        <button class="btn btn-sm" onclick="app.applyMotorPreset?.('quiet')">🔇 Quiet</button>
+                                        <button class="btn btn-sm" onclick="app.applyMotorPreset?.('precision')">🎯 Precision</button>
+                                    </div>
+                                </div>
+                                <div class="setting-group full-width">
+                                    <h3>Diagnostics</h3>
+                                    <div class="diag-buttons">
+                                        <button class="btn btn-sm" onclick="app.runMotorDiagnostics?.()">🔍 Run Diagnostics</button>
+                                        <button class="btn btn-sm" onclick="app.readAllGrblSettings?.()">📋 Read All Settings</button>
+                                        <button class="btn btn-sm btn-accent" onclick="app.syncSmartSettings?.()">⬆️ Apply to grblHAL</button>
+                                    </div>
+                                    <pre id="smart-diag-output" class="diag-output" style="display: none;"></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Safety Fixer Settings -->
+                        <div id="safety-settings" class="settings-panel">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>🛡️ G-Code Safety Checks</h3>
+                                    <p class="setting-hint">Auto-fix dangerous commands instead of throwing alarms</p>
+                                    <div class="setting-row">
+                                        <label>Spindle Check</label>
+                                        <input type="checkbox" id="safety-spindle-check" checked>
+                                        <span class="hint">Ensure spindle on before cutting</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Rapid Safety</label>
+                                        <input type="checkbox" id="safety-rapid-check" checked>
+                                        <span class="hint">Convert dangerous rapids to feeds</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Z Plunge Limit</label>
+                                        <input type="checkbox" id="safety-plunge-check" checked>
+                                        <span class="hint">Limit aggressive plunge rates</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Soft Limits</label>
+                                        <input type="checkbox" id="safety-softlimit-check" checked>
+                                        <span class="hint">Clamp moves to machine limits</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Arc Validation</label>
+                                        <input type="checkbox" id="safety-arc-check" checked>
+                                        <span class="hint">Fix or block invalid arcs</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Tool Change Safety</label>
+                                        <input type="checkbox" id="safety-toolchange-check" checked>
+                                        <span class="hint">Retract before tool changes</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>⚙️ Safety Parameters</h3>
+                                    <div class="setting-row">
+                                        <label>Max Plunge Rate</label>
+                                        <input type="number" id="safety-max-plunge" value="500" min="100" max="2000" step="50">
+                                        <span>mm/min</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Default Feed</label>
+                                        <input type="number" id="safety-default-feed" value="1000" min="100" max="5000" step="100">
+                                        <span>mm/min</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Default Spindle RPM</label>
+                                        <input type="number" id="safety-default-spindle" value="12000" min="1000" max="24000" step="1000">
+                                        <span>RPM</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Safe Retract Height</label>
+                                        <input type="number" id="safety-retract-z" value="10" min="5" max="50" step="1">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>In-Material Threshold</label>
+                                        <input type="number" id="safety-material-z" value="-1" min="-10" max="0" step="0.5">
+                                        <span>mm (Z below this = in material)</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>📊 Safety Statistics</h3>
+                                    <div id="safety-stats">
+                                        <div class="stat-row">
+                                            <span>Commands Checked:</span>
+                                            <span id="stat-checked">0</span>
+                                        </div>
+                                        <div class="stat-row">
+                                            <span>Auto-Fixed:</span>
+                                            <span id="stat-fixed">0</span>
+                                        </div>
+                                        <div class="stat-row">
+                                            <span>Blocked:</span>
+                                            <span id="stat-blocked">0</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm" onclick="window.gcodeSafetyFixer?.resetStats()">🔄 Reset Stats</button>
+                                    <button class="btn btn-sm btn-accent" onclick="app?.applySafetySettings()">✅ Apply Settings</button>
+                                </div>
+                                <div class="setting-group full-width">
+                                    <h3>🔧 Fix Mode</h3>
+                                    <div class="setting-row">
+                                        <label>Auto-Fix Mode</label>
+                                        <select id="safety-mode">
+                                            <option value="fix">Auto-Fix (recommended)</option>
+                                            <option value="warn">Warn Only</option>
+                                            <option value="block">Block Dangerous</option>
+                                        </select>
+                                    </div>
+                                    <p class="setting-hint">
+                                        <strong>Auto-Fix:</strong> Automatically corrects unsafe G-code<br>
+                                        <strong>Warn Only:</strong> Shows warnings but sends original command<br>
+                                        <strong>Block:</strong> Stops dangerous commands entirely
+                                    </p>
+                                </div>
+                                
+                                <!-- Tool Breakage Learning System -->
+                                <div class="setting-group full-width">
+                                    <h3>🧠 Tool Breakage Learning</h3>
+                                    <p class="setting-hint">System learns from broken tools and prevents similar conditions</p>
+                                    
+                                    <div class="breakage-report-section" style="margin: 15px 0; padding: 15px; background: rgba(255,50,50,0.1); border-radius: 8px; border: 1px solid rgba(255,50,50,0.3);">
+                                        <h4 style="color: #ff6b6b; margin: 0 0 10px;">🔴 Report Tool Breakage</h4>
+                                        <p style="font-size: 12px; opacity: 0.8;">If a tool just broke, click below to record the conditions so we don't repeat them!</p>
+                                        
+                                        <div class="setting-row">
+                                            <label>Tool Type</label>
+                                            <select id="breakage-tool-type">
+                                                <option value="endmill">End Mill</option>
+                                                <option value="ballnose">Ball Nose</option>
+                                                <option value="vbit">V-Bit</option>
+                                                <option value="drill">Drill</option>
+                                                <option value="surfacing">Surfacing Bit</option>
+                                            </select>
+                                        </div>
+                                        <div class="setting-row">
+                                            <label>Tool Diameter</label>
+                                            <input type="number" id="breakage-tool-dia" value="6" min="0.5" max="50" step="0.5">
+                                            <span>mm</span>
+                                        </div>
+                                        <div class="setting-row">
+                                            <label>Material</label>
+                                            <select id="breakage-material">
+                                                <option value="softwood">Softwood (Pine, Cedar)</option>
+                                                <option value="hardwood">Hardwood (Oak, Maple)</option>
+                                                <option value="plywood">Plywood/MDF</option>
+                                                <option value="acrylic">Acrylic/Plastic</option>
+                                                <option value="aluminum">Aluminum</option>
+                                                <option value="brass">Brass</option>
+                                                <option value="steel">Steel</option>
+                                                <option value="foam">Foam/Soft Material</option>
+                                                <option value="unknown">Unknown/Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="setting-row">
+                                            <label>What Happened?</label>
+                                            <select id="breakage-cause">
+                                                <option value="snapped">Tool snapped/broke</option>
+                                                <option value="chipped">Cutting edge chipped</option>
+                                                <option value="pulled-out">Tool pulled out of collet</option>
+                                                <option value="burned">Tool burned up</option>
+                                                <option value="vibration">Excessive vibration</option>
+                                                <option value="unknown">Not sure</option>
+                                            </select>
+                                        </div>
+                                        <div class="setting-row">
+                                            <label>Notes (optional)</label>
+                                            <input type="text" id="breakage-notes" placeholder="Any other details...">
+                                        </div>
+                                        <button class="btn btn-danger" style="width: 100%; margin-top: 10px;" onclick="app?.reportToolBreakage()">
+                                            🔴 RECORD BREAKAGE & LEARN
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="learned-patterns-section" style="margin-top: 15px;">
+                                        <h4 style="margin: 0 0 10px;">📚 Learned Patterns</h4>
+                                        <div id="learned-patterns-list" style="max-height: 200px; overflow-y: auto; font-size: 12px;">
+                                            <em>No breakages recorded yet</em>
+                                        </div>
+                                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                            <button class="btn btn-sm" onclick="app?.refreshBreakagePatterns()">🔄 Refresh</button>
+                                            <button class="btn btn-sm btn-warning" onclick="app?.clearBreakageData()">🗑️ Clear All Data</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ATC Settings -->
+                        <div id="atc-settings" class="settings-panel">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>Tool Rack Position</h3>
+                                    <div class="setting-row">
+                                        <label>Rack X (Tool 1)</label>
+                                        <input type="number" id="setting-atc-x" value="350">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Rack Y</label>
+                                        <input type="number" id="setting-atc-y" value="0">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Tool Spacing</label>
+                                        <input type="number" id="setting-tool-spacing" value="50.4" step="0.1">
+                                        <span>mm</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Z Heights</h3>
+                                    <div class="setting-row">
+                                        <label>Approach Z</label>
+                                        <input type="number" id="setting-atc-z" value="-5">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Pocket Z</label>
+                                        <input type="number" id="setting-pocket-z" value="-80">
+                                        <span>mm</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Tool Setter</h3>
+                                    <div class="setting-row">
+                                        <label>Setter X</label>
+                                        <input type="number" id="setting-setter-x" value="0">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Setter Y</label>
+                                        <input type="number" id="setting-setter-y" value="380">
+                                        <span>mm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Limits & Homing Settings -->
+                        <div id="limits-settings" class="settings-panel">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>Soft Limits (Travel)</h3>
+                                    <div class="setting-row">
+                                        <label>Enable Soft Limits</label>
+                                        <input type="checkbox" id="setting-soft-limits" data-grbl="$20">
+                                        <button class="btn btn-sm" onclick="app?.grbl?.send('$20=' + (document.getElementById('setting-soft-limits').checked ? '1' : '0'))">Apply</button>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>X Travel (mm)</label>
+                                        <input type="number" id="setting-travel-x" value="200" data-grbl="$130">
+                                        <button class="btn btn-sm" onclick="app?.setCurrentAsLimit('X')">Set Current</button>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Y Travel (mm)</label>
+                                        <input type="number" id="setting-travel-y" value="200" data-grbl="$131">
+                                        <button class="btn btn-sm" onclick="app?.setCurrentAsLimit('Y')">Set Current</button>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Z Travel (mm)</label>
+                                        <input type="number" id="setting-travel-z" value="200" data-grbl="$132">
+                                        <button class="btn btn-sm" onclick="app?.setCurrentAsLimit('Z')">Set Current</button>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Hard Limits (Switches)</h3>
+                                    <div class="setting-row">
+                                        <label>Enable Hard Limits</label>
+                                        <input type="checkbox" id="setting-hard-limits" data-grbl="$21">
+                                        <button class="btn btn-sm" onclick="app?.grbl?.send('$21=' + (document.getElementById('setting-hard-limits').checked ? '1' : '0'))">Apply</button>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Invert Limit Pins</label>
+                                        <input type="checkbox" id="setting-limit-invert" data-grbl="$5">
+                                    </div>
+                                    <div class="limit-status">
+                                        <span>X Limit: <span id="limit-status-x" class="limit-off">--</span></span>
+                                        <span>Y Limit: <span id="limit-status-y" class="limit-off">--</span></span>
+                                        <span>Z Limit: <span id="limit-status-z" class="limit-off">--</span></span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Homing</h3>
+                                    <div class="setting-row">
+                                        <label>Enable Homing</label>
+                                        <input type="checkbox" id="setting-homing-enable" data-grbl="$22">
+                                        <button class="btn btn-sm" onclick="app?.grbl?.send('$22=' + (document.getElementById('setting-homing-enable').checked ? '1' : '0'))">Apply</button>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Homing Direction</label>
+                                        <select id="setting-homing-dir" data-grbl="$23">
+                                            <option value="0">+X +Y +Z</option>
+                                            <option value="1">-X +Y +Z</option>
+                                            <option value="2">+X -Y +Z</option>
+                                            <option value="3">-X -Y +Z</option>
+                                            <option value="4">+X +Y -Z</option>
+                                            <option value="5">-X +Y -Z</option>
+                                            <option value="6">+X -Y -Z</option>
+                                            <option value="7">-X -Y -Z</option>
+                                        </select>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Homing Feed (mm/min)</label>
+                                        <input type="number" id="setting-homing-feed" value="500" data-grbl="$24">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Homing Seek (mm/min)</label>
+                                        <input type="number" id="setting-homing-seek" value="2000" data-grbl="$25">
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Quick Actions</h3>
+                                    <div class="limits-actions">
+                                        <button class="btn btn-primary" onclick="app?.grbl?.send('$H')">🏠 Home All</button>
+                                        <button class="btn btn-secondary" onclick="app?.grbl?.send('$HZ')">Home Z Only</button>
+                                        <button class="btn btn-warning" onclick="app?.grbl?.send('$X')">🔓 Unlock</button>
+                                        <button class="btn btn-secondary" onclick="app?.refreshGrblSettings()">🔄 Refresh Settings</button>
+                                    </div>
+                                    <div class="limits-actions" style="margin-top:10px">
+                                        <button class="btn" onclick="app?.applyLimitSettings()">💾 Apply All Limit Settings</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Probing Settings -->
+                        <div id="probing-settings" class="settings-panel">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>Probe Speeds</h3>
+                                    <div class="setting-row">
+                                        <label>Fast Probe</label>
+                                        <input type="number" id="setting-probe-fast" value="500">
+                                        <span>mm/min</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Slow Probe</label>
+                                        <input type="number" id="setting-probe-feed" value="100">
+                                        <span>mm/min</span>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Touch Plate</h3>
+                                    <div class="setting-row">
+                                        <label>Plate Thickness</label>
+                                        <input type="number" id="setting-plate-thick" value="15" step="0.1">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Tool Diameter</label>
+                                        <input type="number" id="setting-tool-dia" value="6.35" step="0.01">
+                                        <span>mm</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Extras Settings (v12 Enhancements) -->
+                        <div id="extras-settings" class="settings-panel">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>🔊 Audio Notifications</h3>
+                                    <div class="setting-row">
+                                        <label>Enable Sounds</label>
+                                        <input type="checkbox" id="setting-audio-enabled" checked onchange="app?.enhancementsV12?.setAudioEnabled(this.checked)">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Volume</label>
+                                        <input type="range" id="setting-audio-volume" min="0" max="1" step="0.1" value="0.5" 
+                                               onchange="app?.enhancementsV12?.setAudioVolume(parseFloat(this.value))">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Push Notifications</label>
+                                        <button class="btn btn-sm" onclick="app?.enhancementsV12?.requestNotificationPermission()">Enable</button>
+                                    </div>
+                                    <div class="setting-row">
+                                        <button class="btn btn-sm" onclick="app?.enhancementsV12?.playSound('jobComplete')">🔔 Test Sound</button>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>🎮 Gamepad Jogging</h3>
+                                    <div class="setting-row">
+                                        <label>Enable Gamepad</label>
+                                        <input type="checkbox" id="setting-gamepad-enabled" checked>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Deadzone</label>
+                                        <input type="range" id="setting-gamepad-deadzone" min="0.05" max="0.3" step="0.05" value="0.15">
+                                        <span id="gamepad-deadzone-value">0.15</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Sensitivity</label>
+                                        <input type="range" id="setting-gamepad-sensitivity" min="0.5" max="2" step="0.1" value="1.0">
+                                        <span id="gamepad-sensitivity-value">1.0</span>
+                                    </div>
+                                    <div class="setting-row hint">
+                                        <small>Left Stick: XY | Right Stick/Triggers: Z | D-Pad: Step Jog</small>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>⚡ VFD Adaptive Feed</h3>
+                                    <div class="setting-row">
+                                        <label>Enable Adaptive Feed</label>
+                                        <input type="checkbox" id="setting-adaptive-feed" onchange="localStorage.setItem('adaptiveFeedSettings', JSON.stringify({enabled: this.checked, loadThreshold: 70, maxReduction: 50}))">
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Load Threshold</label>
+                                        <input type="number" id="setting-load-threshold" value="70" min="50" max="95" step="5">
+                                        <span>%</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Max Reduction</label>
+                                        <input type="number" id="setting-max-reduction" value="50" min="10" max="80" step="5">
+                                        <span>%</span>
+                                    </div>
+                                    <div class="setting-row hint">
+                                        <small>Automatically slows feed when spindle load exceeds threshold</small>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>📏 Touch Plate Presets</h3>
+                                    <div id="touch-plate-settings-list" class="touch-plate-list">
+                                        <!-- Populated by JavaScript -->
+                                    </div>
+                                    <div class="setting-row">
+                                        <button class="btn btn-sm" onclick="app?.enhancementsV12?.promptAddTouchPlate()">+ Add Preset</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- UI Settings -->
+                        <div id="ui-settings" class="settings-panel">
+                            <div class="settings-grid">
+                                <div class="setting-group">
+                                    <h3>Appearance</h3>
+                                    <div class="setting-row">
+                                        <label>Dark Mode</label>
+                                        <input type="checkbox" id="setting-dark-mode" checked>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Animations</label>
+                                        <input type="checkbox" id="setting-animations" checked>
+                                    </div>
+                                </div>
+                                <div class="setting-group">
+                                    <h3>Jog Defaults</h3>
+                                    <div class="setting-row">
+                                        <label>Default Step</label>
+                                        <input type="number" id="setting-default-step" value="1" step="0.1">
+                                        <span>mm</span>
+                                    </div>
+                                    <div class="setting-row">
+                                        <label>Default Feed</label>
+                                        <input type="number" id="setting-default-jog-feed" value="1000">
+                                        <span>mm/min</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-actions">
+                        <button id="reset-settings" class="btn btn-secondary" onclick="app?.resetSettings?.()">Reset Defaults</button>
+                        <button id="save-settings" class="btn btn-primary" onclick="app?.saveSettings?.()">Save Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WCS TAB -->
+            <div id="tab-wcs" class="tab-panel">
+                <div class="tab-panel-header">
+                    <h2>📍 Work Coordinate Systems</h2>
+                </div>
+                <div class="tab-panel-body">
+                    <p class="tab-description">Manage work offsets (G54-G59). Each WCS stores an XYZ offset from machine zero.</p>
+                    <table class="wcs-table" id="wcs-table">
+                        <thead>
+                            <tr>
+                                <th>WCS</th>
+                                <th>X Offset</th>
+                                <th>Y Offset</th>
+                                <th>Z Offset</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr data-wcs="G54">
+                                <td><button class="btn-wcs-select active" data-wcs="G54" onclick="app?.selectWcs('G54')">G54</button></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g54-x" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g54-y" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g54-z" step="0.001" value="0"></td>
+                                <td>
+                                    <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G54')" title="Set from current position">📍</button>
+                                    <button class="btn btn-xs" onclick="app.clearWcs('G54')" title="Clear offset">🗑️</button>
+                                </td>
+                            </tr>
+                            <tr data-wcs="G55">
+                                <td><button class="btn-wcs-select" data-wcs="G55" onclick="app?.selectWcs('G55')">G55</button></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g55-x" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g55-y" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g55-z" step="0.001" value="0"></td>
+                                <td>
+                                    <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G55')" title="Set from current position">📍</button>
+                                    <button class="btn btn-xs" onclick="app.clearWcs('G55')" title="Clear offset">🗑️</button>
+                                </td>
+                            </tr>
+                            <tr data-wcs="G56">
+                                <td><button class="btn-wcs-select" data-wcs="G56" onclick="app?.selectWcs('G56')">G56</button></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g56-x" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g56-y" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g56-z" step="0.001" value="0"></td>
+                                <td>
+                                    <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G56')" title="Set from current position">📍</button>
+                                    <button class="btn btn-xs" onclick="app.clearWcs('G56')" title="Clear offset">🗑️</button>
+                                </td>
+                            </tr>
+                            <tr data-wcs="G57">
+                                <td><button class="btn-wcs-select" data-wcs="G57" onclick="app?.selectWcs('G57')">G57</button></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g57-x" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g57-y" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g57-z" step="0.001" value="0"></td>
+                                <td>
+                                    <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G57')" title="Set from current position">📍</button>
+                                    <button class="btn btn-xs" onclick="app.clearWcs('G57')" title="Clear offset">🗑️</button>
+                                </td>
+                            </tr>
+                            <tr data-wcs="G58">
+                                <td><button class="btn-wcs-select" data-wcs="G58" onclick="app?.selectWcs('G58')">G58</button></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g58-x" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g58-y" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g58-z" step="0.001" value="0"></td>
+                                <td>
+                                    <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G58')" title="Set from current position">📍</button>
+                                    <button class="btn btn-xs" onclick="app.clearWcs('G58')" title="Clear offset">🗑️</button>
+                                </td>
+                            </tr>
+                            <tr data-wcs="G59">
+                                <td><button class="btn-wcs-select" data-wcs="G59" onclick="app?.selectWcs('G59')">G59</button></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g59-x" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g59-y" step="0.001" value="0"></td>
+                                <td><input type="number" class="wcs-input" id="wcs-g59-z" step="0.001" value="0"></td>
+                                <td>
+                                    <button class="btn btn-xs" onclick="app.setWcsFromCurrent('G59')" title="Set from current position">📍</button>
+                                    <button class="btn btn-xs" onclick="app.clearWcs('G59')" title="Clear offset">🗑️</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="wcs-actions">
+                        <button class="btn btn-secondary" onclick="app.refreshWcsValues()">🔄 Refresh from Machine</button>
+                        <button class="btn btn-primary" onclick="app.applyWcsValues()">Apply Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHORTCUTS TAB -->
+            <div id="tab-shortcuts" class="tab-panel">
+                <div class="tab-panel-header">
+                    <h2>⌨️ Keyboard Shortcuts</h2>
+                </div>
+                <div class="tab-panel-body keyboard-shortcuts-body">
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-section">
+                            <h3>🛠️ Machine Control</h3>
+                            <div class="shortcut-row"><kbd>Esc</kbd><span>Emergency Stop / Cancel</span></div>
+                            <div class="shortcut-row"><kbd>H</kbd><span>Home All Axes</span></div>
+                            <div class="shortcut-row"><kbd>U</kbd><span>Unlock Machine</span></div>
+                            <div class="shortcut-row"><kbd>0</kbd><span>Zero All Axes</span></div>
+                            <div class="shortcut-row"><kbd>V</kbd><span>Toggle Vacuum</span></div>
+                            <div class="shortcut-row"><kbd>Space</kbd><span>Cycle Start / Pause</span></div>
+                        </div>
+                        <div class="shortcut-section">
+                            <h3>🕹️ Jogging</h3>
+                            <div class="shortcut-row"><kbd>←</kbd> <kbd>→</kbd><span>Jog X Axis</span></div>
+                            <div class="shortcut-row"><kbd>↑</kbd> <kbd>↓</kbd><span>Jog Y Axis</span></div>
+                            <div class="shortcut-row"><kbd>PgUp</kbd> <kbd>PgDn</kbd><span>Jog Z Axis</span></div>
+                            <div class="shortcut-row"><kbd>Shift</kbd> + Arrow<span>10x Step</span></div>
+                            <div class="shortcut-row"><kbd>Ctrl</kbd> + Arrow<span>0.1x Step</span></div>
+                            <div class="shortcut-row"><kbd>1</kbd>-<kbd>5</kbd><span>Step Size (0.01-100)</span></div>
+                        </div>
+                        <div class="shortcut-section">
+                            <h3>📑 Navigation</h3>
+                            <div class="shortcut-row"><kbd>Tab</kbd><span>Next Panel</span></div>
+                            <div class="shortcut-row"><kbd>Shift</kbd> + <kbd>Tab</kbd><span>Previous Panel</span></div>
+                            <div class="shortcut-row"><kbd>J</kbd><span>Switch to Jog Tab</span></div>
+                            <div class="shortcut-row"><kbd>G</kbd><span>Switch to G-Code Tab</span></div>
+                            <div class="shortcut-row"><kbd>C</kbd><span>Switch to Console Tab</span></div>
+                            <div class="shortcut-row"><kbd>3</kbd><span>Switch to 3D View Tab</span></div>
+                        </div>
+                        <div class="shortcut-section">
+                            <h3>📐 3D Visualizer</h3>
+                            <div class="shortcut-row"><kbd>M</kbd><span>Toggle Measure Mode</span></div>
+                            <div class="shortcut-row"><kbd>R</kbd><span>Toggle Rapids</span></div>
+                            <div class="shortcut-row"><kbd>T</kbd><span>Isometric View</span></div>
+                            <div class="shortcut-row"><kbd>F</kbd><span>Fit to Path</span></div>
+                            <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>S</kbd><span>Screenshot</span></div>
+                        </div>
+                        <div class="shortcut-section">
+                            <h3>📁 File Operations</h3>
+                            <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>O</kbd><span>Open G-Code File</span></div>
+                            <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>S</kbd><span>Save G-Code</span></div>
+                            <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd><span>Save As...</span></div>
+                            <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>Z</kbd><span>Undo (in editor)</span></div>
+                        </div>
+                        <div class="shortcut-section">
+                            <h3>🤖 AI Assistant</h3>
+                            <div class="shortcut-row"><kbd>A</kbd><span>Toggle AI Panel</span></div>
+                            <div class="shortcut-row"><kbd>Ctrl</kbd> + <kbd>Space</kbd><span>Voice Command</span></div>
+                            <div class="shortcut-row"><kbd>/</kbd><span>Focus AI Input</span></div>
+                            <div class="shortcut-row"><span class="voice-badge">🎤 "Hey CNC"</span><span>Wake Word</span></div>
+                        </div>
+                    </div>
+                    <div class="shortcuts-footer">
+                        <p>💡 Hover over buttons to see their shortcuts. Press <kbd>?</kbd> anytime to show this panel.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- END TAB PANELS CONTAINER -->
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <span id="status-message" class="status-message">Ready</span>
+            </div>
+            <div class="footer-center">
+                <!-- removed - now in sidebar -->
+            </div>
+            <div class="footer-right">
+                <span id="buffer-display" class="buffer-info">Buf: 0</span>
+                <span class="version-info">v1.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- OLD MODALS REMOVED - Now using tabbed interface -->
+
+    <!-- AI Assistant Panel (Floating) -->
+    <div id="ai-panel" class="ai-panel collapsed">
+        <div class="ai-header" onclick="document.getElementById('ai-panel').classList.toggle('collapsed')">
+            <span class="ai-icon">🤖</span>
+            <span class="ai-title">AI Assistant</span>
+            <button id="ai-voice-btn" class="btn-icon ai-voice" title="Voice Commands" onclick="event.stopPropagation()">🎤</button>
+            <span class="ai-toggle">▼</span>
+        </div>
+        <div class="ai-body">
+            <div id="ai-output" class="ai-output">
+                <div class="chat-message chat-assistant">
+                    👋 Hi! I'm your CNC AI assistant. Try:
+                    <ul>
+                        <li>"jog X 10" - move axis</li>
+                        <li>"what feeds for aluminum with 6mm"</li>
+                        <li>"analyze gcode"</li>
+                        <li>"help" for more</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="ai-input-row">
+                <input type="text" id="ai-input" placeholder="Ask me anything..." autocomplete="off">
+                <button class="btn btn-primary btn-send" onclick="app?.sendAIMessage?.()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div id="notifications" class="notifications-container"></div>
+
+    <!-- OLD MODALS REMOVED - Keyboard, Calibration, WCS now in tabs -->
+
+    <!-- Quick Command Palette (Ctrl+P) -->
+    <div id="command-palette" class="command-palette hidden">
+        <div class="palette-search">
+            <input type="text" id="palette-input" placeholder="Type a command or search..." autocomplete="off">
+        </div>
+        <div class="palette-results" id="palette-results">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Three.js for 3D visualization - local copy for reliability -->
+    <script src="lib/three.min.js"></script>
+    <script>
+        // Verify Three.js loaded
+        if (typeof THREE === 'undefined') {
+            console.error('[FluidCNC] Three.js failed to load - 3D visualizer will be disabled');
+            window.THREE = null;
+        } else {
+            console.log('[FluidCNC] Three.js r' + THREE.REVISION + ' loaded');
+        }
+    </script>
+    <script src="gcode-parser.js?v=2"></script>
+    <script src="visualizer.js?v=2"></script>
+    <script src="visualizer-3d.js?v=2"></script>
+    <script src="visualizer-enhanced.js?v=2"></script>
+    <script src="grblhal.js?v=2"></script>
+    <script src="ai-assistant.js?v=2"></script>
+    <script src="macros.js?v=2"></script>
+    <script src="probe-wizard.js?v=2"></script>
+    <script src="monitoring.js?v=2"></script>
+    <script src="job-queue.js?v=2"></script>
+    <script src="surface-scanner.js?v=2"></script>
+    <script src="vector-importer.js?v=2"></script>
+    <script src="parametric-macros.js?v=2"></script>
+    <script src="feeds-speeds.js?v=2"></script>
+    <script src="gcode-simulator.js?v=2"></script>
+    <script src="job-recovery.js?v=2"></script>
+    <script src="settings-manager.js?v=2"></script>
+    <script src="trinamic-config.js?v=2"></script>
+    <script src="conversational-gcode.js?v=2"></script>
+    <script src="sd-card.js?v=2"></script>
+    <script src="dual-serial.js?v=2"></script>
+    <script src="chatter-detection.js?v=2"></script>
+    <script src="step-loss-detection.js?v=2"></script>
+    <script src="motion-planner.js?v=2"></script>
+    <!-- Smart Machine System -->
+    <script src="smart-machine.js?v=2"></script>
+    <script src="auto-tuner.js?v=2"></script>
+    <script src="sensorless-system.js?v=2"></script>
+    <script src="grblhal-settings.js?v=2"></script>
+    <script src="configure-machine.js?v=1"></script>
+    <script src="calibration-wizard.js?v=1"></script>
+    <script src="gcode-safety-fixer.js?v=1"></script>
+    <script src="machine-enhancements.js?v=5"></script>
+    <script src="enhancements-v12.js?v=1"></script>
+    <script src="tool-setter.js?v=2"></script>
+    <script src="camera-module.js?v=2"></script>
+    <script src="app.js?v=20260112a"></script>
+</body>
+</html>
