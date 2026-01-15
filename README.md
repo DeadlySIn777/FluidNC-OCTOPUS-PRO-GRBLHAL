@@ -86,6 +86,8 @@ A full-featured, safety-focused browser UI for CNC machines running **grblHAL** 
 | Component | Model | Purpose | Connection |
 |-----------|-------|---------|------------|
 | **Chatter Sensor** | Waveshare ESP32-S3 Touch LCD 1.46B | Vibration detection + display | USB Serial |
+| **VFD Controller** | ESP32 + MAX485 | Modbus RS485 VFD control | USB Serial |
+| **Spindle Temp Sensor** | DS18B20 TO-92 | Spindle shell temperature | Waveshare GPIO 16 |
 | **Camera** | Seeed XIAO ESP32S3 Sense | Machine monitoring | USB (power) + WiFi AP |
 | **Tool Setter** | Electrical probe | Automatic tool length | Probe input |
 
@@ -134,7 +136,11 @@ project/
 │   ├── CABLEADO.md              # Wiring guide (Spanish)
 │   └── build_and_flash.bat
 │
-├── grblHAL-STM32F4/             # grblHAL source code
+├── esp32-vfd-controller/        # ESP32 Modbus VFD Controller
+│   ├── platformio.ini           # PlatformIO config
+│   └── src/main.cpp             # H100 VFD Modbus control
+│
+├── grblHAL-STM32F4/             # grblHAL source code (submodule)
 │   ├── platformio.ini
 │   ├── Inc/                     # Headers
 │   ├── Src/                     # Source files
@@ -327,6 +333,25 @@ pio run --target upload
 # Access: http://192.168.4.1
 ```
 
+### ESP32 VFD Controller (Modbus RS485)
+
+```bash
+cd esp32-vfd-controller
+pio run --target upload
+# Connect: GPIO17 → MAX485 DI, GPIO16 → RO, GPIO4 → DE+RE
+# Commands: FWD, REV, STOP, RPM:12000, STATUS
+```
+
+### DS18B20 Spindle Temperature Sensor
+
+Wire to Waveshare ESP32-S3 chatter sensor:
+```
+DS18B20 VCC (red)    → 3V3
+DS18B20 GND (black)  → GND
+DS18B20 DATA (yellow) → GPIO 16 + 4.7kΩ pull-up to 3V3
+```
+Temperature appears in chatter detection JSON as `spindleTempC`.
+
 ---
 
 ## 📊 Features Reference
@@ -356,6 +381,9 @@ pio run --target upload
 - ✅ **Anomaly Detection** (statistical monitoring)
 - ✅ **StallGuard Integration** (TMC2209 load sensing)
 - ✅ **VFD Modbus Monitoring** (current, RPM, temperature)
+- ✅ **ESP32 VFD Controller** (Modbus RS485 for H100/Changrong VFDs)
+- ✅ **Spindle Temperature Monitoring** (DS18B20 on chatter sensor)
+- ✅ **Thermal Stress Testing** (automated spindle cooling verification)
 
 ### Safety Features
 - ✅ **E-STOP Handling** (hardware NC button + software)
