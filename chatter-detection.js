@@ -35,56 +35,7 @@ class ChatterDetection {
         const savedIp = localStorage.getItem('chatterEspIp');
         const defaultIp = savedIp || '192.168.0.100';  // Default to common subnet
         this.wsUrl = options.wsUrl || `ws://${defaultIp}/ws`;
-        this.
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        ws = null;
+        this.ws = null;
         this.connected = false;
         this.autoConnect = options.autoConnect !== undefined ? options.autoConnect : false; // Disabled by default
         this.reconnectInterval = 5000;
@@ -94,6 +45,10 @@ class ChatterDetection {
         this.maxReconnectAttempts = 3;      // Only try 3 times then give up quietly
         this.reconnectTimer = null;
         this.pingInterval = null;
+        
+        // Temperature warning flags
+        this._tempWarningShown = false;
+        this._tempCriticalShown = false;
         
         // USB Serial connection (Web Serial API)
         this.serialPort = null;
@@ -1072,12 +1027,13 @@ class ChatterDetection {
             if (typeof c.spindleTempC === 'number' && c.spindleTempC > -127) {
                 this.state.spindleTempC = c.spindleTempC;
                 // Warn if spindle is getting hot (PETG housing limit ~60°C)
-                if (c.spindleTempC > 55 && !this._tempWarningShown) {
-                    this._tempWarningShown = true;
-                    this.showNotification(`⚠️ Spindle temp ${c.spindleTempC.toFixed(1)}°C - approaching PETG limit!`, 'warning');
-                } else if (c.spindleTempC > 65 && !this._tempCriticalShown) {
+                // Check critical first, then warning (order matters for else-if)
+                if (c.spindleTempC > 65 && !this._tempCriticalShown) {
                     this._tempCriticalShown = true;
                     this.showNotification(`🔥 SPINDLE HOT: ${c.spindleTempC.toFixed(1)}°C - check cooling!`, 'error');
+                } else if (c.spindleTempC > 55 && !this._tempWarningShown) {
+                    this._tempWarningShown = true;
+                    this.showNotification(`⚠️ Spindle temp ${c.spindleTempC.toFixed(1)}°C - approaching PETG limit!`, 'warning');
                 } else if (c.spindleTempC < 50) {
                     this._tempWarningShown = false;
                     this._tempCriticalShown = false;
@@ -1527,7 +1483,10 @@ class ChatterDetection {
     vfdStart(rpm) {
         // Start spindle forward at specified RPM
         if (rpm) {
-            this.sendVfdCommand(`RPM:${rpm}`);
+            rpm = Number(rpm);
+            if (Number.isFinite(rpm) && rpm >= 0 && rpm <= 30000) {
+                this.sendVfdCommand(`RPM:${rpm}`);
+            }
         }
         this.sendVfdCommand('FWD');
     }
@@ -1538,16 +1497,29 @@ class ChatterDetection {
     
     vfdReverse(rpm) {
         if (rpm) {
-            this.sendVfdCommand(`RPM:${rpm}`);
+            rpm = Number(rpm);
+            if (Number.isFinite(rpm) && rpm >= 0 && rpm <= 30000) {
+                this.sendVfdCommand(`RPM:${rpm}`);
+            }
         }
         this.sendVfdCommand('REV');
     }
     
     vfdSetRpm(rpm) {
+        rpm = Number(rpm);
+        if (!Number.isFinite(rpm) || rpm < 0 || rpm > 30000) {
+            console.error('[VFD] Invalid RPM value:', rpm);
+            return;
+        }
         this.sendVfdCommand(`RPM:${rpm}`);
     }
     
     vfdSetFrequency(hz) {
+        hz = Number(hz);
+        if (!Number.isFinite(hz) || hz < 0 || hz > 500) {
+            console.error('[VFD] Invalid frequency value:', hz);
+            return;
+        }
         // Note: VFD uses RPM command with frequency conversion internally
         const rpm = Math.round(hz * 30);  // 2-pole motor: RPM = Hz * 60 / 2
         this.sendVfdCommand(`RPM:${rpm}`);
@@ -3799,7 +3771,6 @@ class ChatterDetection {
             }
             
             // Check for spare tool in ATC
-            this._checkForSpareTool();
             this._checkForSpareTool();
             
             // Show persistent warning with recovery option

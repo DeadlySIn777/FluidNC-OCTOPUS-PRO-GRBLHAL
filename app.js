@@ -3374,9 +3374,44 @@ class FluidCNCApp {
     }
     
     startJog(direction) {
-        const [axis, dir] = [direction[0].toUpperCase(), direction[1] === '+' ? 1 : -1];
+        // Validate direction format (e.g., "x+", "Y-", "z+")
+        if (!direction || typeof direction !== 'string' || direction.length < 2) {
+            console.warn('[JOG] Invalid direction:', direction);
+            return;
+        }
+        
+        // Safety: Don't jog if not connected or in alarm state
+        if (!this.grbl?.connected) {
+            this.log('Cannot jog - not connected', 'warning');
+            return;
+        }
+        
+        if (this.grbl?.state?.status === 'Alarm') {
+            this.log('Cannot jog during alarm - unlock first ($X)', 'warning');
+            return;
+        }
+        
+        const axis = direction[0].toUpperCase();
+        const dir = direction[1] === '+' ? 1 : -1;
+        
+        // Validate axis
+        if (!['X', 'Y', 'Z', 'A', 'B', 'C'].includes(axis)) {
+            console.warn('[JOG] Invalid axis:', axis);
+            return;
+        }
+        
         const distance = this.jogMode === 'step' ? this.jogStep : 1000;
         const feed = axis === 'Z' ? this.jogFeed / 3 : this.jogFeed;
+        
+        // Validate distance and feed
+        if (!Number.isFinite(distance) || distance <= 0 || distance > 1000) {
+            console.warn('[JOG] Invalid distance:', distance);
+            return;
+        }
+        if (!Number.isFinite(feed) || feed <= 0 || feed > 10000) {
+            console.warn('[JOG] Invalid feed rate:', feed);
+            return;
+        }
         
         this.grbl.jog(axis, distance * dir, feed);
     }
@@ -3783,6 +3818,13 @@ class FluidCNCApp {
             },
             onStop: () => {
                 this.log('Job stopped', 'warning');
+                // Mark job failed for enhancements
+                if (this.enhancements) this.enhancements.endJob(false);
+                if (this.enhancementsV12) this.enhancementsV12.onJobComplete(false);
+            },
+            onError: (err) => {
+                this.log(`Stream error: ${err}`, 'error');
+                this.showNotification(`Job error: ${err}`, 'error');
                 // Mark job failed for enhancements
                 if (this.enhancements) this.enhancements.endJob(false);
                 if (this.enhancementsV12) this.enhancementsV12.onJobComplete(false);
