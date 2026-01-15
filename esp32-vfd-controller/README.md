@@ -93,17 +93,44 @@ cd esp32-vfd-controller
 pio run --target upload --upload-port COM6
 ```
 
-## VFD Configuration
+## VFD Configuration (Changrong H100)
 
-Set these parameters on your H100 VFD:
+Set these parameters on your H100 VFD panel:
 
 | Param | Value | Description |
 |-------|-------|-------------|
-| P00.01 | 2 | Control source = RS485 |
-| P00.03 | 2 | Frequency source = RS485 |
-| P14.00 | 1 | Slave address |
-| P14.01 | 3 | Baud rate = 19200 |
-| P14.02 | 0 | Data format = 8N1 |
+| **F000** | 1 | Command source: 0=Panel, **1=RS485** |
+| **F003** | 1 | Frequency source: 0=Panel, **1=RS485** |
+| **F005** | 400.00 | Max frequency (400Hz = 24000 RPM for 2-pole motor) |
+| **F163** | 1 | Modbus slave address (1-250) |
+| **F164** | 1 | Baud rate: 0=4800, **1=9600**, 2=19200, 3=38400 |
+| **F165** | 3 | Data format: **3=8N1 RTU** (Modbus RTU mode) |
+
+### Quick Setup Steps
+
+1. Power on VFD (no spindle connected for safety)
+2. Press FUNC to enter programming mode
+3. Navigate to F000, set to 1 (RS485 control)
+4. Navigate to F003, set to 1 (RS485 frequency source)
+5. Navigate to F163, set to 1 (slave address)
+6. Navigate to F164, set to 1 (9600 baud - matches ESP32 default)
+7. Navigate to F165, set to 3 (8N1 RTU)
+8. Press FUNC to save
+
+### Fault Codes
+
+| Code | Meaning | Common Cause |
+|------|---------|--------------|
+| 1 | OC1 - Overcurrent during accel | Motor stall, short circuit |
+| 2 | OC2 - Overcurrent during decel | Regenerative overvoltage |
+| 3 | OC3 - Overcurrent at const speed | Motor overload |
+| 4 | OV1 - Overvoltage during accel | Input voltage spike |
+| 5 | OV2 - Overvoltage during decel | Need brake resistor |
+| 6 | OV3 - Overvoltage at const speed | Input voltage high |
+| 7 | LV - DC bus undervoltage | Power supply issue |
+| 8 | OH - VFD overheating | Check cooling fan |
+| 9 | I.t - Motor thermal overload | Reduce load or increase motor size |
+| 10 | CB - Communication timeout | Check RS485 wiring |
 
 ## Integration with FluidCNC
 
