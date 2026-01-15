@@ -1,0 +1,3 @@
+[submodule "grblHAL-STM32F4"]
+	path = grblHAL-STM32F4
+	url = https://github.com/grblHAL/STM32F4xx.git
