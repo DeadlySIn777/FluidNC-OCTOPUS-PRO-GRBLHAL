@@ -47,6 +47,7 @@ class FluidCNCApp {
         this.jogInterval = null;
         this.jogRepeatInterval = null;  // Track for cleanup
         this.stepLossUpdateInterval = null;  // Track for cleanup
+        this.showWorkPosition = true;  // Toggle between work/machine position display
 
         // Connection/overlay stability (prevents full-screen flashing on brief disconnects)
         this._disconnectOverlayTimer = null;
@@ -142,6 +143,9 @@ class FluidCNCApp {
         this.setupCommandPalette();
         this.setupDragAndDrop();
         
+        // Feature Detection System - auto-hide unavailable features
+        this.setupFeatureDetection();
+        
         // Auto-connect only if we have a saved IP (WebSerial requires user gesture, so never auto-connect serial)
         const lastConnType = localStorage.getItem('fluidcnc-connection-type') || 'websocket';
         const lastIp = localStorage.getItem('fluidcnc-last-ip');
@@ -150,6 +154,236 @@ class FluidCNCApp {
         }
         
         this.log('FluidCNC initialized', 'info');
+    }
+    
+    // ================================================================
+    // Feature Detection System
+    // ================================================================
+    
+    /**
+     * Detected features and their availability
+     */
+    detectedFeatures = {
+        grblhal: false,
+        vfd: false,
+        chatter: false,
+        camera: false,
+        usbCamera: false,
+        tmc: false,
+        sdCard: false
+    };
+    
+    async setupFeatureDetection() {
+        // Check for USB webcam availability (await so we know before updating UI)
+        await this.detectUSBWebcam();
+        
+        // Update UI based on initial feature state (hidden by default until detected)
+        this.updateFeatureVisibility();
+        
+        // Re-check features periodically
+        setInterval(() => this.updateFeatureVisibility(), 5000);
+    }
+    
+    /**
+     * Detect USB webcams (like Razer Kiyo)
+     */
+    async detectUSBWebcam() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+            console.log('[Features] MediaDevices API not available');
+            return;
+        }
+        
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const cameras = devices.filter(d => d.kind === 'videoinput');
+            
+            this.detectedFeatures.usbCamera = cameras.length > 0;
+            this.availableUSBCameras = cameras;
+            
+            if (cameras.length > 0) {
+                console.log(`[Features] Found ${cameras.length} USB camera(s):`, 
+                    cameras.map(c => c.label || 'Unnamed Camera'));
+            }
+        } catch (e) {
+            console.warn('[Features] Could not enumerate cameras:', e);
+        }
+    }
+    
+    /**
+     * Update UI visibility based on detected features
+     */
+    updateFeatureVisibility() {
+        // Update feature states from current connections
+        this.detectedFeatures.grblhal = this.connected || this.demoMode;
+        this.detectedFeatures.vfd = this.dualSerial?.vfdConnected || false;
+        this.detectedFeatures.chatter = this.dualSerial?.chatterConnected || window.chatterSystem?.connected || false;
+        this.detectedFeatures.camera = this.camera?.state?.connected || false;
+        this.detectedFeatures.tmc = !!(this.dualSerial?.tmcStatus?.x || this.dualSerial?.tmcStatus?.y || this.dualSerial?.tmcStatus?.z);
+        this.detectedFeatures.sdCard = this.sdCard?.available || false;
+        
+        // UI elements to show/hide based on features
+        const featureUIMap = {
+            // VFD elements
+            vfd: [
+                { selector: '#device-vfd', action: 'toggle' },
+                { selector: '#header-vfd-dot', action: 'toggle' },
+                { selector: '.vfd-controls', action: 'toggle' },
+                { selector: '#vfd-status-badge', action: 'toggle' },
+                { selector: '.spindle-card .vfd-info', action: 'toggle' }
+            ],
+            // Chatter detection elements
+            chatter: [
+                { selector: '#device-chatter', action: 'toggle' },
+                { selector: '#header-chatter-dot', action: 'toggle' },
+                { selector: '.chatter-section', action: 'toggle' }
+            ],
+            // Camera elements (show if ESP32 OR USB camera available, or previously used)
+            camera: [
+                { selector: '[data-tab="camera"]', action: 'toggle' },
+                { selector: '#device-camera', action: 'toggle' },
+                { selector: '#header-camera-dot', action: 'toggle' }
+            ],
+            // TMC driver elements
+            tmc: [
+                { selector: '.tmc-driver-grid', action: 'toggle' },
+                { selector: '.diag-tune-btn', action: 'toggle' }
+            ]
+        };
+        
+        // Apply visibility for each feature
+        for (const [feature, elements] of Object.entries(featureUIMap)) {
+            let isAvailable = this.detectedFeatures[feature];
+            
+            // Special case: Camera available if ESP32 OR USB webcam OR previously used
+            if (feature === 'camera') {
+                const cameraHistory = localStorage.getItem('fluidcnc-camera-detected') === 'true';
+                isAvailable = this.detectedFeatures.camera || this.detectedFeatures.usbCamera || cameraHistory;
+            }
+            
+            for (const { selector, action } of elements) {
+                const els = document.querySelectorAll(selector);
+                els.forEach(el => {
+                    if (action === 'toggle') {
+                        // Use a special class so we can still manually show/hide
+                        if (isAvailable) {
+                            el.classList.remove('feature-unavailable');
+                            el.style.display = '';
+                        } else {
+                            el.classList.add('feature-unavailable');
+                            el.style.display = 'none';
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Update connection overlay device indicators
+        this.updateConnectionOverlayDevices();
+    }
+    
+    /**
+     * Update connection overlay to show which devices are available
+     */
+    updateConnectionOverlayDevices() {
+        const vfdIndicator = document.getElementById('device-vfd');
+        const chatterIndicator = document.getElementById('device-chatter');
+        const cameraIndicator = document.getElementById('device-camera');
+        
+        // Only show devices on connection overlay if they've been detected before
+        const hasVfdHistory = localStorage.getItem('fluidcnc-vfd-detected') === 'true';
+        const hasChatterHistory = localStorage.getItem('fluidcnc-chatter-detected') === 'true';
+        const hasCameraHistory = localStorage.getItem('fluidcnc-camera-detected') === 'true';
+        
+        // Remember when we detect devices
+        if (this.detectedFeatures.vfd) {
+            localStorage.setItem('fluidcnc-vfd-detected', 'true');
+        }
+        if (this.detectedFeatures.chatter) {
+            localStorage.setItem('fluidcnc-chatter-detected', 'true');
+        }
+        if (this.detectedFeatures.camera || this.detectedFeatures.usbCamera) {
+            localStorage.setItem('fluidcnc-camera-detected', 'true');
+        }
+        
+        // Show/hide based on history or current detection
+        if (vfdIndicator) {
+            vfdIndicator.style.display = (hasVfdHistory || this.detectedFeatures.vfd) ? '' : 'none';
+        }
+        if (chatterIndicator) {
+            chatterIndicator.style.display = (hasChatterHistory || this.detectedFeatures.chatter) ? '' : 'none';
+        }
+        if (cameraIndicator) {
+            const hasCamera = this.detectedFeatures.camera || this.detectedFeatures.usbCamera;
+            cameraIndicator.style.display = (hasCameraHistory || hasCamera) ? '' : 'none';
+        }
+        
+        // Update header device indicators with connected status
+        this.updateHeaderDeviceIndicators();
+        
+        // Update device status text
+        this.updateDeviceStatusText();
+    }
+    
+    /**
+     * Update header dots to show connected/disconnected state
+     */
+    updateHeaderDeviceIndicators() {
+        const dots = {
+            grbl: { el: document.getElementById('header-grbl-dot'), connected: this.connected || this.demoMode },
+            vfd: { el: document.getElementById('header-vfd-dot'), connected: this.detectedFeatures.vfd },
+            chatter: { el: document.getElementById('header-chatter-dot'), connected: this.detectedFeatures.chatter },
+            camera: { el: document.getElementById('header-camera-dot'), connected: this.detectedFeatures.camera || this.camera?.state?.streaming }
+        };
+        
+        for (const [name, { el, connected }] of Object.entries(dots)) {
+            if (el) {
+                el.style.background = connected ? '#00ff88' : '#666';
+                el.style.boxShadow = connected ? '0 0 8px #00ff88' : 'none';
+            }
+        }
+    }
+    
+    /**
+     * Update device status text in connection overlay
+     */
+    updateDeviceStatusText() {
+        const statuses = {
+            'device-grbl-status': this.connected ? 'Connected' : (this.demoMode ? 'Demo' : '--'),
+            'device-vfd-status': this.detectedFeatures.vfd ? 'Connected' : '--',
+            'device-chatter-status': this.detectedFeatures.chatter ? 'Connected' : '--',
+            'device-camera-status': this.camera?.state?.streaming ? 
+                (this.camera?.state?.source === 'usb' ? 'USB Cam' : 'ESP32') : 
+                (this.detectedFeatures.usbCamera ? 'USB Ready' : '--')
+        };
+        
+        for (const [id, text] of Object.entries(statuses)) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = text;
+                el.style.color = text !== '--' ? '#00ff88' : '#666';
+            }
+        }
+    }
+    
+    /**
+     * Force show a feature section (user manually enables)
+     */
+    showFeatureSection(feature) {
+        const featureUIMap = {
+            vfd: ['#device-vfd', '#header-vfd-dot', '.vfd-controls', '#vfd-status-badge'],
+            chatter: ['#device-chatter', '#header-chatter-dot', '.chatter-section'],
+            camera: ['[data-tab="camera"]', '#device-camera', '#header-camera-dot'],
+            tmc: ['.tmc-driver-grid', '.diag-tune-btn']
+        };
+        
+        const selectors = featureUIMap[feature] || [];
+        for (const selector of selectors) {
+            const els = document.querySelectorAll(selector);
+            els.forEach(el => {
+                el.classList.remove('feature-unavailable');
+                el.style.display = '';
+            });
+        }
     }
     
     // ================================================================
@@ -992,9 +1226,81 @@ class FluidCNCApp {
         }
     }
     
-    onGrblError(error) {
-        this.log(`ERROR: ${error.message || error}`, 'error');
-        this.showNotification(error.message || 'Error occurred', 'error');
+    onGrblError(error, info) {
+        // Handle both simple string errors and detailed error objects
+        let errorMsg = error.message || error;
+        let fixHint = '';
+        
+        // If we have detailed info from dual-serial error parsing
+        if (info && info.msg) {
+            errorMsg = info.msg;
+            fixHint = info.fix;
+        }
+        // Parse error code from string like "error:9"
+        else if (typeof error === 'string' && error.startsWith('error:')) {
+            const code = parseInt(error.split(':')[1]);
+            const errorInfo = this._getGrblErrorInfo(code);
+            errorMsg = `Error ${code}: ${errorInfo.msg}`;
+            fixHint = errorInfo.fix;
+        }
+        
+        this.log(`ERROR: ${errorMsg}`, 'error');
+        
+        // Show notification with fix hint
+        if (fixHint) {
+            this.showNotification(`❌ ${errorMsg}\n💡 ${fixHint}`, 'error', 5000);
+        } else {
+            this.showNotification(`❌ ${errorMsg}`, 'error', 3000);
+        }
+    }
+    
+    /**
+     * Get human-readable grblHAL error info
+     */
+    _getGrblErrorInfo(code) {
+        const errors = {
+            1: { msg: 'G-code word missing letter', fix: 'Check G-code syntax' },
+            2: { msg: 'Numeric value format invalid', fix: 'Check number formatting' },
+            3: { msg: 'Command not recognized', fix: 'Use valid $ command' },
+            4: { msg: 'Negative value not allowed', fix: 'Use positive value' },
+            5: { msg: 'Homing not enabled', fix: 'Enable homing ($22=1)' },
+            6: { msg: 'Step pulse too short', fix: 'Increase $0 value' },
+            7: { msg: 'EEPROM read failed', fix: 'Reset settings ($RST=$)' },
+            8: { msg: 'Need $X unlock', fix: 'Press Unlock button' },
+            9: { msg: 'G-code locked (alarm active)', fix: 'Clear alarm first ($X or Home)' },
+            10: { msg: 'Soft limits need homing', fix: 'Home the machine first' },
+            11: { msg: 'G-code line too long', fix: 'Shorten line (<80 chars)' },
+            12: { msg: 'Step rate exceeded', fix: 'Reduce feed/acceleration' },
+            13: { msg: 'Safety door open', fix: 'Close the safety door' },
+            14: { msg: 'Startup line too long', fix: 'Shorten startup line' },
+            15: { msg: 'Travel limit exceeded', fix: 'Check soft limits ($130-132)' },
+            16: { msg: 'Invalid jog command', fix: 'Check jog syntax' },
+            17: { msg: 'Laser mode needs PWM', fix: 'Configure spindle' },
+            20: { msg: 'Unsupported G-code', fix: 'Check G-code compatibility' },
+            21: { msg: 'Conflicting G-codes', fix: 'One motion code per line' },
+            22: { msg: 'Feed rate missing', fix: 'Add F word to G1/G2/G3' },
+            23: { msg: 'Integer required', fix: 'Use whole number' },
+            24: { msg: 'Need 2+ axis words', fix: 'Add X, Y, or Z' },
+            25: { msg: 'Duplicate G-code', fix: 'Remove duplicate' },
+            26: { msg: 'No axis specified', fix: 'Add X, Y, or Z' },
+            27: { msg: 'Invalid line number', fix: 'Check N word' },
+            28: { msg: 'Missing required value', fix: 'Add missing parameter' },
+            29: { msg: 'WCS not supported', fix: 'Use G54-G59 only' },
+            30: { msg: 'G53 needs G0/G1', fix: 'Add G0 or G1' },
+            31: { msg: 'Extra axis words', fix: 'Remove extra axes' },
+            32: { msg: 'No axis in block', fix: 'Add coordinates' },
+            33: { msg: 'Invalid arc target', fix: 'Check arc I/J/K' },
+            34: { msg: 'Arc radius error', fix: 'Check arc math' },
+            35: { msg: 'Arc needs endpoint', fix: 'Add arc XYZ' },
+            36: { msg: 'Unused value', fix: 'Remove extra words' },
+            37: { msg: 'Tool offset not set', fix: 'Set tool length offset' },
+            38: { msg: 'Invalid tool number', fix: 'Use T1-T100' },
+            60: { msg: 'SD card missing', fix: 'Insert SD card' },
+            61: { msg: 'SD read failed', fix: 'Check SD card' },
+            62: { msg: 'SD write failed', fix: 'Check SD space' },
+            63: { msg: 'File not found', fix: 'Check filename' }
+        };
+        return errors[code] || { msg: `Unknown error (${code})`, fix: 'Check grblHAL docs' };
     }
     
     onGrblAlarm(alarm) {
@@ -1065,6 +1371,93 @@ class FluidCNCApp {
         if (this.elements.jobProgress) {
             this.elements.jobProgress.textContent = `${info.current} / ${info.total} (${info.progress.toFixed(1)}%)`;
         }
+        
+        // Job time estimation
+        this._updateJobTimeEstimate(info);
+    }
+    
+    /**
+     * Calculate and display estimated time remaining
+     */
+    _updateJobTimeEstimate(info) {
+        const now = Date.now();
+        
+        // Initialize tracking on job start
+        if (!this._jobStartTime || info.current === 1) {
+            this._jobStartTime = now;
+            this._lastProgressUpdate = { time: now, line: info.current };
+            this._jobTimeHistory = [];
+        }
+        
+        // Calculate elapsed time
+        const elapsedMs = now - this._jobStartTime;
+        const elapsedStr = this._formatTime(elapsedMs);
+        
+        // Calculate time per line (rolling average for accuracy)
+        const linesSinceStart = info.current;
+        const linesRemaining = info.total - info.current;
+        
+        // Track recent progress rate
+        if (this._lastProgressUpdate && info.current > this._lastProgressUpdate.line) {
+            const recentLines = info.current - this._lastProgressUpdate.line;
+            const recentTime = now - this._lastProgressUpdate.time;
+            const recentRate = recentTime / recentLines; // ms per line
+            
+            this._jobTimeHistory.push(recentRate);
+            // Keep last 50 samples
+            if (this._jobTimeHistory.length > 50) {
+                this._jobTimeHistory.shift();
+            }
+            
+            this._lastProgressUpdate = { time: now, line: info.current };
+        }
+        
+        // Calculate ETA using weighted average (recent rates weighted more)
+        let estimatedRemaining = 0;
+        if (this._jobTimeHistory.length > 0 && linesRemaining > 0) {
+            // Weight recent measurements more
+            let weightedSum = 0;
+            let weightSum = 0;
+            for (let i = 0; i < this._jobTimeHistory.length; i++) {
+                const weight = i + 1; // Later entries have higher weight
+                weightedSum += this._jobTimeHistory[i] * weight;
+                weightSum += weight;
+            }
+            const avgMsPerLine = weightedSum / weightSum;
+            estimatedRemaining = linesRemaining * avgMsPerLine;
+        } else if (linesSinceStart > 0 && linesRemaining > 0) {
+            // Fallback: use overall average
+            const avgMsPerLine = elapsedMs / linesSinceStart;
+            estimatedRemaining = linesRemaining * avgMsPerLine;
+        }
+        
+        const etaStr = estimatedRemaining > 0 ? this._formatTime(estimatedRemaining) : '--:--';
+        
+        // Update UI
+        const elapsedEl = document.getElementById('job-elapsed');
+        const etaEl = document.getElementById('job-eta');
+        const jobTimeEl = document.getElementById('job-time-info');
+        
+        if (elapsedEl) elapsedEl.textContent = elapsedStr;
+        if (etaEl) etaEl.textContent = etaStr;
+        if (jobTimeEl) {
+            jobTimeEl.textContent = `Elapsed: ${elapsedStr} | ETA: ${etaStr}`;
+        }
+    }
+    
+    /**
+     * Format milliseconds as HH:MM:SS or MM:SS
+     */
+    _formatTime(ms) {
+        const totalSec = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSec / 3600);
+        const mins = Math.floor((totalSec % 3600) / 60);
+        const secs = totalSec % 60;
+        
+        if (hours > 0) {
+            return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
     
     // ================================================================
@@ -1201,7 +1594,9 @@ class FluidCNCApp {
             grbl: this.grbl,
             onResponse: (msg) => this.aiResponse(msg),
             onCommand: (cmd) => this.handleAICommand(cmd),
-            onError: (err) => this.log(`AI Error: ${err}`, 'error')
+            onError: (err) => this.log(`AI Error: ${err}`, 'error'),
+            // Pass machine state getter for contextual awareness
+            getMachineState: () => this._getAIMachineContext()
         });
 
         // Keep AI workspace context aligned with app settings
@@ -1209,13 +1604,18 @@ class FluidCNCApp {
             this.ai.machineConfig.workArea = { ...this.workArea };
         }
         
-        // Bind AI chat input
+        // Bind AI chat input with suggestions
         if (this.elements.aiInput) {
             this.elements.aiInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     this.sendAIMessage();
                 }
+            });
+            
+            // Add autocomplete suggestions
+            this.elements.aiInput.addEventListener('input', (e) => {
+                this._showAISuggestions(e.target.value);
             });
         }
         
@@ -1231,11 +1631,121 @@ class FluidCNCApp {
                 }
             });
         }
+        
+        // Create suggestions dropdown
+        this._createAISuggestionsDropdown();
+    }
+    
+    /**
+     * Get current machine context for AI awareness
+     */
+    _getAIMachineContext() {
+        return {
+            connected: this.connected,
+            state: this.dualSerial?.machineState || 'Unknown',
+            position: this.dualSerial?.machinePos || { x: 0, y: 0, z: 0 },
+            feedOverride: this.dualSerial?.feedOverride || 100,
+            spindleRPM: this.dualSerial?.spindleRPM || 0,
+            spindleOverride: this.dualSerial?.spindleOverride || 100,
+            vfdConnected: this.dualSerial?.vfdConnected || false,
+            homedAxes: this.dualSerial?.homedAxes || { x: false, y: false, z: false },
+            tmcStatus: this.dualSerial?.tmcStatus || {}
+        };
+    }
+    
+    /**
+     * Create AI suggestions dropdown
+     */
+    _createAISuggestionsDropdown() {
+        const existing = document.getElementById('ai-suggestions');
+        if (existing) return;
+        
+        const dropdown = document.createElement('div');
+        dropdown.id = 'ai-suggestions';
+        dropdown.className = 'ai-suggestions-dropdown hidden';
+        dropdown.innerHTML = '';
+        
+        // Insert after AI input
+        const inputRow = this.elements.aiInput?.parentElement;
+        if (inputRow) {
+            inputRow.style.position = 'relative';
+            inputRow.appendChild(dropdown);
+        }
+    }
+    
+    /**
+     * Show AI command suggestions based on input
+     */
+    _showAISuggestions(text) {
+        const dropdown = document.getElementById('ai-suggestions');
+        if (!dropdown || !text || text.length < 2) {
+            dropdown?.classList.add('hidden');
+            return;
+        }
+        
+        const suggestions = this._getAISuggestions(text.toLowerCase());
+        if (suggestions.length === 0) {
+            dropdown.classList.add('hidden');
+            return;
+        }
+        
+        dropdown.innerHTML = suggestions.map((s, i) => `
+            <div class="ai-suggestion" data-cmd="${s.cmd}" tabindex="${i}">
+                <span class="ai-suggestion-icon">${s.icon}</span>
+                <span class="ai-suggestion-text">${s.text}</span>
+            </div>
+        `).join('');
+        
+        dropdown.classList.remove('hidden');
+        
+        // Handle suggestion clicks
+        dropdown.querySelectorAll('.ai-suggestion').forEach(el => {
+            el.onclick = () => {
+                this.elements.aiInput.value = el.dataset.cmd;
+                dropdown.classList.add('hidden');
+                this.elements.aiInput.focus();
+            };
+        });
+    }
+    
+    /**
+     * Get relevant suggestions based on partial input
+     */
+    _getAISuggestions(text) {
+        const allSuggestions = [
+            { icon: '🏠', text: 'home', cmd: 'home' },
+            { icon: '🔓', text: 'unlock', cmd: 'unlock' },
+            { icon: '⬆️', text: 'jog up 10', cmd: 'jog up 10' },
+            { icon: '⬇️', text: 'jog down 5', cmd: 'jog down 5' },
+            { icon: '⬅️', text: 'jog left 10', cmd: 'jog left 10' },
+            { icon: '➡️', text: 'jog right 10', cmd: 'jog right 10' },
+            { icon: '🎯', text: 'go to X0 Y0', cmd: 'go to X0 Y0' },
+            { icon: '⭕', text: 'zero all', cmd: 'zero all' },
+            { icon: '🔄', text: 'spindle on 12000', cmd: 'spindle on 12000' },
+            { icon: '⏹️', text: 'spindle off', cmd: 'spindle off' },
+            { icon: '▶️', text: 'run job', cmd: 'run job' },
+            { icon: '⏸️', text: 'pause', cmd: 'pause' },
+            { icon: '📍', text: 'probe z', cmd: 'probe z' },
+            { icon: '📊', text: 'status', cmd: 'status' },
+            { icon: '💧', text: 'coolant on', cmd: 'coolant on' },
+            { icon: '🛑', text: 'stop', cmd: 'stop' },
+            { icon: '⚡', text: 'feed 150%', cmd: 'feed 150%' },
+            { icon: '🐢', text: 'feed 50%', cmd: 'feed 50%' },
+            { icon: '❓', text: 'help', cmd: 'help' }
+        ];
+        
+        // Filter by partial match
+        return allSuggestions.filter(s => 
+            s.text.includes(text) || s.cmd.toLowerCase().includes(text)
+        ).slice(0, 6);
     }
     
     sendAIMessage() {
         const input = this.elements.aiInput;
         if (!input || !input.value.trim()) return;
+        
+        // Hide suggestions
+        document.getElementById('ai-suggestions')?.classList.add('hidden');
         
         const message = input.value.trim();
         input.value = '';
@@ -1861,12 +2371,12 @@ class FluidCNCApp {
     }
     
     // ================================================================
-    // Dual Serial Manager Setup (grblHAL + ChatterDetect ESP32)
+    // Dual Serial Manager Setup (grblHAL + ChatterDetect + VFD)
     // ================================================================
     
     setupDualSerial() {
         if (typeof DualSerialManager === 'undefined') {
-            console.warn('DualSerialManager not loaded - chatter detection via USB unavailable');
+            console.warn('DualSerialManager not loaded - USB connections unavailable');
             return;
         }
         
@@ -1879,12 +2389,817 @@ class FluidCNCApp {
         
         // Handle connection changes
         this.dualSerial.onConnectionChange = (status) => {
+            this._updateDeviceIndicators();
             this.updateChatterConnectionUI(status.chatter);
+            this._updateVfdUI();
+            
+            // Hide overlay if grblHAL connected
+            if (status.grbl) {
+                document.getElementById('connection-overlay')?.classList.add('hidden');
+                document.getElementById('app')?.classList.remove('hidden');
+            }
+        };
+        
+        // Handle reconnection attempts
+        this.dualSerial.onReconnecting = (info) => {
+            const deviceNames = {
+                'grbl': 'grblHAL',
+                'vfd': 'VFD Controller',
+                'chatter': 'Chatter Sensor'
+            };
+            const name = deviceNames[info.device] || info.device;
+            
+            if (info.status === 'reconnecting') {
+                this.showNotification(`🔄 Reconnecting ${name}... (attempt ${info.attempts})`, 'warning');
+            } else if (info.status === 'connected') {
+                this.showNotification(`✅ ${name} reconnected!`, 'success');
+            } else if (info.status === 'failed') {
+                this.showNotification(`❌ ${name} reconnection failed after ${info.attempts} attempts`, 'error');
+            }
+        };
+        
+        // Handle general messages from grblHAL
+        this.dualSerial.onMessage = (msg) => {
+            if (msg.type === 'homing') {
+                this.log(`🏠 ${msg.text}`, 'info');
+                this._updateHomingUI(true);
+            } else if (msg.type === 'msg') {
+                this.log(`[MSG] ${msg.text}`, 'info');
+            } else if (msg.type === 'warning') {
+                this.log(`⚠️ ${msg.text}`, 'warning');
+                this.showNotification(msg.text, 'warning');
+            }
+        };
+        
+        // Handle homing complete
+        this.dualSerial.onHomingComplete = (homedAxes) => {
+            this.log('✅ Homing complete!', 'success');
+            this.showNotification('🏠 Homing complete!', 'success');
+            this.playSuccessSound();
+            this._updateHomingUI(false, homedAxes);
+        };
+        
+        // Handle firmware info response
+        this.dualSerial.onFirmwareInfo = (info) => {
+            this._updateFirmwareDisplay(info);
+        };
+        
+        // Handle TMC2209 driver status updates
+        this.dualSerial.onTmcStatus = (status) => {
+            this._updateTmcDisplay(status);
+        };
+        
+        // Handle VFD status updates
+        this.dualSerial.onVfdStatus = (status) => {
+            this._updateVfdUI();
+            // Update spindle RPM displays from VFD
+            const rpm = Math.round(status.actualRPM || 0);
+            const rpmEl = document.getElementById('spindle-rpm');
+            const liveEl = document.getElementById('live-spindle');
+            const speedEl = document.getElementById('spindle-speed');
+            if (rpmEl) rpmEl.textContent = rpm;
+            if (liveEl) liveEl.textContent = rpm;
+            if (speedEl) speedEl.textContent = `S: ${rpm}`;
+            
+            // Update diagnostics panel
+            this.updateDiagnosticsVfd(status);
+        };
+        
+        // Handle auto-detect progress
+        this.dualSerial.onAutoDetect = (message) => {
+            const msgEl = document.getElementById('auto-detect-message');
+            if (msgEl) msgEl.textContent = message;
         };
         
         console.log('✓ DualSerialManager initialized');
     }
     
+    /**
+     * Auto-connect all USB devices
+     */
+    async autoConnectAll() {
+        if (!this.dualSerial) {
+            this.setupDualSerial();
+        }
+        
+        const btn = document.getElementById('auto-connect-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="btn-icon-left">⏳</span> Scanning...';
+        }
+        
+        try {
+            const results = await this.dualSerial.autoDetectAll();
+            
+            this._updateDeviceIndicators();
+            
+            if (results.grbl) {
+                this.log('✓ grblHAL connected', 'success');
+                // Setup grbl wrapper for compatibility
+                this._setupGrblFromDualSerial();
+            }
+            if (results.vfd) {
+                this.log('✓ VFD Controller connected', 'success');
+            }
+            if (results.chatter) {
+                this.log('✓ Chatter Sensor connected', 'success');
+            }
+            
+            if (!results.grbl && !results.vfd && !results.chatter) {
+                this.showNotification('No new devices found. Click "Add Device" to authorize.', 'warning');
+            }
+            
+        } catch (err) {
+            console.error('Auto-connect error:', err);
+            this.showNotification('Connection error: ' + err.message, 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span class="btn-icon-left">🔍</span> Auto Connect USB';
+            }
+        }
+    }
+    
+    /**
+     * Add a new device (shows browser popup)
+     */
+    async addNewDevice() {
+        if (!this.dualSerial) {
+            this.setupDualSerial();
+        }
+        
+        try {
+            await this.dualSerial.addDevice();
+            this._updateDeviceIndicators();
+        } catch (err) {
+            if (err.name !== 'NotFoundError') {
+                this.showNotification('Error adding device: ' + err.message, 'error');
+            }
+        }
+    }
+    
+    /**
+     * Update device indicator icons in connection overlay and header
+     */
+    _updateDeviceIndicators() {
+        // Connection overlay indicators
+        const grblEl = document.getElementById('device-grbl');
+        const vfdEl = document.getElementById('device-vfd');
+        const chatterEl = document.getElementById('device-chatter');
+        const grblStatus = document.getElementById('device-grbl-status');
+        const vfdStatus = document.getElementById('device-vfd-status');
+        const chatterStatus = document.getElementById('device-chatter-status');
+        
+        // Header indicators
+        const headerGrbl = document.getElementById('header-grbl-dot');
+        const headerVfd = document.getElementById('header-vfd-dot');
+        const headerChatter = document.getElementById('header-chatter-dot');
+        const connIndicator = document.getElementById('connection-indicator');
+        const connStatus = document.getElementById('connection-status');
+        
+        // grblHAL status
+        if (this.dualSerial?.grblConnected) {
+            if (grblEl) grblEl.style.opacity = '1';
+            if (grblStatus) {
+                grblStatus.textContent = '✓ Connected';
+                grblStatus.style.color = '#00ff88';
+            }
+            if (headerGrbl) {
+                headerGrbl.style.background = '#00ff88';
+                headerGrbl.title = 'grblHAL: Connected';
+            }
+            if (connIndicator) connIndicator.classList.remove('disconnected');
+            if (connStatus) connStatus.textContent = 'USB';
+        } else {
+            if (grblEl) grblEl.style.opacity = '0.4';
+            if (grblStatus) {
+                grblStatus.textContent = 'Not found';
+                grblStatus.style.color = '#666';
+            }
+            if (headerGrbl) {
+                headerGrbl.style.background = '#666';
+                headerGrbl.title = 'grblHAL: Disconnected';
+            }
+        }
+        
+        // VFD status
+        if (this.dualSerial?.vfdConnected) {
+            if (vfdEl) vfdEl.style.opacity = '1';
+            if (vfdStatus) {
+                vfdStatus.textContent = '✓ Connected';
+                vfdStatus.style.color = '#00ff88';
+            }
+            if (headerVfd) {
+                headerVfd.style.background = this.dualSerial?.vfdStatus?.running ? '#ffaa00' : '#00ff88';
+                headerVfd.title = `VFD: ${this.dualSerial?.vfdStatus?.running ? 'Running' : 'Connected'}`;
+            }
+        } else {
+            if (vfdEl) vfdEl.style.opacity = '0.4';
+            if (vfdStatus) {
+                vfdStatus.textContent = 'Not found';
+                vfdStatus.style.color = '#666';
+            }
+            if (headerVfd) {
+                headerVfd.style.background = '#666';
+                headerVfd.title = 'VFD: Disconnected';
+            }
+        }
+        
+        // Chatter status
+        if (this.dualSerial?.chatterConnected) {
+            if (chatterEl) chatterEl.style.opacity = '1';
+            if (chatterStatus) {
+                chatterStatus.textContent = '✓ Connected';
+                chatterStatus.style.color = '#00ff88';
+            }
+            if (headerChatter) {
+                headerChatter.style.background = '#00ff88';
+                headerChatter.title = 'Chatter: Connected';
+            }
+        } else {
+            if (chatterEl) chatterEl.style.opacity = '0.4';
+            if (chatterStatus) {
+                chatterStatus.textContent = 'Not found';
+                chatterStatus.style.color = '#666';
+            }
+            if (headerChatter) {
+                headerChatter.style.background = '#666';
+                headerChatter.title = 'Chatter: Disconnected';
+            }
+        }
+    }
+    
+    /**
+     * Setup grbl compatibility wrapper from DualSerial
+     */
+    _setupGrblFromDualSerial() {
+        // Create a grbl-like interface that uses dualSerial
+        this.grbl = {
+            send: (cmd) => this.dualSerial?.sendGrbl(cmd),
+            home: () => this.dualSerial?.sendGrbl('$H'),
+            unlock: () => this.dualSerial?.sendGrbl('$X'),
+            reset: () => this.dualSerial?.sendGrbl('\x18'),
+            hold: () => this.dualSerial?.sendGrbl('!'),
+            resume: () => this.dualSerial?.sendGrbl('~'),
+            emergencyStop: () => {
+                this.dualSerial?.sendGrbl('\x18');
+                this.dualSerial?.spindleStop();
+            },
+            setZero: (axis) => this.dualSerial?.sendGrbl(`G10 L20 P0 ${axis}0`),
+            spindleOn: (rpm, dir) => {
+                if (this.dualSerial?.vfdConnected) {
+                    if (dir === 'ccw' || dir === 'CCW') {
+                        this.dualSerial.spindleReverse(rpm);
+                    } else {
+                        this.dualSerial.spindleForward(rpm);
+                    }
+                } else {
+                    this.dualSerial?.sendGrbl(dir === 'ccw' ? `M4 S${rpm}` : `M3 S${rpm}`);
+                }
+            },
+            spindleOff: () => {
+                if (this.dualSerial?.vfdConnected) {
+                    this.dualSerial.spindleStop();
+                }
+                this.dualSerial?.sendGrbl('M5');
+            },
+            coolantFlood: (on) => this.dualSerial?.sendGrbl(on ? 'M8' : 'M9'),
+            coolantMist: (on) => this.dualSerial?.sendGrbl(on ? 'M7' : 'M9'),
+        };
+        
+        // Forward grblHAL status to existing UI
+        this.dualSerial.onGrblStatus = (status) => {
+            this._updateMachineStatus(status);
+        };
+        
+        // Forward alarm events
+        this.dualSerial.onGrblAlarm = (alarm) => {
+            this.onGrblAlarm(alarm);
+        };
+        
+        // Setup line callback for settings parser
+        this.dualSerial.onGrblLine = (line) => {
+            if (this.grblSettings?.parseLine) {
+                this.grblSettings.parseLine(line);
+            }
+        };
+    }
+    
+    /**
+     * Update homing status UI
+     */
+    _updateHomingUI(inProgress, homedAxes) {
+        const homingStatus = document.getElementById('smart-homed-status');
+        const homeBtn = document.getElementById('home-btn');
+        
+        if (inProgress) {
+            // Show homing in progress
+            if (homingStatus) {
+                homingStatus.textContent = '⏳ Homing...';
+                homingStatus.style.color = '#ffa500';
+            }
+            if (homeBtn) {
+                homeBtn.disabled = true;
+                homeBtn.style.opacity = '0.5';
+            }
+        } else if (homedAxes) {
+            // Show homed status
+            if (homingStatus) {
+                const x = homedAxes.x ? '✓' : '✗';
+                const y = homedAxes.y ? '✓' : '✗';
+                const z = homedAxes.z ? '✓' : '✗';
+                homingStatus.textContent = `X:${x} Y:${y} Z:${z}`;
+                homingStatus.style.color = (homedAxes.x && homedAxes.y && homedAxes.z) ? '#00ff88' : '#ff6b6b';
+            }
+            if (homeBtn) {
+                homeBtn.disabled = false;
+                homeBtn.style.opacity = '1';
+            }
+        }
+    }
+    
+    /**
+     * Update firmware info display in diagnostics
+     */
+    _updateFirmwareDisplay(info) {
+        if (!info) return;
+        
+        const fwEl = document.getElementById('diag-firmware');
+        const boardEl = document.getElementById('diag-board');
+        const optEl = document.getElementById('diag-options');
+        
+        if (fwEl && info.version) {
+            fwEl.textContent = info.version;
+        }
+        
+        if (boardEl) {
+            const boardText = [info.name, info.board].filter(Boolean).join(' / ');
+            boardEl.textContent = boardText || '--';
+        }
+        
+        if (optEl && info.options) {
+            // Show a summary, full options on hover
+            optEl.textContent = info.optionFlags || info.options.split(',')[0] || '--';
+            optEl.title = `Options: ${info.options}\nBuffer: ${info.blockBufferSize || 'N/A'}\nRX: ${info.rxBufferSize || 'N/A'}`;
+        }
+        
+        // Log to console
+        this.log(`Firmware: ${info.name || 'grbl'} ${info.version}`, 'info');
+    }
+    
+    /**
+     * Update TMC2209 driver display in diagnostics
+     */
+    _updateTmcDisplay(status) {
+        if (!status) return;
+        
+        ['x', 'y', 'z'].forEach(axis => {
+            const driver = status[axis];
+            if (!driver) return;
+            
+            // Update StallGuard value
+            const sgEl = document.getElementById(`diag-sg-${axis}`);
+            if (sgEl) {
+                const sgVal = driver.sg || driver.stallguard || 0;
+                sgEl.textContent = `SG: ${sgVal}`;
+            }
+            
+            // Update temperature status
+            const tempEl = document.getElementById(`diag-temp-${axis}`);
+            if (tempEl) {
+                if (driver.ot) {
+                    tempEl.textContent = '🔥 OT!';
+                    tempEl.className = 'tmc-temp error';
+                } else if (driver.otpw || driver.temp === 'otpw') {
+                    tempEl.textContent = '⚠️ OTPW';
+                    tempEl.className = 'tmc-temp warning';
+                } else {
+                    tempEl.textContent = '🌡️ ok';
+                    tempEl.className = 'tmc-temp';
+                }
+            }
+            
+            // Update load bar (based on StallGuard, lower = more load)
+            const barEl = document.getElementById(`tmc-bar-${axis}`);
+            if (barEl) {
+                const sgVal = driver.sg || driver.stallguard || 500;
+                const loadPct = Math.max(0, Math.min(100, 100 - (sgVal / 10)));
+                barEl.style.width = `${loadPct}%`;
+            }
+        });
+    }
+    
+    /**
+     * Show TMC2209 tuning dialog
+     */
+    showTmcTuning() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal tmc-tuning-modal">
+                <div class="modal-header">
+                    <h2>⚙️ TMC2209 Driver Tuning</h2>
+                    <button class="modal-close btn-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-desc">Adjust TMC2209 stepper driver settings. Changes take effect immediately.</p>
+                    
+                    <div class="tmc-tuning-section">
+                        <h3>Motor Current (RMS mA)</h3>
+                        <div class="tmc-tuning-grid">
+                            <div class="tmc-tuning-axis">
+                                <label>X Axis</label>
+                                <input type="number" id="tmc-current-x" value="800" min="100" max="2000" step="50">
+                                <span class="unit">mA</span>
+                            </div>
+                            <div class="tmc-tuning-axis">
+                                <label>Y Axis</label>
+                                <input type="number" id="tmc-current-y" value="800" min="100" max="2000" step="50">
+                                <span class="unit">mA</span>
+                            </div>
+                            <div class="tmc-tuning-axis">
+                                <label>Z Axis</label>
+                                <input type="number" id="tmc-current-z" value="800" min="100" max="2000" step="50">
+                                <span class="unit">mA</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tmc-tuning-section">
+                        <h3>StallGuard Threshold</h3>
+                        <p class="hint">Higher = less sensitive. Range: 0-255. Default: 50</p>
+                        <div class="tmc-tuning-grid">
+                            <div class="tmc-tuning-axis">
+                                <label>X Axis</label>
+                                <input type="number" id="tmc-sg-x" value="50" min="0" max="255">
+                            </div>
+                            <div class="tmc-tuning-axis">
+                                <label>Y Axis</label>
+                                <input type="number" id="tmc-sg-y" value="50" min="0" max="255">
+                            </div>
+                            <div class="tmc-tuning-axis">
+                                <label>Z Axis</label>
+                                <input type="number" id="tmc-sg-z" value="50" min="0" max="255">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tmc-tuning-section">
+                        <h3>Microstepping</h3>
+                        <div class="tmc-tuning-grid">
+                            <div class="tmc-tuning-axis">
+                                <label>All Axes</label>
+                                <select id="tmc-microsteps">
+                                    <option value="16">16 (default)</option>
+                                    <option value="32">32</option>
+                                    <option value="64">64</option>
+                                    <option value="128">128</option>
+                                    <option value="256">256 (smoothest)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tmc-info-section">
+                        <h3>Current Status</h3>
+                        <div id="tmc-live-status" class="tmc-live-status">
+                            Loading driver status...
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                    <button class="btn btn-primary" onclick="app.applyTmcSettings()">Apply Settings</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Load current values
+        this._loadTmcSettings();
+    }
+    
+    /**
+     * Load current TMC settings from grblHAL
+     */
+    async _loadTmcSettings() {
+        // Query relevant settings
+        // TMC settings in grblHAL:
+        // $140, $141, $142 = X, Y, Z current
+        // $338, $339, $340 = X, Y, Z StallGuard threshold
+        // etc. (depends on grblHAL build)
+        
+        const statusEl = document.getElementById('tmc-live-status');
+        if (statusEl && this.dualSerial?.tmcStatus) {
+            const status = this.dualSerial.tmcStatus;
+            statusEl.innerHTML = `
+                <div class="tmc-status-row">
+                    <span>X:</span> SG=${status.x?.sg || '--'}, Temp=${status.x?.temp || 'ok'}, µsteps=${status.x?.microsteps || '?'}
+                </div>
+                <div class="tmc-status-row">
+                    <span>Y:</span> SG=${status.y?.sg || '--'}, Temp=${status.y?.temp || 'ok'}, µsteps=${status.y?.microsteps || '?'}
+                </div>
+                <div class="tmc-status-row">
+                    <span>Z:</span> SG=${status.z?.sg || '--'}, Temp=${status.z?.temp || 'ok'}, µsteps=${status.z?.microsteps || '?'}
+                </div>
+            `;
+        }
+    }
+    
+    /**
+     * Apply TMC settings to grblHAL
+     */
+    applyTmcSettings() {
+        const currentX = document.getElementById('tmc-current-x')?.value;
+        const currentY = document.getElementById('tmc-current-y')?.value;
+        const currentZ = document.getElementById('tmc-current-z')?.value;
+        const sgX = document.getElementById('tmc-sg-x')?.value;
+        const sgY = document.getElementById('tmc-sg-y')?.value;
+        const sgZ = document.getElementById('tmc-sg-z')?.value;
+        
+        // Send settings to grblHAL (settings numbers depend on build)
+        // These are common TMC settings:
+        if (currentX) this.dualSerial?.sendGrbl(`$140=${currentX}`);
+        if (currentY) this.dualSerial?.sendGrbl(`$141=${currentY}`);
+        if (currentZ) this.dualSerial?.sendGrbl(`$142=${currentZ}`);
+        
+        if (sgX) this.dualSerial?.sendGrbl(`$338=${sgX}`);
+        if (sgY) this.dualSerial?.sendGrbl(`$339=${sgY}`);
+        if (sgZ) this.dualSerial?.sendGrbl(`$340=${sgZ}`);
+        
+        this.showNotification('TMC settings applied', 'success');
+        
+        // Close modal after brief delay
+        setTimeout(() => {
+            document.querySelector('.tmc-tuning-modal')?.closest('.modal-overlay')?.remove();
+        }, 500);
+    }
+    
+    /**
+     * Update UI from dual serial status
+     */
+    _updateMachineStatus(status) {
+        // Convert DualSerial status format to app format
+        const pins = status.pins || {};
+        const state = {
+            status: status.state || 'Unknown',
+            mpos: status.pos || { x: 0, y: 0, z: 0 },
+            wpos: status.pos || { x: 0, y: 0, z: 0 }, // TODO: calculate from WCO
+            feedRate: status.feedRate || 0,
+            spindleSpeed: status.spindleRPM || 0,
+            feedOverride: status.feedOverride || 100,
+            limits: {
+                x: pins.x || false,
+                y: pins.y || false,
+                z: pins.z || false
+            },
+            probe: pins.probe || false,
+            door: pins.door || false,
+            coolant: status.accessories || {}
+        };
+        
+        // Use work position if available
+        if (status.wpos) {
+            state.wpos = status.wpos;
+        }
+        
+        // Update WCS indicator
+        if (status.wcs) {
+            const wcsEl = document.getElementById('wcs-indicator');
+            if (wcsEl) {
+                wcsEl.textContent = status.wcs;
+            }
+        }
+        
+        // Forward StallGuard data to chatter detection
+        if (status.sg && this.chatter) {
+            this.chatter.updateStallGuard(status.sg);
+        }
+        
+        // Update diagnostics panel with StallGuard data
+        if (status.sg) {
+            this.updateDiagnosticsStallGuard(status.sg);
+        }
+        
+        // Update diagnostics overrides
+        if (status.overrides) {
+            this.updateDiagnosticsOverrides(status.overrides);
+        }
+        
+        // Update diagnostics connection health
+        if (status.connection) {
+            this.updateDiagnosticsConnection(status.connection);
+        }
+        
+        // Update limit indicator UI
+        this._updateLimitIndicators(pins);
+        
+        // Call the existing onGrblStatus handler
+        this.onGrblStatus(state);
+    }
+    
+    /**
+     * Update limit switch indicator UI
+     */
+    _updateLimitIndicators(pins) {
+        if (!pins) return;
+        
+        // Update limit LED indicators if they exist
+        const xLimit = document.getElementById('limit-x');
+        const yLimit = document.getElementById('limit-y');
+        const zLimit = document.getElementById('limit-z');
+        const probeIndicator = document.getElementById('probe-indicator');
+        
+        if (xLimit) xLimit.classList.toggle('active', pins.x);
+        if (yLimit) yLimit.classList.toggle('active', pins.y);
+        if (zLimit) zLimit.classList.toggle('active', pins.z);
+        if (probeIndicator) probeIndicator.classList.toggle('active', pins.probe);
+        
+        // Update diagnostics panel limit indicators
+        const diagLimX = document.getElementById('diag-lim-x');
+        const diagLimY = document.getElementById('diag-lim-y');
+        const diagLimZ = document.getElementById('diag-lim-z');
+        const diagProbe = document.getElementById('diag-probe');
+        
+        if (diagLimX) {
+            diagLimX.classList.toggle('active', pins.x);
+            diagLimX.classList.toggle('off', !pins.x);
+        }
+        if (diagLimY) {
+            diagLimY.classList.toggle('active', pins.y);
+            diagLimY.classList.toggle('off', !pins.y);
+        }
+        if (diagLimZ) {
+            diagLimZ.classList.toggle('active', pins.z);
+            diagLimZ.classList.toggle('off', !pins.z);
+        }
+        if (diagProbe) {
+            diagProbe.classList.toggle('active', pins.probe);
+            diagProbe.classList.toggle('off', !pins.probe);
+        }
+        
+        // Show warning if limits are active unexpectedly
+        if ((pins.x || pins.y || pins.z) && this.machineState !== 'Alarm') {
+            const limitStatus = document.getElementById('limit-status');
+            if (limitStatus) {
+                const activeAxes = [];
+                if (pins.x) activeAxes.push('X');
+                if (pins.y) activeAxes.push('Y');
+                if (pins.z) activeAxes.push('Z');
+                limitStatus.textContent = `⚠️ ${activeAxes.join('+')} limit`;
+                limitStatus.style.color = '#ff6b6b';
+            }
+        }
+    }
+    
+    /**
+     * Toggle diagnostics panel visibility
+     */
+    toggleDiagnostics() {
+        const panel = document.getElementById('diagnostics-panel');
+        const btn = document.getElementById('diag-toggle-btn');
+        if (panel) {
+            panel.classList.toggle('collapsed');
+            if (btn) {
+                btn.textContent = panel.classList.contains('collapsed') ? '▼' : '▲';
+            }
+        }
+    }
+    
+    /**
+     * Update diagnostics panel with StallGuard data
+     */
+    updateDiagnosticsStallGuard(sg) {
+        const sgX = document.getElementById('diag-sg-x');
+        const sgY = document.getElementById('diag-sg-y');
+        const sgZ = document.getElementById('diag-sg-z');
+        
+        const setSgClass = (el, val) => {
+            if (!el) return;
+            el.textContent = val;
+            el.classList.remove('sg-low', 'sg-medium', 'sg-high');
+            if (val < 50) el.classList.add('sg-low');
+            else if (val < 150) el.classList.add('sg-medium');
+            else el.classList.add('sg-high');
+        };
+        
+        if (sg) {
+            if (sg.x !== undefined) setSgClass(sgX, sg.x);
+            if (sg.y !== undefined) setSgClass(sgY, sg.y);
+            if (sg.z !== undefined) setSgClass(sgZ, sg.z);
+        }
+    }
+    
+    /**
+     * Update diagnostics panel with overrides data
+     */
+    updateDiagnosticsOverrides(overrides) {
+        if (!overrides) return;
+        
+        const feedEl = document.getElementById('diag-ov-feed');
+        const rapidEl = document.getElementById('diag-ov-rapid');
+        const spindleEl = document.getElementById('diag-ov-spindle');
+        
+        if (feedEl && overrides.feed !== undefined) feedEl.textContent = overrides.feed + '%';
+        if (rapidEl && overrides.rapid !== undefined) rapidEl.textContent = overrides.rapid + '%';
+        if (spindleEl && overrides.spindle !== undefined) spindleEl.textContent = overrides.spindle + '%';
+    }
+    
+    /**
+     * Update diagnostics panel with VFD data
+     */
+    updateDiagnosticsVfd(vfdData) {
+        if (!vfdData) return;
+        
+        const stateEl = document.getElementById('diag-vfd-state');
+        const rpmEl = document.getElementById('diag-vfd-rpm');
+        const voltageEl = document.getElementById('diag-vfd-voltage');
+        const faultEl = document.getElementById('diag-vfd-fault');
+        
+        if (stateEl) {
+            stateEl.textContent = vfdData.state || '--';
+        }
+        if (rpmEl) {
+            rpmEl.textContent = vfdData.rpm || '0';
+        }
+        if (voltageEl && vfdData.busVoltage !== undefined) {
+            voltageEl.textContent = vfdData.busVoltage + 'V';
+        }
+        if (faultEl) {
+            const fault = vfdData.fault || vfdData.faultCode;
+            if (fault && fault !== 0 && fault !== '0') {
+                faultEl.textContent = this._getVfdFaultDescription(fault);
+                faultEl.classList.remove('fault-ok');
+                faultEl.classList.add('fault-error');
+            } else {
+                faultEl.textContent = 'None';
+                faultEl.classList.remove('fault-error');
+                faultEl.classList.add('fault-ok');
+            }
+        }
+    }
+    
+    /**
+     * Get human-readable VFD fault description
+     */
+    _getVfdFaultDescription(faultCode) {
+        const faultCodes = {
+            0: 'None',
+            1: 'Overcurrent',
+            2: 'Overvoltage',
+            3: 'Undervoltage',
+            4: 'Motor Overtemp',
+            5: 'VFD Overtemp',
+            6: 'Overload',
+            7: 'Communication Error',
+            8: 'Motor Stall',
+            9: 'Ground Fault',
+            10: 'Phase Loss',
+            11: 'Input Phase Error',
+            12: 'Output Phase Error',
+            13: 'Parameter Error',
+            14: 'External Fault',
+            15: 'EEPROM Error',
+            16: 'Brake Resistor',
+            17: 'Encoder Fault',
+            18: 'PID Feedback Loss',
+            // Huanyang specific
+            'OC1': 'Overcurrent During Accel',
+            'OC2': 'Overcurrent During Decel',
+            'OC3': 'Overcurrent at Const Speed',
+            'OV1': 'Overvoltage During Accel',
+            'OV2': 'Overvoltage During Decel',
+            'OV3': 'Overvoltage at Const Speed',
+            'LU': 'Bus Undervoltage',
+            'OH': 'Inverter Overheating',
+            'OL': 'Overload'
+        };
+        return faultCodes[faultCode] || `Fault ${faultCode}`;
+    }
+    
+    /**
+     * Update diagnostics panel with connection health data
+     */
+    updateDiagnosticsConnection(conn) {
+        if (!conn) return;
+        
+        const latencyEl = document.getElementById('diag-latency');
+        const rxRateEl = document.getElementById('diag-rx-rate');
+        
+        if (latencyEl) {
+            latencyEl.textContent = conn.latency ? `${conn.latency}ms` : '--';
+            // Color based on latency quality
+            latencyEl.classList.remove('sg-low', 'sg-medium', 'sg-high');
+            if (conn.latency > 100) latencyEl.classList.add('sg-low');
+            else if (conn.latency > 30) latencyEl.classList.add('sg-medium');
+            else latencyEl.classList.add('sg-high');
+        }
+        
+        if (rxRateEl) {
+            rxRateEl.textContent = conn.rxRate ? `${conn.rxRate}/s` : '--';
+        }
+    }
     updateChatterUI(data) {
         // State indicator
         const stateEl = document.getElementById('chatter-state');
@@ -3223,9 +4538,15 @@ class FluidCNCApp {
             // On a CNC machine, Escape should ALWAYS trigger E-STOP
             if (e.key === 'Escape') {
                 e.preventDefault();
-                console.warn('[SAFETY] Escape pressed - triggering emergency stop');
-                this.grbl?.emergencyStop?.();
-                this.showNotification('⚠️ EMERGENCY STOP - Escape pressed', 'error');
+                this.emergencyStop();
+                return;
+            }
+            
+            // Ctrl+X = Soft Reset (traditional grbl reset)
+            if (e.key === 'x' && e.ctrlKey) {
+                e.preventDefault();
+                this.softReset();
+                return;
             }
             
             // Space to toggle pause
@@ -3270,6 +4591,16 @@ class FluidCNCApp {
                             this.log('Zeroed all axes', 'info');
                         }
                         break;
+                    case '!':
+                        // Feed Hold (! key)
+                        e.preventDefault();
+                        this.feedHold();
+                        break;
+                    case '~':
+                        // Cycle Start (~ key)
+                        e.preventDefault();
+                        this.cycleStart();
+                        break;
                     case 'f':
                         if (!e.ctrlKey && !e.altKey) {
                             e.preventDefault();
@@ -3294,6 +4625,62 @@ class FluidCNCApp {
                             e.preventDefault();
                             // Toggle vacuum
                             this.elements.vacuumToggle?.click();
+                        }
+                        break;
+                    
+                    // Spindle/VFD keyboard shortcuts
+                    case 's':
+                        if (e.shiftKey && !e.ctrlKey && !e.altKey) {
+                            // Shift+S = Spindle STOP
+                            e.preventDefault();
+                            this.dualSerial?.spindleStop?.();
+                            this.showNotification('🛑 Spindle STOP', 'warning');
+                        }
+                        break;
+                    case 'r':
+                        if (e.shiftKey && !e.ctrlKey && !e.altKey) {
+                            // Shift+R = Spindle RUN (forward)
+                            e.preventDefault();
+                            const rpm = this.targetSpindleRPM || 12000;
+                            this.dualSerial?.spindleForward?.(rpm);
+                            this.showNotification(`▶️ Spindle FWD @ ${rpm} RPM`, 'info');
+                        }
+                        break;
+                    case '+':
+                    case '=':
+                        if (e.shiftKey && !e.ctrlKey && !e.altKey) {
+                            // Shift++ = Increase spindle 10%
+                            e.preventDefault();
+                            this.adjustSpindleOverride(10);
+                        }
+                        break;
+                    case '-':
+                    case '_':
+                        if (e.shiftKey && !e.ctrlKey && !e.altKey) {
+                            // Shift+- = Decrease spindle 10%
+                            e.preventDefault();
+                            this.adjustSpindleOverride(-10);
+                        }
+                        break;
+                    case ']':
+                        if (!e.ctrlKey && !e.altKey) {
+                            // ] = Increase feed override 10%
+                            e.preventDefault();
+                            this.adjustFeedOverride(10);
+                        }
+                        break;
+                    case '[':
+                        if (!e.ctrlKey && !e.altKey) {
+                            // [ = Decrease feed override 10%
+                            e.preventDefault();
+                            this.adjustFeedOverride(-10);
+                        }
+                        break;
+                    case 'backspace':
+                        if (!e.ctrlKey && !e.altKey) {
+                            // Backspace = Reset all overrides to 100%
+                            e.preventDefault();
+                            this.resetOverrides();
                         }
                         break;
                 }
@@ -3478,6 +4865,81 @@ class FluidCNCApp {
     }
     
     // ================================================================
+    // VFD Spindle Control
+    // ================================================================
+    
+    async connectVfd() {
+        try {
+            await this.dualSerial?.connectVfd();
+            this.log('VFD Controller connected', 'success');
+            this._updateVfdUI();
+        } catch (err) {
+            this.log('VFD connection failed: ' + err.message, 'error');
+        }
+    }
+    
+    async spindleForward() {
+        const rpm = parseInt(document.getElementById('spindle-slider')?.value || 12000);
+        if (this.dualSerial?.vfdConnected) {
+            await this.dualSerial.spindleForward(rpm);
+            this.log(`Spindle FWD @ ${rpm} RPM`, 'info');
+        } else {
+            // Fallback to grblHAL
+            this.grbl?.spindleOn(rpm, 'cw');
+        }
+    }
+    
+    async spindleReverse() {
+        const rpm = parseInt(document.getElementById('spindle-slider')?.value || 12000);
+        if (this.dualSerial?.vfdConnected) {
+            await this.dualSerial.spindleReverse(rpm);
+            this.log(`Spindle REV @ ${rpm} RPM`, 'info');
+        } else {
+            // Fallback to grblHAL
+            this.grbl?.spindleOn(rpm, 'ccw');
+        }
+    }
+    
+    async spindleStop() {
+        if (this.dualSerial?.vfdConnected) {
+            await this.dualSerial.spindleStop();
+            this.log('Spindle STOP', 'info');
+        } else {
+            // Fallback to grblHAL
+            this.grbl?.spindleOff();
+        }
+    }
+    
+    _updateVfdUI() {
+        const badge = document.getElementById('vfd-status-badge');
+        const info = document.getElementById('vfd-info');
+        const btn = document.getElementById('vfd-connect-btn');
+        
+        if (this.dualSerial?.vfdConnected) {
+            const vfd = this.dualSerial.vfdStatus;
+            if (badge) {
+                badge.textContent = vfd.running ? '🟢 VFD' : '🟡 VFD';
+                badge.title = vfd.running ? `Running: ${vfd.actualRPM} RPM` : 'VFD Connected - Idle';
+            }
+            if (info) {
+                if (vfd.running) {
+                    info.textContent = `${vfd.actualRPM} RPM | ${vfd.outputAmps.toFixed(1)}A | ${vfd.temperature}°C`;
+                } else {
+                    info.textContent = `Ready | ${vfd.temperature}°C`;
+                }
+            }
+            if (btn) btn.textContent = '✓ VFD Connected';
+        } else {
+            if (badge) {
+                badge.textContent = '⚫ VFD';
+                badge.title = 'VFD Disconnected';
+            }
+            if (info) info.textContent = '';
+            if (btn) btn.textContent = '🔌 Connect VFD';
+        }
+    }
+
+    // ================================================================
     // Coordinate Display Toggle
     // ================================================================
     
@@ -3557,6 +5019,47 @@ class FluidCNCApp {
         this.grbl?.setSpindleOverride?.(parseInt(value));
     }
     
+    adjustFeedOverride(delta) {
+        const currentFeed = this.dualSerial?.feedOverride || 100;
+        const newFeed = Math.max(10, Math.min(200, currentFeed + delta));
+        this.grbl?.setFeedOverride?.(newFeed);
+        this.showNotification(`Feed: ${newFeed}%`, 'info');
+        
+        // Update UI slider
+        const slider = document.getElementById('feed-override-slider');
+        if (slider) slider.value = newFeed;
+        const display = document.getElementById('feed-override-val');
+        if (display) display.textContent = newFeed + '%';
+    }
+    
+    adjustSpindleOverride(delta) {
+        const currentSpindle = this.dualSerial?.vfdStatus?.spindleOverride || 100;
+        const newSpindle = Math.max(10, Math.min(200, currentSpindle + delta));
+        this.grbl?.setSpindleOverride?.(newSpindle);
+        this.showNotification(`Spindle: ${newSpindle}%`, 'info');
+        
+        // Update UI slider
+        const slider = document.getElementById('spindle-override-slider');
+        if (slider) slider.value = newSpindle;
+        const display = document.getElementById('spindle-override-val');
+        if (display) display.textContent = newSpindle + '%';
+    }
+    
+    resetOverrides() {
+        this.grbl?.setFeedOverride?.(100);
+        this.grbl?.setRapidOverride?.(100);
+        this.grbl?.setSpindleOverride?.(100);
+        this.showNotification('Overrides reset to 100%', 'success');
+        
+        // Update UI
+        ['feed', 'rapid', 'spindle'].forEach(type => {
+            const slider = document.getElementById(`${type}-override-slider`);
+            const display = document.getElementById(`${type}-override-val`);
+            if (slider) slider.value = 100;
+            if (display) display.textContent = '100%';
+        });
+    }
+    
     // ================================================================
     // WCS Selection
     // ================================================================
@@ -3581,25 +5084,52 @@ class FluidCNCApp {
     
     showKeyboardShortcuts() {
         const shortcuts = [
+            ['Movement', ''],
             ['Arrow Keys', 'Jog X/Y'],
             ['PageUp/Down', 'Jog Z'],
+            ['Shift + Arrow', 'Jog 10x faster'],
+            ['', ''],
+            ['Safety & Control', ''],
+            ['Escape', '🛑 EMERGENCY STOP'],
+            ['Ctrl+X', 'Soft Reset'],
+            ['Space', 'Pause/Resume job'],
+            ['!', 'Feed Hold'],
+            ['~', 'Cycle Start/Resume'],
+            ['', ''],
+            ['Machine Control', ''],
             ['H', 'Home all axes'],
             ['U', 'Unlock'],
-            ['Escape', 'Emergency Stop / Cancel'],
-            ['Space', 'Pause/Resume job'],
             ['0', 'Zero all axes'],
             ['V', 'Toggle vacuum'],
+            ['', ''],
+            ['Spindle/VFD', ''],
+            ['Shift+R', 'Spindle RUN (forward)'],
+            ['Shift+S', 'Spindle STOP'],
+            ['Shift++', 'Spindle override +10%'],
+            ['Shift+-', 'Spindle override -10%'],
+            ['', ''],
+            ['Feed Override', ''],
+            [']', 'Feed override +10%'],
+            ['[', 'Feed override -10%'],
+            ['Backspace', 'Reset all overrides'],
+            ['', ''],
+            ['File/View', ''],
             ['Ctrl+O', 'Open G-code file'],
             ['Ctrl+S', 'Save G-code'],
+            ['F', 'Fit view'],
+            ['T', 'Top view'],
+            ['I', 'Isometric view'],
             ['?', 'Show this help']
         ];
         
-        const html = shortcuts.map(([key, desc]) => 
-            `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #333">
+        const html = shortcuts.map(([key, desc]) => {
+            if (!key && !desc) return '<div style="height:8px"></div>';
+            if (!desc) return `<div style="color:#0af;font-weight:600;margin-top:8px;font-size:11px">${key}</div>`;
+            return `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #333">
                 <kbd style="background:#333;padding:2px 8px;border-radius:3px;font-family:monospace">${key}</kbd>
                 <span>${desc}</span>
-            </div>`
-        ).join('');
+            </div>`;
+        }).join('');
         
         const modal = document.createElement('div');
         modal.className = 'modal-overlay';
@@ -3809,7 +5339,8 @@ class FluidCNCApp {
             },
             onComplete: () => {
                 this.log('Job complete!', 'success');
-                this.showNotification('Job complete!', 'success');
+                this.showNotification('🎉 Job complete!', 'success');
+                this.playSuccessSound();
                 // Mark job complete for recovery and enhancements
                 if (this.recovery) this.recovery.jobComplete();
                 if (this.enhancements) this.enhancements.endJob(true);
@@ -4626,11 +6157,104 @@ class FluidCNCApp {
     }
     
     // ================================================================
+    // Emergency Stop & Safety Controls
+    // ================================================================
+    
+    /**
+     * EMERGENCY STOP - immediately halts all motion and spindle
+     * This is the most critical safety function
+     */
+    emergencyStop() {
+        console.warn('🛑 EMERGENCY STOP ACTIVATED');
+        
+        // Send soft reset to grblHAL (0x18) 
+        if (this.dualSerial) {
+            this.dualSerial.sendGrbl('\x18');  // Soft reset
+            this.dualSerial.spindleStop();     // Stop VFD spindle
+        }
+        
+        // Also try through grbl wrapper
+        this.grbl?.reset?.();
+        
+        // Visual feedback
+        document.body.classList.add('estop-active');
+        const estopBtn = document.getElementById('estop-btn');
+        if (estopBtn) {
+            estopBtn.classList.add('active');
+        }
+        
+        // Play alarm
+        this.playAlarmSound(2000);
+        
+        // Show prominent notification
+        this.showNotification('🛑 EMERGENCY STOP - All motion halted!', 'error', 10000);
+        
+        // Log to console
+        this.log('🛑 EMERGENCY STOP ACTIVATED', 'error');
+        
+        // Remove visual feedback after 3 seconds
+        setTimeout(() => {
+            document.body.classList.remove('estop-active');
+            estopBtn?.classList.remove('active');
+        }, 3000);
+    }
+    
+    /**
+     * Soft reset - resets grblHAL without full power cycle
+     */
+    softReset() {
+        if (this.dualSerial) {
+            this.dualSerial.sendGrbl('\x18');
+        }
+        this.showNotification('Soft reset sent', 'info');
+        this.log('Soft reset (Ctrl+X)', 'info');
+    }
+    
+    /**
+     * Feed hold - pause current motion
+     */
+    feedHold() {
+        if (this.dualSerial) {
+            this.dualSerial.sendGrbl('!');
+        }
+        this.showNotification('Feed Hold', 'info');
+        this.log('Feed Hold (!)', 'info');
+    }
+    
+    /**
+     * Cycle start - resume from feed hold
+     */
+    cycleStart() {
+        if (this.dualSerial) {
+            this.dualSerial.sendGrbl('~');
+        }
+        this.showNotification('Cycle Start', 'info');
+        this.log('Cycle Start (~)', 'info');
+    }
+    
+    // ================================================================
     // Notifications & Modals
     // ================================================================
     
+    // Sound enabled setting (stored in localStorage)
+    get soundEnabled() {
+        return localStorage.getItem('fluidcnc_sound') !== 'false';
+    }
+    
+    set soundEnabled(value) {
+        localStorage.setItem('fluidcnc_sound', value ? 'true' : 'false');
+    }
+    
+    toggleSound() {
+        this.soundEnabled = !this.soundEnabled;
+        this.showNotification(`Sound ${this.soundEnabled ? 'enabled' : 'disabled'}`, 'info');
+        return this.soundEnabled;
+    }
+    
     // SAFETY: Play alarm sound for critical situations
     playAlarmSound(durationMs = 3000) {
+        if (!this.soundEnabled) return;
+        
         try {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
@@ -4658,6 +6282,95 @@ class FluidCNCApp {
         } catch (e) {
             console.warn('Could not play alarm sound:', e);
         }
+    }
+    
+    // Play success sound (job complete, etc)
+    playSuccessSound() {
+        if (!this.soundEnabled) return;
+        
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const now = audioContext.currentTime;
+            
+            // Play ascending chord (C-E-G)
+            const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+            
+            frequencies.forEach((freq, i) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0, now + i * 0.1);
+                gain.gain.linearRampToValueAtTime(0.2, now + i * 0.1 + 0.05);
+                gain.gain.linearRampToValueAtTime(0, now + i * 0.1 + 0.5);
+                
+                osc.start(now + i * 0.1);
+                osc.stop(now + i * 0.1 + 0.5);
+            });
+            
+            setTimeout(() => audioContext.close(), 1000);
+        } catch (e) {
+            console.warn('Could not play success sound:', e);
+        }
+    }
+    
+    // Play click/beep for feedback
+    playClickSound() {
+        if (!this.soundEnabled) return;
+        
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'sine';
+            osc.frequency.value = 1000;
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05);
+            
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.05);
+            
+            setTimeout(() => audioContext.close(), 100);
+        } catch (e) {
+            // Ignore
+        }
+    }
+    
+    // Toggle between work and machine position display
+    togglePositionDisplay() {
+        this.showWorkPosition = !this.showWorkPosition;
+        
+        // Update the visibility of position elements
+        const posElements = document.querySelectorAll('.axis-value');
+        const wposElements = document.querySelectorAll('.axis-value-work');
+        
+        if (this.showWorkPosition) {
+            posElements.forEach(el => el.classList.add('hidden'));
+            wposElements.forEach(el => el.classList.remove('hidden'));
+        } else {
+            posElements.forEach(el => el.classList.remove('hidden'));
+            wposElements.forEach(el => el.classList.add('hidden'));
+        }
+        
+        // Update toggle button
+        const toggleBtn = document.getElementById('pos-toggle-btn');
+        if (toggleBtn) {
+            toggleBtn.textContent = this.showWorkPosition ? 'WPos' : 'MPos';
+            toggleBtn.title = this.showWorkPosition 
+                ? 'Showing Work Position (click for Machine)' 
+                : 'Showing Machine Position (click for Work)';
+        }
+        
+        this.showNotification(`Showing ${this.showWorkPosition ? 'Work' : 'Machine'} Position`, 'info');
+        this.playClickSound();
     }
     
     showNotification(message, type = 'info') {

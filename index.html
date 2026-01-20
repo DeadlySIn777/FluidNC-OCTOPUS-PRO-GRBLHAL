@@ -94,29 +94,56 @@
                 <h1 class="logo">FluidCNC</h1>
                 <p class="tagline">Modern CNC Control for grblHAL</p>
             </div>
-            <div class="input-group" id="ip-input-group">
-                <input type="text" id="ip-input" placeholder="192.168.1.100" autocomplete="off" spellcheck="false">
-                <span class="port-label">:81</span>
+            
+            <!-- Device Status Panel -->
+            <div class="device-status-panel" style="margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 12px;">
+                <div style="display: flex; justify-content: space-around; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <div class="device-indicator" id="device-grbl" style="text-align: center;">
+                        <div style="font-size: 24px;">🎛️</div>
+                        <div style="font-size: 12px; color: #888;">grblHAL</div>
+                        <div id="device-grbl-status" style="font-size: 10px; color: #666;">--</div>
+                    </div>
+                    <div class="device-indicator" id="device-vfd" style="text-align: center;">
+                        <div style="font-size: 24px;">⚡</div>
+                        <div style="font-size: 12px; color: #888;">VFD</div>
+                        <div id="device-vfd-status" style="font-size: 10px; color: #666;">--</div>
+                    </div>
+                    <div class="device-indicator" id="device-chatter" style="text-align: center;">
+                        <div style="font-size: 24px;">📊</div>
+                        <div style="font-size: 12px; color: #888;">Chatter</div>
+                        <div id="device-chatter-status" style="font-size: 10px; color: #666;">--</div>
+                    </div>
+                    <div class="device-indicator" id="device-camera" style="text-align: center;">
+                        <div style="font-size: 24px;">📷</div>
+                        <div style="font-size: 12px; color: #888;">Camera</div>
+                        <div id="device-camera-status" style="font-size: 10px; color: #666;">--</div>
+                    </div>
+                </div>
+                <div id="auto-detect-message" style="font-size: 11px; color: #00d4ff; text-align: center; min-height: 16px;"></div>
             </div>
+            
             <div class="btn-connect-group">
-                <button id="bridge-connect-btn" class="btn btn-primary" title="Connect via Bridge Server (recommended for remote)" onclick="app?.connectBridge();">
-                    <span class="btn-icon-left">🌐</span> Connect
+                <button id="auto-connect-btn" class="btn btn-primary btn-large" title="Auto-detect and connect all USB devices" onclick="app?.autoConnectAll();" style="font-size: 16px; padding: 14px 28px;">
+                    <span class="btn-icon-left">🔍</span> Auto Connect USB
                 </button>
-                <button id="connect-btn" class="btn btn-secondary" style="display:none" onclick="app?.connect('websocket');">
-                    <span class="btn-icon-left">📶</span> Direct WiFi
-                </button>
-                <button id="usb-connect-btn" class="btn btn-secondary" title="USB via WebSerial (Chrome/Edge)" onclick="app?.connect('serial');">
-                    <span class="btn-icon-left">🔌</span> USB
-                </button>
-                <button id="demo-btn" class="btn btn-secondary" onclick="app?.startDemo();">Demo</button>
             </div>
+            <div class="btn-connect-group" style="margin-top: 10px;">
+                <button id="add-device-btn" class="btn btn-secondary btn-sm" title="Add a new device" onclick="app?.addNewDevice();">
+                    <span class="btn-icon-left">➕</span> Add Device
+                </button>
+                <button id="bridge-connect-btn" class="btn btn-secondary btn-sm" title="Connect via Bridge Server" onclick="app?.connectBridge();">
+                    <span class="btn-icon-left">🌐</span> WiFi
+                </button>
+                <button id="demo-btn" class="btn btn-secondary btn-sm" onclick="app?.startDemo();">Demo</button>
+            </div>
+            
             <!-- SAFETY: E-STOP always visible even on connection overlay -->
             <div class="overlay-estop-container">
                 <button id="overlay-estop-btn" class="btn-estop overlay-estop" title="Emergency Stop [Esc] - Always Available" onclick="(function(){ app?.grbl?.emergencyStop(); app?.showNotification?.('⚠️ E-STOP SENT - Check machine!', 'error'); })();">
                     ⛔ EMERGENCY STOP
                 </button>
             </div>
-            <p class="hint" id="connection-hint">Click Connect to control CNC from any device</p>
+            <p class="hint" id="connection-hint">Connect your CNC, VFD, and sensors with one click</p>
         </div>
     </div>
 
@@ -146,13 +173,22 @@
                 </div>
             </div>
             <div class="header-right">
+                <!-- Device Connection Indicators -->
+                <div class="device-indicators" style="display:flex;gap:8px;margin-right:10px;">
+                    <span id="header-grbl-dot" class="conn-dot-small" title="grblHAL" style="width:10px;height:10px;border-radius:50%;background:#666;">🎛️</span>
+                    <span id="header-vfd-dot" class="conn-dot-small" title="VFD" style="width:10px;height:10px;border-radius:50%;background:#666;">⚡</span>
+                    <span id="header-chatter-dot" class="conn-dot-small" title="Chatter" style="width:10px;height:10px;border-radius:50%;background:#666;">📊</span>
+                    <span id="header-camera-dot" class="conn-dot-small" title="Camera" style="width:10px;height:10px;border-radius:50%;background:#666;">📷</span>
+                </div>
                 <div id="connection-indicator" class="connection-indicator disconnected" title="Click to reconnect">
                     <span class="conn-dot"></span>
                     <span id="connection-type-icon" class="conn-type-icon"></span>
                     <span id="connection-status" class="conn-text">Offline</span>
                 </div>
+                <button id="estop-btn" class="btn btn-estop" title="EMERGENCY STOP (Ctrl+X)" onclick="app?.emergencyStop?.()">🛑 E-STOP</button>
                 <button id="header-connect-btn" class="btn btn-sm" title="WiFi Connect" onclick="app?.connect('websocket')">📶</button>
                 <button id="header-usb-btn" class="btn btn-sm" title="USB Connect" onclick="app?.connect('serial')">🔌</button>
+                <button id="sound-toggle-btn" class="btn btn-sm" title="Toggle Sound Alerts" onclick="const on = app?.toggleSound(); this.textContent = on ? '🔊' : '🔇'">🔊</button>
                 <button id="header-config-btn" class="btn btn-sm" title="Configure Machine" onclick="app?.showMachineConfig()">⚙️</button>
                 <button id="keyboard-help-btn" class="btn-icon" title="Keyboard Shortcuts (?)" onclick="app?.switchTab('shortcuts')">⌨️</button>
             </div>
@@ -180,7 +216,7 @@
             </div>
             <div class="nav-divider"></div>
             <div class="nav-group nav-tools">
-                <button class="nav-tab" data-tab="camera" onclick="app?.camera?.showViewer?.(); app?.camera?.toggleStream?.()" title="ESP32 Camera View">
+                <button class="nav-tab" data-tab="camera" onclick="app?.camera?.autoSelectCamera?.()" title="Camera (USB or ESP32)">
                     <span class="nav-icon">📷</span>
                     <span class="nav-label">Camera</span>
                 </button>
@@ -237,12 +273,16 @@
 
                     <!-- Position Display -->
                     <div class="position-display">
+                        <div class="position-header">
+                            <span class="section-title">Position</span>
+                            <button id="pos-toggle-btn" class="pos-toggle" onclick="app?.togglePositionDisplay?.()" title="Showing Work Position (click for Machine)">WPos</button>
+                        </div>
                         <div class="axis-row x">
                             <span class="axis-label">X</span>
                             <span id="limit-x" class="limit-indicator" title="X Limit Switch">●</span>
                             <div class="axis-values">
-                                <span id="pos-x" class="axis-value">0.000</span>
-                                <span id="wpos-x" class="axis-value-work hidden">0.000</span>
+                                <span id="pos-x" class="axis-value hidden">0.000</span>
+                                <span id="wpos-x" class="axis-value-work">0.000</span>
                             </div>
                             <button class="btn-zero zero-btn" data-axis="x" onclick="app?.grbl?.setZero('X')">ZERO</button>
                         </div>
@@ -250,8 +290,8 @@
                             <span class="axis-label">Y</span>
                             <span id="limit-y" class="limit-indicator" title="Y Limit Switch">●</span>
                             <div class="axis-values">
-                                <span id="pos-y" class="axis-value">0.000</span>
-                                <span id="wpos-y" class="axis-value-work hidden">0.000</span>
+                                <span id="pos-y" class="axis-value hidden">0.000</span>
+                                <span id="wpos-y" class="axis-value-work">0.000</span>
                             </div>
                             <button class="btn-zero zero-btn" data-axis="y" onclick="app?.grbl?.setZero('Y')">ZERO</button>
                         </div>
@@ -259,8 +299,8 @@
                             <span class="axis-label">Z</span>
                             <span id="limit-z" class="limit-indicator" title="Z Limit Switch">●</span>
                             <div class="axis-values">
-                                <span id="pos-z" class="axis-value">0.000</span>
-                                <span id="wpos-z" class="axis-value-work hidden">0.000</span>
+                                <span id="pos-z" class="axis-value hidden">0.000</span>
+                                <span id="wpos-z" class="axis-value-work">0.000</span>
                             </div>
                             <button class="btn-zero zero-btn" data-axis="z" onclick="app?.grbl?.setZero('Z')">ZERO</button>
                         </div>
@@ -271,6 +311,14 @@
                         <span id="machine-status" class="status-badge status-idle">Idle</span>
                         <span id="feed-rate" class="status-value">F: 0</span>
                         <span id="spindle-speed" class="status-value">S: 0</span>
+                        <span id="wcs-indicator" class="status-value wcs-badge" title="Work Coordinate System">G54</span>
+                    </div>
+                    
+                    <!-- Safety Quick Actions -->
+                    <div class="safety-actions">
+                        <button class="safety-btn" title="Retract Z to safe height" onclick="app?.dualSerial?.retractZ?.()">⬆️ Safe Z</button>
+                        <button class="safety-btn" title="Go to work zero (safe)" onclick="app?.dualSerial?.gotoWorkZero?.()">🎯 Go 0,0</button>
+                        <button class="safety-btn" title="Go to machine zero" onclick="app?.dualSerial?.gotoMachineZero?.()">🏠 Machine 0</button>
                     </div>
 
                     <!-- Coolant & Vacuum Controls -->
@@ -322,11 +370,25 @@
                             <kbd class="shortcut-hint">0</kbd>
                         </button>
                     </div>
+                    
+                    <!-- Quick Commands -->
+                    <div class="quick-commands">
+                        <span class="section-title">Quick Commands</span>
+                        <div class="quick-cmd-grid">
+                            <button class="quick-cmd" title="Go to machine zero" onclick="app?.grbl?.send('G53 G0 Z0'); setTimeout(() => app?.grbl?.send('G53 G0 X0 Y0'), 500)">Go Home</button>
+                            <button class="quick-cmd" title="Raise Z to safe height" onclick="app?.grbl?.send('G91 G0 Z10'); app?.grbl?.send('G90')">Z Up 10</button>
+                            <button class="quick-cmd" title="Go to work zero" onclick="app?.grbl?.send('G0 Z5'); setTimeout(() => app?.grbl?.send('G0 X0 Y0'), 500)">Go WCS 0</button>
+                            <button class="quick-cmd" title="Reset position to zero" onclick="app?.grbl?.send('G92 X0 Y0 Z0')">Set Origin</button>
+                            <button class="quick-cmd" title="Check G-code ($C)" onclick="app?.grbl?.send('$C')">Check Mode</button>
+                            <button class="quick-cmd" title="View settings" onclick="app?.grbl?.send('$$')">Settings</button>
+                        </div>
+                    </div>
 
                     <!-- Spindle Control -->
                     <div class="spindle-control">
                         <div class="spindle-header">
                             <span class="section-title">Spindle</span>
+                            <span id="vfd-status-badge" class="status-badge" title="VFD Status">⚫ VFD</span>
                             <span id="spindle-rpm" class="spindle-rpm-value">0</span>
                             <span class="rpm-unit">RPM</span>
                         </div>
@@ -338,9 +400,13 @@
                             <button class="rpm-preset" data-rpm="24000" onclick="app?.setSpindleSpeed(24000)">24K</button>
                         </div>
                         <div class="spindle-buttons">
-                            <button id="spindle-cw" class="btn btn-spindle" onclick="app?.grbl?.spindleOn(document.getElementById('spindle-slider').value,'cw')">CW ↻</button>
-                            <button id="spindle-ccw" class="btn btn-spindle" onclick="app?.grbl?.spindleOn(document.getElementById('spindle-slider').value,'ccw')">CCW ↺</button>
-                            <button id="spindle-stop" class="btn btn-spindle-stop" onclick="app?.grbl?.spindleOff()">STOP</button>
+                            <button id="spindle-cw" class="btn btn-spindle" onclick="app?.spindleForward()">CW ↻</button>
+                            <button id="spindle-ccw" class="btn btn-spindle" onclick="app?.spindleReverse()">CCW ↺</button>
+                            <button id="spindle-stop" class="btn btn-spindle-stop" onclick="app?.spindleStop()">STOP</button>
+                        </div>
+                        <div class="vfd-controls" style="margin-top:6px;">
+                            <button id="vfd-connect-btn" class="btn btn-xs" onclick="app?.connectVfd()">🔌 Connect VFD</button>
+                            <span id="vfd-info" class="vfd-info" style="font-size:11px;color:#888;"></span>
                         </div>
                     </div>
 
@@ -470,7 +536,8 @@
                             </div>
                             <div class="gcode-stats">
                                 <div class="stat"><span class="stat-label">Lines:</span><span id="total-lines">0</span></div>
-                                <div class="stat"><span class="stat-label">Time:</span><span id="job-eta">--:--</span></div>
+                                <div class="stat"><span class="stat-label">Elapsed:</span><span id="job-elapsed">0:00</span></div>
+                                <div class="stat"><span class="stat-label">ETA:</span><span id="job-eta">--:--</span></div>
                                 <div class="stat"><span id="job-progress">Ready</span></div>
                             </div>
                             <div class="job-controls">
@@ -641,6 +708,130 @@
                         <div class="smart-machine-controls">
                             <button id="smart-home-btn" class="btn btn-xs" onclick="app?.smartHome?.()">🏠 Smart Home</button>
                             <button id="smart-calibrate-btn" class="btn btn-xs btn-accent" onclick="app?.showCalibrationWizard?.()">⚡ Calibrate</button>
+                        </div>
+                    </div>
+                    
+                    <!-- System Diagnostics Panel -->
+                    <div class="diagnostics-section">
+                        <div class="section-title-row">
+                            <span class="section-title">📊 Diagnostics</span>
+                            <button id="diag-toggle-btn" class="btn btn-xs" onclick="app?.toggleDiagnostics?.()">▼</button>
+                        </div>
+                        <div id="diagnostics-panel" class="diagnostics-panel collapsed">
+                            <!-- TMC Driver Status -->
+                            <div class="diag-group">
+                                <span class="diag-group-title">TMC2209 Drivers 
+                                    <button class="diag-tune-btn" onclick="app?.showTmcTuning?.()" title="Tune TMC settings">⚙️</button>
+                                </span>
+                                <div class="tmc-driver-grid">
+                                    <div class="tmc-driver" id="tmc-x">
+                                        <span class="tmc-axis">X</span>
+                                        <div class="tmc-info">
+                                            <span class="tmc-sg" id="diag-sg-x" title="StallGuard">SG: --</span>
+                                            <span class="tmc-temp" id="diag-temp-x" title="Temperature">🌡️ ok</span>
+                                        </div>
+                                        <div class="tmc-bar" id="tmc-bar-x" style="width: 0%"></div>
+                                    </div>
+                                    <div class="tmc-driver" id="tmc-y">
+                                        <span class="tmc-axis">Y</span>
+                                        <div class="tmc-info">
+                                            <span class="tmc-sg" id="diag-sg-y" title="StallGuard">SG: --</span>
+                                            <span class="tmc-temp" id="diag-temp-y" title="Temperature">🌡️ ok</span>
+                                        </div>
+                                        <div class="tmc-bar" id="tmc-bar-y" style="width: 0%"></div>
+                                    </div>
+                                    <div class="tmc-driver" id="tmc-z">
+                                        <span class="tmc-axis">Z</span>
+                                        <div class="tmc-info">
+                                            <span class="tmc-sg" id="diag-sg-z" title="StallGuard">SG: --</span>
+                                            <span class="tmc-temp" id="diag-temp-z" title="Temperature">🌡️ ok</span>
+                                        </div>
+                                        <div class="tmc-bar" id="tmc-bar-z" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Limit Switch Status -->
+                            <div class="diag-group">
+                                <span class="diag-group-title">Limit Switches</span>
+                                <div class="diag-grid limits">
+                                    <div class="diag-item">
+                                        <span id="diag-lim-x" class="diag-limit off">X</span>
+                                    </div>
+                                    <div class="diag-item">
+                                        <span id="diag-lim-y" class="diag-limit off">Y</span>
+                                    </div>
+                                    <div class="diag-item">
+                                        <span id="diag-lim-z" class="diag-limit off">Z</span>
+                                    </div>
+                                    <div class="diag-item">
+                                        <span id="diag-probe" class="diag-limit off" title="Probe">P</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- VFD Status -->
+                            <div class="diag-group">
+                                <span class="diag-group-title">VFD/Spindle</span>
+                                <div class="diag-row">
+                                    <span class="diag-label">Status</span>
+                                    <span id="diag-vfd-state" class="diag-value">--</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">RPM</span>
+                                    <span id="diag-vfd-rpm" class="diag-value">0</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Bus V</span>
+                                    <span id="diag-vfd-voltage" class="diag-value">--</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Fault</span>
+                                    <span id="diag-vfd-fault" class="diag-value fault-ok">None</span>
+                                </div>
+                            </div>
+                            <!-- Overrides -->
+                            <div class="diag-group">
+                                <span class="diag-group-title">Overrides</span>
+                                <div class="diag-row">
+                                    <span class="diag-label">Feed</span>
+                                    <span id="diag-ov-feed" class="diag-value">100%</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Rapid</span>
+                                    <span id="diag-ov-rapid" class="diag-value">100%</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Spindle</span>
+                                    <span id="diag-ov-spindle" class="diag-value">100%</span>
+                                </div>
+                            </div>
+                            <!-- Connection Health -->
+                            <div class="diag-group">
+                                <span class="diag-group-title">Connection</span>
+                                <div class="diag-row">
+                                    <span class="diag-label">Latency</span>
+                                    <span id="diag-latency" class="diag-value">--</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">RX Rate</span>
+                                    <span id="diag-rx-rate" class="diag-value">--</span>
+                                </div>
+                            </div>
+                            <!-- Firmware Info -->
+                            <div class="diag-group">
+                                <span class="diag-group-title">Firmware</span>
+                                <div class="diag-row">
+                                    <span class="diag-label">Version</span>
+                                    <span id="diag-firmware" class="diag-value">--</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Board</span>
+                                    <span id="diag-board" class="diag-value">--</span>
+                                </div>
+                                <div class="diag-row">
+                                    <span class="diag-label">Options</span>
+                                    <span id="diag-options" class="diag-value" title="Click to expand">--</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,43 @@
+# Openbox autostart for FluidCNC Kiosk Mode
+# Location: ~/.config/openbox/autostart
+
+# Disable screen blanking and power management
+xset s off
+xset s noblank
+xset -dpms
+
+# Hide mouse cursor when idle
+unclutter -idle 0.5 -root &
+
+# Disable right-click context menu
+# xdotool behave_screen_edge none
+
+# Wait for FluidCNC server to start
+sleep 2
+
+# Check if server is up
+until curl -s http://localhost:8080 > /dev/null; do
+    sleep 1
+done
+
+# Launch Chromium in kiosk mode
+chromium-browser \
+    --kiosk \
+    --noerrdialogs \
+    --disable-infobars \
+    --disable-session-crashed-bubble \
+    --disable-restore-session-state \
+    --no-first-run \
+    --start-fullscreen \
+    --autoplay-policy=no-user-gesture-required \
+    --enable-features=WebSerial \
+    --disable-background-networking \
+    --disable-sync \
+    --disable-translate \
+    --disable-extensions \
+    --disable-default-apps \
+    --disable-background-timer-throttling \
+    --disable-renderer-backgrounding \
+    --disable-backgrounding-occluded-windows \
+    --check-for-update-interval=31536000 \
+    --app=http://localhost:8080

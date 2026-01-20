@@ -17,6 +17,9 @@ class CNCAssistant {
         this.onCommand = options.onCommand || (() => {});
         this.onError = options.onError || ((err) => console.error('[AI Error]', err));
         
+        // Machine state getter for contextual awareness
+        this.getMachineState = options.getMachineState || (() => ({}));
+        
         // Machine context for smarter responses
         this.machineConfig = {
             workArea: { x: 400, y: 400, z: 200 },
@@ -2052,12 +2055,100 @@ Command: ${command}
     }
     
     // ================================================================
+    // Machine State Validation
+    // ================================================================
+    
+    /**
+     * Check if machine state allows the requested operation
+     * Returns { allowed: boolean, warning: string | null }
+     */
+    checkMachineStateForAction(action) {
+        if (!this.getMachineState) {
+            return { allowed: true, warning: null };
+        }
+        
+        try {
+            const state = this.getMachineState();
+            
+            if (!state.connected) {
+                return { 
+                    allowed: false, 
+                    warning: '❌ **Not Connected** - Connect to the machine first.' 
+                };
+            }
+            
+            // Actions that shouldn't run during Alarm
+            const noAlarmActions = ['jog', 'moveTo', 'rapidXY', 'rapidZ', 'spindle', 'runJob', 'probe', 'probeCorner'];
+            if (noAlarmActions.includes(action) && state.state === 'Alarm') {
+                return { 
+                    allowed: false, 
+                    warning: '⚠️ **Machine in ALARM** - Clear alarm ($X) or home ($H) first.' 
+                };
+            }
+            
+            // Actions that shouldn't run during a job
+            const noRunningActions = ['jog', 'moveTo', 'rapidXY', 'home'];
+            if (noRunningActions.includes(action) && state.state === 'Run') {
+                return { 
+                    allowed: false, 
+                    warning: '⏸️ **Job Running** - Pause or stop the job first.' 
+                };
+            }
+            
+            // Warn about homing for movement actions
+            const movementActions = ['jog', 'moveTo', 'rapidXY', 'rapidZ'];
+            if (movementActions.includes(action) && state.homedAxes) {
+                const { x, y, z } = state.homedAxes;
+                if (!x || !y || !z) {
+                    return { 
+                        allowed: true, 
+                        warning: '⚠️ Not all axes homed - positions may be inaccurate.' 
+                    };
+                }
+            }
+            
+            // TMC driver warnings
+            if (state.tmcStatus) {
+                const tmc = state.tmcStatus;
+                for (const axis of ['x', 'y', 'z']) {
+                    if (tmc[axis]) {
+                        if (tmc[axis].ot) {
+                            return { 
+                                allowed: false, 
+                                warning: `🔥 **${axis.toUpperCase()} Motor OVERTEMP** - Let it cool down!` 
+                            };
+                        }
+                        if (tmc[axis].shortCircuit) {
+                            return { 
+                                allowed: false, 
+                                warning: `⚠️ **${axis.toUpperCase()} Driver SHORT CIRCUIT** - Check wiring!` 
+                            };
+                        }
+                    }
+                }
+            }
+            
+            return { allowed: true, warning: null };
+        } catch (e) {
+            console.warn('State check failed:', e);
+            return { allowed: true, warning: null };
+        }
+    }
+    
+    // ================================================================
     // Additional Smart Commands  
     // ================================================================
     
     async executeAction(action, params, originalInput) {
         let response = '';
         let gcode = null;
+        
+        // Check machine state before executing
+        const stateCheck = this.checkMachineStateForAction(action);
+        if (!stateCheck.allowed) {
+            this.onResponse(stateCheck.warning);
+            return { success: false, response: stateCheck.warning };
+        }
         
         try {
             switch (action) {
@@ -2389,6 +2480,11 @@ Command: ${command}
                 
                 default:
                     response = `Unknown action: ${action}`;
+            }
+            
+            // Add state warning to response if there was one
+            if (stateCheck.warning) {
+                response += `\n${stateCheck.warning}`;
             }
             
             // Execute G-code if generated
@@ -3724,18 +3820,72 @@ I'll respond to all commands directly without a wake word.`);
         const state = this.grbl.getState();
         const pos = state.wpos;
         
-        return `📍 **Machine Status: ${state.status}**
-
-| Axis | Work Pos | Machine Pos |
+        // Get enhanced machine state if available
+        let machineContext = null;
+        if (this.getMachineState) {
+            try {
+                machineContext = this.getMachineState();
+            } catch (e) {
+                console.warn('Failed to get machine context:', e);
+            }
+        }
+        
+        // Build status report
+        let report = `📍 **Machine Status: ${state.status}**\n\n`;
+        
+        // Add warnings if any
+        if (state.status === 'Alarm') {
+            report += `⚠️ **ALARM STATE** - Check limits or reset machine\n\n`;
+        } else if (state.status === 'Hold') {
+            report += `⏸️ Machine paused - Send Resume to continue\n\n`;
+        }
+        
+        // Position table
+        report += `| Axis | Work Pos | Machine Pos |
 |------|----------|-------------|
 | X | ${pos.x.toFixed(3)} | ${state.mpos.x.toFixed(3)} |
 | Y | ${pos.y.toFixed(3)} | ${state.mpos.y.toFixed(3)} |
-| Z | ${pos.z.toFixed(3)} | ${state.mpos.z.toFixed(3)} |
-
-- **Feed**: ${state.feedRate} mm/min (${state.feedOverride}%)
-- **Spindle**: ${state.spindleSpeed} RPM (${state.spindleOverride}%)
-- **Tool**: T${state.tool}
-- **Coolant**: ${state.coolant.flood ? 'Flood' : ''} ${state.coolant.mist ? 'Mist' : ''} ${!state.coolant.flood && !state.coolant.mist ? 'Off' : ''}`;
+| Z | ${pos.z.toFixed(3)} | ${state.mpos.z.toFixed(3)} |\n\n`;
+        
+        // Motion status
+        report += `**🔧 Motion:**\n`;
+        report += `- Feed: ${state.feedRate} mm/min (${state.feedOverride}%)\n`;
+        report += `- Spindle: ${state.spindleSpeed} RPM (${state.spindleOverride}%)\n`;
+        report += `- Tool: T${state.tool}\n`;
+        report += `- Coolant: ${state.coolant.flood ? 'Flood' : ''} ${state.coolant.mist ? 'Mist' : ''} ${!state.coolant.flood && !state.coolant.mist ? 'Off' : ''}\n\n`;
+        
+        // Homing status
+        if (machineContext && machineContext.homedAxes) {
+            const homed = machineContext.homedAxes;
+            report += `**🏠 Homed:**\n`;
+            report += `- X: ${homed.x ? '✅' : '❌'} | Y: ${homed.y ? '✅' : '❌'} | Z: ${homed.z ? '✅' : '❌'}\n\n`;
+        }
+        
+        // TMC Driver status
+        if (machineContext && machineContext.tmcStatus) {
+            const tmc = machineContext.tmcStatus;
+            report += `**⚡ TMC2209 Drivers:**\n`;
+            
+            const axes = ['X', 'Y', 'Z'];
+            axes.forEach(axis => {
+                const axisKey = axis.toLowerCase();
+                if (tmc[axisKey]) {
+                    const driver = tmc[axisKey];
+                    let status = '✅ OK';
+                    if (driver.ot) status = '🔥 OVER TEMP';
+                    else if (driver.otpw) status = '⚠️ Temp Warning';
+                    else if (driver.shortCircuit) status = '⚠️ Short Circuit';
+                    
+                    report += `- ${axis}: ${status}`;
+                    const sgVal = driver.sg || driver.stallguard;
+                    if (sgVal !== undefined) report += ` | SG:${sgVal}`;
+                    if (driver.microsteps) report += ` | μStep:${driver.microsteps}`;
+                    report += '\n';
+                }
+            });
+        }
+        
+        return report;
     }
     
     getHelpText() {

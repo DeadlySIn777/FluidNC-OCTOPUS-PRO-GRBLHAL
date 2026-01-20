@@ -1164,6 +1164,51 @@ class ChatterDetection {
     }
     
     /**
+     * Update StallGuard values directly (from grblHAL real-time report)
+     * @param {Object} sg - Object with x, y, z StallGuard values
+     */
+    updateStallGuard(sg) {
+        if (!sg) return;
+        
+        // Store raw StallGuard values
+        this.state.stallGuard = sg;
+        
+        // StallGuard value decreases when motor is loaded
+        // Normal: ~250, Heavy load: ~100, Stall: <50
+        // Convert to a 0-1 "load" score (inverted)
+        const sgToLoad = (val) => Math.max(0, Math.min(1, (255 - val) / 200));
+        
+        // Calculate axis loads
+        const loads = {
+            x: sgToLoad(sg.x || 255),
+            y: sgToLoad(sg.y || 255),
+            z: sgToLoad(sg.z || 255)
+        };
+        
+        // Use maximum axis load as contribution to chatter detection
+        const maxLoad = Math.max(loads.x, loads.y, loads.z);
+        
+        // Update stepper sensor contribution
+        this.state.stepperLoad = maxLoad;
+        this.state.stepperLoads = loads;
+        
+        // Contribute to combined score if StallGuard shows high load
+        // This catches hard engagement before accelerometer detects vibration
+        if (maxLoad > 0.5) {
+            // Blend with existing combined score
+            this.state.combined = Math.max(this.state.combined, maxLoad * 0.8);
+        }
+        
+        // Check for stall warning
+        if (sg.x < 50 || sg.y < 50 || sg.z < 50) {
+            console.warn(`[StallGuard] Stall warning! X:${sg.x} Y:${sg.y} Z:${sg.z}`);
+            this.state.stallWarning = true;
+        } else {
+            this.state.stallWarning = false;
+        }
+    }
+    
+    /**
      * Request device info from Waveshare sensor
      */
     requestInfo() {
