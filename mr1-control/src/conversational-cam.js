@@ -6,9 +6,10 @@ import { EMCO_LATHE_NC_CONTRACT, MR1_NC_CONTRACT, validateMr1Nc } from "./nc-saf
 // MR-1 NC program that must pass validateMr1Nc with zero blockers. All
 // programs are metric (G21), absolute (G90), XY-plane (G17), with incremental
 // arc centers (G91.1), a manual tool stop (Tn + M0), and qualified G53 Z
-// retracts at the start, before tool changes, and before M30. Canned cycles
-// (G81-G89) are outside the MR-1 contract, so drilling is emitted as expanded
-// G0/G1 motion.
+// retracts at the start, before tool changes, and before M30. After every
+// retract or work-offset change the first move is XY at the retract height;
+// Z descends only once XY is known. Canned cycles (G81-G89) are outside the
+// MR-1 contract, so drilling is emitted as expanded G0/G1 motion.
 
 const MAX_XY_FEED = MR1_NC_CONTRACT.maximumLinearFeedMmPerMinute;
 const MAX_Z_FEED = MR1_NC_CONTRACT.maximumZFeedMmPerMinute;
@@ -141,6 +142,8 @@ class ProgramBuilder {
   constructor(title, setup, { plane = "G17", latheMode = null, safeZ = SAFE_MACHINE_Z } = {}) {
     this.setup = setup;
     this.safeZ = safeZ;
+    // Last commanded work position as emitted words; null = unknown.
+    this.at = { x: null, y: null, z: null };
     this.lines = [
       `(MR1 CONVERSATIONAL - ${title.toUpperCase()})`,
       `G21 G90 G94 ${plane}${latheMode ? ` ${latheMode}` : ""} G40 G49 G80`,
@@ -154,8 +157,24 @@ class ProgramBuilder {
     if (setup.coolant) this.lines.push("M8");
   }
 
+  track(x, y, z) {
+    if (x !== null) this.at.x = fmt(x);
+    if (y !== null) this.at.y = fmt(y);
+    if (z !== null) this.at.z = fmt(z);
+  }
+
   rapid(x, y) {
+    if (this.at.x === fmt(x) && this.at.y === fmt(y)) return;
     this.lines.push(`G0 X${fmt(x)} Y${fmt(y)}`);
+    this.track(x, y, null);
+  }
+
+  // After a machine retract, tool change or work-offset change the work Z is
+  // unknown: position XY at the retract height first, then descend to
+  // clearance. Every cycle opens with this.
+  approach(x, y) {
+    this.rapid(x, y);
+    this.rapidZ(this.setup.clearZ);
   }
 
   // Lathe helpers: XZ plane, no Y words ever.
@@ -166,35 +185,50 @@ class ProgramBuilder {
   // here - never in a cycle.
   latheRapid(radius, z) {
     this.lines.push(`G0 X${fmt(radius * 2)} Z${fmt(z)}`);
+    this.track(radius * 2, null, z);
   }
 
   latheRapidX(radius) {
     this.lines.push(`G0 X${fmt(radius * 2)}`);
+    this.track(radius * 2, null, null);
+  }
+
+  // Lathe counterpart of approach(): X at the park height, then Z clearance.
+  latheApproach(radius) {
+    this.latheRapidX(radius);
+    this.rapidZ(this.setup.clearZ);
   }
 
   latheCut(radius, z) {
     this.lines.push(`G1 X${fmt(radius * 2)} Z${fmt(z)} F${fmt(this.setup.xyFeed)}`);
+    this.track(radius * 2, null, z);
   }
 
   latheCutX(radius) {
     this.lines.push(`G1 X${fmt(radius * 2)} F${fmt(this.setup.xyFeed)}`);
+    this.track(radius * 2, null, null);
   }
 
   latheCutZ(z) {
     this.lines.push(`G1 Z${fmt(z)} F${fmt(this.setup.xyFeed)}`);
+    this.track(null, null, z);
   }
 
   rapidZ(z) {
+    if (this.at.z === fmt(z)) return;
     this.lines.push(`G0 Z${fmt(z)}`);
+    this.track(null, null, z);
   }
 
   plunge(z) {
     this.lines.push(`G1 Z${fmt(z)} F${fmt(this.setup.zFeed)}`);
+    this.track(null, null, z);
   }
 
   cut(x, y, z = null) {
     const zWord = z === null ? "" : ` Z${fmt(z)}`;
     this.lines.push(`G1 X${fmt(x)} Y${fmt(y)}${zWord} F${fmt(this.setup.xyFeed)}`);
+    this.track(x, y, z);
   }
 
   arc(clockwise, x, y, i, j, z = null, feed = null) {
@@ -202,6 +236,7 @@ class ProgramBuilder {
     this.lines.push(
       `${clockwise ? "G2" : "G3"} X${fmt(x)} Y${fmt(y)}${zWord} I${fmt(i)} J${fmt(j)} F${fmt(feed ?? this.setup.xyFeed)}`,
     );
+    this.track(x, y, z);
   }
 
   fullCircle(clockwise, centerX, centerY, radius) {
@@ -391,6 +426,7 @@ export const CONVERSATIONAL_CYCLES = [
       const bottom = centerY - height / 2;
       const top = centerY + height / 2;
       const builder = new ProgramBuilder(this.title, setup);
+      builder.approach(left, bottom);
       for (const z of depthPasses(depth, stepDown)) {
         builder.rapidZ(setup.clearZ);
         builder.rapid(left, bottom);
@@ -434,6 +470,7 @@ export const CONVERSATIONAL_CYCLES = [
       const stepOver = (setup.toolDiameter * stepOverPercent) / 100;
       const outerRadius = diameter / 2 + setup.toolDiameter * 0.55;
       const builder = new ProgramBuilder(this.title, setup);
+      builder.approach(centerX + outerRadius, centerY);
       for (const z of depthPasses(depth, stepDown)) {
         builder.rapidZ(setup.clearZ);
         builder.rapid(centerX + outerRadius, centerY);
@@ -485,8 +522,7 @@ export const CONVERSATIONAL_CYCLES = [
       const wallH = height - setup.toolDiameter;
       const rampHalf = Math.min(wallW / 2, setup.toolDiameter * 2);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX - rampHalf, centerY);
+      builder.approach(centerX - rampHalf, centerY);
       builder.rapidZ(0.5);
       let previousLevel = 0.5;
       for (const z of depthPasses(depth, stepDown)) {
@@ -542,8 +578,7 @@ export const CONVERSATIONAL_CYCLES = [
       const wallRadius = (diameter - setup.toolDiameter) / 2;
       const entryRadius = Math.min(wallRadius, stepOver);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + entryRadius, centerY);
+      builder.approach(centerX + entryRadius, centerY);
       builder.rapidZ(0.5);
       builder.plunge(0);
       let previousLevel = 0;
@@ -591,8 +626,7 @@ export const CONVERSATIONAL_CYCLES = [
       }
       const radius = (diameter - setup.toolDiameter) / 2;
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + radius, centerY);
+      builder.approach(centerX + radius, centerY);
       builder.rapidZ(1);
       builder.plunge(0);
       let z = 0;
@@ -690,8 +724,7 @@ export const CONVERSATIONAL_CYCLES = [
       const stepDown = requireNumber(params, "stepDown", "Depth per pass", { min: 0.01, max: 10 });
       const radius = (diameter + setup.toolDiameter) / 2;
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + radius + setup.toolDiameter, centerY);
+      builder.approach(centerX + radius + setup.toolDiameter, centerY);
       for (const z of depthPasses(depth, stepDown)) {
         builder.plunge(z);
         builder.cut(centerX + radius, centerY);
@@ -728,8 +761,7 @@ export const CONVERSATIONAL_CYCLES = [
         throw new CycleParameterError("Slot start and end points must be at least 0.01 mm apart.", "endX");
       }
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(startX, startY);
+      builder.approach(startX, startY);
       builder.rapidZ(0.5);
       let previousLevel = 0.5;
       for (const z of depthPasses(depth, stepDown)) {
@@ -766,8 +798,7 @@ export const CONVERSATIONAL_CYCLES = [
       const trackOffset = chamferTrackOffset(setup, chamferWidth, tipOffset);
       const corners = rectanglePerimeter(centerX, centerY, width + trackOffset * 2, height + trackOffset * 2);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(corners[0].x, corners[0].y);
+      builder.approach(corners[0].x, corners[0].y);
       builder.plunge(-tipOffset);
       traceRectangle(builder, corners, null);
       builder.rapidZ(setup.clearZ);
@@ -796,8 +827,7 @@ export const CONVERSATIONAL_CYCLES = [
       const tipOffset = requireNumber(params, "tipOffset", "Tip depth", { min: 0.05, max: 10 });
       const radius = diameter / 2 + chamferTrackOffset(setup, chamferWidth, tipOffset);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + radius, centerY);
+      builder.approach(centerX + radius, centerY);
       builder.plunge(-tipOffset);
       builder.fullCircle(true, centerX, centerY, radius);
       builder.rapidZ(setup.clearZ);
@@ -836,8 +866,7 @@ export const CONVERSATIONAL_CYCLES = [
       }
       const radius = (majorDiameter - setup.toolDiameter) / 2;
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX, centerY);
+      builder.approach(centerX, centerY);
       builder.rapidZ(-threadDepth + 0.0);
       builder.comment("BOTTOM-UP CLIMB THREAD MILL");
       builder.cut(centerX + radius, centerY, null);
@@ -876,8 +905,7 @@ export const CONVERSATIONAL_CYCLES = [
       const radius = (majorDiameter + setup.toolDiameter) / 2;
       const approachRadius = radius + setup.toolDiameter;
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + approachRadius, centerY);
+      builder.approach(centerX + approachRadius, centerY);
       builder.rapidZ(0);
       // A right-hand external thread needs a clockwise helix that DESCENDS:
       // G2 with rising Z would cut a left-hand thread. Top-down G2 is also
@@ -918,7 +946,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = gridPoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -945,7 +973,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = gridPoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -971,7 +999,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = boltCirclePoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -997,7 +1025,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = linePoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -1022,7 +1050,7 @@ export const CONVERSATIONAL_CYCLES = [
       const options = drillOptions(params);
       if (options.peck <= 0) throw new CycleParameterError("Peck depth must be positive for peck drilling.", "peck");
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(holeX, holeY);
       drillOnePoint(builder, { x: holeX, y: holeY }, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -1047,7 +1075,7 @@ export const CONVERSATIONAL_CYCLES = [
       const holeY = requireNumber(params, "holeY", "Bore Y", { min: -10000, max: 10000 });
       const options = drillOptions(params, { dwellDefault: 0.5 });
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(holeX, holeY);
       drillOnePoint(builder, { x: holeX, y: holeY }, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -1072,8 +1100,7 @@ export const CONVERSATIONAL_CYCLES = [
       const stepDown = requireNumber(params, "stepDown", "Depth per pass", { min: 0.02, max: 3 });
       const outsideX = stockDiameter / 2 + setup.clearX;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(outsideX);
+      builder.latheApproach(outsideX);
       for (const z of depthPasses(depth, stepDown)) {
         builder.latheCutZ(z);
         builder.latheCutX(0);
@@ -1109,8 +1136,7 @@ export const CONVERSATIONAL_CYCLES = [
       const stockRadius = stockDiameter / 2;
       const targetRadius = targetDiameter / 2;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(stockRadius + setup.clearX);
+      builder.latheApproach(stockRadius + setup.clearX);
       let radius = stockRadius;
       for (;;) {
         radius = Math.max(targetRadius, radius - depthOfCut);
@@ -1142,8 +1168,7 @@ export const CONVERSATIONAL_CYCLES = [
       const endDiameter = requireNumber(params, "endDiameter", "End diameter", { min: 0.2, max: 300 });
       const length = requireNumber(params, "length", "Taper length", { min: 0.05, max: 300 });
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(Math.max(startDiameter, endDiameter) / 2 + setup.clearX);
+      builder.latheApproach(Math.max(startDiameter, endDiameter) / 2 + setup.clearX);
       builder.latheRapidX(startDiameter / 2);
       builder.latheCutZ(0);
       builder.latheCut(endDiameter / 2, -length);
@@ -1182,8 +1207,7 @@ export const CONVERSATIONAL_CYCLES = [
       const outsideX = stockDiameter / 2 + setup.clearX;
       const floorRadius = grooveDiameter / 2;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(outsideX);
+      builder.latheApproach(outsideX);
       const steps = Math.max(1, Math.ceil((grooveWidth - setup.toolDiameter) / (setup.toolDiameter * 0.8)) + 1);
       const zStep = steps > 1 ? (grooveWidth - setup.toolDiameter) / (steps - 1) : 0;
       for (let index = 0; index < steps; index += 1) {
@@ -1225,8 +1249,7 @@ export const CONVERSATIONAL_CYCLES = [
       const peck = requireNumber(params, "peck", "Radial peck", { min: 0.1, max: 10 });
       const outsideX = stockDiameter / 2 + setup.clearX;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(outsideX);
+      builder.latheApproach(outsideX);
       builder.rapidZ(zPosition - setup.toolDiameter / 2);
       let reached = stockDiameter / 2;
       while (reached > 1e-9) {
@@ -1256,8 +1279,7 @@ export const CONVERSATIONAL_CYCLES = [
       const depth = requireNumber(params, "depth", "Hole depth", { min: 0.1, max: 200 });
       const peck = requireNumber(params, "peck", "Peck depth", { min: 0, max: 200 });
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(0);
+      builder.latheApproach(0);
       builder.rapidZ(1);
       if (peck > 0) {
         let reached = 0;
@@ -1300,8 +1322,7 @@ export const CONVERSATIONAL_CYCLES = [
       const startRadius = holeDiameter / 2;
       const targetRadius = targetDiameter / 2;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(Math.max(0.2, startRadius - 0.5));
+      builder.latheApproach(Math.max(0.2, startRadius - 0.5));
       let radius = startRadius;
       for (;;) {
         radius = Math.min(targetRadius, radius + depthOfCut);
@@ -1407,6 +1428,9 @@ export function generateConversationalChain(operations) {
       if (Math.round(setup.rpm) !== Math.round(current.rpm)) lines.push(`S${Math.round(setup.rpm)}`);
       if (setup.coolant && !current.coolant) lines.push("M8");
       if (!setup.coolant && current.coolant) lines.push("M9");
+      // Each body opens with an XY approach at the current height, which is
+      // the previous operation's clearance: rise first if this one needs more.
+      if (setup.clearZ > current.clearZ) lines.push(`G0 Z${fmt(setup.clearZ)}`);
     }
     lines.push(...operation.segments.body);
     current = setup;
@@ -1458,8 +1482,7 @@ function generateRectContour(title, setup, params, side) {
     ? { x: corners[0].x - offset * 2, y: corners[0].y - offset * 2 }
     : { x: centerX, y: centerY };
   const builder = new ProgramBuilder(title, setup);
-  builder.rapidZ(setup.clearZ);
-  builder.rapid(approach.x, approach.y);
+  builder.approach(approach.x, approach.y);
   if (side === "inside") builder.rapidZ(0.5);
   let previousLevel = 0.5;
   for (const z of depthPasses(depth, stepDown)) {

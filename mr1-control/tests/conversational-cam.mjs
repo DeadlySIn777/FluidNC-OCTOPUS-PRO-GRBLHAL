@@ -450,6 +450,67 @@ test("lathe operations chain under the lathe contract", () => {
   assert.equal(validateMr1Nc(chain.gcode, { name: chain.name }).ok, false);
 });
 
+// After a machine retract or work-offset change the work Z is unknown: the
+// next move must place XY at the retract height before Z descends.
+function assertXyBeforeZ(gcode, label, lateral = ["X", "Y"]) {
+  const lines = gcode.split("\n");
+  let checked = 0;
+  for (const [index, line] of lines.entries()) {
+    if (!/^G53 G0 Z/.test(line) && !/^G5[4-9]$/.test(line)) continue;
+    const motions = lines.slice(index + 1).filter((candidate) => /^G[0-3] /.test(candidate) && !candidate.startsWith("G53"));
+    if (motions.length === 0) continue;
+    const [first, second] = motions;
+    const firstLetters = [...first.matchAll(/([XYZ])-?\d/g)].map((match) => match[1]);
+    assert.ok(first.startsWith("G0 "), `${label}: approach after line ${index + 1} must be a rapid: ${first}`);
+    assert.deepEqual(firstLetters, lateral, `${label}: first move after line ${index + 1} must be ${lateral.join("")} only: ${first}`);
+    assert.match(second, /^G0 Z\d+\.\d+$/, `${label}: Z must descend to clearance only after XY: ${second}`);
+    checked += 1;
+  }
+  assert.ok(checked > 0, `${label}: no retract found`);
+}
+
+test("every cycle positions XY at the retract height before descending Z", () => {
+  for (const cycle of CONVERSATIONAL_CYCLES) {
+    const { gcode } = generateConversationalProgram(cycle.id, defaultCycleParams(cycle));
+    assertXyBeforeZ(gcode, cycle.id, cycle.machine === "lathe" ? ["X"] : ["X", "Y"]);
+  }
+});
+
+test("chained tool and work-offset changes approach XY before Z in the new frame", () => {
+  const chain = generateConversationalChain([
+    operation("face", { tool: 1, wcs: "G54" }),
+    operation("drill-grid", { tool: 1, wcs: "G55" }),
+    operation("chamfer-rect", { tool: 2, wcs: "G55" }),
+  ]);
+  assertXyBeforeZ(chain.gcode, "mill chain");
+  const lines = chain.gcode.split("\n");
+  const offset = lines.indexOf("G55");
+  assert.deepEqual(lines.slice(offset + 1, offset + 5), ["S5000 M3", "M8", "G0 X0.000 Y0.000", "G0 Z5.000"]);
+  const lathe = generateConversationalChain([
+    operation("lathe-drill", { tool: 1 }),
+    operation("lathe-turn", { tool: 2, wcs: "G55" }),
+  ]);
+  assertXyBeforeZ(lathe.gcode, "lathe chain", ["X"]);
+});
+
+test("a chained operation with a higher clearance rises before its XY approach", () => {
+  const chain = generateConversationalChain([
+    operation("drill-grid", { tool: 3, clearZ: 5 }),
+    operation("drill-line", { tool: 3, clearZ: 25 }),
+  ]);
+  const lines = chain.gcode.split("\n");
+  const second = lines.findIndex((line) => line.startsWith("(OP 2"));
+  const firstMotion = lines.slice(second + 1).find((line) => /^G[0-3] /.test(line));
+  assert.equal(firstMotion, "G0 Z25.000", "must rise to the new clearance before moving XY");
+  const lower = generateConversationalChain([
+    operation("drill-grid", { tool: 3, clearZ: 25 }),
+    operation("drill-line", { tool: 3, clearZ: 5 }),
+  ]).gcode.split("\n");
+  const next = lower.slice(lower.findIndex((line) => line.startsWith("(OP 2")) + 1).filter((line) => /^G[0-3] /.test(line));
+  assert.match(next[0], /^G0 X-?\d+\.\d+ Y-?\d+\.\d+$/, "XY moves at the higher previous clearance");
+  assert.equal(next[1], "G0 Z5.000");
+});
+
 test("generateConversationalProgram rejects unknown cycle ids", () => {
   assert.throws(() => generateConversationalProgram("nope", {}), CycleParameterError);
 });
