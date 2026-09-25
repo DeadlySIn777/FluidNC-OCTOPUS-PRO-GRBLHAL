@@ -96,13 +96,17 @@ test("SolidCAM installer rejects rotary templates and XML document types", () =>
     writeFileSync(rotaryPath, source.replace("</Axes>", '<Axis Name="A" Type="1" /></Axes>'));
     const rotary = powershell(["-BaseVmid", rotaryPath, "-OutputDirectory", path.join(tempRoot, "rotary-out")]);
     assert.notEqual(rotary.status, 0);
-    assert.match(`${rotary.stdout}\n${rotary.stderr}`, /exactly three linear X\/Y\/Z axes/i);
+    // Windows PowerShell wraps error records at the console width, even mid-word,
+    // so compare the message with all whitespace removed.
+    const rotaryOutput = `${rotary.stdout}\n${rotary.stderr}`;
+    assert.match(rotaryOutput.replace(/\s+/g, ""), /exactlythreelinearX\/Y\/Zaxes/i, rotaryOutput);
 
     const dtdPath = path.join(tempRoot, "dtd.vmid");
     writeFileSync(dtdPath, '<?xml version="1.0"?><!DOCTYPE Machine [<!ENTITY xxe SYSTEM "file:///C:/Windows/win.ini">]><Machine Name="&xxe;" />');
     const dtd = powershell(["-BaseVmid", dtdPath, "-OutputDirectory", path.join(tempRoot, "dtd-out")]);
     assert.notEqual(dtd.status, 0);
-    assert.match(`${dtd.stdout}\n${dtd.stderr}`, /(DTD|document type)/i);
+    const dtdOutput = `${dtd.stdout}\n${dtd.stderr}`;
+    assert.match(dtdOutput.replace(/\s+/g, ""), /(DTD|documenttype)/i, dtdOutput);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
