@@ -72,9 +72,10 @@ export function createFissionProcessor(options = {}) {
   let inspection = null;
   let Optimizer = injectedOptimizer;
   let busy = false;
+  let poisoned = null;
 
-  function inspect() {
-    if (inspection) return inspection;
+  function inspect({ fresh = false } = {}) {
+    if (inspection && !fresh) return inspection;
     if (injectedOptimizer) {
       inspection = {
         available: true,
@@ -127,19 +128,31 @@ export function createFissionProcessor(options = {}) {
     return inspection;
   }
 
+  // Only src/optimizer.js and src/gcode-parser.js are pinned. Anything else they
+  // require (sibling files, node_modules) runs in this process unverified; the
+  // FissionBypassPro folder must be treated as trusted, write-protected content.
+  function unavailable(status) {
+    return processorError(
+      "FISSION_UNAVAILABLE",
+      status.reason === "source-hash-mismatch"
+        ? "Fission source changed after review; automatic processing is locked."
+        : "Reviewed Fission optimizer source is unavailable.",
+      503,
+    );
+  }
+
   function loadOptimizer() {
-    const status = inspect();
-    if (!status.available) {
-      throw processorError(
-        "FISSION_UNAVAILABLE",
-        status.reason === "source-hash-mismatch"
-          ? "Fission source changed after review; automatic processing is locked."
-          : "Reviewed Fission optimizer source is unavailable.",
-        503,
-      );
-    }
+    if (poisoned) throw processorError("FISSION_UNAVAILABLE", poisoned, 503);
+    // Never cache trust: re-hash the pinned files immediately before every use.
+    const status = inspect({ fresh: true });
+    if (!status.available) throw unavailable(status);
     if (!Optimizer) {
       const loaded = require(status.optimizerPath);
+      const after = inspect({ fresh: true });
+      if (!after.available || after.optimizerSha256 !== status.optimizerSha256 || after.parserSha256 !== status.parserSha256) {
+        poisoned = "Fission source changed while it was loading; restart the service after review.";
+        throw processorError("FISSION_UNAVAILABLE", poisoned, 503);
+      }
       if (typeof loaded !== "function" || typeof loaded.prototype?.optimize !== "function") {
         throw processorError("FISSION_INVALID", "Fission optimizer API is not compatible.", 503);
       }
