@@ -354,3 +354,30 @@ test("nested parentheses are malformed because grblHAL ends a comment at its fir
   }
   assert.equal(validateMr1Nc(validMetricProgram.replace("(MANUAL TOOL CHANGE)", "(MANUAL TOOL CHANGE; SEE SHEET 2) (CHECK STICKOUT)")).ok, true);
 });
+
+test("a PASS implies the native loader accepts the bytes and line lengths", () => {
+  // Realtime characters act the moment grblHAL receives them, even inside a
+  // comment; the loader refuses them and so must the gate.
+  for (const comment of ["(WARNING!)", "(WHY?)", "(~)", "(\x18)", "(\x00)", "(\x7f)", "(\u00d86 FLAT)", "(\u201cQUOTED\u201d)", "(\ufeff)"]) {
+    const codes = blockerCodes(validMetricProgram.replace("(MANUAL TOOL CHANGE)", comment));
+    assert.ok(codes.includes("PROHIBITED_CHARACTER"), JSON.stringify(comment));
+  }
+  assert.ok(blockerCodes(`\ufeff${validMetricProgram}`).includes("PROHIBITED_CHARACTER"), "byte-order mark");
+  // TAB separators and CRLF line breaks stay legal, as they are for the loader.
+  const tabbed = validMetricProgram.replace("G0 X0 Y0\n", "G0\tX0\tY0\n").replace(/\n/g, "\r\n");
+  assert.equal(validateMr1Nc(tabbed).ok, true, JSON.stringify(validateMr1Nc(tabbed).blockers));
+  // The loader measures executable text after comments are removed: 120 bytes.
+  const line = (zeros) => `G1 X${"0".repeat(zeros)}10.000 F500`;
+  assert.equal(line(105).length, 120);
+  const withLine = (text) => validMetricProgram.replace("G3 X10 Y0 I5 J0 F800", `G3 X10 Y0 I5 J0 F800\n${text}`);
+  assert.equal(validateMr1Nc(withLine(line(105))).ok, true);
+  assert.ok(blockerCodes(withLine(line(106))).includes("LINE_TOO_LONG"));
+  assert.equal(validateMr1Nc(withLine(`G1 X10 F500 (${"A".repeat(300)})`)).ok, true);
+  // Program size: 5 MiB is the loader's ceiling.
+  const padded = (bytes) => {
+    const base = validMetricProgram.replace("(MANUAL TOOL CHANGE)", "()");
+    return base.replace("()", `(${"A".repeat(bytes - base.length)})`);
+  };
+  assert.equal(validateMr1Nc(padded(5 * 1024 * 1024)).ok, true);
+  assert.ok(blockerCodes(padded(5 * 1024 * 1024 + 1)).includes("PROGRAM_TOO_LARGE"));
+});

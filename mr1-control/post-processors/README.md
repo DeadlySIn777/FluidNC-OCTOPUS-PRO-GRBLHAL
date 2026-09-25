@@ -31,6 +31,13 @@ spindle, tool-setter, probe, and sender commissioning gates still apply.
 - After every `G53` retract and every `G54`-`G59` change the work Z is unknown:
   the next moves must place X and Y at the retract height (`G0 X.. Y..`) before
   any Z word. A combined `G0 X.. Y.. Z..` approach is blocked.
+- Comments close on their own line and never nest: grblHAL ends a comment at
+  its first `)`, so a `(` inside a comment is blocked.
+- Plain ASCII only. `!`, `?`, `~`, control bytes and non-ASCII characters are
+  blocked even inside comments (grblHAL acts on realtime bytes immediately);
+  TAB is allowed. Executable text after comments are removed is limited to
+  120 bytes per line, and the whole file to 5 MB, matching the controller
+  loader.
 - Manual change only: `G49`, `Tn`, `M0`; no `M6`.
 - Cutter compensation must be calculated in CAM. Posted NC remains `G40`; `G41`/`G42` are blocked.
 - Rigid tapping, CAM probing, rotary motion, transforms, macros, pass-through NC, and subprograms are blocked.

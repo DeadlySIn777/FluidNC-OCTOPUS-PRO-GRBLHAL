@@ -1366,9 +1366,10 @@ function chainSegments(gcode, setup) {
   };
 }
 
-// grblHAL comments do not nest, so comment text never carries parentheses.
+// grblHAL comments do not nest, so comment text never carries parentheses,
+// and the controller loader refuses realtime (! ? ~) and non-ASCII bytes.
 function sanitizeComment(text) {
-  return String(text).replace(/[()]/g, "").toUpperCase();
+  return String(text).replace(/[()!?~]|[^\x20-\x7e]/g, "").toUpperCase();
 }
 
 export function generateConversationalChain(operations) {

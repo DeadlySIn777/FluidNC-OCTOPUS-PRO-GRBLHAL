@@ -78,6 +78,17 @@ const SAFE_NON_AXIS_WORDS = new Set(["G", "M", "N", "F", "S", "T", "X", "Y", "Z"
 const STRICT_BLOCK_PATTERN = /^(?:N\d+)?(?:[A-Z][+-]?(?:\d+(?:\.\d*)?|\.\d+))+(?:\*\d+)?$/i;
 const G_MODAL_GROUPS = [[0, 1, 2, 3, 33, 80], [4, 53], [17, 18, 19], [20, 21], [90], [91.1], [94], [40], [49], [54, 55, 56, 57, 58, 59]];
 const M_MODAL_GROUPS = [[0, 1, 30], [3, 5], [8, 9]];
+// Mirrors the native loader (service/native-controller.mjs loadProgram): it
+// refuses these bytes anywhere, even in comments, because grblHAL acts on
+// realtime characters the moment they arrive. TAB, CR and LF are allowed.
+const LOADER_PROHIBITED_CHARACTERS = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\uffff!?~]/;
+const LOADER_MAX_LINE_BYTES = 120;
+const LOADER_MAX_PROGRAM_BYTES = 5 * 1024 * 1024;
+const UTF8 = new TextEncoder();
+
+function printable(text) {
+  return String(text).replace(/[^\x20-\x7e]/g, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
+}
 
 function issue(line, code, message, source = "") {
   return { line, code, message, source };
@@ -199,6 +210,11 @@ export function validateMr1Nc(source, options = {}) {
   const block = (lineNumber, code, message, lineSource = "") => {
     blockers.push(issue(lineNumber, code, message, lineSource));
   };
+  // UTF-8 never spends more than three bytes per UTF-16 unit.
+  const sourceText = String(source ?? "");
+  if (sourceText.length * 3 > LOADER_MAX_PROGRAM_BYTES && UTF8.encode(sourceText).length > LOADER_MAX_PROGRAM_BYTES) {
+    block(0, "PROGRAM_TOO_LARGE", "The controller loader accepts programs up to 5 MB.");
+  }
 
   for (let index = 0; index < lines.length; index += 1) {
     const lineNumber = index + 1;
@@ -211,6 +227,12 @@ export function validateMr1Nc(source, options = {}) {
     }
     if (!commentSyntaxIsBalanced(lines[index])) {
       block(lineNumber, "MALFORMED_COMMENT", "Parenthesized comments must close on the same source line and cannot nest; grblHAL ends a comment at its first ')'.", lines[index].trim());
+    }
+    if (LOADER_PROHIBITED_CHARACTERS.test(lines[index])) {
+      block(lineNumber, "PROHIBITED_CHARACTER", "Realtime characters (! ? ~), control bytes and non-ASCII text are refused by the controller loader, even inside comments.", printable(lines[index].trim()));
+    }
+    if (UTF8.encode(lineSource).length > LOADER_MAX_LINE_BYTES) {
+      block(lineNumber, "LINE_TOO_LONG", `Executable text exceeds the controller loader's ${LOADER_MAX_LINE_BYTES}-byte line limit.`, printable(lineSource));
     }
     if (!lineSource && !(parsed.cmds?.length)) continue;
     state.seenExecutable = true;
