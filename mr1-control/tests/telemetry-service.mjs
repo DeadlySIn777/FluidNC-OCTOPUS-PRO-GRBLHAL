@@ -41,7 +41,7 @@ function requestWithHost(url, host) {
     const request = httpRequest({
       hostname: target.hostname,
       port: target.port,
-      path: target.pathname,
+      path: `${target.pathname}${target.search}`,
       headers: { Host: host },
     }, (response) => {
       response.resume();
@@ -170,7 +170,7 @@ test("simulation bridge exposes loopback telemetry and a typed virtual machine t
     assert.equal(health.sensorFirmwareVersion, "7.6-mr1-sim");
     assert.deepEqual(health.sensorCalibrationCapabilities, { start: true, clear: true, persisted: true });
     assert.equal(health.fission.available, false);
-    assert.equal(await requestWithHost(`${address.url}/health`, "["), 200);
+    assert.equal(await requestWithHost(`${address.url}/health`, "["), 403);
 
     const latencyResponse = await fetch(`${address.url}/latency/ping`, {
       headers: { Origin: "http://127.0.0.1:5173" },
@@ -565,4 +565,27 @@ test("bridge rejects ambiguous serial configuration before opening a device", ()
     () => createTelemetryService({ mode: "simulate", sensorPort: "auto" }),
     /explicit Windows port/,
   );
+});
+
+test("a DNS-rebinding Host cannot read telemetry, journal or preflight data", async () => {
+  const token = "P".repeat(43);
+  const loopback = createTelemetryService({ mode: "simulate", httpPort: 0, fissionRoot: false });
+  const lan = createTelemetryService({ mode: "simulate", httpPort: 0, fissionRoot: false, httpHost: "0.0.0.0",
+    companionToken: token, allowedOrigins: ["http://192.168.50.44:5173"] });
+  const loopbackAddress = await loopback.start();
+  const lanAddress = await lan.start();
+  try {
+    const status = (address, path, host) => requestWithHost(`${address.url}${path}`, `${host}:${address.port}`);
+    for (const path of ["/health", "/journal/export", "/controller/preflight"]) {
+      assert.equal(await status(loopbackAddress, path, "attacker.example"), 403, path);
+      assert.equal(await status(lanAddress, `${path}?pair=${token}`, "attacker.example"), 403, path);
+    }
+    assert.equal(await status(loopbackAddress, "/health", "localhost"), 200);
+    assert.equal(await status(loopbackAddress, "/health", "192.168.50.44"), 403, "loopback service never answers a LAN name");
+    assert.equal(await status(lanAddress, `/health?pair=${token}`, "192.168.50.44"), 200);
+    assert.equal(await requestWithHost(`${loopbackAddress.url}/health`, "localhost:1"), 403);
+  } finally {
+    await loopback.stop();
+    await lan.stop();
+  }
 });
