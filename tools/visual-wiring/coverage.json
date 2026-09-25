@@ -3,7 +3,7 @@
   "scope": "Scheduled control cables and motor harnesses; not a complete cabinet power schematic.",
   "groups": [
     {"id":"motors","title":"Motors & encoders","description":"All four drives: commands, motor phases, encoder feedback and DC branches.","cableIds":["CMD-X","MOT-X","ENC-X","PWR-36-X","CMD-YL","MOT-YL","ENC-YL","PWR-36-YL","CMD-Z","MOT-Z","ENC-Z","PWR-36-Z","CMD-YR","MOT-YR","ENC-YR","PWR-36-YR"]},
-    {"id":"alarms","title":"Drive alarms","description":"Four individual alarm cables plus the conditioned PB1 aggregate. Separate diagnostic views are included.","cableIds":["ALM-X","ALM-YL","ALM-Z","ALM-YR","FAULT-AGG"]},
+    {"id":"alarms","title":"Drive alarms","description":"Four individual alarm cables plus the conditioned PB1 aggregate, the only drive-fault stop. The per-axis PG12-PG15 views are wiring only: the current firmware does not read those pins.","cableIds":["ALM-X","ALM-YL","ALM-Z","ALM-YR","FAULT-AGG"]},
     {"id":"home","title":"Home switches","description":"Separate field and logic routes for X, Y-left, Z and Y-right.","cableIds":["HOME-FIELD-X","HOME-LOGIC-X","HOME-FIELD-YL","HOME-LOGIC-YL","HOME-FIELD-Z","HOME-LOGIC-Z","HOME-FIELD-YR","HOME-LOGIC-YR"]},
     {"id":"coolant","title":"Coolant & air","description":"Flood and mist/air relay-control inputs. Pump and solenoid load wiring still needs its own design.","cableIds":["FLOOD-CTL","MIST-CTL"]},
     {"id":"controls","title":"E-stop monitor & buttons","description":"Safety-relay monitor, door, feed hold and cycle start. The energy-removal circuit is separate.","cableIds":["SAFE-MON","DOOR-MON","HOLD-01","START-01"]},

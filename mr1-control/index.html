@@ -2936,7 +2936,7 @@
                 <div><span>DIAG6</span><strong>Z FAULT</strong><small>PG14</small></div>
                 <div><span>DIAG7</span><strong>Y-RIGHT FAULT</strong><small>PG15</small></div>
               </div>
-              <p class="wiring-callout alarm">Each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Never series-chain raw alarm transistors as dry contacts or land them directly on an Octopus input. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Prove healthy, alarm, drive-power loss and cable-open states for each drive. PG12-PG15 are axis diagnostics and do not stop motion by themselves.</p>
+              <p class="wiring-callout alarm">Each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Never series-chain raw alarm transistors as dry contacts or land them directly on an Octopus input. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Prove healthy, alarm, drive-power loss and cable-open states for each drive. PG12-PG15 are wiring only: the current firmware does not read them, so they neither stop motion nor identify the faulted drive. PB1 is the only drive-fault stop; qualify it before any coupled dual-Y motion.</p>
               <p class="wiring-callout alarm">If the drive is open when healthy, software inversion cannot distinguish it from a broken cable: use a qualified supervised circuit or a separate ready/power contact. Use an approved fault method; never hot-unplug motor or encoder cables and never use an ohmmeter on an energized output. Arrange cable-open tests de-energized before controlled bench power.</p>
             </section>
 
@@ -2993,7 +2993,7 @@
                 <div role="row"><strong>Z</strong><span>DIAG6</span><code>PG14</code><span>HEALTHY LOW</span></div>
                 <div role="row"><strong>Y-RIGHT</strong><span>DIAG7</span><code>PG15</code><span>HEALTHY LOW</span></div>
               </div>
-              <p class="wiring-callout alarm">CL57T ALM/COMO must pass through the isolated, polarity-configurable fault conditioner. Never land either alarm terminal directly on an Octopus input.</p>
+              <p class="wiring-callout alarm">CL57T ALM/COMO must pass through the isolated, polarity-configurable fault conditioner. Never land either alarm terminal directly on an Octopus input. These four per-axis inputs are not read by the current firmware; only the PB1 aggregate stops motion.</p>
             </section>
 
             <section class="wiring-section">

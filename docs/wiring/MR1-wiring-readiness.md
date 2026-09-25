@@ -18,7 +18,7 @@ flowchart LR
   M -->|P2 encoder feedback| D
   D -->|ALM / COMO| C[Isolated fault conditioner]
   C -->|Combined healthy output| PB1[PB1 aggregate stop input]
-  C -->|Separate indication| PG[PG12-15 diagnostics]
+  C -.->|Optional wiring, not read by current firmware| PG[PG12-15]
   SR[Independent safety relay] -->|Hazardous-energy permission| D
 ```
 
@@ -35,7 +35,7 @@ In the reference bundle, the firmware snapshots are under `source/`, corrected d
 | F1 | `platformio.ini:83`, `Inc/mr1_octopus_config.h:1` | Dedicated production target force-includes this configuration; legacy `my_machine.h` is not the production authority. |
 | F2 | `boards/btt_octopus_pro_mr1_map.h:40`, `:68`, `:110`, `:126`, `:142`, `:183` | Motion, home, diagnostic, output and control GPIO assignments. |
 | F3 | `Inc/mr1_octopus_config.h:57`, `:72`, `:93`, `:111`, `:119`, `:123`, `:133`, `:137` | Timing, scale, homing sequence, polarity and spindle defaults. |
-| F4 | `Src/driver.c:1662`, `:3342`, `:3465`; `grbl/protocol.c:130`, `:531` | PB1 enters the motor-fault control path; per-axis fault pins are enumerated diagnostics. |
+| F4 | `Src/driver.c:1662`, `:3342`, `:3465`; `grbl/protocol.c:130`, `:531` | PB1 enters the motor-fault control path; per-axis fault pins are enumerated but never read (`get_motor_fault_inputs()` has no caller in this board build). |
 | F5 | `mr1/expected-settings.json:1` | Original 65-setting baseline; isolated corrected profile and application copy now contain 66 checks, adding explicit `$13=0` millimeter reporting. |
 | F6 | `grbl/config.h:768`, `grbl/nuts_bolts.h:35`, `grbl/settings.c:77`, `grbl/report.c:204` | `DEFAULT_REPORT_INCHES` inherits `Off=0`; stored `$13` controls reported coordinate/rate units independently of program G20/G21. |
 | A1 | `application-reference/wiring-installation.js:459` | Application's 31 GPIO assignments match F2. |
@@ -88,7 +88,7 @@ No motor wire colors, GX16 cavity assignments or extension pin numbers are appro
 | Y-left home | STOP1 / PG9 | Same, independently sensed | ____ |
 | Z home | STOP2 / PG10 | Same | ____ |
 | Y-right home | STOP3 / PG11 | Same, independently sensed | ____ |
-| X / YL / Z / YR diagnostic fault | STOP4–7 / PG12–15 | Conditioned indication only; cannot be credited as stop protection | ____ |
+| X / YL / Z / YR per-axis fault | STOP4–7 / PG12–15 | Wiring for a future firmware candidate only; the current firmware never reads these pins (no stop, no status, no per-axis indication) | ____ |
 | Aggregate fault | EXP2 / **PB1** | Combined conditioned healthy output low; any fault/open/power loss high | ____ |
 | E-stop monitor | TB / PF3 | Safety-relay contact closed to GND while the relay is energized, open on E-stop/trip/broken wire (not an NC auxiliary; relay/terminal HOLD); never invert `$14` to suit a wrong contact; does not replace energy removal | ____ |
 | Door monitor | PWR-DET / PC0 | NC monitor; adjacent power cavity unused | ____ |
@@ -99,7 +99,7 @@ No motor wire colors, GX16 cavity assignments or extension pin numbers are appro
 
 Source: F2–F5 and D1. Populate signal and verified logic return only. STOP-header 5 V cavities remain empty. PB7 uses its verified adjacent GND; do not populate PB6 or the header's 5 V cavity. Probe field supply/return and controller-side HW-399 HVCC/HGND must remain separated. The installed HW-399/TLP281 module circuit and sensor pinout remain unverified; a generic module name does not establish its terminals. Do not leave shared output VCC floating as a generic recipe: pullups may couple channels. Trace the actual circuit and test combinations, either side unpowered, open cables and lost field power before connecting GPIO.
 
-**Alarm topology:** each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Combine the proven **conditioned healthy outputs** for PB1; provide separate outputs for PG12–15. Raw alarm transistors are not assumed dry contacts and must not be series-chained directly into PB1. Healthy-open alarm behavior cannot be made cable-break-safe by inversion alone; it needs added supervision or a separate ready/power contact. Test healthy, alarm, power loss and cable open independently on all four channels. Use an approved fault method; never hot-unplug a motor or encoder or put an ohmmeter across an energized output. [D1, F4]
+**Alarm topology:** each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Combine the proven **conditioned healthy outputs** for PB1, the only drive-fault stop; optional outputs for PG12–15 are wiring only and are not read by the current firmware. Raw alarm transistors are not assumed dry contacts and must not be series-chained directly into PB1. Healthy-open alarm behavior cannot be made cable-break-safe by inversion alone; it needs added supervision or a separate ready/power contact. Test healthy, alarm, power loss and cable open independently on all four channels. Use an approved fault method; never hot-unplug a motor or encoder or put an ohmmeter across an energized output. [D1, F4]
 
 The stock home harness needs four independently proven channels. Conductor count is a clue, not proof. Direct connection is acceptable only after each switch is established as a bare NC contact, disconnected from every stock powered circuit. Otherwise use the isolated conditioner. Y-left and Y-right must never share a home signal. [D1, D2]
 
@@ -141,6 +141,7 @@ named; none is closed by this worksheet.
 | --- | --- | --- |
 | E-stop / hazardous-energy design | The stop circuit is specified only as principles. A qualified person must produce and review a design that removes 240 VAC spindle-servo energy on E-stop (rated mains contactor on the servo supply and/or certified safe-torque-off; `SON` dropout is not the E-stop function), removes 36 V motion power with a Z-drop analysis for the de-energized state, puts the flood pump and mist/air solenoid supplies in the hardwired stop chain, sets stop category and restart prevention from a risk assessment, and gives a complete terminal schedule (E-stop station, safety relay, contactors, PF3 monitor contact). See `mr1/WIRING.md`, "Scope and Safety Boundary". | Energizing the cabinet with any drive, spindle or coolant load connected. The USB-only flash is not affected. |
 | E-stop monitor contact | The PF3 contact is closed while the relay is energized and open on E-stop/trip/broken wire. Pressing E-stop and unplugging the monitor wire must each read `Pn:E`; releasing/resetting clears it. | Any motion test. |
+| PB1 aggregate drive-fault chain | PB1 is the only drive-fault stop; PG12–PG15 are not read by the current firmware. For every drive, an alarm, drive-power loss and an open alarm cable must each stop motion through PB1 (`Pn:F`, alarm 17). | Any coupled dual-Y motion (commissioning Stage 6 onward). |
 
 ## Evidence to collect, in order
 

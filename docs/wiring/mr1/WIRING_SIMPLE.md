@@ -211,8 +211,8 @@ Each `ALM`/`COMO` pair first enters its own opto-isolated, current-limited condi
 | --- | --- |
 | conditioned, 3.3 V-compatible aggregate output plus logic return | `EXP2` **PB1/GND** |
 
-`PG12`–`PG15` are display only. They **do not stop the machine.** PB1 is the
-only one that does.
+`PG12`–`PG15` are **not read by the current firmware** - no stop, no display.
+PB1 is the only drive-fault stop. Qualify it before any coupled dual-Y motion.
 
 - [ ] **Later protected bench check:** remove each field alarm connection in turn and verify PB1 faults; also test drive power loss and a safely induced documented alarm. Never hot-unplug motor or encoder.
 

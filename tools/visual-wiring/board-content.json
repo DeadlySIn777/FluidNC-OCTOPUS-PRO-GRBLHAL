@@ -513,61 +513,61 @@
     },
     {
       "id": "diagnostics-stop4-7",
-      "title": "STOP4–STOP7: separate drive diagnostics",
+      "title": "STOP4–STOP7: per-axis drive-fault wiring (not read by current firmware)",
       "status": "FUNCTIONAL SEGMENTS — HOLD",
       "rows": [
         {
           "terminal": "STOP4 signal / PG12",
-          "destination": "Separate qualified controller-side X drive-fault indication.",
+          "destination": "Optional qualified controller-side X drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-X"
           ]
         },
         {
           "terminal": "STOP4 GND",
-          "destination": "Verified controller-side return for that X diagnostic output.",
+          "destination": "Verified controller-side return for that X per-axis output.",
           "relatedCableIds": [
             "ALM-X"
           ]
         },
         {
           "terminal": "STOP5 signal / PG13",
-          "destination": "Separate qualified controller-side Y-left drive-fault indication.",
+          "destination": "Optional qualified controller-side Y-left drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-YL"
           ]
         },
         {
           "terminal": "STOP5 GND",
-          "destination": "Verified controller-side return for that Y-left diagnostic output.",
+          "destination": "Verified controller-side return for that Y-left per-axis output.",
           "relatedCableIds": [
             "ALM-YL"
           ]
         },
         {
           "terminal": "STOP6 signal / PG14",
-          "destination": "Separate qualified controller-side Z drive-fault indication.",
+          "destination": "Optional qualified controller-side Z drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-Z"
           ]
         },
         {
           "terminal": "STOP6 GND",
-          "destination": "Verified controller-side return for that Z diagnostic output.",
+          "destination": "Verified controller-side return for that Z per-axis output.",
           "relatedCableIds": [
             "ALM-Z"
           ]
         },
         {
           "terminal": "STOP7 signal / PG15",
-          "destination": "Separate qualified controller-side Y-right drive-fault indication.",
+          "destination": "Optional qualified controller-side Y-right drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-YR"
           ]
         },
         {
           "terminal": "STOP7 GND",
-          "destination": "Verified controller-side return for that Y-right diagnostic output.",
+          "destination": "Verified controller-side return for that Y-right per-axis output.",
           "relatedCableIds": [
             "ALM-YR"
           ]
@@ -578,9 +578,9 @@
         }
       ],
       "notes": [
-        "These are separate conditioned indications, not raw ALM/COMO terminals and not the PB1 motor-fault stop input.",
+        "These are optional conditioned per-axis outputs, not raw ALM/COMO terminals and not the PB1 motor-fault stop input.",
         "The ALM-X/YL/Z/YR cables end at their own field conditioners. These conditioner-to-STOP links need separate harness IDs and terminal schedules.",
-        "Do not treat PG12–PG15 diagnostics as verified per-drive telemetry or independent safety protection."
+        "The current firmware never reads PG12–PG15: they give no stop, no status and no per-axis indication. PB1 is the only drive-fault stop; qualify it before any coupled dual-Y motion."
       ],
       "sourceIds": [
         "pin-map",
@@ -1115,7 +1115,7 @@
     "unmappedScheduledOctopusCableIds": [],
     "unscheduledFunctionalLinks": [
       "MOTOR0–3 socket-to-command-interface",
-      "Four separate conditioner-to-STOP4–7 diagnostic links",
+      "Four optional conditioner-to-STOP4–7 per-axis links (not read by current firmware)",
       "Probe conditioner to T1/PF5",
       "Tool-setter conditioner to PB7",
       "FAN4 to spindle-enable relay input",

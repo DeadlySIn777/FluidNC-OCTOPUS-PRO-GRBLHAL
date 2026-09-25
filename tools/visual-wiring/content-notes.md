@@ -6,7 +6,7 @@ Use `routes[].id` as the selector key. `matchCableIds` connects views to the cor
 
 Print `endLabels.from` and `endLabels.to` at the corresponding ends. They deliberately match. `connections` names electrical functions, not physical cavities. The P2 encoder supply row has `direction: to-from`: power comes from the drive even though encoder feedback travels toward it. Do not render all rows as one-way signals.
 
-| Physical motor | Socket | STEP | DIR | Reserved EN, unused | Separate diagnostic |
+| Physical motor | Socket | STEP | DIR | Reserved EN, unused | Per-axis fault wiring (not read) |
 | --- | --- | --- | --- | --- | --- |
 | X | MOTOR0 | PF13 | PF12 | PF14 | STOP4 / PG12 |
 | Y-left | MOTOR1 | PG0 | PG1 | PF15 | STOP5 / PG13 |
@@ -15,7 +15,7 @@ Print `endLabels.from` and `endLabels.to` at the corresponding ends. They delibe
 
 P3 is A±/B± motor power. P2 is EA±/EB± plus drive-supplied VCC/EGND for the matched encoder. P4 is polarized +VDC/GND on its own protected star branch. No motor colors, GX16 cavities, interface cavity order or fuse values are supplied.
 
-Each raw ALM/COMO pair terminates at its own planned isolated conditioner. Separate conditioned indications go to PG12–15; the supervised aggregate goes to PB1 and its controller-side return. The aggregate must include all required fault contributors. Raw alarm transistors are never drawn as a series GPIO circuit. PG12–15 do not establish the motor-fault stopping path or verified per-drive live telemetry.
+Each raw ALM/COMO pair terminates at its own planned isolated conditioner. Optional per-axis outputs go to PG12–15, but the current firmware never reads those pins; the supervised aggregate goes to PB1 and its controller-side return and is the only drive-fault stop. The aggregate must include all required fault contributors. Raw alarm transistors are never drawn as a series GPIO circuit. PG12–15 do not establish the motor-fault stopping path or verified per-drive live telemetry.
 
 The `holds` collection names the missing physical evidence: board/connector views, command interface and 5 V qualification, actual module circuit, alarm truth tables and supervision, return/PE topology, harness mapping, supply/protection and independent hardware stopping including Z support. Nothing in the content silently qualifies the recorded 36 V / 10 A supply or a TLP281/HW-399 module.
 

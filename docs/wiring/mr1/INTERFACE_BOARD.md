@@ -167,9 +167,11 @@ outputs into the PB1 aggregate input. Do not series-chain raw ALM/COMO outputs
 into a GPIO. PB1 is the only input that raises
 `Alarm_MotorFault` in the compiled firmware - see the verification box in
 `WIRING.md` under "Drive Fault Inputs". Per-axis outputs to PG12-PG15 are
-parallel indication for `$pins` and carry no protective duty. Budget the
-channel count accordingly: four field channels in, one series result to PB1,
-four independent indications to PG12-PG15.
+wiring for a future firmware candidate: the current firmware does not read
+them (`$pins` lists only their assignment), so they carry no protective duty
+and give no per-axis indication. Budget the channel count accordingly: four
+field channels in, one series result to PB1, and four optional per-axis outputs
+to PG12-PG15. Qualify PB1 before any coupled dual-Y motion.
 
 Each channel requires:
 
@@ -191,9 +193,9 @@ Field connector:
 1 ALM+ / ALM   2 ALM- / COMO   3 DRIVE_LOGIC_V (optional, protected)   4 shield
 ```
 
-Per-axis indication destinations are PG12, PG13, PG14, and PG15. The separately
-qualified protective aggregate goes to PB1; none of these four indication
-connections substitutes for it.
+Optional per-axis destinations are PG12, PG13, PG14, and PG15 (not read by the
+current firmware). The separately qualified protective aggregate goes to PB1;
+none of these four connections substitutes for it.
 
 ### C. Stock Home Inputs
 

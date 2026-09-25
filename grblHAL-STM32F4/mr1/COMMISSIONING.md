@@ -280,9 +280,14 @@ behavior before any `G38` move.
 Use the interface simulator/test jumper, not a live motor fault yet:
 
 - Four ready channels low: no motor fault.
-- Open X, YL, Z, then YR one at a time: the expected axis fault is reported.
+- Open X, YL, Z, then YR one at a time: PB1 reports a motor fault (`Pn:`
+  includes `F`, alarm 17). The current firmware does not read PG12-PG15, so no
+  per-axis fault is reported; identify the axis from the interface board.
 - Remove alarm-interface field power: a fault is reported.
 - Open PB1 aggregate fault: a cabinet/spindle fault is reported.
+
+PB1 is the only drive-fault stop. The complete PB1 chain qualification (Stage 5
+step 13 on every drive) is a blocking prerequisite for Stage 6.
 
 **Hold point:** saved truth table contains no ambiguous, coupled, or noisy input.
 
@@ -360,6 +365,10 @@ following-error test in this phase; those checks return with the CL57T upgrade.
 **Hold point:** all four loose axes pass independently.
 
 ## Stage 6: Direction and Ganged-Y Proof
+
+**Prerequisite:** the PB1 aggregate fault chain has passed Stage 5 step 13 on
+all four drives. PB1 is the only drive-fault stop; PG12-PG15 are not read by
+the current firmware. Do not run coupled dual-Y motion without it.
 
 Keep both Y motors uncoupled from the machine but powered together.
 

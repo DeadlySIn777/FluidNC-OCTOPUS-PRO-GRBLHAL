@@ -458,27 +458,33 @@ connector hold points.
 > - That signal is what raises `Alarm_MotorFault` (`grbl/protocol.c:130-133`,
 >   `grbl/motion_control.c:1192-1193`) and what blocks motion
 >   (`grbl/protocol.c:467`).
-> - The per-axis pins PG12-PG15 are enumerated into `motor_fault_inputs` and
->   returned by `get_motor_fault_inputs()` for `$pins` reporting **only**. They
->   are never polled to raise an alarm. `Src/driver.c:72-76` carries the
->   unimplemented note: *"TODO: add support for IRQ driven fault inputs?"*
+> - The per-axis pins PG12-PG15 are in the driver's input table, so `$pins`
+>   lists their assignment, and they are collected into `motor_fault_inputs`.
+>   Nothing reads their state: `get_motor_fault_inputs()` has no caller in this
+>   board build, they are never polled to raise an alarm, and no status report
+>   or app screen shows them. `Src/driver.c:72-76` carries the unimplemented
+>   note: *"TODO: add support for IRQ driven fault inputs?"*
 >
 > **Therefore: combine all four isolated, conditioned drive-healthy outputs into PB1. Never series-chain raw ALM/COMO terminals into the GPIO.**
 > All four healthy = loop closed = PB1 reads healthy. Any drive alarm, any lost
 > drive power, any broken cable opens the loop and stops the machine.
 >
-> Keep PG12-PG15 wired in parallel as per-axis indication so `$pins` tells you
-> *which* axis faulted. That is diagnostics, not protection. Do not rely on
-> them, and do not let `$744`/`$745` create the impression that per-axis fault
-> handling is active.
+> PG12-PG15 may still be wired in parallel for a future firmware candidate, but
+> the current firmware does **not** read them: they give no stop, no status and
+> no indication of *which* axis faulted. Do not rely on them, and do not let
+> `$744`/`$745` create the impression that per-axis fault handling is active.
+>
+> **Blocking prerequisite:** the PB1 aggregate chain is the only drive-fault
+> stop. Qualify it - every drive's alarm, drive-power loss and open alarm cable
+> each stop motion through PB1 - before any coupled dual-Y motion.
 >
 > This mattered little with open-loop DM860Ts, which cannot report a meaningful
 > fault. With CL57T closed-loop drives the alarm is the entire point: a
 > following error is the drive telling you it has lost the position the
 > controller thinks it has.
 
-The four DIAG stop connectors are assigned to individual drive faults for
-indication.
+The four DIAG stop connectors are assigned to individual drive faults as wiring
+for a future firmware candidate. The current firmware does not read them.
 
 | Drive | Octopus connector | GPIO |
 | --- | --- | --- |

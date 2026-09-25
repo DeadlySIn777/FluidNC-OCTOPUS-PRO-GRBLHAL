@@ -4,19 +4,19 @@
   "stage": "Unpowered cable preparation; physical connection/electrical acceptance pending",
   "sourceFiles": {
     "build.py": "d45e48b88a349f195a56b3cd203f5491710869558aa72c2d8140743a9d37c92f",
-    "cable-data.py": "cce88e171dd0bae8381cda00230fcff852c2c19af4d83fa8a2a9ffb4d6f7ca9a",
+    "cable-data.py": "414154bfa436eff9026470a1f4989c2f5507248114dff9f6161cb52639683283",
     "app.js": "1a6382a03243e01cfe852a508b6cd1fca75a8ed70075fae13fd678fe4525d5d1",
     "model.mjs": "ccb723151b05c9a7e1b7994731d4276e44b97af58b416dfdf16b9eaae399f8ca",
     "style.css": "f9d92c44892cd49b07bceace5dbe9bd2370557308bd3098eb4e3cb324e2c513b",
     "index.template.html": "1710e44644a4e3782d5685ce072df407be93a618a62b0d5cb557d5d67403f8b8",
-    "cable-data.json": "e0c4ca44a97db65f05c67f1c8a63c48de4c9bf4e78d77537485b2732f1fa470b",
-    "route-content.json": "d961baa2c430b66c63484886c8a0f6e61736d82e02394d008e2eb737c7d22e25",
+    "cable-data.json": "6a94f4b2516a46a608a91d8199009fcd3a5d8a78290ef079e2cd4160c9d0c2fa",
+    "route-content.json": "b47f4e270df620f26302832fa71a0e36bb191bccd410bddb9c1a26c507daf4d8",
     "asset-layout.json": "99054e6c798796dda03fb2b26feb3a057b4a5e364bf638035f742e2ae1ec0cec",
-    "coverage.json": "85cfc7784dbb2b420f13a987861aaa2f6b4bc3b335acbf49011e96ff78c96a6b",
-    "board-content.json": "19837fdf0bb2ccd7ca6d3bdc6c1fd755bf70b833d58b9d1213a3950ae6447755",
+    "coverage.json": "681e2841d5d6d8b8dd2a7474d6ba9594dd4a2964407fa35c8f33420382c77c65",
+    "board-content.json": "9a1cbc967fce925306c988e3958e71c9b880dc5ccc265f16888da0d92657345b",
     "board-regions.json": "cf3bfdf9d33daccdf429c01ffca9a526675c664a25f35a8d297b6fb8c9ee6511"
   },
-  "sourceScheduleSha256": "16ad6ff5170a50417766b1bae84dce604f5cd86902d4869d1f277202fa5aea4c",
+  "sourceScheduleSha256": "1797cbc4effe7c3c39deb955575315f3d8ac6cf7544b0a3f4e4bae4e554b0caf",
   "cables": 56,
   "defaultVisibleCables": 44,
   "functionalViews": 29,
@@ -40,8 +40,8 @@
   "files": [
     {
       "path": "index.html",
-      "bytes": 747177,
-      "sha256": "232311166a103b21fd4edb571b0831b213578844fc710e854c4bcf00954ecada"
+      "bytes": 748538,
+      "sha256": "4cf77e823de0298eb501136ef6fefb4d4270c1cd776d5da4f01aa6ea516c87dd"
     }
   ],
   "physicalMotionPermitted": false,

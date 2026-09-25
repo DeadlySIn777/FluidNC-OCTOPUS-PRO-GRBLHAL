@@ -8,13 +8,13 @@
   "source": {
     "csv": {
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "bytes": 15704,
-      "sha256": "16ad6ff5170a50417766b1bae84dce604f5cd86902d4869d1f277202fa5aea4c"
+      "bytes": 16079,
+      "sha256": "1797cbc4effe7c3c39deb955575315f3d8ac6cf7544b0a3f4e4bae4e554b0caf"
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 22672,
-      "sha256": "dff731760932838deba69c0138dc241f3869daa0e3ddee9535bc7c4d7600d9d2"
+      "bytes": 23198,
+      "sha256": "4db98233fd81b84945004f9b49fcab8cd2920afd5eaffd8efbc89c245d185619"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
@@ -900,7 +900,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG12 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG12 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 23,
       "axis": "X",
       "family": "fault",
@@ -922,7 +922,7 @@
       "missing_evidence": [
         "Actual X alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -936,7 +936,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG13 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG13 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 24,
       "axis": "YL",
       "family": "fault",
@@ -958,7 +958,7 @@
       "missing_evidence": [
         "Actual Y-left alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -972,7 +972,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG14 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG14 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 25,
       "axis": "Z",
       "family": "fault",
@@ -994,7 +994,7 @@
       "missing_evidence": [
         "Actual Z alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1008,7 +1008,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG15 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG15 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 26,
       "axis": "YR",
       "family": "fault",
@@ -1030,7 +1030,7 @@
       "missing_evidence": [
         "Actual Y-right alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1526,7 +1526,7 @@
       "cable_class": "shielded pair",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PG12-PG15 indication alone cannot stop motion.",
+      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PG12-PG15 are not read by the current firmware. Qualify PB1 before any coupled dual-Y motion.",
       "source_record": 41,
       "axis": "shared",
       "family": "fault",
@@ -1547,7 +1547,7 @@
         "Released aggregate circuit and actual connector orientation/return continuity.",
         "All four independently conditioned drive healthy channels plus required cabinet/spindle fault sources.",
         "Measured healthy-low / fault-open-powerloss-high behavior; healthy-open outputs require added supervision.",
-        "Physical PB1 stopping proof; PG12-PG15 indication alone is not stop protection."
+        "Physical PB1 stopping proof for every drive before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware."
       ],
       "evidence_status": "unverified",
       "may_energize": false

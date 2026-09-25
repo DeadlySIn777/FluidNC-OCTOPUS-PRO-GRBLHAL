@@ -140,7 +140,7 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "cl57t_alarm_truth",
     group: "BENCH",
     title: "DRIVER ALARM TRUTH TABLE PASSED",
-    detail: "Each raw ALM/COMO pair has its own isolated, current-limited conditioner. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Ready, alarm, power loss and open cable pass on every drive; PG12-PG15 are diagnostics only. Never series-chain raw alarm transistors or hot-unplug motor/encoder cables to create a fault.",
+    detail: "Each raw ALM/COMO pair has its own isolated, current-limited conditioner. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Ready, alarm, power loss and open cable pass on every drive, and PB1 stops motion before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware. Never series-chain raw alarm transistors or hot-unplug motor/encoder cables to create a fault.",
   }),
   Object.freeze({
     id: "hw399_identity",
@@ -245,7 +245,7 @@ export const WIRING_INSTALL_STEPS = Object.freeze([
     number: "07",
     state: "exact",
     title: "COPY X TO YL, Z, AND YR",
-    detail: "Copy the proved CL57T command, encoder and polarized power wiring. Verify both Y directions and matching pulse filters before coupled operation.",
+    detail: "Copy the proved CL57T command, encoder and polarized power wiring. Verify both Y directions, matching pulse filters and the PB1 aggregate fault stop on every drive before coupled operation; PB1 is the only drive-fault stop.",
     action: "COUPLERS DISCONNECTED",
   }),
   Object.freeze({

@@ -73,7 +73,7 @@
       "ena": "unconnected by default; any reserved enable interface requires separate qualification",
       "power": "P4 +VDC/GND, polarized 36 V star branch; 18-50 V absolute bus range",
       "encoder": "P2 EA+/EA-/EB+/EB-/VCC/EGND; VCC is drive-supplied, never externally powered",
-      "fault": "ALM/COMO into individually isolated conditioners; combine proven healthy outputs into PB1, with PG12-PG15 for diagnostics only"
+      "fault": "ALM/COMO into individually isolated conditioners; combine proven healthy outputs into PB1, the only drive-fault stop, and qualify it before any coupled dual-Y motion. PG12-PG15 are wiring for a future firmware candidate; the current firmware never reads their state (no stop, no status, no per-axis indication)"
     }
   },
   "electrical_domains": [
@@ -137,10 +137,10 @@
     {"macro": "Z_LIMIT", "gpio": "PG10", "connector": "DIAG2/STOP2", "role": "conditioned Z home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
     {"macro": "M3_LIMIT", "gpio": "PG11", "connector": "DIAG3/STOP3", "role": "conditioned Y-right home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
 
-    {"macro": "X_MOTOR_FAULT", "gpio": "PG12", "connector": "DIAG4/STOP4", "role": "X driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
-    {"macro": "Y_MOTOR_FAULT", "gpio": "PG13", "connector": "DIAG5/STOP5", "role": "Y-left driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
-    {"macro": "Z_MOTOR_FAULT", "gpio": "PG14", "connector": "DIAG6/STOP6", "role": "Z driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
-    {"macro": "M3_MOTOR_FAULT", "gpio": "PG15", "connector": "DIAG7/STOP7", "role": "Y-right driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
+    {"macro": "X_MOTOR_FAULT", "gpio": "PG12", "connector": "DIAG4/STOP4", "role": "X driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
+    {"macro": "Y_MOTOR_FAULT", "gpio": "PG13", "connector": "DIAG5/STOP5", "role": "Y-left driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
+    {"macro": "Z_MOTOR_FAULT", "gpio": "PG14", "connector": "DIAG6/STOP6", "role": "Z driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
+    {"macro": "M3_MOTOR_FAULT", "gpio": "PG15", "connector": "DIAG7/STOP7", "role": "Y-right driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
 
     {"macro": "SAFETY_DOOR", "gpio": "PC0", "connector": "PWR-DET", "role": "NC enclosure interlock monitor", "direction": "input", "interrupt": true},
     {"macro": "PROBE", "gpio": "PF5", "connector": "T1", "role": "HW-399 OUT1 isolated touch-probe signal", "direction": "input", "interrupt": true},

@@ -672,7 +672,7 @@
       ],
       "category": "alarm",
       "axisId": "X",
-      "title": "X: separate fault indication",
+      "title": "X: per-axis fault wiring (not read)",
       "from": {
         "node": "alarm-X",
         "label": "Planned X diagnostic output",
@@ -703,7 +703,7 @@
           "to": "STOP4 GND"
         }
       ],
-      "summary": "PG12 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG12, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
       "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
       "holdIds": [
         "header-view",
@@ -1185,7 +1185,7 @@
       ],
       "category": "alarm",
       "axisId": "YL",
-      "title": "Y-left: separate fault indication",
+      "title": "Y-left: per-axis fault wiring (not read)",
       "from": {
         "node": "alarm-YL",
         "label": "Planned Y-left diagnostic output",
@@ -1216,7 +1216,7 @@
           "to": "STOP5 GND"
         }
       ],
-      "summary": "PG13 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG13, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
       "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
       "holdIds": [
         "header-view",
@@ -1698,7 +1698,7 @@
       ],
       "category": "alarm",
       "axisId": "Z",
-      "title": "Z: separate fault indication",
+      "title": "Z: per-axis fault wiring (not read)",
       "from": {
         "node": "alarm-Z",
         "label": "Planned Z diagnostic output",
@@ -1729,7 +1729,7 @@
           "to": "STOP6 GND"
         }
       ],
-      "summary": "PG14 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG14, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
       "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
       "holdIds": [
         "header-view",
@@ -2211,7 +2211,7 @@
       ],
       "category": "alarm",
       "axisId": "YR",
-      "title": "Y-right: separate fault indication",
+      "title": "Y-right: per-axis fault wiring (not read)",
       "from": {
         "node": "alarm-YR",
         "label": "Planned Y-right diagnostic output",
@@ -2242,7 +2242,7 @@
           "to": "STOP7 GND"
         }
       ],
-      "summary": "PG15 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG15, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
       "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
       "holdIds": [
         "header-view",
@@ -2330,7 +2330,7 @@
         }
       ],
       "summary": "The four drive healthy channels join all required cabinet/spindle fault sources. All required contributors healthy = PB1 low; fault, open cable or lost power must make it high. The combining circuit is still unreleased.",
-      "check": "Prove every contributor independently using the approved test setup. PB1 is a controller fault input; the independent hardware stop is still required.",
+      "check": "Prove every contributor independently using the approved test setup before any coupled dual-Y motion; PB1 is the only drive-fault stop. PB1 is a controller fault input; the independent hardware stop is still required.",
       "holdIds": [
         "header-view",
         "alarm-conditioner",

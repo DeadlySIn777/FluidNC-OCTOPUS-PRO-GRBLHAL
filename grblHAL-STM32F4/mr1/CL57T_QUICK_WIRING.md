@@ -267,8 +267,10 @@ motion.** The only input that raises `Alarm_MotorFault` in grblHAL is the
 
 > Combine the four **conditioned healthy outputs** into the **PB1 aggregate**:
 > all healthy = low; any fault, open cable or lost power = high. Never chain
-> raw ALM/COMO terminals into a GPIO. Provide separate conditioned indications
-> on PG12–PG15 for `$pins` diagnostics; these do not stop motion.
+> raw ALM/COMO terminals into a GPIO. PG12–PG15 may be wired for a future
+> firmware candidate, but the current firmware does not read them: they neither
+> stop motion nor report which axis faulted. Qualify PB1 before any coupled
+> dual-Y motion.
 
 The rollback DM860T also provides fault outputs, although it has no motor
 encoder following-error feedback. CL57T feedback is at the motor shaft; it

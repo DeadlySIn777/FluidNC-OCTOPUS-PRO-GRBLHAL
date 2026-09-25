@@ -381,9 +381,18 @@ test('alarm instructions require individual conditioning, supervised healthy sta
   const gate = WIRING_EVIDENCE_GATES.find(item => item.id === 'cl57t_alarm_truth');
   assert.match(gate.detail, /Each raw ALM\/COMO pair has its own isolated, current-limited conditioner/);
   assert.match(gate.detail, /Combine only conditioned healthy outputs/);
-  assert.match(gate.detail, /PG12-PG15 are diagnostics only/);
+  assert.match(gate.detail, /PG12-PG15 are not read by the current firmware/);
+  assert.match(gate.detail, /PB1 stops motion before any coupled dual-Y motion/);
+  for (const macro of ['X_MOTOR_FAULT', 'Y_MOTOR_FAULT', 'Z_MOTOR_FAULT', 'M3_MOTOR_FAULT']) {
+    const signal = signalByMacro(macro);
+    assert.equal(signal.stopsMotion, false);
+    assert.equal(signal.firmwareReadsState, false);
+    assert.match(signal.role, /not read by the current firmware/);
+  }
   const html = readFileSync(appHtmlUrl, 'utf8');
   const alarms = html.slice(html.indexOf('ROUTE EACH DRIVE ALARM'), html.indexOf('HARDWIRED STOP FIRST'));
+  assert.match(alarms, /the current firmware does not read them/);
+  assert.doesNotMatch(alarms, /axis diagnostics/);
   assert.match(alarms, /Never series-chain raw alarm transistors/);
   assert.match(alarms, /software inversion cannot distinguish it from a broken cable/);
   assert.match(alarms, /never hot-unplug motor or encoder cables/);
