@@ -448,6 +448,10 @@ test('a large program loads while armed without starving status or stop handling
   const source = sampleProgram.replace('G1 Z0 F100\n', `G1 Z0 F100\n${body.join('\n')}\n`);
   let last = performance.now(), worst = 0;
   const lag = setInterval(() => { const now = performance.now(); worst = Math.max(worst, now - last); last = now; }, 20);
+  // Renew the lease like the browser's heartbeat worker; each renewal is served while the program validates.
+  const beats = [];
+  const heartbeat = setInterval(() => beats.push(request('/api/heartbeat', {}).then(res => res.status)), 1000);
+  t.after(() => clearInterval(heartbeat));
   let loaded;
   try { loaded = await request('/api/program', { source, name: 'large.nc' }); } finally { clearInterval(lag); }
   assert.equal(loaded.status, 200); assert.equal(loaded.body.sha256, createHash('sha256').update(source).digest('hex'));
@@ -457,6 +461,8 @@ test('a large program loads while armed without starving status or stop handling
   const rejected = await request('/api/program', { source: `${source}\t\u0018`, name: 'bad.nc' });
   assert.equal(rejected.status, 400); assert.match(rejected.body.error, /control characters/);
   assert.equal(service.controller.program.sha256, loaded.body.sha256);
+  clearInterval(heartbeat);
+  assert.ok((await Promise.all(beats)).every(status => status === 200), 'every lease renewal was accepted');
 });
 
 test('request bodies decode multibyte characters split across TCP chunks', async t => {
