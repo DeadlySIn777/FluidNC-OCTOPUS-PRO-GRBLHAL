@@ -57,6 +57,33 @@ function vector(value, minimum, maximum) {
   return Object.values(result).every(Number.isFinite) ? result : null;
 }
 
+// The archived FluidCNC Waveshare firmware (legacy/fluidcnc-2025/chatter-waveshare-s3)
+// prints {"chatter":{"state","score","freq","vib","conf","cal","learned","feed",
+// "spindleTempC"}}. Only fields whose meaning matches mr1-chatter-v1 are mapped:
+// - score: smoothed 0-100 chatter likelihood; freq: dominant frequency in Hz.
+// - state: ok/warning/chatter unchanged. "recovering" is entered only from chatter
+//   and held until the score stays below 25 for 5 s, so it is reported as warning
+//   rather than ok. "calibrating" lines are dropped: that detector does not
+//   evaluate chatter while calibrating and its score is stale.
+// Not mapped: vib is a baseline z-score scaled by 0.1, not g; spindleTempC has no
+// health flag and keeps the last reading after a sensor disconnect (-127 = never
+// read); conf, cal (a percentage, not the v1 calibrated flag), learned and feed
+// have no v1 equivalent.
+const LEGACY_STATES = new Map([
+  ["ok", "ok"],
+  ["warning", "warning"],
+  ["chatter", "chatter"],
+  ["recovering", "warning"],
+]);
+
+function legacyChatterPayload(payload) {
+  const legacy = payload.chatter;
+  if (payload.type !== undefined || !legacy || typeof legacy !== "object" || Array.isArray(legacy)) return null;
+  const state = LEGACY_STATES.get(String(legacy.state ?? "").toLowerCase());
+  if (!state) return null;
+  return { type: "chatter", score: legacy.score, state, freq: legacy.freq };
+}
+
 export function parseChatterSensorLine(line, options = {}) {
   const raw = String(line ?? "").trim();
   if (!raw || raw.length > 4096 || !raw.startsWith("{")) return null;
@@ -67,7 +94,10 @@ export function parseChatterSensorLine(line, options = {}) {
   } catch {
     return null;
   }
-  if (!payload || payload.type !== "chatter") return null;
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  const sourceFormat = payload.type === "chatter" ? "mr1-chatter-v1" : "fluidcnc-legacy-chatter";
+  if (payload.type !== "chatter") payload = legacyChatterPayload(payload);
+  if (!payload) return null;
 
   const score = finiteInRange(payload.score, 0, 100);
   const state = String(payload.state ?? "").toLowerCase();
@@ -84,6 +114,7 @@ export function parseChatterSensorLine(line, options = {}) {
 
   return {
     protocol: "mr1-chatter-v1",
+    sourceFormat,
     schemaVersion: integerInRange(payload.schema, 1, 2) ?? 1,
     firmwareVersion: boundedText(payload.version, 32),
     receivedAt: options.receivedAt ?? new Date().toISOString(),

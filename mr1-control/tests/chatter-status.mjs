@@ -62,6 +62,7 @@ test("normalizes a bounded ESP32 chatter packet", () => {
   }), { receivedAt: "2026-08-22T12:00:00.000Z" });
 
   assert.equal(packet.protocol, "mr1-chatter-v1");
+  assert.equal(packet.sourceFormat, "mr1-chatter-v1");
   assert.equal(packet.schemaVersion, 2);
   assert.equal(packet.firmwareVersion, "7.6-mr1");
   assert.equal(packet.deviceReportSequence, 42);
@@ -144,4 +145,87 @@ test("rejects logs, command events, malformed JSON, and unsafe values", () => {
   assert.equal(parseChatterSensorLine("{broken"), null);
   assert.equal(parseChatterSensorLine('{"type":"chatter","score":101,"state":"ok"}'), null);
   assert.equal(parseChatterSensorLine('{"type":"chatter","score":20,"state":"unknown"}'), null);
+});
+
+// Exact line format printed by legacy/fluidcnc-2025/chatter-waveshare-s3 sendChatterStatus().
+function legacyLine(fields) {
+  return JSON.stringify({
+    chatter: {
+      state: "warning",
+      score: 55.4,
+      freq: 1250,
+      vib: 0.412,
+      conf: 62,
+      cal: 100,
+      learned: 3,
+      feed: 85,
+      spindleTempC: 41.5,
+      ...fields,
+    },
+  });
+}
+
+test("maps the archived FluidCNC {chatter:{...}} status line", () => {
+  const packet = parseChatterSensorLine(legacyLine({}), { receivedAt: "2026-09-25T12:00:00.000Z" });
+
+  assert.equal(packet.protocol, "mr1-chatter-v1");
+  assert.equal(packet.sourceFormat, "fluidcnc-legacy-chatter");
+  assert.equal(packet.schemaVersion, 1);
+  assert.equal(packet.firmwareVersion, null);
+  assert.equal(packet.receivedAt, "2026-09-25T12:00:00.000Z");
+  assert.equal(packet.score, 55.4);
+  assert.equal(packet.state, "warning");
+  assert.equal(packet.frequencyHz, 1250);
+});
+
+test("does not reinterpret legacy fields whose meaning differs from v1", () => {
+  const packet = parseChatterSensorLine(legacyLine({ state: "ok", score: 3.2 }));
+
+  assert.equal(packet.state, "ok");
+  // vib is a scaled baseline z-score, not acceleration in g.
+  assert.equal(packet.vibrationG, null);
+  // spindleTempC carries no health flag and latches after a disconnect.
+  assert.equal(packet.spindleTemperatureC, null);
+  assert.equal(packet.sensorTemperatureC, null);
+  assert.equal(packet.temperatureSource, null);
+  assert.equal(packet.health.externalTemperature, null);
+  // cal is a calibration percentage, not the v1 qualified-calibration flag.
+  assert.equal(packet.calibrated, false);
+  assert.equal(packet.calibration.active, false);
+  assert.equal(packet.calibration.progress, null);
+  assert.equal(packet.rotationDps, null);
+  assert.deepEqual(packet.components, { microphone: null, accelerometer: null, gyroscope: null });
+});
+
+test("maps legacy chatter and recovering states without under-reporting", () => {
+  assert.equal(parseChatterSensorLine(legacyLine({ state: "chatter", score: 82 })).state, "chatter");
+  assert.equal(parseChatterSensorLine(legacyLine({ state: "CHATTER", score: 82 })).state, "chatter");
+  assert.equal(parseChatterSensorLine(legacyLine({ state: "recovering", score: 35 })).state, "warning");
+});
+
+test("rejects legacy lines that cannot be represented safely", () => {
+  assert.equal(parseChatterSensorLine(legacyLine({ state: "calibrating", score: 0 })), null);
+  assert.equal(parseChatterSensorLine(legacyLine({ state: "unknown" })), null);
+  assert.equal(parseChatterSensorLine(legacyLine({ score: 120 })), null);
+  assert.equal(parseChatterSensorLine(legacyLine({ score: "loud" })), null);
+  assert.equal(parseChatterSensorLine('{"chatter":[1,2,3]}'), null);
+  assert.equal(parseChatterSensorLine('{"chatter":"warning"}'), null);
+  assert.equal(parseChatterSensorLine('{"chatter":{"state":"ok","score":5},"type":"status"}'), null);
+  assert.equal(parseChatterSensorLine('{"response":"calibration_started"}'), null);
+  assert.equal(parseChatterSensorLine('{"info":{"version":"4.2-temp-sensor","calibrated":true}}'), null);
+  assert.equal(parseChatterSensorLine('{"temp":{"spindleTempC":41.5,"sensor":true}}'), null);
+  assert.equal(parseChatterSensorLine("[1,2,3]"), null);
+});
+
+test("the current type field takes precedence over a legacy chatter object", () => {
+  const packet = parseChatterSensorLine(JSON.stringify({
+    type: "chatter",
+    score: 10,
+    state: "ok",
+    chatter: { state: "chatter", score: 95 },
+  }));
+
+  assert.equal(packet.sourceFormat, "mr1-chatter-v1");
+  assert.equal(packet.state, "ok");
+  assert.equal(packet.score, 10);
 });
