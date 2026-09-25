@@ -55,8 +55,8 @@ The two error directions are **not** symmetric:
 
 **The MR-1 drives a 5 V common-anode interface**
 (`Inc/mr1_octopus_config.h`, the "DM860T V3.0-compatible timing, using 5 V
-common-anode interfaces" block; the same 5 V interface is used by the rollback
-DM860T set), so:
+common-anode interfaces" block; `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md`
+(repository path), "Four Identical Axis Harnesses"), so:
 
 > ### Set `S3` to **5V** on all four drives.
 
