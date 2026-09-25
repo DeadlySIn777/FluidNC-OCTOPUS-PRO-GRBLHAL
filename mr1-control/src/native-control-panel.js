@@ -53,16 +53,29 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
     <p class="native-message" role="status"></p><p class="native-footnote">Hardware commissioning is pending. The physical E-stop remains independent of this screen.</p>`;
   document.body.append(panel);
   const $ = selector => panel.querySelector(selector);
+  // Energy-removing commands need no browser lease and no fresh session claim.
+  const energyRemoving = ['hold', 'stop', 'disarm'];
+  let heartbeatWorker = null;
+  try {
+    heartbeatWorker = new Worker(new URL('./native-heartbeat.worker.js', import.meta.url), { type: 'module', name: 'mr1-native-heartbeat' });
+    heartbeatWorker.addEventListener('message', event => { if (event.data?.sessionRejected) link.rejected(event.data.token, event.data.error); });
+    heartbeatWorker.addEventListener('error', () => { heartbeatWorker?.terminate(); heartbeatWorker = null; });
+  } catch { heartbeatWorker = null; }
   const link = createNativeServiceLink({
     onState: state => { snapshot = state; render(); },
     onFailure: error => {
       message = error.message;
+      // Unknown is not disconnected: the service may still hold an armed controller.
       if (snapshot) snapshot = { ...snapshot, connected: false, armed: false, status: null,
-        preflight: null, motionQualified: false, fault: message,
+        preflight: null, motionQualified: false, fault: message, linkLost: true,
         commissioning: snapshot.commissioning ? { ...snapshot.commissioning, session: null } : undefined };
-      else $('.native-message').textContent = message;
+      else {
+        $('.native-message').textContent = message;
+        for (const action of energyRemoving) $(`[data-command="${action}"]`).disabled = false;
+      }
       render();
     },
+    onToken: token => heartbeatWorker?.postMessage({ token }),
   });
   const request = link.request;
   const commissioningControls = mountCommissioningControls({ root: $('[data-commissioning]'), request, act, getSnapshot: () => snapshot });
@@ -101,7 +114,7 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
     $('[data-command="arm"]').disabled = !snapshot.connected || !permits.has('arm') || snapshot.busy;
     $('[data-command="run"]').disabled ||= snapshot.job.state !== 'loaded';
     $('[data-command="resume"]').disabled = !snapshot.armed || !permits.has('resume') || snapshot.status?.state?.name !== 'Hold' || snapshot.status?.state?.substate !== 0;
-    for (const action of ['hold','stop','disarm']) $(`[data-command="${action}"]`).disabled = !snapshot.connected;
+    for (const action of energyRemoving) $(`[data-command="${action}"]`).disabled = !snapshot.connected && !snapshot.linkLost;
     $('[data-recovery]').disabled = snapshot.journalReady || !snapshot.reconciliation?.reviewable || snapshot.connected;
     $('[data-shutdown]').disabled = Boolean(snapshot.port) || snapshot.connected || snapshot.connecting || snapshot.disconnecting || snapshot.busy;
     $('.native-qualification').textContent = snapshot.motionQualified ? 'Commissioning evidence accepted for this connection.' : 'Physical commissioning has not been recorded.';
@@ -111,10 +124,10 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
     wiringControls.render(snapshot);
     onState(snapshot);
   };
-  async function act(action, { interrupt = false } = {}) {
+  async function act(action, { interrupt = false, claim = true } = {}) {
     if (pendingActions && !interrupt) { message = 'A controller request is still pending. Stop and disconnect remain available.'; render(); return; }
     pendingActions++;
-    try { await link.session(); await action(); message = serviceStopped ? 'Local service closed. Use the Windows launcher to reopen MR1.' : 'Request accepted. Check the displayed operation state.'; }
+    try { if (claim) await link.session(); await action(); message = serviceStopped ? 'Local service closed. Use the Windows launcher to reopen MR1.' : 'Request accepted. Check the displayed operation state.'; }
     catch (error) { message = error.message; }
     finally { pendingActions--; }
     if (!serviceStopped) try { await link.refresh(); } catch (error) { message = error.message; }
@@ -144,12 +157,12 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
     }
     return request('/api/command', { action, axis: action === 'home' ? $('#native-home-axis').value : undefined, confirmed: $('#native-clear').checked, sha256: snapshot?.program?.sha256 });
   }
-  const command = action => act(() => sendCommand(action), { interrupt: ['hold','stop','disarm'].includes(action) });
+  const command = action => act(() => sendCommand(action), { interrupt: energyRemoving.includes(action), claim: !energyRemoving.includes(action) });
   for (const control of panel.querySelectorAll('[data-command]')) control.onclick = () => command(control.dataset.command);
   $('[data-recovery]').onclick = () => act(() => request('/api/recovery', { confirmed: $('#native-recovery-confirm').checked, reconciliationId: snapshot?.reconciliation?.reconciliationId }));
   $('[data-shutdown]').onclick = () => act(async () => {
     await request('/api/shutdown', {}); serviceStopped = true; link.close();
-    clearInterval(timer);
+    clearInterval(timer); heartbeatWorker?.terminate();
   });
   $('#native-qualification').onchange = () => act(async () => {
     const file = $('#native-qualification').files[0]; if (!file) return;
@@ -169,8 +182,10 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
   });
   // A held jog is never generated here: each click is one bounded increment.
   // A lost operator heartbeat stops/disarms on the server, including tab closure.
+  // The worker keeps the lease while this page is hidden; the page poll refreshes
+  // state and remains the heartbeat fallback.
   const timer = setInterval(() => { void link.poll(); }, 1000);
-  window.addEventListener('beforeunload', () => { clearInterval(timer); link.close(); });
+  window.addEventListener('beforeunload', () => { clearInterval(timer); link.close(); heartbeatWorker?.terminate(); });
   void link.refresh().catch(() => {});
   void refreshPorts().catch(error => { message = error.message; render(); });
   connectTelemetry();

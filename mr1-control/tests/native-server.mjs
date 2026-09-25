@@ -21,6 +21,7 @@ import { REALTIME } from '../service/native-controller.mjs';
 import { WireController, profile, delay, sampleProgram } from './fixtures/native-wire.mjs';
 import { COMMISSIONING_CHECKS, createCommissioningBundle, createCommissioningEvidence, upsertCommissioningEvidence } from '../src/commissioning-record.js';
 import { createConnection } from 'node:net';
+import { createNativeServiceLink } from '../src/native-service-link.js';
 
 async function setup(t, options = {}) {
   const prefix = resolve(tmpdir(), 'mr1-native-tests-');
@@ -417,6 +418,25 @@ test('energy-removing commands reach the controller without the browser lease; n
   assert.equal((await request('/api/command', { action: 'disarm' }, { 'X-MR1-Session': token })).status, 200);
   const records = (await (await fetch(`${origin}/journal/export`)).text()).trim().split('\n').map(line => JSON.parse(line));
   assert.deepEqual(records.filter(record => record.kind === 'native.request' && ['stop', 'disarm'].includes(record.payload.action)).map(record => record.payload.leaseHeld), [false, false]);
+});
+
+test('a transient browser read failure does not lock the owning browser out of STOP', async t => {
+  const { port, service, origin } = await setup(t);
+  let failRead = false;
+  const fetchImpl = async (path, init = {}) => {
+    if (failRead && path === '/api/state') { failRead = false; throw new TypeError('Failed to fetch'); }
+    return fetch(origin + path, { ...init, headers: { ...init.headers, ...(init.method === 'POST' ? { Origin: origin } : {}) } });
+  };
+  const failures = [];
+  const link = createNativeServiceLink({ fetchImpl, onState: () => {}, onFailure: error => failures.push(error.message) });
+  await link.session(); await link.request('/api/connect', { port: 'COM7' });
+  await link.request('/api/command', { action: 'arm', confirmed: true });
+  failRead = true; await link.poll();
+  assert.deepEqual(failures, ['Failed to fetch']);
+  await link.poll();
+  assert.equal(service.controller.armed, true, 'the retained token still holds the lease');
+  await link.request('/api/command', { action: 'stop' });
+  assert.equal(service.controller.armed, false); assert.equal(realtime(port, REALTIME.reset), 1);
 });
 
 test('a large program loads while armed without starving status or stop handling', async t => {
