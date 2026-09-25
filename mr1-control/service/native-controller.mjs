@@ -47,7 +47,7 @@ function nativeStatusContract(raw) {
 export function prepareProgram(source, name = 'program.nc', { airRun = false } = {}) {
   if (typeof source !== 'string' || Buffer.byteLength(source) > 5 * 1024 * 1024) fail('Program exceeds 5 MB.');
   // Embedded realtime characters execute immediately even inside comments.
-  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-￿!?~]/.test(source)) fail('Program contains prohibited control characters.');
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\uffff!?~]/.test(source)) fail('Program contains prohibited control characters.');
   if (typeof airRun !== 'boolean') fail('Choose an explicit program mode.');
   const validation = validateMr1Nc(source, { name, allowSpindleOffMotion: airRun });
   if (!validation.ok) fail(validation.blockers.map(b => `Line ${b.line}: ${b.message}`).join('\n'));

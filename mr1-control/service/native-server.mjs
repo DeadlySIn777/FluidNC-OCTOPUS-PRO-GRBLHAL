@@ -260,7 +260,8 @@ export async function createNativeServer(options = {}) {
         if (url.pathname === '/api/disconnect') return respond(async () => { await controller.disconnect(); return controller.snapshot(); });
         if (url.pathname === '/api/program') return respond(async () => {
           if (controller.busy) throw new Error('Stop the active operation before loading another program.');
-          return controller.commitProgram(await prepareProgramOffThread(input.source, input.name, { airRun: input.airRun ?? false }));
+          const program = await prepareProgramOffThread(input.source, input.name, { airRun: input.airRun ?? false });
+          scope.check(); return controller.commitProgram(program);
         });
         if (url.pathname !== '/api/command') return json(res, 404, { error: 'Endpoint not found.' });
         const actions = {
