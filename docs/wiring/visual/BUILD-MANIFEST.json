@@ -3,13 +3,13 @@
   "product": "MR1 Visual Wiring Guide",
   "stage": "Unpowered cable preparation; physical connection/electrical acceptance pending",
   "sourceFiles": {
-    "build.py": "f94ab08ea94f1cb8ef19df419e55220cb6a3a57d62021d4259e7a79571b7d1e0",
+    "build.py": "d45e48b88a349f195a56b3cd203f5491710869558aa72c2d8140743a9d37c92f",
     "cable-data.py": "e0d6708deaca86a71fb23565092c5883357b79e53622c7fa6bbbe340e2426508",
     "app.js": "1a6382a03243e01cfe852a508b6cd1fca75a8ed70075fae13fd678fe4525d5d1",
     "model.mjs": "ccb723151b05c9a7e1b7994731d4276e44b97af58b416dfdf16b9eaae399f8ca",
     "style.css": "f9d92c44892cd49b07bceace5dbe9bd2370557308bd3098eb4e3cb324e2c513b",
     "index.template.html": "1710e44644a4e3782d5685ce072df407be93a618a62b0d5cb557d5d67403f8b8",
-    "cable-data.json": "79d137b27fbac932e657e60d23a461a51179d18843b8fa3f5130b145c44260be",
+    "cable-data.json": "ae698bb89849f68970b02dcd6b6b1f4052754fc8f370e45d265c4c48f74cbdd1",
     "route-content.json": "d961baa2c430b66c63484886c8a0f6e61736d82e02394d008e2eb737c7d22e25",
     "asset-layout.json": "99054e6c798796dda03fb2b26feb3a057b4a5e364bf638035f742e2ae1ec0cec",
     "coverage.json": "cb859c5205176a28fa39e9a3f3a154cc793cc3834214fc4f8b98b5f860ca86ea",
@@ -41,7 +41,7 @@
     {
       "path": "index.html",
       "bytes": 745102,
-      "sha256": "3397b3cd65b0ee9446ca193807938af1d72421dc7e4e7bee371e67bbb9dec1f0"
+      "sha256": "a09e6619ed4b1117f569f421fff2b8782bd864559984e55a863ede5b6f189ec1"
     }
   ],
   "physicalMotionPermitted": false,

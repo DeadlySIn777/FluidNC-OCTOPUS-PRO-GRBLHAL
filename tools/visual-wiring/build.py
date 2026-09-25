@@ -141,7 +141,7 @@ def main():
         unitTests='Run separately; this builder does not execute or certify the test suites.',
         browserVisualVerification='Not performed by this builder.')
     (output/'BUILD-MANIFEST.json').write_text(json.dumps(manifest,indent=2)+'\n',encoding='utf-8',newline='\n')
-    (output/'SHA256.txt').write_text(manifest['files'][0]['sha256']+'  index.html\n',encoding='ascii')
+    (output/'SHA256.txt').write_text(manifest['files'][0]['sha256']+'  index.html\n',encoding='ascii',newline='\n')
     print(json.dumps({key:manifest[key] for key in ('cables','defaultVisibleCables','functionalViews','files','checks')}))
 
 if __name__ == '__main__': main()

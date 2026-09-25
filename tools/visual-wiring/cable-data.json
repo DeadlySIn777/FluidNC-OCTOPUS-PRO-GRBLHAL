@@ -23,8 +23,8 @@
     },
     "spindle_supervision": {
       "path": "docs/wiring/mr1/SPINDLE_SUPERVISION.md",
-      "bytes": 18425,
-      "sha256": "ba83c352a4ce56cda98a1d6ade39227b613a5c332e0cf5663956eba968239441"
+      "bytes": 18072,
+      "sha256": "19ac2cd5b12e4e1b7a438726514b673c97fd3b5374f5671b7ff47f0be3cace3d"
     }
   },
   "source_fields": [
