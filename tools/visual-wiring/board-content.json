@@ -25,27 +25,27 @@
     {
       "id": "wiring",
       "path": "docs/wiring/mr1/WIRING.md",
-      "sha256": "5d4069ca27c33cdb2273b6d5abf54ceac2bde3c37481f092d5389af49de6ba18"
+      "sha256": "8d057aba6a847256ca69783b4048a0188982e9cd87bc0584e4601364ac15b97d"
     },
     {
       "id": "pigtails",
       "path": "docs/wiring/mr1/PIGTAIL_SCHEDULE.md",
-      "sha256": "f64eacc58ba6f0d11ca59e0a11ea92a30ae48da5a5fbadf8c8c945d6a8362329"
+      "sha256": "bcc7e4e1e7b56d8e8cf1c1d4191cfa1ecb8c506db07181ce853f2bff2d2dc833"
     },
     {
       "id": "interface",
       "path": "docs/wiring/mr1/INTERFACE_BOARD.md",
-      "sha256": "15431a15717901b895a487dbc048cd0a0c15290fcb5f5cdd6e3eef64dd748e09"
+      "sha256": "8039985429e9e9143d72a05ba3a176673b0feedcec38d2f9bd5229a62b2e01f0"
     },
     {
       "id": "manifest",
       "path": "docs/wiring/mr1/io-manifest.json",
-      "sha256": "5ff586c6a720151987b5612a30d96c6c6afb800194db1cd5e5d80b3b826a36f4"
+      "sha256": "95d71acf8266852a0b592ec76cefc471ffb24c6fac0b59632e251d30b8d10094"
     },
     {
       "id": "cable-schedule",
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+      "sha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12"
     },
     {
       "id": "pin-map",
@@ -55,7 +55,7 @@
     {
       "id": "installation",
       "path": "docs/wiring/application-reference/wiring-installation.js",
-      "sha256": "1c6065acc60d341328e8f095f22c091e6e6a3215a3005080ff4e0755b5af6806"
+      "sha256": "d079e0835cc87bff34eb49f43a6c45429382e7cf77f59dd111653e947bc4fb5e"
     },
     {
       "id": "btt-pinout",
