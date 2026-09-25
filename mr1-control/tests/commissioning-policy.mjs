@@ -264,7 +264,7 @@ test('one program reservation authorizes only continuation of its exact reviewed
 
 test('lone carriage returns cannot hide an inch block from the air-run feed ceiling', () => {
   // The validator and streamer end a block at a lone CR; F90 under G20 streams at 2286 mm/min.
-  const source = 'G90 G94 G17 G21 G40 G49 G80\nM5 M9\nG53 G0 Z-2\nG54\nG0 X0 Y0 Z5\nG21\rG20\rG1 X1 Y1 F90\nG21\nG53 G0 Z-2\nM30';
+  const source = 'G90 G94 G17 G21 G40 G49 G80\nM5 M9\nG53 G0 Z-2\nG54\nG0 X0 Y0\nG0 Z5\nG21\rG20\rG1 X1 Y1 F90\nG21\nG53 G0 Z-2\nM30';
   const session = create('air-run', { programSha256: hash(source) });
   assert.throws(() => allow(session, 'run', { source, sha256: hash(source) }), /feed/);
   assert.equal(commissioningSessionState(session, NOW).remainingRuns, 1);
