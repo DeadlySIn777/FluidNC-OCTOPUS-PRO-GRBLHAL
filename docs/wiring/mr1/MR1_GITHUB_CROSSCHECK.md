@@ -62,9 +62,11 @@ pin:
 - Direct spindle encoder or DB44 wiring without an isolated interface and
   installed-drive verification.
 
-Our Octopus design intentionally keeps four home inputs and four drive-fault
-inputs separate. It also uses one independent enable command per DM860T through
-the qualified 12-channel interface.
+Our Octopus design intentionally keeps the four home inputs separate and gives
+each drive alarm its own conditioner. It drives each CL57T with its own PUL/DIR
+pair through the qualified interface: eight active channels, with the four ENA
+channels reserved and unconnected. No common or per-drive enable wiring is
+imported.
 
 ## Conflicts Found In The Community Repository
 

@@ -357,6 +357,24 @@ test("warns when extended work offsets share the preview origin", () => {
   assert.ok(job.warnings.some((warning) => warning.startsWith("Extended work offsets")));
 });
 
+test("records every non-motion block at its place in the motion sequence", () => {
+  const job = parseGcodeProgram(`G21 G90 (units)
+S5000 M3
+G0 X0 Y0 Z5
+G01 X10 F500 M08
+G4 P1
+G53 G0 Z-2
+M30`);
+  assert.deepEqual(job.controlBlocks.map(({ segment, words }) => [segment, words]), [
+    [0, "G21 G90"],
+    [0, "S5000 M3"],
+    [1, "M8"],
+    [2, "G4 P1"],
+    [2, "G53 G0 Z-2"],
+    [2, "M30"],
+  ]);
+});
+
 test("preserves non-motion modal state on a hidden machine-reference block", () => {
   const job = parseGcodeProgram(`G0 X10
 G28 G91 Z0

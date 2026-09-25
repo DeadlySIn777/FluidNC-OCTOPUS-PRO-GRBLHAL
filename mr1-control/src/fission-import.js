@@ -44,8 +44,9 @@ export function evaluateFissionImportProfile(candidate) {
   const rawSafeZ = candidate?.safeZ;
   if (rawSafeZ === "" || rawSafeZ === null || rawSafeZ === undefined || !Number.isFinite(Number(rawSafeZ))) {
     errors.push("Safe Z must be a number.");
-  } else if (profile.safeZ < -1000 || profile.safeZ > 1000) {
-    errors.push("Safe Z must be between -1000 and 1000 mm.");
+  } else if (!(profile.safeZ > 0) || profile.safeZ > 1000) {
+    // Rapids below the work Z0 plane would be inside the part by definition.
+    errors.push("Safe Z must be above work Z0: greater than 0 and at most 1000 mm.");
   }
   if (!RESTORE_MODES.has(String(candidate?.traverses ?? "").toLowerCase())) {
     errors.push("XY traverse mode must be auto, on, or off.");
@@ -180,9 +181,40 @@ function changedMoveClass(segment, safeZ) {
   return null;
 }
 
+function describeControlBlock(block) {
+  return block ? `"${block.words}" before move ${block.segment + 1}` : "nothing";
+}
+
+// Dwell, spindle, coolant, tool, stop and offset blocks must survive the
+// optimizer unchanged and at the same place in the motion sequence.
+function controlBlocksError(original, optimized) {
+  if (!Array.isArray(original) || !Array.isArray(optimized)) return "Non-motion blocks could not be compared.";
+  for (let index = 0; index < Math.max(original.length, optimized.length); index += 1) {
+    const before = original[index];
+    const after = optimized[index];
+    if (!before || !after || before.segment !== after.segment || before.words !== after.words) {
+      return `Non-motion block changed: ${describeControlBlock(before)} -> ${describeControlBlock(after)}.`;
+    }
+  }
+  return null;
+}
+
 export function verifyFissionPreview(originalJob, optimizedJob, stats = {}, options = {}) {
   const errors = [];
   const safeZ = finiteOr(options.safeZ, DEFAULT_FISSION_IMPORT_PROFILE.safeZ);
+  // The operator's safe Z must clear work Z0 and every move that still cuts;
+  // otherwise "above safe Z" says nothing about the material.
+  let highestCutZ = -Infinity;
+  for (const segment of optimizedJob.segments) {
+    if (segment.type === "cut") highestCutZ = Math.max(highestCutZ, Math.min(segment.from.z, segment.to.z));
+  }
+  if (!(safeZ > 0)) {
+    errors.push("Safe Z must be above work Z0.");
+  } else if (safeZ <= highestCutZ + POINT_TOLERANCE_MM) {
+    errors.push(`Safe Z ${safeZ} is not above the highest cutting move at Z${highestCutZ.toFixed(3)}.`);
+  }
+  const controlError = controlBlocksError(originalJob.controlBlocks, optimizedJob.controlBlocks);
+  if (controlError) errors.push(controlError);
   if (originalJob.segments.length !== optimizedJob.segments.length) {
     errors.push(`Move count changed ${originalJob.segments.length} -> ${optimizedJob.segments.length}.`);
   }

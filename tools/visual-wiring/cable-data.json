@@ -8,13 +8,13 @@
   "source": {
     "csv": {
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "bytes": 15266,
-      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+      "bytes": 16563,
+      "sha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12"
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 21217,
-      "sha256": "2b2c0db82a3ac1749219dd345a8bd9b60f20882a2df17ecdf966d1cac7aa3a3f"
+      "bytes": 25456,
+      "sha256": "8e0f7877b928140fbd90c54e32ebdd391f60383569232a060cb6de226cb2607d"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
@@ -23,8 +23,8 @@
     },
     "spindle_supervision": {
       "path": "docs/wiring/mr1/SPINDLE_SUPERVISION.md",
-      "bytes": 18425,
-      "sha256": "ba83c352a4ce56cda98a1d6ade39227b613a5c332e0cf5663956eba968239441"
+      "bytes": 19351,
+      "sha256": "416b1bfc50f3019629de980bc43e0cb290ba53b63d68bfdd23ae66ff3a53835a"
     }
   },
   "source_fields": [
@@ -900,7 +900,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG12 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG12 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 23,
       "axis": "X",
       "family": "fault",
@@ -922,7 +922,7 @@
       "missing_evidence": [
         "Actual X alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -936,7 +936,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG13 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG13 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 24,
       "axis": "YL",
       "family": "fault",
@@ -958,7 +958,7 @@
       "missing_evidence": [
         "Actual Y-left alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -972,7 +972,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG14 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG14 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 25,
       "axis": "Z",
       "family": "fault",
@@ -994,7 +994,7 @@
       "missing_evidence": [
         "Actual Z alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1008,7 +1008,7 @@
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG15 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG15 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
       "source_record": 26,
       "axis": "YR",
       "family": "fault",
@@ -1030,7 +1030,7 @@
       "missing_evidence": [
         "Actual Y-right alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1316,7 +1316,7 @@
       "cable_class": "flexible shielded 3-core",
       "shield_termination": "shield to cabinet only",
       "state": "HOLD",
-      "notes": "Meter actual sensor before power; controller PF5",
+      "notes": "Meter actual sensor before power; controller PF5. Not fail-safe: a dead circuit reads untriggered - trigger test (Pn:P) before every probing cycle",
       "source_record": 35,
       "axis": "shared",
       "family": "probe",
@@ -1339,6 +1339,7 @@
         "Actual sensor label, voltage/type, connector orientation and conductor continuity.",
         "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
         "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+        "Recorded limitation that the circuit is not fail-safe (lost field power or a broken wire reads untriggered) and a trigger test showing Pn:P before every probing cycle.",
         "Verified destination signal/return at T1 PF5; no field voltage on the GPIO."
       ],
       "evidence_status": "unverified",
@@ -1353,7 +1354,7 @@
       "cable_class": "flexible shielded 3-core",
       "shield_termination": "shield to cabinet only",
       "state": "HOLD",
-      "notes": "Meter actual sensor before power; controller PB7",
+      "notes": "Meter actual sensor before power; controller PB7. Not fail-safe: a dead circuit reads untriggered - trigger test (Pn:P) before every probing cycle",
       "source_record": 36,
       "axis": "shared",
       "family": "probe",
@@ -1376,6 +1377,7 @@
         "Actual sensor label, voltage/type, connector orientation and conductor continuity.",
         "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
         "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+        "Recorded limitation that the circuit is not fail-safe (lost field power or a broken wire reads untriggered) and a trigger test showing Pn:P before every probing cycle.",
         "Verified destination signal/return: PB7 uses adjacent proved GND, with PB6 and 5V unpopulated."
       ],
       "evidence_status": "unverified",
@@ -1384,13 +1386,13 @@
     {
       "cable_id": "SAFE-MON",
       "from_device": "Safety relay",
-      "from_terminal": "NC auxiliary contact",
+      "from_terminal": "contact CLOSED while energized (NO output/aux; NOT an NC aux) - terminal UNSELECTED",
       "to_device": "Octopus Pro",
       "to_terminal": "TB PF3/GND",
       "cable_class": "twisted pair",
       "shield_termination": "none",
       "state": "TBD",
-      "notes": "Monitor only; never route safety channels through Octopus",
+      "notes": "Monitor only; never route safety channels through Octopus. PF3 high = E-stop, so the contact must be closed to GND while the relay is energized and open on E-stop, trip or broken wire. Never invert $14 to fix a wrong contact. Commissioning: E-stop pressed and monitor wire unplugged both read Pn:E",
       "source_record": 37,
       "axis": "shared",
       "family": "controls",
@@ -1402,14 +1404,14 @@
         "to": "SAFE-MON"
       },
       "endpoint_status": {
-        "from": "reference-only",
+        "from": "unresolved",
         "to": "reference-only"
       },
       "planned_interface_names": [],
       "trace_task": "Trace the isolated Safety relay contact pair to the intended TB PF3/GND reference; verify contact identity before termination.",
       "missing_evidence": [
-        "Actual safety-relay auxiliary-contact identity and isolated NC continuity.",
-        "Verified TB PF3/GND orientation and monitor-only separation from safety channels.",
+        "Selected safety-relay contact that is closed while the relay is energized and open on E-stop/trip (a spare NO safety output or NO auxiliary, not an NC auxiliary); relay and terminal still unselected.",
+        "Verified TB PF3/GND orientation and monitor-only separation from safety channels; E-stop pressed and monitor wire unplugged each read E-stop (Pn:E), and $14 is never inverted to suit a wrong contact.",
         "Independent reviewed energy-removal/restart-prevention design; monitor continuity is not a safety-system test."
       ],
       "evidence_status": "unverified",
@@ -1492,7 +1494,7 @@
       "cable_class": "twisted pair",
       "shield_termination": "none",
       "state": "TBD",
-      "notes": "Only NO operator input",
+      "notes": "Only NO operator input. PB2 has no board pull-up or RC and shares net BTN_EN1 with onboard SW2 (BOOT1) - guard or remove SW2; interface board adds series R + TVS + 3.3 V pull-up + RC",
       "source_record": 40,
       "axis": "shared",
       "family": "controls",
@@ -1512,7 +1514,8 @@
       "missing_evidence": [
         "Actual guarded cycle-start NO contact and button continuity.",
         "Verified EXP2 PB2/GND mating view and independent return path.",
-        "Documented prevention of unintended starts and manual restart after faults."
+        "Documented prevention of unintended starts and manual restart after faults.",
+        "Onboard SW2 (BOOT1, shares PB2 net BTN_EN1) guarded or removed; interface-board series resistor, TVS, 3.3 V pull-up and RC fitted because the board has none."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1526,7 +1529,7 @@
       "cable_class": "shielded pair",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PG12-PG15 indication alone cannot stop motion.",
+      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PB1 has no board pull-up or RC - the interface board adds them. PG12-PG15 are not read by the current firmware. Qualify PB1 before any coupled dual-Y motion.",
       "source_record": 41,
       "axis": "shared",
       "family": "fault",
@@ -1547,7 +1550,7 @@
         "Released aggregate circuit and actual connector orientation/return continuity.",
         "All four independently conditioned drive healthy channels plus required cabinet/spindle fault sources.",
         "Measured healthy-low / fault-open-powerloss-high behavior; healthy-open outputs require added supervision.",
-        "Physical PB1 stopping proof; PG12-PG15 indication alone is not stop protection."
+        "Physical PB1 stopping proof for every drive before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1629,11 +1632,11 @@
       "from_device": "MR1 interface",
       "from_terminal": "dry relay contact",
       "to_device": "MR-1 servo DB44",
-      "to_terminal": "community pin 16 and verified return",
+      "to_terminal": "community pin 16 SON; contact to I/O-supply 0 V (COM+ 31 is the +24 V common) - pending verification",
       "cable_class": "shielded pair",
       "shield_termination": "none",
       "state": "HOLD",
-      "notes": "Series with hardwired spindle permit",
+      "notes": "Series with hardwired spindle permit. SON dropout is not the E-stop: removing servo energy (mains contactor and/or certified STO) is part of the HOLD cabinet stop design",
       "source_record": 44,
       "axis": "shared",
       "family": "spindle",
@@ -1653,7 +1656,7 @@
       ],
       "trace_task": "Identify the proposed dry-contact route and preserve the stock servo harness; leave community pin 16/return unassigned pending the actual map.",
       "missing_evidence": [
-        "Installed servo enable function, exact return and DB44 continuity/orientation.",
+        "Installed servo enable function and input topology (sinking SON with COM+ at +24 V, contact to I/O-supply 0 V, is pending the drive manual), exact 0 V terminal and DB44 continuity/orientation.",
         "Qualified contact interface and hardwired spindle-permit design.",
         "Verified startup, loss-of-power, stop and restart behavior; no software-only permit."
       ],

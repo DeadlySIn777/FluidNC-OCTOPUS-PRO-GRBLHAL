@@ -7,6 +7,10 @@ circuits. The BIGTREETECH image needs internet; the tables work offline.
 
 **Physical wiring and machining are not qualified.** No entry in the guide records
 completed electrical acceptance. Software tests have used synthetic controllers.
+The readiness worksheet lists the blocking holds before energizing: the E-stop /
+hazardous-energy design, the E-stop monitor contact, the onboard SW2 on PB2,
+STEP/DIR behavior during controller reset, and the PB1 fault chain before
+coupled dual-Y motion.
 
 - [Readiness worksheet](MR1-wiring-readiness.md)
 - [Second-pass corrections](MR1-wiring-second-pass.md)
@@ -31,7 +35,8 @@ Manufacturer references are linked, rather than redistributed:
 - [BIGTREETECH V1.1 schematic](https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/blob/master/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-sch.pdf)
 - [BIGTREETECH V1.1 pin drawing](https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/blob/master/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg)
 
-`source/` and `application-reference/` preserve audit inspection excerpts; they
-are not build trees or the current app revision. Complete exported firmware is
+`source/` preserves audit inspection excerpts; it is not a build tree.
+`application-reference/wiring-installation.js` is a byte-identical copy of the
+current `mr1-control/src/wiring-installation.js`. Complete exported firmware is
 at [grblHAL-STM32F4](../../grblHAL-STM32F4/) and the current application is at
 [mr1-control](../../mr1-control/). The original local offline guide is unchanged.

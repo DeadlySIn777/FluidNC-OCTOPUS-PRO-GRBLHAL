@@ -240,7 +240,7 @@
                   </label>
                   <label class="select-setting fission-safe-z-setting">
                     <span>MINIMUM RAPID Z / WORK COORDINATES</span>
-                    <span class="input-with-unit"><input id="fission-safe-z" type="number" min="-1000" max="1000" step="0.001" required /><small>MM</small></span>
+                    <span class="input-with-unit"><input id="fission-safe-z" type="number" min="0.001" max="1000" step="0.001" required /><small>MM</small></span>
                   </label>
                   <label class="toggle-setting">
                     <span><strong>SAFE Z VERIFIED</strong><small>WORK Z0 AND STOCK TOP CONFIRMED</small></span>
@@ -2504,7 +2504,7 @@
             <section class="wiring-section">
               <h3>AXIS SOCKETS</h3>
               <div class="axis-wire-table" role="table" aria-label="Octopus motor command pins">
-                <div class="wire-table-head" role="row"><span>AXIS</span><span>SOCKET</span><span>STEP</span><span>DIR</span><span>ENA</span></div>
+                <div class="wire-table-head" role="row"><span>AXIS</span><span>SOCKET</span><span>STEP</span><span>DIR</span><span>EN / RESERVED</span></div>
                 <div role="row"><strong>X</strong><span>MOTOR0</span><code>PF13</code><code>PF12</code><code>PF14</code></div>
                 <div role="row"><strong>YL</strong><span>MOTOR1</span><code>PG0</code><code>PG1</code><code>PF15</code></div>
                 <div role="row"><strong>Z</strong><span>MOTOR2</span><code>PF11</code><code>PG3</code><code>PG5</code></div>
@@ -2525,7 +2525,8 @@
                 <div><code>B+ / B-</code><span>THE OTHER MOTOR COIL</span></div>
                 <div><code>+VDC / GND</code><span>OWN FUSED 36V STAR BRANCH</span></div>
               </div>
-              <p class="wiring-callout">The v1.1 schematic shows 5V MC74HCT125A buffers between the MCU and the driver-socket STEP/DIR/EN pins. Still use the 12-channel MOSFET interface: the CL57T input may draw 16mA and direct HCT-to-drive loading has not been qualified. Never use motor-wire colors as phase data or hot-plug a terminal.</p>
+              <p class="wiring-callout">The v1.1 schematic shows 5V MC74HCT125A buffers between the MCU and the driver-socket STEP/DIR/EN pins. Still use the MOSFET open-drain interface with eight active PUL/DIR channels; the four ENA channels are reserved and unpopulated, and socket EN is not connected. The CL57T input may draw 16mA and direct HCT-to-drive loading has not been qualified. Never use motor-wire colors as phase data or hot-plug a terminal.</p>
+              <p class="wiring-callout alarm">STEP/DIR are undefined while the MCU is in reset or the SD bootloader: the HCT buffers are always enabled and nothing pulls them, and with ENA unconnected the drives stay enabled. Scope STEP/DIR with drive power off during reset, power-up and a bootloader pass. Using ENA or interlocking motion power to controller health is a design decision pending review; until then keep drive power off whenever the controller resets or is flashed.</p>
             </section>
           </section>
 
@@ -2557,11 +2558,11 @@
             <section class="wiring-section visual-wiring-section">
               <div class="visual-wiring-title">
                 <span>1</span>
-                <div><h3>MOTOR SOCKET ADAPTER / FOUR POPULATED CONTACTS</h3><p>THE OCTOPUS FOOTPRINT HAS 18 POSITIONS; ONLY EN, STEP, DIR, AND GND LEAVE THE BOARD</p></div>
+                <div><h3>MOTOR SOCKET ADAPTER / THREE POPULATED CONTACTS</h3><p>THE OCTOPUS FOOTPRINT HAS 18 POSITIONS; ONLY STEP, DIR, AND GND LEAVE THE BOARD. EN IS RESERVED AND NOT CONNECTED</p></div>
               </div>
               <div class="axis-wire-table driver-socket-wire-table" role="table" aria-label="Octopus driver socket adapter pin disposition">
                 <div class="wire-table-head" role="row"><span>PIN</span><span>SIGNAL</span><span>USE</span><span>PIN</span><span>SIGNAL</span><span>USE</span></div>
-                <div role="row"><code>1</code><strong>EN</strong><span>ROUTE</span><code>10</code><strong>VCC_IO</strong><span>NC</span></div>
+                <div role="row"><code>1</code><strong>EN</strong><span>RESERVED</span><code>10</code><strong>VCC_IO</strong><span>NC</span></div>
                 <div role="row"><code>2</code><strong>SDI / MS0</strong><span>NC</span><code>11</code><strong>A1</strong><span>NC</span></div>
                 <div role="row"><code>3</code><strong>SCK / MS1</strong><span>NC</span><code>12</code><strong>A2</strong><span>NC</span></div>
                 <div role="row"><code>4</code><strong>CS / MS2</strong><span>NC</span><code>13</code><strong>B2</strong><span>NC</span></div>
@@ -2571,7 +2572,7 @@
                 <div role="row"><code>8</code><strong>DIR</strong><span>ROUTE</span><code>17</code><strong>NC</strong><span>NC</span></div>
                 <div role="row"><code>9</code><strong>GND</strong><span>ROUTE</span><code>18</code><strong>DIAG</strong><span>NC</span></div>
               </div>
-              <p class="wiring-callout alarm">These are schematic contact numbers, not a mating-face cavity drawing. Prove the actual v1.1 board's pin-1 feature, viewing direction, keying and de-energized continuity before populating the adapter. A 2x8 StepStick blank may occupy pins 1-16 only after alignment and retention are proved. Never let a one-row offset place it on pins 3-18; the other 14 socket positions remain unconnected.</p>
+              <p class="wiring-callout alarm">These are schematic contact numbers, not a mating-face cavity drawing. Prove the actual v1.1 board's pin-1 feature, viewing direction, keying and de-energized continuity before populating the adapter. A 2x8 adapter candidate remains on HOLD until its complete contact map, orientation, clearance, keying and retention are proved on the actual 18-contact socket; schematic numbers do not give a physical row offset. Populate only STEP, DIR and GND; EN (reserved) and the other 14 socket positions remain unconnected.</p>
             </section>
 
             <section class="wiring-section visual-wiring-section">
@@ -2635,15 +2636,16 @@
               <div class="sensor-profile-grid">
                 <article>
                   <header><span>Q0</span><strong id="wiring-active-touch-name">STOCK TOUCH PROBE</strong></header>
-                  <div><span>FIELD</span><code id="wiring-active-touch-field">IN1 / RED-WHITE-BLACK-GRAY</code></div>
+                  <div><span>FIELD / PLACEHOLDER</span><code id="wiring-active-touch-field">IN1 / RED-WHITE-BLACK-GRAY</code></div>
                   <div><span>LOGIC</span><code id="wiring-active-touch-logic">OUT1 -> T1 / PF5</code></div>
                 </article>
                 <article>
                   <header><span>Q1</span><strong id="wiring-active-setter-name">STOCK TOOL SETTER</strong></header>
-                  <div><span>FIELD</span><code id="wiring-active-setter-field">IN2 / RED-WHITE-BLACK-GRAY</code></div>
+                  <div><span>FIELD / PLACEHOLDER</span><code id="wiring-active-setter-field">IN2 / RED-WHITE-BLACK-GRAY</code></div>
                   <div><span>LOGIC</span><code id="wiring-active-setter-logic">OUT2 -> PB7 TOOL SETTER</code></div>
                 </article>
               </div>
+              <p class="wiring-callout">Wire colours in this profile (power-signal-return-shield) are editable placeholders for your own sleeve plan, not stock MR-1 harness colours. Trace and record the actual conductors; never identify a lead by colour.</p>
               <p id="wiring-profile-state" class="wiring-callout">SAVED PROFILE MATCHES THE COMPILED PF5 / PB7 ACTIVE-LOW INPUT MAP.</p>
             </section>
 
@@ -2749,6 +2751,7 @@
                 </div>
               </fieldset>
 
+              <p class="wiring-callout">WIRE COLOURS ARE EDITABLE PLACEHOLDERS FOR YOUR OWN SLEEVE PLAN, NOT STOCK MR-1 HARNESS COLOURS. TRACE EVERY CONDUCTOR; NEVER IDENTIFY A LEAD BY COLOUR.</p>
               <div id="wiring-profile-validation" class="profile-validation" aria-live="polite">PROFILE READY</div>
               <div class="panel-actions wiring-profile-actions">
                 <button id="reset-wiring-profile" class="secondary-command" type="button"><i data-lucide="rotate-ccw" aria-hidden="true"></i><span>DEFAULT</span></button>
@@ -2848,6 +2851,7 @@
                 <div role="row"><strong>TOOL SETTER</strong><span>HW-399 CH2 / OUT2</span><span>PB7 TOOL SETTER</span><code>PB7</code><code>Q1</code></div>
               </div>
               <p class="wiring-callout alarm">The Octopus has an EL357C on PC5, but BTT's schematic shows a shared board ground and an active-high output with a pull-down. This firmware deliberately uses the HW-399 outputs on PF5 and PB7 instead.</p>
+              <p class="wiring-callout alarm">NOT FAIL-SAFE: the optocoupler conducts only on trigger, so lost isolated 5V, a broken wire or an unplugged sensor reads untriggered and a probing move continues into the part. Before every probing cycle, select the sensor, deflect the stylus or press the setter with motion stopped, and confirm Pn:P appears and clears. The protected probing workflow rejects an already-triggered input and a search without contact, but it does not run this trigger test.</p>
             </section>
 
             <section class="wiring-section">
@@ -2936,7 +2940,7 @@
                 <div><span>DIAG6</span><strong>Z FAULT</strong><small>PG14</small></div>
                 <div><span>DIAG7</span><strong>Y-RIGHT FAULT</strong><small>PG15</small></div>
               </div>
-              <p class="wiring-callout alarm">Each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Never series-chain raw alarm transistors as dry contacts or land them directly on an Octopus input. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Prove healthy, alarm, drive-power loss and cable-open states for each drive. PG12-PG15 are axis diagnostics and do not stop motion by themselves.</p>
+              <p class="wiring-callout alarm">Each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Never series-chain raw alarm transistors as dry contacts or land them directly on an Octopus input. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Prove healthy, alarm, drive-power loss and cable-open states for each drive. PG12-PG15 are wiring only: the current firmware does not read them, so they neither stop motion nor identify the faulted drive. PB1 is the only drive-fault stop; qualify it before any coupled dual-Y motion.</p>
               <p class="wiring-callout alarm">If the drive is open when healthy, software inversion cannot distinguish it from a broken cable: use a qualified supervised circuit or a separate ready/power contact. Use an approved fault method; never hot-unplug motor or encoder cables and never use an ohmmeter on an energized output. Arrange cable-open tests de-energized before controlled bench power.</p>
             </section>
 
@@ -2952,7 +2956,8 @@
                 <i data-lucide="arrow-right" aria-hidden="true"></i>
                 <div data-stage="stop"><span>3</span><strong>CONTACTORS / PERMIT</strong><small>MOTION + SPINDLE OFF</small></div>
               </div>
-              <div class="monitor-tap"><span>SAFETY RELAY AUX</span><i data-lucide="arrow-right" aria-hidden="true"></i><strong>TB SIGNAL / PF3</strong><small>MONITOR ONLY</small></div>
+              <div class="monitor-tap"><span>SAFETY RELAY MONITOR</span><i data-lucide="arrow-right" aria-hidden="true"></i><strong>TB SIGNAL / PF3</strong><small>CLOSED WHILE ENERGIZED / MONITOR ONLY</small></div>
+              <p class="wiring-callout alarm">HOLD before energizing: this stop circuit is principles only. A reviewed design must remove spindle-servo energy on E-stop (mains contactor and/or certified STO; SON dropout is not a stop), remove 36V motion power with a Z-drop analysis, put the flood pump and mist/air supplies in the hardwired stop chain, and give a complete terminal schedule.</p>
             </section>
 
             <section class="wiring-section visual-wiring-section">
@@ -2962,12 +2967,14 @@
               </div>
               <div class="contact-card-grid" aria-label="Operator and safety monitor contact map">
                 <div data-contact="nc"><span>NC</span><strong>DOOR</strong><small>PWR-DET / PC0</small><em>HEALTHY CLOSED</em></div>
-                <div data-contact="nc"><span>NC</span><strong>E-STOP AUX</strong><small>TB / PF3</small><em>HEALTHY CLOSED</em></div>
+                <div data-contact="nc"><span>MON</span><strong>E-STOP MONITOR</strong><small>TB / PF3</small><em>CLOSED WHILE RELAY ENERGIZED</em></div>
                 <div data-contact="nc"><span>NC</span><strong>FEED HOLD</strong><small>T0 / PF4</small><em>HEALTHY CLOSED</em></div>
                 <div data-contact="no"><span>NO</span><strong>CYCLE START</strong><small>EXP2 / PB2</small><em>PRESS TO CLOSE</em></div>
                 <div data-contact="conditioned"><span>ISO</span><strong>AGG. FAULT</strong><small>EXP2 / PB1</small><em>HEALTHY LOW</em></div>
               </div>
               <p class="wiring-callout">PWR-DET also has a 3.3V pin. Identify PC0 and GND from the board drawing and a continuity check; never use cable color to find them.</p>
+              <p class="wiring-callout alarm">No contact goes straight to an MCU header: each passes the interface board's series resistor and TVS. PB1, PB2 and PB7 have no board pull-up or RC, so the interface board adds a 3.3V pull-up and RC filter. Onboard SW2 (BOOT1) shares PB2: pressing it is a cycle start and can resume a feed hold. Guard or remove SW2 before commissioning. EXP2 also carries the MCU reset line.</p>
+              <p class="wiring-callout alarm">PF3 high means E-stop. Use a safety-relay contact that is closed while the relay is energized and opens on E-stop, trip or a broken wire, such as a spare NO safety output or NO auxiliary. An NC auxiliary is open while the relay is energized and would invert the reading. Never invert $14 to suit a wrong contact. Commission it: pressing E-stop and unplugging the monitor wire must each show Pn:E; releasing and resetting the chain clears it.</p>
             </section>
 
             <section class="wiring-section">
@@ -2991,7 +2998,7 @@
                 <div role="row"><strong>Z</strong><span>DIAG6</span><code>PG14</code><span>HEALTHY LOW</span></div>
                 <div role="row"><strong>Y-RIGHT</strong><span>DIAG7</span><code>PG15</code><span>HEALTHY LOW</span></div>
               </div>
-              <p class="wiring-callout alarm">CL57T ALM/COMO must pass through the isolated, polarity-configurable fault conditioner. Never land either alarm terminal directly on an Octopus input.</p>
+              <p class="wiring-callout alarm">CL57T ALM/COMO must pass through the isolated, polarity-configurable fault conditioner. Never land either alarm terminal directly on an Octopus input. These four per-axis inputs are not read by the current firmware; only the PB1 aggregate stops motion.</p>
             </section>
 
             <section class="wiring-section">
@@ -2999,7 +3006,7 @@
               <div class="wiring-flow safety-flow" role="img" aria-label="Hardwired emergency stop safety path">
                 <div><span>E-STOP + INTERLOCKS</span><i data-lucide="arrow-right" aria-hidden="true"></i><strong>SAFETY RELAY</strong><i data-lucide="arrow-right" aria-hidden="true"></i><code>MOTION + SPINDLE PERMIT</code></div>
               </div>
-              <p class="wiring-callout alarm">The Octopus only monitors the safety relay auxiliary contact. It is not safety-rated and must never be responsible for removing hazardous motion or spindle power.</p>
+              <p class="wiring-callout alarm">The Octopus only monitors one safety-relay contact, closed while the relay is energized. It is not safety-rated and must never be responsible for removing hazardous motion or spindle power.</p>
             </section>
 
             <section class="wiring-section">
@@ -3007,7 +3014,7 @@
               <div class="axis-wire-table operator-wire-table" role="table" aria-label="Operator and safety monitor inputs">
                 <div class="wire-table-head" role="row"><span>FUNCTION</span><span>CONNECTOR</span><span>GPIO</span><span>CONTACT</span></div>
                 <div role="row"><strong>DOOR</strong><span>PWR-DET</span><code>PC0</code><span>NC</span></div>
-                <div role="row"><strong>E-STOP AUX</strong><span>TB</span><code>PF3</code><span>NC</span></div>
+                <div role="row"><strong>E-STOP MONITOR</strong><span>TB</span><code>PF3</code><span>CLOSED WHEN ENERGIZED</span></div>
                 <div role="row"><strong>FEED HOLD</strong><span>T0</span><code>PF4</code><span>NC</span></div>
                 <div role="row"><strong>CYCLE START</strong><span>EXP2</span><code>PB2</code><span>NO</span></div>
                 <div role="row"><strong>AGG. FAULT</strong><span>EXP2</span><code>PB1</code><span>HEALTHY LOW</span></div>

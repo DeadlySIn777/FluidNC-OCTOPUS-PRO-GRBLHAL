@@ -18,7 +18,7 @@ flowchart LR
   M -->|P2 encoder feedback| D
   D -->|ALM / COMO| C[Isolated fault conditioner]
   C -->|Combined healthy output| PB1[PB1 aggregate stop input]
-  C -->|Separate indication| PG[PG12-15 diagnostics]
+  C -.->|Optional wiring, not read by current firmware| PG[PG12-15]
   SR[Independent safety relay] -->|Hazardous-energy permission| D
 ```
 
@@ -26,25 +26,25 @@ The drawing is functional. It does not specify a mains circuit or approve the st
 
 ## Source baseline
 
-Firmware baseline: commit `fbd4eb786eabfbe3d5fe87fc84ceb2bc59a47d64`. Audit documentation/profile/validator commit: `41134da4eaea8ac7f64f7dd69b89e9312e228147`. Existing user edits under `mr1/wiring-map` were read only and preserved. Corrected documents, vendor manuals and relevant source snapshots are collected in the [local wiring reference bundle](<README.md>). No original Drive path is needed to inspect the evidence. No firmware code, stored settings, or pin assignments changed.
+Firmware baseline: commit `fbd4eb786eabfbe3d5fe87fc84ceb2bc59a47d64`. Audit documentation/profile/validator commit: `41134da4eaea8ac7f64f7dd69b89e9312e228147`. Existing user edits under `mr1/wiring-map` were read only and preserved. Corrected documents and relevant source snapshots are collected in the [local wiring reference bundle](<README.md>). Vendor manuals are linked from their publishers, not bundled. No original Drive path is needed to inspect the evidence. No firmware code, stored settings, or pin assignments changed.
 
-In the reference bundle, the firmware snapshots are under `source/`, corrected documents/data under `mr1/`, vendor files under `mr1/_vendor_docs/`, and the application wiring snapshot under `application-reference/`. Line numbers identify source, not a physical connector cavity. This bundle is a reference collection, not a complete firmware build tree.
+In the reference bundle, the firmware snapshots are under `source/`, corrected documents/data under `mr1/`, and a copy of the application wiring module under `application-reference/`. The vendor manuals are not in the bundle; `README.md` links them. Line numbers identify source, not a physical connector cavity. This bundle is a reference collection, not a complete firmware build tree.
 
 | ID | Exact source | What it establishes |
 | --- | --- | --- |
 | F1 | `platformio.ini:83`, `Inc/mr1_octopus_config.h:1` | Dedicated production target force-includes this configuration; legacy `my_machine.h` is not the production authority. |
 | F2 | `boards/btt_octopus_pro_mr1_map.h:40`, `:68`, `:110`, `:126`, `:142`, `:183` | Motion, home, diagnostic, output and control GPIO assignments. |
 | F3 | `Inc/mr1_octopus_config.h:57`, `:72`, `:93`, `:111`, `:119`, `:123`, `:133`, `:137` | Timing, scale, homing sequence, polarity and spindle defaults. |
-| F4 | `Src/driver.c:1662`, `:3342`, `:3465`; `grbl/protocol.c:130`, `:531` | PB1 enters the motor-fault control path; per-axis fault pins are enumerated diagnostics. |
+| F4 | `Src/driver.c:1662`, `:3342`, `:3465`; `grbl/protocol.c:130`, `:531` | PB1 enters the motor-fault control path; per-axis fault pins are enumerated but never read (`get_motor_fault_inputs()` has no caller in this board build). |
 | F5 | `mr1/expected-settings.json:1` | Original 65-setting baseline; isolated corrected profile and application copy now contain 66 checks, adding explicit `$13=0` millimeter reporting. |
 | F6 | `grbl/config.h:768`, `grbl/nuts_bolts.h:35`, `grbl/settings.c:77`, `grbl/report.c:204` | `DEFAULT_REPORT_INCHES` inherits `Off=0`; stored `$13` controls reported coordinate/rate units independently of program G20/G21. |
-| A1 | `application-reference/wiring-installation.js:459` | Application's 31 GPIO assignments match F2. |
+| A1 | `application-reference/wiring-installation.js`, `WIRING_PIN_SUMMARY` | Application's 31 GPIO assignments match F2. |
 | D1 | `mr1/INTERFACE_BOARD.md`, Motion Outputs / External-Drive Alarm Inputs / Probe and Tool Setter | Intended interface, isolation, alarm-supervision and hardware acceptance requirements. |
 | D2 | `mr1/PIGTAIL_SCHEDULE.md`, Octopus headers / CL57T connectors / Stock harnesses | Project connector schedule; physical orientation and mating parts remain fit checks. |
-| D3 | `mr1/SPINDLE_SUPERVISION.md:270`, `:312`; `mr1/servo-profile.pending.json:1` | Candidate servo family and unresolved analog scaling; control permits remain false. |
-| V1 | [CL57T V4.1 manufacturer manual](https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf), sections 2, 3, 5, 6, 7 | Drive connector functions, limits and switches. Local copy `mr1/_vendor_docs/CL57T-V41_user_manual.pdf`, SHA-256 `3eec9304c770ff68a5ccbd68f105789edfb35f5c91a9977531a30756a918d7da`. |
+| D3 | `mr1/SPINDLE_SUPERVISION.md`, "Installed drive identified" and "BLOCKER: the analog command range" sections; `mr1/servo-profile.pending.json` | Candidate servo family and unresolved analog scaling; control permits remain false. |
+| V1 | [CL57T V4.1 manufacturer manual](https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf), sections 2, 3, 5, 6, 7 | Drive connector functions, limits and switches. Not bundled; the reviewed copy had SHA-256 `3eec9304c770ff68a5ccbd68f105789edfb35f5c91a9977531a30756a918d7da`. |
 | V2 | [Motor manufacturer specification](https://www.omc-stepperonline.com/nema-23-closed-loop-stepper-motor-3-0nm-424oz-in-encoder-1000ppr-4000cpr-23hs45-4204d-e1000) | 4.2 A/phase, 1.8° step, 8 mm shaft; actual labels and mechanical fit still require inspection. |
-| V3 | [BTT official Octopus Pro source](https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro); archived `mr1/_vendor_docs/BTT_Octopus_Pro_V11-sch.pdf` and `BTT_Octopus_Pro_V11-Pin.jpg` | Board reference material. Match the physical revision, silkscreen and connector orientation before termination. |
+| V3 | [BTT official Octopus Pro source](https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro); the reviewed V1.1 schematic and pin drawing are linked from `README.md`, not bundled | Board reference material. Match the physical revision, silkscreen and connector orientation before termination. |
 
 ## Motor command assignments
 
@@ -88,18 +88,18 @@ No motor wire colors, GX16 cavity assignments or extension pin numbers are appro
 | Y-left home | STOP1 / PG9 | Same, independently sensed | ____ |
 | Z home | STOP2 / PG10 | Same | ____ |
 | Y-right home | STOP3 / PG11 | Same, independently sensed | ____ |
-| X / YL / Z / YR diagnostic fault | STOP4–7 / PG12–15 | Conditioned indication only; cannot be credited as stop protection | ____ |
+| X / YL / Z / YR per-axis fault | STOP4–7 / PG12–15 | Wiring for a future firmware candidate only; the current firmware never reads these pins (no stop, no status, no per-axis indication) | ____ |
 | Aggregate fault | EXP2 / **PB1** | Combined conditioned healthy output low; any fault/open/power loss high | ____ |
-| E-stop monitor | TB / PF3 | NC safety-relay auxiliary; does not replace energy removal | ____ |
+| E-stop monitor | TB / PF3 | Safety-relay contact closed to GND while the relay is energized, open on E-stop/trip/broken wire (not an NC auxiliary; relay/terminal HOLD); never invert `$14` to suit a wrong contact; does not replace energy removal | ____ |
 | Door monitor | PWR-DET / PC0 | NC monitor; adjacent power cavity unused | ____ |
 | Feed hold | T0 / PF4 | NC contact | ____ |
-| Cycle start | EXP2 / PB2 | Guarded NO contact | ____ |
-| Touch probe | T1 / PF5 | Isolated output low on trigger; `$6=3` | ____ |
-| Tool setter | BLTouch-labelled header / PB7 | Independent isolated low-on-trigger input; BLTouch plugin disabled | ____ |
+| Cycle start | EXP2 / PB2 | Guarded NO contact. No board pull-up/RC: interface board adds series R, TVS, 3.3 V pull-up and RC. Onboard `SW2` shares this net - guard or remove it | ____ |
+| Touch probe | T1 / PF5 | Isolated output low on trigger; `$6=3`. Not fail-safe: lost field power or a broken wire reads untriggered, so trigger-test (`Pn:P`) before every probing cycle | ____ |
+| Tool setter | BLTouch-labelled header / PB7 | Independent isolated low-on-trigger input; BLTouch plugin disabled; no board pull-up/RC (interface board adds them). Same not-fail-safe limit and trigger test | ____ |
 
 Source: F2–F5 and D1. Populate signal and verified logic return only. STOP-header 5 V cavities remain empty. PB7 uses its verified adjacent GND; do not populate PB6 or the header's 5 V cavity. Probe field supply/return and controller-side HW-399 HVCC/HGND must remain separated. The installed HW-399/TLP281 module circuit and sensor pinout remain unverified; a generic module name does not establish its terminals. Do not leave shared output VCC floating as a generic recipe: pullups may couple channels. Trace the actual circuit and test combinations, either side unpowered, open cables and lost field power before connecting GPIO.
 
-**Alarm topology:** each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Combine the proven **conditioned healthy outputs** for PB1; provide separate outputs for PG12–15. Raw alarm transistors are not assumed dry contacts and must not be series-chained directly into PB1. Healthy-open alarm behavior cannot be made cable-break-safe by inversion alone; it needs added supervision or a separate ready/power contact. Test healthy, alarm, power loss and cable open independently on all four channels. Use an approved fault method; never hot-unplug a motor or encoder or put an ohmmeter across an energized output. [D1, F4]
+**Alarm topology:** each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Combine the proven **conditioned healthy outputs** for PB1, the only drive-fault stop; optional outputs for PG12–15 are wiring only and are not read by the current firmware. Raw alarm transistors are not assumed dry contacts and must not be series-chained directly into PB1. Healthy-open alarm behavior cannot be made cable-break-safe by inversion alone; it needs added supervision or a separate ready/power contact. Test healthy, alarm, power loss and cable open independently on all four channels. Use an approved fault method; never hot-unplug a motor or encoder or put an ohmmeter across an energized output. [D1, F4]
 
 The stock home harness needs four independently proven channels. Conductor count is a clue, not proof. Direct connection is acceptable only after each switch is established as a bare NC contact, disconnected from every stock powered circuit. Otherwise use the isolated conditioner. Y-left and Y-right must never share a home signal. [D1, D2]
 
@@ -132,12 +132,39 @@ Spindle/coolant GPIOs are FAN0 PA8 (PWM), FAN4 PD14 (enable), HE0 PA0 (flood), H
 
 The candidate T3A/T3L manual identifies DB44 functions, but installed model and cable continuity are still missing. The repository also records a **0–5 V planned command versus generic 0–10 V servo full scale** conflict. A reported factory scaling practice does not close it. Obtain the exact gain parameter archive and measure actual RPM; do not treat a commanded 8000 as measured 8000. RS485, reverse, orientation, rigid tapping and spindle encoder inputs remain unapproved. No DB44 terminal wiring is authorized by this worksheet. [D3]
 
+## Blocking holds before energizing
+
+These items are prerequisites, not later refinements. Each one blocks the stage
+named; none is closed by this worksheet.
+
+| Hold | What is required | Blocks |
+| --- | --- | --- |
+| E-stop / hazardous-energy design | The stop circuit is specified only as principles. A qualified person must produce and review a design that removes 240 VAC spindle-servo energy on E-stop (rated mains contactor on the servo supply and/or certified safe-torque-off; `SON` dropout is not the E-stop function), removes 36 V motion power with a Z-drop analysis for the de-energized state, puts the flood pump and mist/air solenoid supplies in the hardwired stop chain, sets stop category and restart prevention from a risk assessment, and gives a complete terminal schedule (E-stop station, safety relay, contactors, PF3 monitor contact). See `mr1/WIRING.md`, "Scope and Safety Boundary". | Energizing the cabinet with any drive, spindle or coolant load connected. The USB-only flash is not affected. |
+| E-stop monitor contact | The PF3 contact is closed while the relay is energized and open on E-stop/trip/broken wire. Pressing E-stop and unplugging the monitor wire must each read `Pn:E`; releasing/resetting clears it. | Any motion test. |
+| Onboard `SW2` / PB2 | PB2 (cycle start) is net `BTN_EN1`, shared with the onboard `SW2` ("BOOT1") button to GND; pressing it during a feed hold resumes motion. Guard or remove `SW2`, and fit the interface-board pull-up/RC on PB1, PB2 and PB7 (none on the board). | Any motion test. |
+| STEP/DIR during MCU reset / bootloader | STEP/DIR are undefined while the MCU is in reset or the SD bootloader (always-enabled HCT buffers, no pulls) and ENA is unconnected, so the drives stay enabled. Scope STEP/DIR at the socket during reset, power-up and a bootloader pass with drive power off. Using the reserved ENA channel, or interlocking motion power to controller health, is a **design decision pending review**. | Energizing a drive with the controller connected, unless drive power is off during every controller reset, reboot or flash. |
+| PB1 aggregate drive-fault chain | PB1 is the only drive-fault stop; PG12–PG15 are not read by the current firmware. For every drive, an alarm, drive-power loss and an open alarm cable must each stop motion through PB1 (`Pn:F`, alarm 17). | Any coupled dual-Y motion (commissioning Stage 6 onward). |
+
+### Unscheduled Octopus-side harnesses (open gaps)
+
+These runs have no cable ID in `mr1/cable-schedule.csv`. No conductor, connector
+or length is assigned here; define each only after its endpoints are proved.
+
+| Run | Why it is open |
+| --- | --- |
+| MOTOR0–3 socket adapter → interface (STEP, DIR, logic GND per axis) | `CMD-*` cables start at the interface; adapter and interface terminals are unproved |
+| Probe conditioner → T1/PF5 | `PROBE-01` ends at the interface field side |
+| Tool-setter conditioner → PB7 | `TOOL-01` ends at the interface field side; PB7 also needs its interface-board pull-up/RC |
+| FAN4/PD14 → spindle-enable relay input | `SP-ENABLE` is only the relay-contact-to-servo segment; FAN4 rail and relay are HOLD |
+
+The visual guide lists the same gaps under "Open gaps".
+
 ## Evidence to collect, in order
 
 | Stage | Required record | Status |
 | --- | --- | --- |
 | 1. Identity and de-energized fit | Board revision/MCU; all drive/motor labels; terminal faces; connector keys; measured motor/coupler fit; routed cable lengths | NOT DONE |
-| 2. Cabinet/interface construction | Released circuit, fuse/wire ratings, PE/return topology, safety-relay/contactor design, terminal-to-terminal continuity | NOT DONE |
+| 2. Cabinet/interface construction | Released circuit, fuse/wire ratings, PE/return topology, **reviewed E-stop/hazardous-energy design (blocking hold above)**, terminal-to-terminal continuity | NOT DONE |
 | 3. Isolated electrical qualification | Supply polarity/ripple, loaded PUL/DIR scope captures, all input truth tables, independent hardwired stop proof | NOT DONE |
 | 4. Controller read-only connection | Actual `$I+`, `$$`, `$G`, `$#`, `$N`, status and image/configuration identity; both startup slots present/empty and no active unexpected inputs | NOT DONE |
 | 5. Limited uncoupled commissioning | Measured direction/scale per motor, no unexpected start, fault/lease/USB interruption behavior | NOT DONE |
@@ -162,8 +189,8 @@ Mains and hazardous-energy circuit work needs an appropriately qualified person.
 | Stored startup-block execution after homing | Read-only query policy now includes `$N`; require both `$N0=` and `$N1=` to be present and empty before any motion qualification | Actual live reports; nonempty/missing/error blocks remain a hold |
 | Spindle scaling | Explicit unresolved hold retained | Exact model, parameter archive, continuity and tachometer |
 
-The firmware validator passed against the original 65-setting source baseline, then against the corrected manifest and **66-setting** profile. The new check requires millimeter reports (`$13=0`) because native motion/probe bounds interpret returned coordinates in millimeters; setting G21 alone does not establish report units. The read-only validator now resolves `DEFAULT_REPORT_INCHES` from core configuration, including the actual `Off` constant and precedence of any machine override. Three negative audit cases correctly rejected an inches default, a missing default, and a machine override to inches. Details are in `audit-evidence/wiring-report-units-audit.log`.
+The firmware validator passed against the original 65-setting source baseline, then against the corrected manifest and **66-setting** profile. The new check requires millimeter reports (`$13=0`) because native motion/probe bounds interpret returned coordinates in millimeters; setting G21 alone does not establish report units. The read-only validator now resolves `DEFAULT_REPORT_INCHES` from core configuration, including the actual `Off` constant and precedence of any machine override. Three negative audit cases correctly rejected an inches default, a missing default, and a machine override to inches. The `audit-evidence/wiring-report-units-audit.log` cited for those details is not included in this repository.
 
 The query sequence is `?`, `$I+`, `$$`, `$G`, `$#`, `$N`, `?`. `$N` reports two startup slots, formatted `$N0=<stored text>` and `$N1=<stored text>`, followed by acknowledgement. Both must be present and empty; missing data or a read error is not an empty script. `grbl/system.c:471` executes stored blocks after successful completion of the configured homing axes, whereas the `$X` path explicitly avoids startup execution at `grbl/system.c:414`. The normal startup path can also schedule them (`grbl/protocol.c:177`). Report formatting is defined at `grbl/report.c:829`; two slots are defined at `grbl/grbl.h:166`. No startup write was sent: the `$N0=...` / `$N1=...` setters can execute supplied G-code while validating it (`grbl/system.c:737`) and are not read-only queries.
 
-Six firmware workflow tests passed. All 31 app GPIOs match; existing setting values, firmware code and GPIO assignments are unchanged. Only one additional startup assertion was added. The production image remains 221,304 bytes, SHA-256 `F4AB32BD2CB7D0985A07915CF1C4349A3A7FD8546C765265B23EB98B904E5E9D`. The validator's “15 EXTI inputs” line checks reservations; it does **not** demonstrate runtime fault interrupts on PG12–15. No result in this audit counts as physical commissioning.
+Six firmware workflow tests passed. All 31 app GPIOs match; existing setting values, firmware code and GPIO assignments are unchanged. Only one additional startup assertion was added. The production image remains 221,304 bytes, SHA-256 `F4AB32BD2CB7D0985A07915CF1C4349A3A7FD8546C765265B23EB98B904E5E9D`. The validator's EXTI line checks reservations only: PG12–15 get no IRQ and are not read by the current firmware, so at most 11 EXTI lines are used and nothing demonstrates runtime fault interrupts on PG12–15. No result in this audit counts as physical commissioning.

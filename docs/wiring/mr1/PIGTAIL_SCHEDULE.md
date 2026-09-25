@@ -52,7 +52,7 @@ prove continuity; loose Dupont leads are not a production adapter.
 | 3 | FIT CHECK | TB, T0, T1 two-position 2.54 mm headers | Named signal and GND | Safety monitor, feed hold, Qualified sensor conditioner OUT1; module on HOLD |
 | 1 | FIT CHECK | PB7 tool-setter five-position 2.54 mm header (board silk: `BLTouch`) | PB7 and its adjacent GND only | Controller housing only; no BLTouch device or plugin; PB6 and 5 V remain empty |
 | 1 | FIT CHECK | PWR-DET three-position 2.54 mm header | PC0 and GND only | 3.3 V remains empty |
-| 1 | FIT CHECK | EXP2 `2x5` 2.54 mm header | PB1, PB2, GND only | Use keyed IDC breakout; short internal run; insulate unused wires |
+| 1 | FIT CHECK | EXP2 `2x5` 2.54 mm header | PB1, PB2, GND only | Use keyed IDC breakout; short internal run; insulate unused wires. EXP2 also carries `RST`. PB1/PB2 have no board pull-up/RC (interface board adds them); onboard `SW2` shares PB2 - guard or remove it |
 | 1 | FIT CHECK | I2C four-position 2.54 mm header | 3.3 V and GND only | Candidate logic-side supply only; module circuit on HOLD; PB8/PB9 remain empty |
 | 1 | USE / BUILD | Octopus MAIN POWER screw terminal | +24 V and 0 V, ferruled | No pigtail; MOTOR POWER and BED POWER remain empty |
 | 2 | HOLD | FAN0 and FAN4 two-position headers | None during motion commissioning | Spindle PWM/enable wait for servo and DB44 proof |
@@ -127,7 +127,8 @@ plugs until the actual pitch, contact style, and moulded markings are recorded.
 
 ### Moulded cable conflict
 
-`BOM.md:144` specifies metal EMC glands or bonded connector bulkheads, and
+`BOM.md` ("Cable and Panel Materials", Cable entry row) specifies metal EMC
+glands or bonded connector bulkheads, and
 `WIRING.md` requires motor-cable shields terminated 360 degrees at the cabinet
 entry. Both assume cable that can be cut to length and terminated at the panel
 wall. The kit's motor and encoder extensions are **fixed-length with moulded
@@ -168,7 +169,7 @@ rollback requires the separate DM860T document and a fresh review.
 
 | Qty | Status | Harness | Required proof before an adapter exists |
 | ---: | --- | --- | --- |
-| 4 channels | HOLD | Home/limit system | Connector key and **conductor count first** (five may be four signals plus common; fewer conductors require tracing and do not identify which signals share), ohmmeter across each switch both polarities, common-to-all-four continuity, then healthy, triggered, unplugged, and lost-power voltages |
+| 4 channels | HOLD | Home/limit system | Connector key and **conductor count first** (six is the expected case - shared 5 V supply, shared return and four independent signals, a powered circuit for the isolated conditioner; five may be four signals plus common; fewer conductors require tracing and do not identify which signals share), ohmmeter across each switch both polarities, common-to-all-four continuity, then healthy, triggered, unplugged, and lost-power voltages |
 | 2 | HOLD | Touch probe and tool setter | Mating key, **actual pin order (no numbered field terminal approved)**, idle/trigger voltage on a bench supply (expected open-collector, low when triggered), exposed-metal potential (expected 5 V), probe-0 V-to-frame and stylus-to-body continuity, DB44-11/12 continuity |
 | 1 | HOLD | Spindle DB44 | Exact servo model, parameter archive, end-to-end continuity, analog common, enable, alarm, and command range |
 | 1 | HOLD | Temperature sensor | Part number, voltage, interface, pinout, and cable colors |
@@ -181,8 +182,9 @@ Route the stock home channels through the four-channel isolated conditioner
 unless each switch is separately proved to be a bare NC dry contact; if all
 four prove out, the common lands on Octopus `GND`, each signal on its `STOP`
 SIG, and the conditioner comes out of the build. Never apply stock 5 V to
-STOP0-3. `RESEARCH.md` items 3 and 4 carry the probe and home hypotheses with
-their sources and the exact readings that close them.
+STOP0-3. `grblHAL-STM32F4/mr1/RESEARCH.md` (repository path), "Unresolved
+Physical Checks" items 3 and 4, carries the probe and home hypotheses with their
+sources and the exact readings that close them.
 
 ## Crimp And Label Rules
 

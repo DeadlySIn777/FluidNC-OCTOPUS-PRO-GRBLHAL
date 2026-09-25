@@ -12,8 +12,8 @@ const CONTEXT = Object.freeze({ machineId: 'MR1-POLICY-TEST-12345678', controlle
   firmwareSha256: 'B'.repeat(64), controllerSimulated: false, connectionId: 'test-connection-1' });
 const stageById = id => COMMISSIONING_ACCESS_STAGES.find(value => value.id === id);
 const hash = source => createHash('sha256').update(source).digest('hex');
-const AIR = 'G90 G94 G17 G21 G40 G49 G80\nM5 M9\nG53 G0 Z-2\nG54\nG0 X0 Y0 Z5\nG1 X1 Y1 F100\nG53 G0 Z-2\nM30';
-const CUT = 'G90 G94 G17 G21 G40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0 Z5\nG1 Z0 F100\nM5 M9\nG53 G0 Z-2\nM30';
+const AIR = 'G90 G94 G17 G21 G40 G49 G80\nM5 M9\nG53 G0 Z-2\nG54\nG0 X0 Y0\nG0 Z5\nG1 X1 Y1 F100\nG53 G0 Z-2\nM30';
+const CUT = 'G90 G94 G17 G21 G40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0\nG0 Z5\nG1 Z0 F100\nM5 M9\nG53 G0 Z-2\nM30';
 
 function recordFor(stageId) {
   return { hardwareProfile: COMMISSIONING_HARDWARE_PROFILE, machineId: CONTEXT.machineId,
@@ -260,4 +260,15 @@ test('one program reservation authorizes only continuation of its exact reviewed
   assert.throws(() => assertCommissioningCommand(session, 'run', { ...args, source: CUT + '\n' }, CONTEXT, NOW, continuation), /reservation/);
   assert.throws(() => assertCommissioningCommand(session, 'run', args, { ...CONTEXT, connectionId: 'new' }, NOW, continuation), /binding/);
   assert.throws(() => assertCommissioningCommand(session, 'run', args, CONTEXT, session.expiresAt, continuation), /expired/);
+});
+
+test('lone carriage returns cannot hide an inch block from the air-run feed ceiling', () => {
+  // The validator and streamer end a block at a lone CR; F90 under G20 streams at 2286 mm/min.
+  const source = 'G90 G94 G17 G21 G40 G49 G80\nM5 M9\nG53 G0 Z-2\nG54\nG0 X0 Y0\nG0 Z5\nG21\rG20\rG1 X1 Y1 F90\nG21\nG53 G0 Z-2\nM30';
+  const session = create('air-run', { programSha256: hash(source) });
+  assert.throws(() => allow(session, 'run', { source, sha256: hash(source) }), /feed/);
+  assert.equal(commissioningSessionState(session, NOW).remainingRuns, 1);
+  // Units are applied in their actual order: here the final block is metric.
+  const metric = source.replace('G21\rG20\r', 'G20\rG21\r');
+  assert.ok(allow(create('air-run', { programSha256: hash(metric) }), 'run', { source: metric, sha256: hash(metric) }).reservation);
 });

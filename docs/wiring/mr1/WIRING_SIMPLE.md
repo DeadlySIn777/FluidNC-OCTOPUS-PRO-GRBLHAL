@@ -161,6 +161,7 @@ view. Establish actual orientation and continuity before fitting an adapter:
 
 | Count | Meaning |
 | --- | --- |
+| 6 | **expected case** (`WIRING.md`, "Home and Limit Inputs"): shared 5 V supply + shared return + four independent signals. This is a powered circuit, not bare dry contacts - HOLD for the isolated conditioner until every conductor is traced |
 | 5 | candidate four signals plus common; trace every conductor to prove it |
 | 4 | cannot provide four independent dry-contact signals plus common; trace sharing before planning squaring |
 
@@ -211,8 +212,8 @@ Each `ALM`/`COMO` pair first enters its own opto-isolated, current-limited condi
 | --- | --- |
 | conditioned, 3.3 V-compatible aggregate output plus logic return | `EXP2` **PB1/GND** |
 
-`PG12`–`PG15` are display only. They **do not stop the machine.** PB1 is the
-only one that does.
+`PG12`–`PG15` are **not read by the current firmware** - no stop, no display.
+PB1 is the only drive-fault stop. Qualify it before any coupled dual-Y motion.
 
 - [ ] **Later protected bench check:** remove each field alarm connection in turn and verify PB1 faults; also test drive power loss and a safely induced documented alarm. Never hot-unplug motor or encoder.
 
@@ -249,9 +250,11 @@ Run every one of these:
 - [ ] Motor and encoder connected on every drive
 - [ ] All four drives: `S1`=4, `S3`=`5V`, `SW6`/`SW7` **off**
 - [ ] Every `STOP` 5 V cavity empty
+- [ ] Onboard `SW2` ("BOOT1") guarded or removed - it shares PB2, so pressing it is a cycle start
+- [ ] PB1, PB2 and PB7 have their interface-board 3.3 V pull-up and RC filter; every field input has its series resistor and TVS
 - [ ] Exact conditioner circuitry qualified; no generic floating-VCC recipe
 - [ ] PUL/DIR waveforms/current and PB1 alarm supervision proved on the protected bench
-- [ ] Hardware stop, protective bonding and branch protection documented
+- [ ] Hardware stop, protective bonding and branch protection documented. **Blocking HOLD:** the reviewed stop design removes spindle-servo energy (mains contactor and/or certified STO, not just `SON`), removes 36 V motion power with a Z-drop analysis, puts coolant in the stop chain and has a terminal schedule (`WIRING.md`, "Scope and Safety Boundary")
 - [ ] Z mechanically supported; test motor uncoupled, rigidly secured and shaft guarded
 
 If any item lacks evidence, stop at deenergized preparation. Once those gates
@@ -261,7 +264,7 @@ pass, use the conditional single secured-motor bench procedure in
 Expect: **green LED steady, red LED off.**
 
 Blinking red = alarm. Count the blinks in the 3-second window and read §8 of the
-manual in `_vendor_docs/`.
+[CL57T V4.1 manual](https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf) (linked from STEPPERONLINE, not bundled here).
 
 ---
 

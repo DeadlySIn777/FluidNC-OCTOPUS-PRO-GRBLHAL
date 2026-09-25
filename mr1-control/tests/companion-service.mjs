@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { createTelemetryService, ownerTagFor } from "../service/mr1-telemetry-service.mjs";
@@ -108,4 +109,26 @@ test("paired phone telemetry and virtual commands require both token and exact o
   } finally {
     await service.stop();
   }
+});
+
+test("the portable launcher passes the pairing link to cmd start as one quoted argument", async () => {
+  // portable-server.mjs starts servers on import and resolves ./service only in
+  // the packaged layout, so exercise its browser launcher in isolation.
+  const source = await readFile(new URL("../portable/portable-server.mjs", import.meta.url), "utf8");
+  const launcher = source.match(/function openDefaultBrowser\(url\) \{[\s\S]*?\r?\n\}\r?\n/)[0];
+  const calls = [];
+  const load = (platform) => new Function("spawn", "process", `${launcher}\nreturn openDefaultBrowser;`)(
+    (...args) => { calls.push(args); return { unref() {} }; }, { platform });
+  const url = `http://127.0.0.1:5173/?companion=1&pair=${TOKEN}`;
+  load("win32")(url);
+  assert.equal(calls.length, 1);
+  const [file, args, options] = calls[0];
+  assert.equal(file, "cmd.exe");
+  assert.equal(options.windowsVerbatimArguments, true);
+  // cmd /s /c removes only the outer quotes, leaving: start "" "<url>"
+  assert.equal(args.join(" "), `/d /s /c "start "" "${url}""`);
+  load("linux")(url);
+  load("win32")('http://127.0.0.1:5173/"&calc');
+  load("win32")("http://127.0.0.1:5173/?x=%PATH%");
+  assert.equal(calls.length, 1, "never on other platforms or with characters cmd interprets");
 });

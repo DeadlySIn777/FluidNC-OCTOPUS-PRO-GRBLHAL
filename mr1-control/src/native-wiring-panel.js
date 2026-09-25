@@ -38,7 +38,7 @@ export function mountNativeWiringControls({ root, getSnapshot }) {
     <p><a href="/wiring/visual/index.html#octopus" target="_blank" rel="noopener">Open visual Octopus schematic</a></p>
     <p class="native-note">Keep motion and spindle power isolated during static input checks. This panel sends no controller commands and never marks commissioning checks as passed.</p>
     <p data-wiring-state></p><table class="native-input-table"><thead><tr><th>Input / board reference</th><th>Logical report</th></tr></thead><tbody></tbody></table>
-    <p class="native-note">Y is a combined logical indication, not independent proof of Y-left and Y-right. PG12–PG15 individual drive diagnostics are not available in this status stream. PB1 is the aggregate fault. Only the selected probe is shown.</p>
+    <p class="native-note">Y is a combined logical indication, not independent proof of Y-left and Y-right. PG12–PG15 individual drive-fault pins are not read by the current firmware, so no per-drive state exists in this status stream. PB1 is the aggregate fault. Only the selected probe is shown.</p>
     <details><summary>Exact status frame</summary><pre data-wiring-raw>No valid report</pre></details>
     <label>Observation label<input data-wiring-label maxlength="120" placeholder="For example: X home switch held triggered"></label>
     <div class="native-row"><button type="button" data-wiring-capture>Capture displayed report</button><button type="button" data-wiring-download>Download observations</button></div>

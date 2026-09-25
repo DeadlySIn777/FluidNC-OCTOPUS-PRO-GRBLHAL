@@ -38,7 +38,7 @@ pigtail only at the board end.
 | Octopus connector | Positions | Qty | Use |
 | --- | ---: | ---: | --- |
 | `STOP0`–`STOP3` | 3 | 4 | Home switches, from a qualified conditioner (on-hand module on HOLD). **5 V cavity stays empty** |
-| `STOP4`–`STOP7` | 3 | 4 | Drive-fault indication, PG12–PG15 |
+| `STOP4`–`STOP7` | 3 | 4 | Optional per-axis drive-fault wiring, PG12–PG15 (not read by the current firmware; PB1 is the only drive-fault stop) |
 | `PWR-DET` | 3 | 1 | Safety door (PC0) |
 | `TB` | 2 | 1 | E-stop / safety-relay monitor (PF3) |
 | `T0` | 2 | 1 | Feed hold (PF4) |
@@ -62,11 +62,12 @@ The table totals **16 housings**: nine 3-pin, five 2-pin, one 4-pin and one
 ## 2. EXP2 — 2×5 IDC ribbon
 
 `EXP2` is a 2×5 shrouded 2.54 mm header. You need PB1 (the drive-fault
-aggregate — the only input that stops the machine) and PB2 (cycle start).
+aggregate — the only input that stops the machine), PB2 (cycle start) and their
+GND.
 
 | Option | Notes |
 | --- | --- |
-| [Antrader 10-pin 2×5 F/F IDC ribbon, 30 cm, 6 pcs](https://www.amazon.com/Antrader-Pieces-Pitch-Ribbon-Connector/dp/B07FZWWGY3) | Simplest: pre-made cable, cut one end and use the two conductors you need |
+| [Antrader 10-pin 2×5 F/F IDC ribbon, 30 cm, 6 pcs](https://www.amazon.com/Antrader-Pieces-Pitch-Ribbon-Connector/dp/B07FZWWGY3) | Simplest: pre-made cable, cut one end and use the three conductors you need (PB1, PB2, GND) |
 | [jujinglobal IDC 10-pin to 3.81 mm terminal breakout, 3 pcs](https://www.amazon.com/jujinglobal-Terminal-Breakout-Expansion-Connector/dp/B0DMJYR6YG) | Converts the ribbon to screw terminals — tidier, and gives you the screw terminals you were missing |
 | [Connectors Pro 2×5 IDC plugs, 50 pk](https://www.amazon.com/Connectors-Pro-50-Pack-2-54mm-Transition/dp/B07B8MDHBD) | If you want to make your own to length |
 
@@ -84,8 +85,9 @@ unused is eight chances to short something against the board.
 This is the one where Amazon is a trap.
 
 You need an adapter that plugs into a **Pololu/StepStick driver socket** and
-breaks out `STEP`, `DIR`, `ENABLE`, and `GND` so they can reach an external
-drive. Searching Amazon for "stepper driver adapter" mostly returns **motor
+breaks out `STEP`, `DIR` and `GND` so they can reach an external drive. Many
+adapters also break out `ENABLE`; that output stays unconnected because EN is
+reserved in this build. Searching Amazon for "stepper driver adapter" mostly returns **motor
 extension cables** and A4988 breakout boards, which are a different thing
 entirely and will not help.
 
@@ -99,7 +101,8 @@ Quantity **4**, for MOTOR0–MOTOR3.
 
 **What to verify on any candidate**, per `PIGTAIL_SCHEDULE.md`:
 
-- Routes socket pin **1 = EN**, pin **7 = STEP**, pin **8 = DIR**, pin **9 = GND**
+- Routes socket pin **7 = STEP**, pin **8 = DIR**, pin **9 = GND**. If it also
+  routes pin **1 = EN**, leave that output unconnected (EN is reserved)
 - Fits the actual **18-contact** socket with proved continuity, orientation,
   clearance, keying and retention. A `2x8` candidate remains on HOLD until
   those checks pass; schematic numbers are not physical row counts
@@ -237,7 +240,7 @@ position count first. Order after that, not before.
 **Additional optocouplers.** Quantity remains on HOLD. The on-hand home and
 sensor modules are unqualified. Plan four home, four alarm and two sensor field
 functions, then count the actual components needed for the approved circuitry.
-The alarms require a supervised PB1 aggregate and separate PG12-PG15 indications;
+The alarms require a supervised PB1 aggregate; optional PG12-PG15 per-axis outputs are not read by the current firmware;
 raw ALM/COMO terminals are not series contacts and may need additional logic.
 Do not reduce the order to six or assume one optocoupler per function without
 the reviewed circuit and confirmed on-hand parts.

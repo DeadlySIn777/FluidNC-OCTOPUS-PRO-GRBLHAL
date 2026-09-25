@@ -78,6 +78,17 @@ const SAFE_NON_AXIS_WORDS = new Set(["G", "M", "N", "F", "S", "T", "X", "Y", "Z"
 const STRICT_BLOCK_PATTERN = /^(?:N\d+)?(?:[A-Z][+-]?(?:\d+(?:\.\d*)?|\.\d+))+(?:\*\d+)?$/i;
 const G_MODAL_GROUPS = [[0, 1, 2, 3, 33, 80], [4, 53], [17, 18, 19], [20, 21], [90], [91.1], [94], [40], [49], [54, 55, 56, 57, 58, 59]];
 const M_MODAL_GROUPS = [[0, 1, 30], [3, 5], [8, 9]];
+// Mirrors the native loader (service/native-controller.mjs loadProgram): it
+// refuses these bytes anywhere, even in comments, because grblHAL acts on
+// realtime characters the moment they arrive. TAB, CR and LF are allowed.
+const LOADER_PROHIBITED_CHARACTERS = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\uffff!?~]/;
+const LOADER_MAX_LINE_BYTES = 120;
+const LOADER_MAX_PROGRAM_BYTES = 5 * 1024 * 1024;
+const UTF8 = new TextEncoder();
+
+function printable(text) {
+  return String(text).replace(/[^\x20-\x7e]/g, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
+}
 
 function issue(line, code, message, source = "") {
   return { line, code, message, source };
@@ -122,6 +133,9 @@ function commentSyntaxIsBalanced(source) {
   let depth = 0;
   for (const character of String(source)) {
     if (character === ";" && depth === 0) break;
+    // grblHAL's gc_normalize_block does not nest: an inner "(" restarts the
+    // comment and the first ")" ends it, so "(a (b) G0 Z-20)" executes Z-20.
+    if (character === "(" && depth > 0) return false;
     if (character === "(") depth += 1;
     if (character === ")") depth -= 1;
     if (depth < 0) return false;
@@ -142,6 +156,8 @@ export function validateMr1Nc(source, options = {}) {
     ? [...INITIAL_MODAL_KEYS, LATHE_MODAL_KEY]
     : INITIAL_MODAL_KEYS;
   const forbiddenAxis = new Set(contract.forbiddenAxisWords ?? []);
+  const lateralAxes = ["x", "y"].filter((axis) => !forbiddenAxis.has(axis.toUpperCase()));
+  const lateralLabel = lateralAxes.map((axis) => axis.toUpperCase()).join("/");
   const lines = String(source ?? "").replace(/\r\n?/g, "\n").split("\n");
   const blockers = [];
   const warnings = [];
@@ -164,6 +180,10 @@ export function validateMr1Nc(source, options = {}) {
     seenM30: false,
     seenExecutable: false,
     seenWorkMotion: false,
+    machineRetractSeen: false,
+    // Set by a G53 retract or work-offset change: the in-plane position must
+    // be re-established at the retract height before any Z motion.
+    approachPending: false,
     lastWorkMotionLine: 0,
     lastMachineRetractLine: 0,
     lastExecutableLine: 0,
@@ -190,6 +210,11 @@ export function validateMr1Nc(source, options = {}) {
   const block = (lineNumber, code, message, lineSource = "") => {
     blockers.push(issue(lineNumber, code, message, lineSource));
   };
+  // UTF-8 never spends more than three bytes per UTF-16 unit.
+  const sourceText = String(source ?? "");
+  if (sourceText.length * 3 > LOADER_MAX_PROGRAM_BYTES && UTF8.encode(sourceText).length > LOADER_MAX_PROGRAM_BYTES) {
+    block(0, "PROGRAM_TOO_LARGE", "The controller loader accepts programs up to 5 MB.");
+  }
 
   for (let index = 0; index < lines.length; index += 1) {
     const lineNumber = index + 1;
@@ -201,7 +226,13 @@ export function validateMr1Nc(source, options = {}) {
       block(lineNumber, "POST_BLOCK_MARKER", "The postprocessor explicitly blocked this program.", lines[index].trim());
     }
     if (!commentSyntaxIsBalanced(lines[index])) {
-      block(lineNumber, "MALFORMED_COMMENT", "Parenthesized comments must be balanced on the same source line.", lines[index].trim());
+      block(lineNumber, "MALFORMED_COMMENT", "Parenthesized comments must close on the same source line and cannot nest; grblHAL ends a comment at its first ')'.", lines[index].trim());
+    }
+    if (LOADER_PROHIBITED_CHARACTERS.test(lines[index])) {
+      block(lineNumber, "PROHIBITED_CHARACTER", "Realtime characters (! ? ~), control bytes and non-ASCII text are refused by the controller loader, even inside comments.", printable(lines[index].trim()));
+    }
+    if (UTF8.encode(lineSource).length > LOADER_MAX_LINE_BYTES) {
+      block(lineNumber, "LINE_TOO_LONG", `Executable text exceeds the controller loader's ${LOADER_MAX_LINE_BYTES}-byte line limit.`, printable(lineSource));
     }
     if (!lineSource && !(parsed.cmds?.length)) continue;
     state.seenExecutable = true;
@@ -234,6 +265,7 @@ export function validateMr1Nc(source, options = {}) {
     const gCodes = valuesFor(words, "G");
     const mCodes = valuesFor(words, "M");
     const axisWords = words.filter(([letter]) => AXIS_WORDS.has(letter));
+    const hasZWord = axisWords.some(([letter]) => letter === "Z");
     const rotaryWords = words.filter(([letter]) => ROTARY_WORDS.has(letter));
     const unsupportedWords = words.filter(([letter]) => !SAFE_NON_AXIS_WORDS.has(letter) && !ROTARY_WORDS.has(letter));
     if (nativeMr1) {
@@ -346,7 +378,15 @@ export function validateMr1Nc(source, options = {}) {
     for (const code of gCodes) {
       if (MOTION_CODES.has(code) || code === 33) state.motion = `G${code}`;
       if (WORK_OFFSETS.has(code)) {
-        if (nativeMr1 && state.workOffset !== `G${code}`) state.position = { x: null, y: null, z: null };
+        if (state.workOffset !== `G${code}`) {
+          // The new frame's first XY move happens at the current machine
+          // height, so that height must be the qualified retract.
+          if (state.workOffset && state.lastWorkMotionLine > state.lastMachineRetractLine) {
+            block(lineNumber, "OFFSET_CHANGE_WITHOUT_RETRACT", "A qualified G53 Z retract is required after work motion and before changing the work offset.", lineSource);
+          }
+          if (nativeMr1) state.position = { x: null, y: null, z: null };
+          state.approachPending = true;
+        }
         state.workOffset = `G${code}`;
       }
     }
@@ -481,10 +521,20 @@ export function validateMr1Nc(source, options = {}) {
         block(lineNumber, "ACTIVE_ACCESSORIES_AT_RETRACT", "Stop spindle and coolant before a machine-coordinate retract.", lineSource);
       }
       state.lastMachineRetractLine = lineNumber;
+      state.machineRetractSeen = true;
+      state.approachPending = true;
     } else if (isMotionBlock) {
       state.seenWorkMotion = true;
       state.lastWorkMotionLine = lineNumber;
       workMotionBlocks += 1;
+      if (!state.machineRetractSeen) {
+        block(lineNumber, "MOTION_BEFORE_RETRACT", `Work motion before the first qualified G53 G0 Z${contract.safeMachineZMm.toFixed(3)} retract; every program must begin with the machine-Z retract.`, lineSource);
+      }
+      // The work Z after a machine retract or frame change is unknown, so a Z
+      // move could descend onto the part at an unknown XY.
+      if (state.approachPending && hasZWord) {
+        block(lineNumber, "APPROACH_Z_BEFORE_XY", `After a G53 retract or work-offset change, position ${lateralLabel} at the retract height before any Z motion.`, lineSource);
+      }
       const missing = requiredModalKeys.filter((key) => !state.modalReady[key]);
       if (missing.length > 0) {
         block(lineNumber, "STARTUP_MODAL_MISSING", `Work motion began before startup modes were established: ${missing.join(", ")}.`, lineSource);
@@ -523,6 +573,8 @@ export function validateMr1Nc(source, options = {}) {
                 block(lineNumber, "Z_FEED_RANGE", `The Z component of this move (${Math.round(zRate)} mm/min) exceeds ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
               }
             }
+          } else if (hasZWord && state.feedMmPerMinute > contract.maximumZFeedMmPerMinute + 0.01) {
+            block(lineNumber, "Z_FEED_UNVERIFIED", `The Z component of this move cannot be checked from an unknown start position; establish the position or feed at most ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
           }
         }
       }
@@ -584,6 +636,9 @@ export function validateMr1Nc(source, options = {}) {
               if (zRate > contract.maximumZFeedMmPerMinute + 0.01) {
                 block(lineNumber, "Z_FEED_RANGE", `The Z component of this helix (${Math.round(zRate)} mm/min) exceeds ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
               }
+            } else if (nativeMr1 && plane === "G17" && hasZWord && state.position.z === null
+              && state.feedMmPerMinute > contract.maximumZFeedMmPerMinute + 0.01) {
+              block(lineNumber, "Z_FEED_UNVERIFIED", `The Z component of this helix cannot be checked from an unknown start Z; establish Z or feed at most ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
             }
           }
         }
@@ -601,6 +656,7 @@ export function validateMr1Nc(source, options = {}) {
       state.position.z = null;
     } else if (isMotionBlock) {
       state.position = motionTarget(state.position, words, unitScale(state.units));
+      if (lateralAxes.every((axis) => state.position[axis] !== null)) state.approachPending = false;
     }
 
     if (hasCode(words, "M", 30)) {

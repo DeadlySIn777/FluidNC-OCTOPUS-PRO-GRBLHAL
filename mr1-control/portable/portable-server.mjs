@@ -162,10 +162,14 @@ function close(server) {
 }
 
 function openDefaultBrowser(url) {
-  const child = spawn("cmd.exe", ["/d", "/s", "/c", "start", "", url], {
+  // cmd.exe splits an unquoted URL at "&", running "pair=..." as a command.
+  // Pass one verbatim, quoted start command; /s strips only the outer quotes.
+  if (process.platform !== "win32" || !/^http:\/\/[A-Za-z0-9.:/?=&_-]+$/.test(url)) return;
+  const child = spawn("cmd.exe", ["/d", "/s", "/c", `"start "" "${url}""`], {
     detached: true,
     stdio: "ignore",
     windowsHide: true,
+    windowsVerbatimArguments: true,
   });
   child.unref();
 }

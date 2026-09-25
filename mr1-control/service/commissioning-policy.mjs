@@ -209,10 +209,12 @@ export function assertCommissioningCommand(session, action, args = {}, liveConte
       || String(args.sha256 ?? '').toLowerCase() !== session.programSha256) fail('The loaded program does not match this reviewed commissioning session.');
     if (!validateMr1Nc(args.source, { allowSpindleOffMotion: session.stage === 'air-run' }).ok) fail('The commissioning program fails the MR1 NC contract.');
     let units = 1;
-    for (const line of args.source.split(/\r?\n/)) {
+    // Split exactly as the validator and streamer do: a lone CR ends a block.
+    for (const line of args.source.replace(/\r\n?/g, '\n').split('\n')) {
       const words = parseLine(line).words;
+      // Units apply to the whole block; a block naming both is judged as inches.
       if (words.some(([letter, value]) => letter === 'G' && value === 20)) units = 25.4;
-      if (words.some(([letter, value]) => letter === 'G' && value === 21)) units = 1;
+      else if (words.some(([letter, value]) => letter === 'G' && value === 21)) units = 1;
       if (words.some(([letter, value]) => letter === 'F' && value * units > session.limits.programFeedMmPerMinute)) fail('Program feed exceeds the commissioning stage ceiling.');
       if (words.some(([letter, value]) => letter === 'S' && value > session.limits.spindleRpm)) fail('Program spindle speed exceeds the commissioning stage ceiling.');
       if (session.stage === 'air-run' && words.some(([letter, value]) => letter === 'M' && [3, 4, 7, 8].includes(value))) fail('Air-run commissioning requires spindle and coolant off in the program.');

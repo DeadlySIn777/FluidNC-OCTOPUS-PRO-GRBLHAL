@@ -29,10 +29,20 @@ mains, floating analog, or DC-bus node. Review the instrument connection first.
 4. Photograph the Octopus top, bottom, MCU marking, crystal, and v1.1 silkscreen.
 5. Measure all four motor mounts, screw shafts, stock couplers, and available connector bend radius.
 6. Verify frame, spindle chassis, cabinet, and incoming PE continuity.
-7. Draw the actual E-stop chain and have its safety design reviewed.
+7. Draw the actual E-stop chain and have its safety design reviewed. This is a
+   blocking HOLD before the cabinet is energized with any drive, spindle or
+   coolant load connected. The reviewed design must remove 240 VAC
+   spindle-servo energy on E-stop (rated mains contactor on the servo supply
+   and/or certified safe-torque-off; `SON` dropout is not the E-stop function),
+   remove 36 V motion power with a Z-drop analysis for the de-energized state,
+   put the flood pump and mist/air solenoid supplies in the hardwired stop
+   chain, set stop category and restart prevention from the risk assessment,
+   and include a complete terminal schedule. See `WIRING.md`, "Scope and Safety
+   Boundary".
 
 **Hold point:** no conversion wire is cut until the stock system can be restored
-from the labels and photos.
+from the labels and photos. No cabinet supply is energized with a load connected
+until the reviewed stop design in item 7 exists.
 
 ## Stage 0A: Bare-Board USB-Only Firmware Flash
 
@@ -111,8 +121,15 @@ Verify against `WIRING.md` and `cable-schedule.csv`:
 - No plug-in motor drivers or mode/voltage jumpers occupy MOTOR0-MOTOR3.
 - One driver-socket adapter and each low-voltage housing have passed pitch, key, latch, pin-1, insertion, and pull tests on the actual v1.1 board.
 - Safety contacts physically interrupt motion energy and spindle permit.
-- The safety-relay monitor, not an E-stop channel, goes to PF3.
+- The safety-relay monitor, not an E-stop channel, goes to PF3. It is a contact
+  that is closed while the relay is energized and open on E-stop/trip (a spare
+  NO safety output or NO auxiliary), not an NC auxiliary.
 - Probe isolated return has no continuity to controller ground, frame, spindle, or PE.
+- The Octopus onboard `SW2` ("BOOT1") button is physically guarded or removed.
+  It shares PB2 (net `BTN_EN1`), so pressing it is a cycle start.
+- Every field input passes the interface board's series resistor and TVS; PB1,
+  PB2 and PB7, which have no board pull-up or RC, have the interface-board
+  3.3 V pull-up and RC filter fitted.
 - Analog spindle return has no continuity to controller ground unless the final verified interface intentionally requires it.
 - Shields and PE terminate as designed; no shield is used as a current return.
 - Every terminal and cable has its permanent ID.
@@ -224,6 +241,18 @@ For door, E-stop monitor, and feed hold:
 3. Cable unplugged: same active state as actuation.
 4. Adjacent cable movement: no flicker.
 
+E-stop monitor (PF3) specifically, with the safety relay wired and energized:
+
+- Relay energized and chain healthy: `Pn:` must not contain `E`.
+- Press each E-stop device: PF3 must read E-stop (`Pn:` includes `E`).
+- Release and reset the safety chain: `E` clears from `Pn:`; the alarm still
+  requires an explicit `$X` (`$484=1`).
+- Unplug the monitor wire at PF3: must read E-stop.
+
+If a healthy relay reads E-stop, or a pressed E-stop reads healthy, the wrong
+contact is wired (typically an NC auxiliary). Fix the wiring. **Never invert
+`$14` to "fix" it**; that makes a broken monitor wire read healthy.
+
 Hard-limit tests will create an alarm. Clear the physical condition, reset, and
 unlock only after confirming the reported axis.
 
@@ -231,6 +260,12 @@ unlock only after confirming the reported axis.
 
 Open is inactive; pressing the guarded NO button is active. It is the only
 operator input with this truth table.
+
+PB2 is shared with the onboard `SW2` ("BOOT1") button and has no board pull-up
+or filter. Confirm `SW2` is guarded or removed before any motion stage: with a
+feed hold active, `SW2` must not be reachable to resume motion. Also confirm the
+interface-board pull-up and RC are fitted: no spurious cycle start while relays,
+coolant or USB traffic switch.
 
 ### Probe Inputs Without Motion
 
@@ -243,10 +278,13 @@ G65P5Q0
 ```
 
 For each selection, verify released, triggered, cable-disconnected, and cable-
-flex behavior. A disconnected stock sensor is expected to remain untriggered
-with this active-low scheme, so probe continuity is an operational preflight
-check rather than a fail-safe E-stop. The interface must never indicate a
-trigger on the other sensor.
+flex behavior. A disconnected stock sensor, lost isolated field power or a
+failed optocoupler is expected to read untriggered with this active-low scheme:
+the circuit is not fail-safe (`INTERFACE_BOARD.md` D). A trigger test is
+therefore required before **every** probing cycle, not only here: with motion
+stopped, select the sensor, deflect the stylus or press the setter, and confirm
+`Pn:P` appears and clears. The interface must never indicate a trigger on the
+other sensor.
 
 Repeat at least 50 manual actuations per sensor. Reject intermittent or sticky
 behavior before any `G38` move.
@@ -256,9 +294,14 @@ behavior before any `G38` move.
 Use the interface simulator/test jumper, not a live motor fault yet:
 
 - Four ready channels low: no motor fault.
-- Open X, YL, Z, then YR one at a time: the expected axis fault is reported.
+- Open X, YL, Z, then YR one at a time: PB1 reports a motor fault (`Pn:`
+  includes `F`, alarm 17). The current firmware does not read PG12-PG15, so no
+  per-axis fault is reported; identify the axis from the interface board.
 - Remove alarm-interface field power: a fault is reported.
 - Open PB1 aggregate fault: a cabinet/spindle fault is reported.
+
+PB1 is the only drive-fault stop. The complete PB1 chain qualification (Stage 5
+step 13 on every drive) is a blocking prerequisite for Stage 6.
 
 **Hold point:** saved truth table contains no ambiguous, coupled, or noisy input.
 
@@ -269,14 +312,24 @@ No stock spindle, coolant load, or motor may be connected.
 ### Motion Signals
 
 Attach the real DM860T input optocouplers or equivalent loads, with DM860T motor
-power still off. Scope every PUL, DIR, and ENA pair.
+power still off. Scope every active PUL and DIR pair; ENA is reserved and
+unconnected.
 
 - The Octopus socket side switches between logic low and its buffered 5 V high; it is not treated as raw 3.3 V GPIO.
 - Pulse width is at least 5 us.
 - Direction changes precede the first pulse by at least 6 us.
 - Low input voltage while sinking is below 0.5 V.
-- PUL/DIR/ENA current remains within the DM860T V3 7-16 mA specification.
+- PUL/DIR current remains within the drive's 7-16 mA input specification.
 - Idle channels do not chatter during USB traffic, relay switching, or reset.
+- **Reset and bootloader float check.** With drive (36 V) power off, scope STEP
+  and DIR at the socket and at each interface output while holding the MCU in
+  reset, during power-up, and through an SD-bootloader pass. The
+  `MC74HCT125` buffers are always enabled and nothing pulls STEP/DIR, so the
+  level is undefined while the MCU is not driving it; with ENA unconnected the
+  drives would act on it. Record every pulse or level change. Using the reserved
+  ENA channel or interlocking motion power to controller health is a design
+  decision pending review (`INTERFACE_BOARD.md` A); until it is made, keep drive
+  power off whenever the controller is reset, rebooted or flashed.
 - Controller/safety power loss forces the panel's hardware `FORCE_DISABLE` or removes motion power.
 
 ### Spindle Analog Dummy Load
@@ -336,6 +389,10 @@ following-error test in this phase; those checks return with the CL57T upgrade.
 **Hold point:** all four loose axes pass independently.
 
 ## Stage 6: Direction and Ganged-Y Proof
+
+**Prerequisite:** the PB1 aggregate fault chain has passed Stage 5 step 13 on
+all four drives. PB1 is the only drive-fault stop; PG12-PG15 are not read by
+the current firmware. Do not run coupled dual-Y motion without it.
 
 Keep both Y motors uncoupled from the machine but powered together.
 
@@ -468,6 +525,11 @@ total travel from a verified approach point, never permitted penetration past
 the expected setter surface.
 
 ### Primary Probe
+
+Before every probing cycle, including each test below, run the trigger test:
+with motion stopped, select the sensor, deflect it, and confirm `Pn:P` appears
+and clears. A dead probe reads untriggered. The app's protected workflow rejects
+an already-triggered input but does not perform this test.
 
 Put a large compliant test target immediately below the probe, use a very short
 travel, and keep the feed low:

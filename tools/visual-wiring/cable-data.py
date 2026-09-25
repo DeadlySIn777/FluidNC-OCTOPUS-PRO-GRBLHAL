@@ -154,7 +154,7 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
             f"Trace only the {name} ALM/COMO pair to its own planned isolated conditioner; identify {row['to_terminal']} as an interface name, not a proved pinout.",
             [f"Actual {name} alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
              "Released per-channel current-limited isolation circuit and real terminal map.",
-             "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."],
+             "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."],
         )
     if cable_id.startswith("HOME-FIELD-"):
         return (
@@ -177,13 +177,14 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
             ["Actual sensor label, voltage/type, connector orientation and conductor continuity.",
              "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
              "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+             "Recorded limitation that the circuit is not fail-safe (lost field power or a broken wire reads untriggered) and a trigger test showing Pn:P before every probing cycle.",
              "Verified destination signal/return: PB7 uses adjacent proved GND, with PB6 and 5V unpopulated." if cable_id == "TOOL-01" else "Verified destination signal/return at T1 PF5; no field voltage on the GPIO."],
         )
     control_evidence = {
-        "SAFE-MON": ["Actual safety-relay auxiliary-contact identity and isolated NC continuity.", "Verified TB PF3/GND orientation and monitor-only separation from safety channels.", "Independent reviewed energy-removal/restart-prevention design; monitor continuity is not a safety-system test."],
+        "SAFE-MON": ["Selected safety-relay contact that is closed while the relay is energized and open on E-stop/trip (a spare NO safety output or NO auxiliary, not an NC auxiliary); relay and terminal still unselected.", "Verified TB PF3/GND orientation and monitor-only separation from safety channels; E-stop pressed and monitor wire unplugged each read E-stop (Pn:E), and $14 is never inverted to suit a wrong contact.", "Independent reviewed energy-removal/restart-prevention design; monitor continuity is not a safety-system test."],
         "DOOR-MON": ["Actual door-monitor NC contact and open/closed continuity.", "Verified PWR-DET PC0/GND mating view; adjacent 3V3 left unconnected.", "Documented separation of monitor behavior from the physical guard/safety design."],
         "HOLD-01": ["Actual feed-hold NC contact and button continuity.", "Verified T0 PF4/GND orientation and return path.", "Recorded software-hold behavior; this button is not credited as hazardous-energy isolation."],
-        "START-01": ["Actual guarded cycle-start NO contact and button continuity.", "Verified EXP2 PB2/GND mating view and independent return path.", "Documented prevention of unintended starts and manual restart after faults."],
+        "START-01": ["Actual guarded cycle-start NO contact and button continuity.", "Verified EXP2 PB2/GND mating view and independent return path.", "Documented prevention of unintended starts and manual restart after faults.", "Onboard SW2 (BOOT1, shares PB2 net BTN_EN1) guarded or removed; interface-board series resistor, TVS, 3.3 V pull-up and RC fitted because the board has none."],
     }
     if cable_id in control_evidence:
         return (f"Trace the isolated {row['from_device']} contact pair to the intended {row['to_terminal']} reference; verify contact identity before termination.", control_evidence[cable_id])
@@ -193,7 +194,7 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
             ["Released aggregate circuit and actual connector orientation/return continuity.",
              "All four independently conditioned drive healthy channels plus required cabinet/spindle fault sources.",
              "Measured healthy-low / fault-open-powerloss-high behavior; healthy-open outputs require added supervision.",
-             "Physical PB1 stopping proof; PG12-PG15 indication alone is not stop protection."],
+             "Physical PB1 stopping proof for every drive before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware."],
         )
     if cable_id == "SP-PWM":
         return (
@@ -212,7 +213,7 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
     if cable_id == "SP-ENABLE":
         return (
             "Identify the proposed dry-contact route and preserve the stock servo harness; leave community pin 16/return unassigned pending the actual map.",
-            ["Installed servo enable function, exact return and DB44 continuity/orientation.",
+            ["Installed servo enable function and input topology (sinking SON with COM+ at +24 V, contact to I/O-supply 0 V, is pending the drive manual), exact 0 V terminal and DB44 continuity/orientation.",
              "Qualified contact interface and hardwired spindle-permit design.",
              "Verified startup, loss-of-power, stop and restart behavior; no software-only permit."],
         )

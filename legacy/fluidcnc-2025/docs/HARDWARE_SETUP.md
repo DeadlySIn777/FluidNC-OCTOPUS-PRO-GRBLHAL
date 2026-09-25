@@ -1,3 +1,5 @@
+> **Superseded archived guide:** its E-stop advice below (normally-open contacts, "fail-safe for wire breaks") is wrong - an E-stop must be normally-closed and fail-safe; do not use this guide for the MR1 (see [../README-LEGACY.md](../README-LEGACY.md)).
+
 # FluidCNC Hardware Setup Guide
 ## BTT Octopus Pro v1.1 + Le Potato + grblHAL
 

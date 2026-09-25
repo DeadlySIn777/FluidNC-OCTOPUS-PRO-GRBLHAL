@@ -7423,15 +7423,15 @@ function renderNativeCommandState(state = nativeState) {
     for (const field of [elements.droX, elements.droY, elements.droZ, elements.spindleRpm, elements.feedRate, elements.toolNumber]) field.value = '--';
     for (const field of [elements.probeState, elements.safetyState, elements.driveState]) setIndicator(field, 'UNKNOWN');
     elements.toolDescription.textContent = 'No live controller data';
-    setMachineState(state?.connected ? 'STATUS LOST' : 'DISCONNECTED', 'hold');
+    setMachineState(state?.connected || state?.linkLost ? 'STATUS LOST' : 'DISCONNECTED', 'hold');
   }
   elements.permitLabel.textContent = state?.armed ? 'NATIVE CONTROL / ARMED' : state?.connected ? 'CONNECTED / DISARMED' : 'MACHINE DISCONNECTED / PROGRAM PREVIEW';
   elements.permitStatus.dataset.mode = state?.armed ? 'live' : 'preview';
   const held = state?.status?.state?.name === 'Hold' && state.status.state.substate === 0;
   elements.cycleStart.disabled = !fresh || !state.armed || (!held && (state.busy || state.job.state !== 'loaded'));
   setCycleButtonLabel(held ? 'RESUME MACHINE' : 'RUN REVIEWED PROGRAM');
-  elements.feedHold.disabled = !state?.connected;
-  elements.programStop.disabled = !state?.connected;
+  elements.feedHold.disabled = !state?.connected && !state?.linkLost;
+  elements.programStop.disabled = !state?.connected && !state?.linkLost;
 }
 
 function updateReadout(sample) {

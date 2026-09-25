@@ -25,27 +25,27 @@
     {
       "id": "wiring",
       "path": "docs/wiring/mr1/WIRING.md",
-      "sha256": "5d4069ca27c33cdb2273b6d5abf54ceac2bde3c37481f092d5389af49de6ba18"
+      "sha256": "8d057aba6a847256ca69783b4048a0188982e9cd87bc0584e4601364ac15b97d"
     },
     {
       "id": "pigtails",
       "path": "docs/wiring/mr1/PIGTAIL_SCHEDULE.md",
-      "sha256": "f64eacc58ba6f0d11ca59e0a11ea92a30ae48da5a5fbadf8c8c945d6a8362329"
+      "sha256": "bcc7e4e1e7b56d8e8cf1c1d4191cfa1ecb8c506db07181ce853f2bff2d2dc833"
     },
     {
       "id": "interface",
       "path": "docs/wiring/mr1/INTERFACE_BOARD.md",
-      "sha256": "15431a15717901b895a487dbc048cd0a0c15290fcb5f5cdd6e3eef64dd748e09"
+      "sha256": "8039985429e9e9143d72a05ba3a176673b0feedcec38d2f9bd5229a62b2e01f0"
     },
     {
       "id": "manifest",
       "path": "docs/wiring/mr1/io-manifest.json",
-      "sha256": "5ff586c6a720151987b5612a30d96c6c6afb800194db1cd5e5d80b3b826a36f4"
+      "sha256": "95d71acf8266852a0b592ec76cefc471ffb24c6fac0b59632e251d30b8d10094"
     },
     {
       "id": "cable-schedule",
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+      "sha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12"
     },
     {
       "id": "pin-map",
@@ -55,7 +55,7 @@
     {
       "id": "installation",
       "path": "docs/wiring/application-reference/wiring-installation.js",
-      "sha256": "1c6065acc60d341328e8f095f22c091e6e6a3215a3005080ff4e0755b5af6806"
+      "sha256": "d079e0835cc87bff34eb49f43a6c45429382e7cf77f59dd111653e947bc4fb5e"
     },
     {
       "id": "btt-pinout",
@@ -202,7 +202,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-X labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],
@@ -250,7 +250,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-YL labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],
@@ -298,7 +298,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-Z labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],
@@ -346,7 +346,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-YR labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],
@@ -513,61 +513,61 @@
     },
     {
       "id": "diagnostics-stop4-7",
-      "title": "STOP4–STOP7: separate drive diagnostics",
+      "title": "STOP4–STOP7: per-axis drive-fault wiring (not read by current firmware)",
       "status": "FUNCTIONAL SEGMENTS — HOLD",
       "rows": [
         {
           "terminal": "STOP4 signal / PG12",
-          "destination": "Separate qualified controller-side X drive-fault indication.",
+          "destination": "Optional qualified controller-side X drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-X"
           ]
         },
         {
           "terminal": "STOP4 GND",
-          "destination": "Verified controller-side return for that X diagnostic output.",
+          "destination": "Verified controller-side return for that X per-axis output.",
           "relatedCableIds": [
             "ALM-X"
           ]
         },
         {
           "terminal": "STOP5 signal / PG13",
-          "destination": "Separate qualified controller-side Y-left drive-fault indication.",
+          "destination": "Optional qualified controller-side Y-left drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-YL"
           ]
         },
         {
           "terminal": "STOP5 GND",
-          "destination": "Verified controller-side return for that Y-left diagnostic output.",
+          "destination": "Verified controller-side return for that Y-left per-axis output.",
           "relatedCableIds": [
             "ALM-YL"
           ]
         },
         {
           "terminal": "STOP6 signal / PG14",
-          "destination": "Separate qualified controller-side Z drive-fault indication.",
+          "destination": "Optional qualified controller-side Z drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-Z"
           ]
         },
         {
           "terminal": "STOP6 GND",
-          "destination": "Verified controller-side return for that Z diagnostic output.",
+          "destination": "Verified controller-side return for that Z per-axis output.",
           "relatedCableIds": [
             "ALM-Z"
           ]
         },
         {
           "terminal": "STOP7 signal / PG15",
-          "destination": "Separate qualified controller-side Y-right drive-fault indication.",
+          "destination": "Optional qualified controller-side Y-right drive-fault output for a future firmware candidate; not read by the current firmware.",
           "relatedCableIds": [
             "ALM-YR"
           ]
         },
         {
           "terminal": "STOP7 GND",
-          "destination": "Verified controller-side return for that Y-right diagnostic output.",
+          "destination": "Verified controller-side return for that Y-right per-axis output.",
           "relatedCableIds": [
             "ALM-YR"
           ]
@@ -578,9 +578,9 @@
         }
       ],
       "notes": [
-        "These are separate conditioned indications, not raw ALM/COMO terminals and not the PB1 motor-fault stop input.",
+        "These are optional conditioned per-axis outputs, not raw ALM/COMO terminals and not the PB1 motor-fault stop input.",
         "The ALM-X/YL/Z/YR cables end at their own field conditioners. These conditioner-to-STOP links need separate harness IDs and terminal schedules.",
-        "Do not treat PG12–PG15 diagnostics as verified per-drive telemetry or independent safety protection."
+        "The current firmware never reads PG12–PG15: they give no stop, no status and no per-axis indication. PB1 is the only drive-fault stop; qualify it before any coupled dual-Y motion."
       ],
       "sourceIds": [
         "pin-map",
@@ -595,7 +595,7 @@
       "rows": [
         {
           "terminal": "TB signal / PF3",
-          "destination": "Isolated NC safety-relay auxiliary monitor contact.",
+          "destination": "Isolated safety-relay monitor contact that is closed while the relay is energized and opens on E-stop/trip (not an NC auxiliary); relay terminal HOLD.",
           "cableIds": [
             "SAFE-MON"
           ]
@@ -637,7 +637,7 @@
         }
       ],
       "notes": [
-        "SAFE-MON reports the safety relay; it does not replace the independent hardware stop. Feed hold is not energy isolation.",
+        "SAFE-MON reports the safety relay; it does not replace the independent hardware stop. PF3 high means E-stop, so a wrong (NC auxiliary) contact inverts the reading; never invert $14 to compensate. Feed hold is not energy isolation.",
         "PROBE-01 is the sensor-to-interface cable. The separate interface-to-T1 output harness still needs its own ID and terminal map.",
         "No probe field supply or raw sensor output goes directly to PF5. T2 and T3 are unused."
       ],
@@ -675,7 +675,8 @@
       "notes": [
         "No BLTouch device or plugin is used. This header carries the fixed setter input in the production map.",
         "Prove the PB7/GND pair from actual markings and continuity; do not count cavities from the end of a loose plug.",
-        "TOOL-01 ends at the sensor interface; the separate interface-to-PB7 harness has no scheduled ID yet."
+        "TOOL-01 ends at the sensor interface; the separate interface-to-PB7 harness has no scheduled ID yet.",
+        "PB7 has no board pull-up or RC filter; the interface board supplies them."
       ],
       "sourceIds": [
         "pin-map",
@@ -725,7 +726,9 @@
         "PB1 is the configured controller motor-fault input: all required contributors healthy = low; fault/open cable/lost power must make it high.",
         "Every raw CL57T ALM/COMO pair first goes to its own isolated, current-limited and supervised conditioner. No raw transistor series chain or raw alarm GPIO connection.",
         "Include required spindle/cabinet fault contributors. PB1 remains separate from the independent hardwired safety chain.",
-        "Use a verified keyed breakout and recorded return paths, not generic IDC pin numbering."
+        "Use a verified keyed breakout and recorded return paths, not generic IDC pin numbering.",
+        "PB1 and PB2 have no board pull-up or RC filter (BTT v1.1 schematic). The interface board supplies series resistor, TVS, 3.3 V pull-up and RC.",
+        "PB2 is net BTN_EN1, shared with the onboard SW2 (BOOT1) button to GND; pressing SW2 is a cycle start and can resume a feed hold. Guard or remove SW2 before commissioning. EXP2 pin 8 is the MCU reset line (RST) beside these contacts."
       ],
       "sourceIds": [
         "pin-map",
@@ -1115,7 +1118,7 @@
     "unmappedScheduledOctopusCableIds": [],
     "unscheduledFunctionalLinks": [
       "MOTOR0–3 socket-to-command-interface",
-      "Four separate conditioner-to-STOP4–7 diagnostic links",
+      "Four optional conditioner-to-STOP4–7 per-axis links (not read by current firmware)",
       "Probe conditioner to T1/PF5",
       "Tool-setter conditioner to PB7",
       "FAN4 to spindle-enable relay input",

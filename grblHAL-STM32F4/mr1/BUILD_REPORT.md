@@ -106,7 +106,7 @@ MR-1 profile audit: PASS
 - servo-axis hardware proof remains locked: 0 of 23 gates passed
 - pending spindle supervision profile: 8 permits locked, 10 reference registers unapproved
 - 32 KiB BTT bootloader preserved; application origin 0x08008000
-- 31 unique GPIO assignments; 15 unique EXTI inputs
+- 31 unique GPIO assignments; 15 unique EXTI inputs (validator wording at the time: 15 inputs are reserved on distinct EXTI line numbers, but the PG12-PG15 drive-fault inputs get no IRQ and are not read, so at most 11 EXTI lines are used; see `../FIRMWARE-KNOWN-ISSUES.md`)
 - X maximum command rate: 13546.7 steps/s
 - Y maximum command rate: 13546.7 steps/s
 - Z maximum command rate: 9031.1 steps/s

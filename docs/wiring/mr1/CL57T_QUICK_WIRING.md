@@ -1,14 +1,15 @@
 # CL57T V4.1 Quick Wiring and Switch Settings
 
-Peer document to `DM860T_QUICK_WIRING.md`, for the four STEPPERONLINE
+Peer document to `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md` (repository path), for the four STEPPERONLINE
 `1-CL57T-S30A-V41` closed-loop kits (`CL57T V4.1` driver +
 `23HS45-4204D-E1000` motor, 4.2 A/phase, 3.0 Nm).
 
-Drive electrical limits and switch tables come from the vendor manual archived at
-`_vendor_docs/CL57T-V41_user_manual.pdf`
-(SHA-256 `3eec9304c770ff68a5ccbd68f105789edfb35f5c91a9977531a30756a918d7da`,
-14 pages, Revision 4.1, May 2023), with a plain-text extraction beside it.
-Section numbers below refer to that manual. Motor ratings come from the motor datasheet; the selected settings and margins are project design choices, not claims of physical qualification.
+Drive electrical limits and switch tables come from the
+[STEPPERONLINE CL57T V4.1 manual](https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf). The reviewed copy had SHA-256
+`3eec9304c770ff68a5ccbd68f105789edfb35f5c91a9977531a30756a918d7da`, 14 pages,
+Revision 4.1, May 2023. Vendor manuals and extractions are linked from the
+publisher, not bundled in this repository; re-check the hash of any copy you
+download. Section numbers below refer to that manual. Motor ratings come from the motor datasheet; the selected settings and margins are project design choices, not claims of physical qualification.
 
 **The DM860T document does not apply to these drives.** The switch letters,
 the power terminals, and the polarity rule are all different. See
@@ -53,7 +54,9 @@ The two error directions are **not** symmetric:
 | `5V` | 24 V | **Destroys the input optocoupler** |
 
 **The MR-1 drives a 5 V common-anode interface**
-(`Inc/mr1_octopus_config.h:56`, `DM860T_QUICK_WIRING.md:55`), so:
+(`Inc/mr1_octopus_config.h`, the "DM860T V3.0-compatible timing, using 5 V
+common-anode interfaces" block; `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md`
+(repository path), "Four Identical Axis Harnesses"), so:
 
 > ### Set `S3` to **5V** on all four drives.
 
@@ -179,7 +182,8 @@ pigtail before connecting it; reverse polarity can damage the drive.
 | Recommended | **24 – 48 VDC** |
 | Typical points named | 24, 36, 48 VDC |
 
-The MR-1's existing motion bus is 36 VDC (`WIRING.md:82`), which is mid-window
+The MR-1's existing motion bus is 36 VDC (`WIRING.md`, "Power Domains" table,
+36 V motion row), which is mid-window
 and leaves 14 V of headroom to the ceiling. §4.2 requires that headroom
 explicitly, for *"power line voltage fluctuation and back-EMF voltage charge
 back"* during deceleration.
@@ -262,13 +266,15 @@ Never hot-unplug motor or encoder connectors to force an alarm.
 `Inc/mr1_octopus_config.h:49` enables `MOTOR_FAULT_ENABLE`, and the board map
 assigns per-axis fault inputs to PG12–PG15. **Those per-axis pins do not stop
 motion.** The only input that raises `Alarm_MotorFault` in grblHAL is the
-**PB1 aggregate** (`boards/btt_octopus_pro_mr1_map.h:223-225`,
-`WIRING.md:260-263`).
+**PB1 aggregate** (`boards/btt_octopus_pro_mr1_map.h:223-225`; `WIRING.md`,
+the "Only PB1 stops the machine" box under "Drive Fault Inputs").
 
 > Combine the four **conditioned healthy outputs** into the **PB1 aggregate**:
 > all healthy = low; any fault, open cable or lost power = high. Never chain
-> raw ALM/COMO terminals into a GPIO. Provide separate conditioned indications
-> on PG12–PG15 for `$pins` diagnostics; these do not stop motion.
+> raw ALM/COMO terminals into a GPIO. PG12–PG15 may be wired for a future
+> firmware candidate, but the current firmware does not read them: they neither
+> stop motion nor report which axis faulted. Qualify PB1 before any coupled
+> dual-Y motion.
 
 The rollback DM860T also provides fault outputs, although it has no motor
 encoder following-error feedback. CL57T feedback is at the motor shaft; it
@@ -287,7 +293,8 @@ does not detect a loose coupler or prove table position.
 
 `VCC` is supplied **by the drive**. Do not feed it from the interface board's
 isolated 5 V rail or from the 24 V field supply — that bonds two power domains
-the project deliberately keeps separate (`WIRING.md:97-98`).
+the project deliberately keeps separate (`WIRING.md`, "Power Domains" table,
+CL57T encoder row).
 
 The current WIRING and PIGTAIL documents include the encoder domain and its
 hot-plug prohibition. Do not add a bond from EGND to PE, another drive, or
@@ -336,6 +343,9 @@ No spindle or coupled-axis commissioning is authorized by this source guide.
 5. Use only the qualified PUL/DIR interface, with its input commands held in the
    documented inactive state. ENA remains unconnected. The ALM/COMO test circuit
    must be separately current-limited and characterized; no raw GPIO connection.
+   STEP/DIR are undefined while the MCU is in reset or the SD bootloader, and
+   with ENA unconnected the drive stays enabled: keep drive power off whenever
+   the controller is reset, rebooted or flashed (`INTERFACE_BOARD.md` A).
 6. Only after the preceding gates pass, energize the one secured test drive with
    a reachable verified hardware stop. Green steady/red off is the expected
    healthy indication, not proof that motion or machine wiring is safe.
@@ -361,4 +371,4 @@ No spindle or coupled-axis commissioning is authorized by this source guide.
 
 The switch-letter collision is the dangerous one: **`S2` means the voltage
 selector on a DM860T and the 8-bit DIP bank on a CL57T.** Anyone working from
-memory or from `DM860T_QUICK_WIRING.md` will reach for the wrong switch.
+memory or from `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md` (repository path) will reach for the wrong switch.

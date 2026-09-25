@@ -27,12 +27,14 @@
     end_block_text = ''
 
     global logical mr1_blocked
+    global logical mr1_approach_pending
     global numeric mr1_safe_machine_z
     global numeric mr1_peck_z
     global numeric mr1_next_peck_z
     global string mr1_block_reason
 
     mr1_blocked = FALSE
+    mr1_approach_pending = FALSE
     mr1_safe_machine_z = -2.0
 endp
 
@@ -58,6 +60,7 @@ endp
     {nb, 'G17'}
     {nb, 'G40 G49 G80'}
     {nb, 'G90 G53 G0 Z'mr1_safe_machine_z}
+    mr1_approach_pending = TRUE
 endp
 
 ;-------------------
@@ -127,8 +130,16 @@ endp
 
 @rapid_move
     if not mr1_blocked then
-        gcode = 0
-        {nb, ['G'gcode], [' X'xpos], [' Y'ypos], [' Z'zpos]}
+        if mr1_approach_pending then
+            ; After a machine retract or work-offset change, re-establish XY at
+            ; the retract height before any Z motion (validator APPROACH_Z_BEFORE_XY).
+            {nb, 'G0 X'xpos, ' Y'ypos}
+            {nb, 'G0 Z'zpos}
+            mr1_approach_pending = FALSE
+        else
+            gcode = 0
+            {nb, ['G'gcode], [' X'xpos], [' Y'ypos], [' Z'zpos]}
+        endif
     endif
 endp
 
@@ -189,6 +200,7 @@ endp
         if not mr1_blocked then
             gcode = 53 + home_number
             {nb, 'G'gcode}
+            mr1_approach_pending = TRUE
         endif
     endif
 endp
@@ -205,6 +217,7 @@ endp
         {nb, 'M9'}
         {nb, 'M5'}
         {nb, 'G90 G53 G0 Z'mr1_safe_machine_z}
+        mr1_approach_pending = TRUE
         {nb, 'G49'}
         {nb, 'T'tool_number}
         {nb, '(MANUAL CHANGE TO T'tool_number, ')'}
@@ -257,8 +270,14 @@ endp
 
 @mr1_drill_current_point
     if not mr1_blocked then
-        {nb, 'G0 Z'drill_upper_z}
-        {nb, 'G0 X'xpos, ' Y'ypos}
+        if mr1_approach_pending then
+            {nb, 'G0 X'xpos, ' Y'ypos}
+            {nb, 'G0 Z'drill_upper_z}
+            mr1_approach_pending = FALSE
+        else
+            {nb, 'G0 Z'drill_upper_z}
+            {nb, 'G0 X'xpos, ' Y'ypos}
+        endif
 
         if drill_type eq G83 then
             if down_step le 0 then

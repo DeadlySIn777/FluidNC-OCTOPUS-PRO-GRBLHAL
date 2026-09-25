@@ -6,7 +6,7 @@ export const WIRING_AUDIT = Object.freeze({
   reviewedOn: "2026-09-24",
   controller: "BIGTREETECH OCTOPUS PRO V1.1 / STM32F429",
   motion: "4 X CL57T V4.1 / 23HS45-4204D-E1000 / CLOSED LOOP",
-  commandInterface: "5V-BUFFERED SOCKET / 12-CHANNEL MOSFET OPEN-DRAIN / 5V COMMON-ANODE",
+  commandInterface: "5V-BUFFERED SOCKET / 8 ACTIVE + 4 RESERVED MOSFET OPEN-DRAIN / 5V COMMON-ANODE",
   firmwareMapParity: "31 OF 31",
   boardRevisionGate: "V1.1 / F429 / 8MHZ",
   upstreamTargetState: "UNTESTED / QUALIFICATION REQUIRED",
@@ -134,13 +134,13 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "cl57t_interface_scope",
     group: "BENCH",
     title: "COMMAND INTERFACE SCOPE TEST PASSED",
-    detail: "PUL/DIR pass 5 V level, polarity, pulse-width, setup/hold and power-transition tests into CL57T inputs. ENA remains unconnected by default; qualification is required before using the reserved enable interface.",
+    detail: "PUL/DIR pass 5 V level, polarity, pulse-width, setup/hold and power-transition tests into CL57T inputs. With drive power off, STEP/DIR are scoped during MCU reset, power-up and an SD-bootloader pass: they are undefined then and, with ENA unconnected, the drives stay enabled. Using the reserved ENA channel or a controller-health motion-power interlock is a design decision pending review; until then drive power is off whenever the controller resets or is flashed.",
   }),
   Object.freeze({
     id: "cl57t_alarm_truth",
     group: "BENCH",
     title: "DRIVER ALARM TRUTH TABLE PASSED",
-    detail: "Each raw ALM/COMO pair has its own isolated, current-limited conditioner. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Ready, alarm, power loss and open cable pass on every drive; PG12-PG15 are diagnostics only. Never series-chain raw alarm transistors or hot-unplug motor/encoder cables to create a fault.",
+    detail: "Each raw ALM/COMO pair has its own isolated, current-limited conditioner. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Ready, alarm, power loss and open cable pass on every drive, and PB1 stops motion before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware. Never series-chain raw alarm transistors or hot-unplug motor/encoder cables to create a fault.",
   }),
   Object.freeze({
     id: "hw399_identity",
@@ -164,13 +164,13 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "probe_truth",
     group: "BENCH",
     title: "PROBE AND SETTER TRUTH TABLE PASSED",
-    detail: "Idle, triggered, unplugged, field-power-loss, repeat, and cable-flex states were recorded for both sensors.",
+    detail: "Idle, triggered, unplugged, field-power-loss, repeat, and cable-flex states were recorded for both sensors. The circuit is not fail-safe: unplugged or lost field power reads untriggered. Before every probing cycle, deflect the stylus or press the setter and confirm Pn:P appears and clears; the protected workflow rejects an already-triggered input but does not run this test.",
   }),
   Object.freeze({
     id: "safety_chain",
     group: "SAFETY",
     title: "HARDWIRED SAFETY CHAIN TESTED",
-    detail: "Dual-channel E-stop and safety relay remove motion power and spindle permission without software.",
+    detail: "Dual-channel E-stop and safety relay remove motion power and spindle-servo energy without software, per a reviewed design: mains contactor and/or certified STO for the spindle servo (SON dropout is not a stop), Z-drop analysis and coolant in the stop chain. The PF3 monitor contact is closed while the relay is energized (not an NC auxiliary); pressing E-stop and unplugging the monitor wire each read Pn:E. Never invert $14 to suit a wrong contact.",
   }),
   Object.freeze({
     id: "protective_earth",
@@ -217,7 +217,7 @@ export const WIRING_INSTALL_STEPS = Object.freeze([
     number: "03",
     state: "exact",
     title: "BUILD SAFETY AND PE",
-    detail: "A qualified person completes mains protection, protective earth, dual-channel E-stop, safety relay, and contactors.",
+    detail: "A qualified person designs and reviews mains protection, protective earth, dual-channel E-stop, safety relay and contactors. Blocking HOLD before energizing: the reviewed stop design must remove spindle-servo energy (mains contactor and/or certified STO; SON dropout is not a stop), remove 36 V motion power with a Z-drop analysis, put coolant in the stop chain and include a terminal schedule.",
     action: "SOFTWARE IS MONITOR ONLY",
   }),
   Object.freeze({
@@ -245,7 +245,7 @@ export const WIRING_INSTALL_STEPS = Object.freeze([
     number: "07",
     state: "exact",
     title: "COPY X TO YL, Z, AND YR",
-    detail: "Copy the proved CL57T command, encoder and polarized power wiring. Verify both Y directions and matching pulse filters before coupled operation.",
+    detail: "Copy the proved CL57T command, encoder and polarized power wiring. Verify both Y directions, matching pulse filters and the PB1 aggregate fault stop on every drive before coupled operation; PB1 is the only drive-fault stop.",
     action: "COUPLERS DISCONNECTED",
   }),
   Object.freeze({
@@ -279,7 +279,7 @@ export const WIRING_INSTALL_STEPS = Object.freeze([
 ]);
 
 export const OCTOPUS_DRIVER_SOCKET_PINOUT = Object.freeze([
-  Object.freeze({ pin: 1, signal: "EN", disposition: "ROUTE" }),
+  Object.freeze({ pin: 1, signal: "EN", disposition: "RESERVED" }),
   Object.freeze({ pin: 2, signal: "SDI / MS0", disposition: "NC" }),
   Object.freeze({ pin: 3, signal: "SCK / MS1", disposition: "NC" }),
   Object.freeze({ pin: 4, signal: "CS / MS2", disposition: "NC" }),
@@ -306,8 +306,8 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     state: "meter",
     item: "18-POSITION (2x9) DRIVER-SOCKET ADAPTER",
     boardEnd: "MOTOR0 / MOTOR1 / MOTOR2 / MOTOR3",
-    populate: "PIN 1 EN / 7 STEP / 8 DIR / 9 GND",
-    detail: "These are schematic contact numbers, not a mating-face cavity map. Prove physical pin 1, viewing direction, keying and de-energized continuity. A 2x8 StepStick blank is acceptable only when it is keyed to pins 1-16 and mechanically retained. Leave VCC_IO, VM, phases, mode, and DIAG unconnected.",
+    populate: "7 STEP / 8 DIR / 9 GND ONLY / PIN 1 EN RESERVED, NOT CONNECTED",
+    detail: "These are schematic contact numbers, not a mating-face cavity map. Prove physical pin 1, viewing direction, keying and de-energized continuity. A 2x8 adapter candidate remains on HOLD until its complete contact map, orientation, clearance, keying and retention are proved on the actual 18-contact socket; numbering alone does not establish fit or a row offset. Leave EN (reserved), VCC_IO, VM, phases, mode, and DIAG unconnected.",
   }),
   Object.freeze({
     id: "stop_housings",
@@ -334,7 +334,7 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     item: "5-POSITION 2.54 MM KEYED HOUSING",
     boardEnd: "PB7 TOOL-SETTER HEADER / BOARD SILK: BLTOUCH",
     populate: "PB7 + ITS ADJACENT GND ONLY",
-    detail: "This is only a controller housing, not a BLTouch device. PB6 and 5 V remain empty; the firmware plugin is forced off.",
+    detail: "This is only a controller housing, not a BLTouch device. PB6 and 5 V remain empty; the firmware plugin is forced off. PB7 has no board pull-up or RC; the interface board supplies them.",
   }),
   Object.freeze({
     id: "power_detect_housing",
@@ -352,7 +352,7 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     item: "2x5 2.54 MM KEYED IDC BREAKOUT",
     boardEnd: "EXP2",
     populate: "PB1 / PB2 / GND ONLY",
-    detail: "Keep this cable short inside the cabinet. Verify ribbon orientation and insulate every unused conductor.",
+    detail: "Keep this cable short inside the cabinet. Verify ribbon orientation and insulate every unused conductor; EXP2 also carries the MCU reset line. PB1/PB2 have no board pull-up or RC: fit them, a series resistor and a TVS on the interface board. Guard or remove onboard SW2, which shares PB2 (cycle start).",
   }),
   Object.freeze({
     id: "hw399_logic_power",

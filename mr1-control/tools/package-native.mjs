@@ -4,13 +4,14 @@ import { resolve, dirname, relative, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { verifyNativeFirmware } from '../service/native-firmware.mjs';
+import { isOutsideDirectory } from './path-containment.mjs';
 
 const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 await verifyNativeFirmware(join(app, 'dist'));
 const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: app, encoding: 'utf8' }).trim();
 const sourceDirty = execFileSync('git', ['status', '--porcelain'], { cwd: app, encoding: 'utf8' }).trim().length > 0;
 const destination = process.argv[2] && resolve(process.argv[2]);
-if (!destination || destination === app || relative(app, destination).startsWith('..') === false) throw new Error('Specify a new output directory outside the source app.');
+if (!destination || !isOutsideDirectory(app, destination)) throw new Error('Specify a new output directory outside the source app.');
 // Never delete or replace an existing package; use a new directory per build.
 await mkdir(destination);
 for (const name of ['dist', 'src', 'service', 'post-processors']) await cp(join(app, name), join(destination, name), { recursive: true });
@@ -30,7 +31,7 @@ async function copyDependency(name, from) {
   }
   const manifest = JSON.parse(await readFile(join(directory, 'package.json'), 'utf8'));
   const installedPath = relative(join(app, 'node_modules'), directory);
-  if (installedPath.startsWith('..')) throw new Error(`Dependency resolved outside the installed app tree: ${name}`);
+  if (isOutsideDirectory(join(app, 'node_modules'), directory)) throw new Error(`Dependency resolved outside the installed app tree: ${name}`);
   const key = installedPath.replaceAll('\\', '/');
   if (copied.has(key)) return;
   copied.set(key, manifest.version);

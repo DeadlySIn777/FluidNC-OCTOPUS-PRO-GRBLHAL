@@ -68,6 +68,28 @@ signal and its driver-socket EN/STEP/DIR contact. Required channel behavior:
 | Low | Off | Pulled toward +5 V internally/through input | Off |
 | High | On | Near 0 V | On |
 | Octopus unpowered | Intended off by gate pulldown; verify rail decay/backfeed | Intended inactive; measure | Not yet qualified |
+| Octopus powered, MCU in reset or SD bootloader | **Undefined** - see below | Undefined | Not qualified; may see spurious pulses or direction changes |
+
+**STEP/DIR float during MCU reset and the bootloader.** On the v1.1 schematic
+the `MC74HCT125` buffers have OE tied low (always driving) and nothing pulls
+STEP or DIR while the MCU pins are high-impedance, so the buffered socket level
+is undefined. The 100 kohm gate pulldown cannot override a driven buffer
+output. Only the socket EN lines have 10 kohm pull-ups, and EN is not connected
+here, so the CL57T drives stay enabled through a controller reset, reboot,
+brown-out or SD-bootloader pass.
+
+- **Commissioning check:** with drive (36 V) power off and the interface
+  loaded, scope STEP and DIR at the socket and at each interface output while
+  the MCU is held in reset, during power-up, and through an SD-bootloader pass.
+  Record every pulse or level change.
+- **DESIGN DECISION - pending review.** Options: (a) use the reserved ENA
+  channel so a drive is disabled whenever the controller is not actively
+  enabling it - this needs its own polarity analysis (including the socket EN
+  pull-ups during reset), the 200 ms ENA-to-DIR timing and power-loss tests; or
+  (b) interlock motion power to a controller-health signal so the drives are
+  unpowered while the controller is in reset or the bootloader. Until one is
+  reviewed and qualified, EN stays reserved and drive power is off whenever the
+  controller is reset, rebooted or flashed.
 
 Candidate circuit; the table is required behavior, not measured performance:
 
@@ -167,9 +189,11 @@ outputs into the PB1 aggregate input. Do not series-chain raw ALM/COMO outputs
 into a GPIO. PB1 is the only input that raises
 `Alarm_MotorFault` in the compiled firmware - see the verification box in
 `WIRING.md` under "Drive Fault Inputs". Per-axis outputs to PG12-PG15 are
-parallel indication for `$pins` and carry no protective duty. Budget the
-channel count accordingly: four field channels in, one series result to PB1,
-four independent indications to PG12-PG15.
+wiring for a future firmware candidate: the current firmware does not read
+them (`$pins` lists only their assignment), so they carry no protective duty
+and give no per-axis indication. Budget the channel count accordingly: four
+field channels in, one series result to PB1, and four optional per-axis outputs
+to PG12-PG15. Qualify PB1 before any coupled dual-Y motion.
 
 Each channel requires:
 
@@ -191,9 +215,9 @@ Field connector:
 1 ALM+ / ALM   2 ALM- / COMO   3 DRIVE_LOGIC_V (optional, protected)   4 shield
 ```
 
-Per-axis indication destinations are PG12, PG13, PG14, and PG15. The separately
-qualified protective aggregate goes to PB1; none of these four indication
-connections substitutes for it.
+Optional per-axis destinations are PG12, PG13, PG14, and PG15 (not read by the
+current firmware). The separately qualified protective aggregate goes to PB1;
+none of these four connections substitutes for it.
 
 ### C. Stock Home Inputs
 
@@ -263,6 +287,30 @@ CTRL_0V ------- opto emitter
 Choose `RLED` for the measured signal sink current and optocoupler CTR at the
 panel's maximum temperature. A Schmitt buffer or a high-CTR logic optocoupler is
 preferred. The controller side must pull PF5/PB7 low on sensor actuation.
+PF5 (T1) has an onboard pull-up/RC; PB7 has neither, so the interface board
+supplies PB7's 3.3 V pull-up and RC filter (section E).
+
+**Not fail-safe.** The optocoupler conducts only on trigger. A lost isolated
+5 V supply, a broken sensor wire, an unplugged connector or a failed
+optocoupler all read "not triggered", so a dead probe looks healthy and a probing
+move continues into the part. The pinned production firmware and its
+66-setting profile fix this polarity (active-low with pull-up, `$6=3`); it
+cannot change now.
+
+- **Required before every probing cycle** (touch probe and tool setter): with
+  motion stopped, select the sensor (`G65P5Q0` or `G65P5Q1`), deflect the stylus
+  or press the setter, and confirm the status report shows `Pn:P`; confirm it
+  clears on release. No `P`, no probing.
+- The Windows app's protected probing workflow
+  (`mr1-control/service/native-workflows.mjs`) refuses to start or continue
+  when the selected probe already reports triggered outside an expected contact
+  (a stuck or shorted input). It also fails a search that ends without contact.
+  It does **not** perform this trigger test and cannot detect an open (dead)
+  probe circuit before the move.
+- Future option for the next firmware candidate: an NC / idle-lit circuit whose
+  optocoupler conducts while the sensor is idle and healthy, so trigger, broken
+  wire and lost field power all read the same state. It needs the opposite
+  probe polarity in firmware and its own qualification.
 
 Per-channel provisions:
 
@@ -275,21 +323,45 @@ Per-channel provisions:
 
 ### E. Operator Inputs
 
-P1 may route the simple dry contacts directly to their Octopus signal/GND
-headers through keyed connectors. Add external RC or optocouplers only after
-checking that they do not conflict with the BTT onboard pullups and 0.1 uF
-filters.
+Do not run operator, door or monitor contacts straight from the field connector
+to the Octopus headers. Every field input gets the same connector protection
+the probe channels require (see "Layout and EMC Rules"): a series resistor and a
+TVS at the field connector, before the trace enters the board.
+
+Onboard conditioning differs by input on the BTT v1.1 schematic:
+
+| Octopus input | Onboard pull-up / RC | Required on the interface board |
+| --- | --- | --- |
+| PC0 (PWR-DET), PF3 (TB), PF4 (T0) | Present | Series resistor + TVS; positions for pull-up/RC, sized together with the onboard network |
+| PB1, PB2 (EXP2) | **None** | Series resistor + TVS + external pull-up to Octopus 3.3 V + RC filter |
+| PB7 (tool-setter header) | **None** | Same as PB1/PB2 (a pull-up proved in the conditioner output stage may replace the separate one) |
+
+Component values are HOLD until the bench design. Pull-ups go to the Octopus
+3.3 V logic rail only, never 5 V. The MCU's weak internal pull-up is not an
+adequate termination for a cabinet cable.
+
+**PB2 shares its net with the onboard `SW2` button.** On the BTT v1.1 schematic
+PB2 is net `BTN_EN1`, which also runs to the onboard `SW2` ("BOOT1") pushbutton
+to GND, with no board pull-up or filter. The firmware debounces only the door
+and reset inputs. Pressing `SW2` is therefore a cycle start: during a feed hold
+it resumes motion. Before commissioning, physically guard or disable `SW2`
+(fixed cover, or remove the switch) and fit the external pull-up and RC on PB2.
+EXP2 also carries the MCU reset line (`RST`/NRST, EXP2 pin 8) beside PB1/PB2:
+keep the breakout keyed, insulate unused conductors and never probe EXP2 with
+power applied.
 
 | Port | Octopus destination | Contact |
 | --- | --- | --- |
 | DOOR | PC0 PWR-DET/GND | NC |
-| ESTOP_MON | PF3 TB/GND | NC safety-relay auxiliary |
+| ESTOP_MON | PF3 TB/GND | Safety-relay contact closed while energized, open on E-stop/trip (not an NC auxiliary); terminal HOLD |
 | HOLD | PF4 T0/GND | NC |
 | START | PB2 EXP2/GND | NO guarded |
 | CAB_FAULT | PB1 EXP2/GND | Conditioned healthy-low |
 
 Do not route the safety relay's two E-stop channels through this PCB. Only its
-isolated auxiliary monitor contact belongs here.
+isolated monitor contact belongs here: closed while the relay is energized and
+open on E-stop, trip or a broken wire (`WIRING.md`, "Operator and
+Safety-Monitor Inputs"). Never invert `$14` to suit a different contact.
 
 ### F. Spindle Interface
 
@@ -325,7 +397,11 @@ Analog requirements:
 - No shared return between `ANALOG_COM` and Octopus logic.
 
 The spindle-enable contact must be in series with the hardwired safety permit.
-Neither contact alone may defeat the other.
+Neither contact alone may defeat the other. This contact only drops `SON`; it
+is not the E-stop function for the 240 VAC servo. Removing servo energy (mains
+contactor and/or certified safe-torque-off) belongs to the reviewed cabinet stop
+design, which is a blocking HOLD before energizing - see `WIRING.md`, "Scope
+and Safety Boundary".
 
 ### F2. Final Digital Servo Interposer - Locked
 

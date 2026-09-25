@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import {
   MAX_FISSION_SOURCE_BYTES,
@@ -84,4 +88,33 @@ test("a disabled external path reports unavailable without loading code", () => 
   const status = createFissionProcessor({ rootPath: false }).status();
   assert.equal(status.available, false);
   assert.equal(status.reason, "disabled");
+});
+
+test("pinned external source is re-verified before every load and use", async (t) => {
+  const root = await mkdtemp(join(tmpdir(), "mr1-fission-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, "src"));
+  const optimizer = "module.exports = class { optimize(source) { globalThis.mr1FissionLoads = (globalThis.mr1FissionLoads ?? 0) + 1; return { content: source, stats: {}, validated: true, blocked: false }; } };\n";
+  const parser = "module.exports = {};\n";
+  await writeFile(join(root, "package.json"), JSON.stringify({ name: "fusionbypass", version: "test" }));
+  await writeFile(join(root, "LICENSE"), "test");
+  await writeFile(join(root, "src", "optimizer.js"), optimizer);
+  await writeFile(join(root, "src", "gcode-parser.js"), parser);
+  const sha = (text) => createHash("sha256").update(text).digest("hex").toUpperCase();
+  const locked = (error) => error.code === "FISSION_UNAVAILABLE" && error.statusCode === 503;
+
+  // A status read before the change must not be trusted when the code is first loaded.
+  const early = createFissionProcessor({ rootPath: root, expectedHashes: { optimizer: sha(optimizer), parser: sha(parser) } });
+  assert.equal(early.status().available, true);
+  await writeFile(join(root, "src", "gcode-parser.js"), "module.exports = { changed: true };\n");
+  await assert.rejects(early.optimize({ source: "G0 Z5", options: verifiedOptions }), locked);
+  assert.equal(globalThis.mr1FissionLoads, undefined, "changed code was never run");
+  await writeFile(join(root, "src", "gcode-parser.js"), parser);
+
+  // Once loaded, a later on-disk change still locks processing.
+  const processor = createFissionProcessor({ rootPath: root, expectedHashes: { optimizer: sha(optimizer), parser: sha(parser) } });
+  assert.equal((await processor.optimize({ source: "G0 Z5", options: verifiedOptions })).validated, true);
+  await writeFile(join(root, "src", "optimizer.js"), optimizer.replace("stats: {}", "stats: { changed: 1 }"));
+  await assert.rejects(processor.optimize({ source: "G0 Z5", options: verifiedOptions }), locked);
+  assert.equal(globalThis.mr1FissionLoads, 1);
 });

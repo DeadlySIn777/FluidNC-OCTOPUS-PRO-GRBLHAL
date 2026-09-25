@@ -51,13 +51,15 @@ Do not apply motion power until every item below is true.
 
 The BTT v1.1 schematic defines an 18-position `2x9` socket footprint. Use a
 supported full-footprint adapter or the permanent interface board. A `2x8`
-StepStick blank may use pins 1-16 only when pin 1 is keyed and the adapter is
-mechanically retained; pins 17/18 then remain empty. Do not hang loose Dupont
-wires from a driver socket. Do not install plug-in motor drivers in MOTOR0
+candidate is on HOLD until its complete contact map, actual orientation,
+clearance, keying and retention are proved on the 18-contact socket; schematic
+contact numbers are not physical row positions, so do not infer that fit from
+numbering alone. Do not hang loose Dupont wires from a driver socket. Do not install plug-in motor drivers in MOTOR0
 through MOTOR3, and do not use the nearby motor screw terminals.
 
 Route only socket pin 1 `EN`, pin 7 `STEP`, pin 8 `DIR`, and pin 9 `GND`.
-Leave all mode, reset, sleep, I/O power, motor phase, motor voltage, second
+This rollback set uses the ENA channel that the CL57T baseline keeps reserved;
+qualify that channel separately before use (see `WIRING.md`). Leave all mode, reset, sleep, I/O power, motor phase, motor voltage, second
 ground, and DIAG contacts unconnected.
 
 For every axis, terminate the field cable in this exact order:

@@ -6,9 +6,10 @@ import { EMCO_LATHE_NC_CONTRACT, MR1_NC_CONTRACT, validateMr1Nc } from "./nc-saf
 // MR-1 NC program that must pass validateMr1Nc with zero blockers. All
 // programs are metric (G21), absolute (G90), XY-plane (G17), with incremental
 // arc centers (G91.1), a manual tool stop (Tn + M0), and qualified G53 Z
-// retracts at the start, before tool changes, and before M30. Canned cycles
-// (G81-G89) are outside the MR-1 contract, so drilling is emitted as expanded
-// G0/G1 motion.
+// retracts at the start, before tool changes, and before M30. After every
+// retract or work-offset change the first move is XY at the retract height;
+// Z descends only once XY is known. Canned cycles (G81-G89) are outside the
+// MR-1 contract, so drilling is emitted as expanded G0/G1 motion.
 
 const MAX_XY_FEED = MR1_NC_CONTRACT.maximumLinearFeedMmPerMinute;
 const MAX_Z_FEED = MR1_NC_CONTRACT.maximumZFeedMmPerMinute;
@@ -70,8 +71,8 @@ function commonSetup(params, caps = MILL_CAPS) {
 }
 
 // Lathe cycles share these controls. Feeds are mm/min (G94) and stay under
-// the provisional EMCO lathe contract; diameters in the UI, radii in the
-// emitted X words. "Tool diameter" is repurposed as the insert/tool width
+// the provisional EMCO lathe contract; diameters in the UI and, under G7, in
+// the emitted X words. "Tool diameter" is repurposed as the insert/tool width
 // where a cycle needs it.
 const LATHE_COMMON_PARAMS = [
   { key: "tool", label: "Tool number", unit: "T", value: 1, min: 1, max: 999, step: 1 },
@@ -99,17 +100,95 @@ function latheSetup(params) {
   return setup;
 }
 
+// Helical entries: an orbit under 5% of the tool diameter, or a ramp steeper
+// than 10 degrees, is a plunge in disguise.
+const MIN_HELIX_RADIUS_FRACTION = 0.05;
+const MAX_HELIX_RAMP_DEGREES = 10;
+
+function minimumHelixRadius(setup) {
+  return Math.max(0.05, setup.toolDiameter * MIN_HELIX_RADIUS_FRACTION);
+}
+
+function maximumHelixPitch(radius) {
+  return 2 * Math.PI * radius * Math.tan((MAX_HELIX_RAMP_DEGREES * Math.PI) / 180);
+}
+
+function rounded(value) {
+  return Number(fmt(value));
+}
+
+// Feed for helical arcs, capped so the Z component of every arc as emitted
+// (after 0.001 mm rounding) stays within the plunge feed. Each arc is
+// { start, end, center, clockwise } in exact coordinates.
+function helixFeed(setup, arcs) {
+  let feed = setup.xyFeed;
+  for (const { start, end, center, clockwise } of arcs) {
+    const i = rounded(center.x - start.x);
+    const j = rounded(center.y - start.y);
+    const centerX = rounded(start.x) + i;
+    const centerY = rounded(start.y) + j;
+    let sweep = Math.atan2(rounded(end.y) - centerY, rounded(end.x) - centerX) - Math.atan2(-j, -i);
+    if (!clockwise && sweep <= 1e-9) sweep += 2 * Math.PI;
+    if (clockwise && sweep >= -1e-9) sweep -= 2 * Math.PI;
+    const dz = Math.abs(rounded(end.z) - rounded(start.z));
+    if (dz < 1e-9) continue;
+    const capped = (setup.zFeed * Math.hypot(Math.hypot(i, j) * sweep, dz)) / dz;
+    feed = Math.min(feed, Math.floor(capped * 0.999 * 1000) / 1000);
+  }
+  return feed;
+}
+
+function emitHelix(builder, arcs) {
+  const feed = helixFeed(builder.setup, arcs);
+  for (const { start, end, center, clockwise } of arcs) {
+    builder.arc(clockwise, end.x, end.y, center.x - start.x, center.y - start.y, end.z, feed);
+  }
+}
+
 // Helical descent as paired half arcs. The tool must already sit at
 // (centerX + radius, centerY) at fromZ; it ends at the same XY at toZ.
 function helixDescend(builder, centerX, centerY, radius, fromZ, toZ, pitchPerRev) {
+  const center = { x: centerX, y: centerY };
+  const east = (z) => ({ x: centerX + radius, y: centerY, z });
+  const west = (z) => ({ x: centerX - radius, y: centerY, z });
   let z = fromZ;
   while (z > toZ + 1e-9) {
     const next = Math.max(toZ, z - pitchPerRev);
-    builder.arc(false, centerX - radius, centerY, -radius, 0, z + (next - z) / 2);
-    builder.arc(false, centerX + radius, centerY, radius, 0, next);
+    const middle = z + (next - z) / 2;
+    emitHelix(builder, [
+      { start: east(z), end: west(middle), center, clockwise: false },
+      { start: west(middle), end: east(next), center, clockwise: false },
+    ]);
     z = next;
   }
 }
+
+// Constant-lead thread helix from the +X point at fromZ to toZ. The sweep is
+// split into equal arcs of at most 180 degrees, so every arc advances Z by
+// exactly lead x sweep / 360 degrees and no degenerate sliver arc (which
+// grblHAL could read as a full circle) is ever emitted. Returns the end
+// angle in radians.
+function threadHelix(builder, clockwise, centerX, centerY, radius, fromZ, toZ, lead) {
+  const totalSweep = (Math.abs(toZ - fromZ) / lead) * 2 * Math.PI;
+  const count = Math.max(1, Math.ceil(totalSweep / Math.PI - 1e-9));
+  const step = (clockwise ? -totalSweep : totalSweep) / count;
+  const center = { x: centerX, y: centerY };
+  const at = (index) => ({
+    x: centerX + radius * Math.cos(step * index),
+    y: centerY + radius * Math.sin(step * index),
+    z: fromZ + ((toZ - fromZ) * index) / count,
+  });
+  const arcs = [];
+  for (let index = 1; index <= count; index += 1) arcs.push({ start: at(index - 1), end: at(index), center, clockwise });
+  emitHelix(builder, arcs);
+  return step * count;
+}
+
+// ISO 68-1 metric 60-degree profile (H = 0.866025 P): internal minor D1 =
+// D - 1.082532 P; external root d3 = d - 1.226869 P.
+const ISO_INTERNAL_MINOR_FACTOR = 1.082532;
+const ISO_EXTERNAL_ROOT_FACTOR = 1.226869;
+const THREAD_TOOL_NOTE = "ISO 60 DEG METRIC PROFILE, SINGLE-POINT TOOTH - TOOL DIAMETER IS THE TOOTH TIP DIAMETER";
 
 // 45-degree pointed chamfer tool with its tip at Z = -tipOffset: the cone
 // radius at the part's top surface is tipOffset, so the produced chamfer
@@ -141,8 +220,10 @@ class ProgramBuilder {
   constructor(title, setup, { plane = "G17", latheMode = null, safeZ = SAFE_MACHINE_Z } = {}) {
     this.setup = setup;
     this.safeZ = safeZ;
+    // Last commanded work position as emitted words; null = unknown.
+    this.at = { x: null, y: null, z: null };
     this.lines = [
-      `(MR1 CONVERSATIONAL - ${title.toUpperCase()})`,
+      `(MR1 CONVERSATIONAL - ${sanitizeComment(title)})`,
       `G21 G90 G94 ${plane}${latheMode ? ` ${latheMode}` : ""} G40 G49 G80`,
       "G91.1",
       `G53 G0 Z${fmt(safeZ)}`,
@@ -154,8 +235,24 @@ class ProgramBuilder {
     if (setup.coolant) this.lines.push("M8");
   }
 
+  track(x, y, z) {
+    if (x !== null) this.at.x = fmt(x);
+    if (y !== null) this.at.y = fmt(y);
+    if (z !== null) this.at.z = fmt(z);
+  }
+
   rapid(x, y) {
+    if (this.at.x === fmt(x) && this.at.y === fmt(y)) return;
     this.lines.push(`G0 X${fmt(x)} Y${fmt(y)}`);
+    this.track(x, y, null);
+  }
+
+  // After a machine retract, tool change or work-offset change the work Z is
+  // unknown: position XY at the retract height first, then descend to
+  // clearance. Every cycle opens with this.
+  approach(x, y) {
+    this.rapid(x, y);
+    this.rapidZ(this.setup.clearZ);
   }
 
   // Lathe helpers: XZ plane, no Y words ever.
@@ -166,35 +263,50 @@ class ProgramBuilder {
   // here - never in a cycle.
   latheRapid(radius, z) {
     this.lines.push(`G0 X${fmt(radius * 2)} Z${fmt(z)}`);
+    this.track(radius * 2, null, z);
   }
 
   latheRapidX(radius) {
     this.lines.push(`G0 X${fmt(radius * 2)}`);
+    this.track(radius * 2, null, null);
+  }
+
+  // Lathe counterpart of approach(): X at the park height, then Z clearance.
+  latheApproach(radius) {
+    this.latheRapidX(radius);
+    this.rapidZ(this.setup.clearZ);
   }
 
   latheCut(radius, z) {
     this.lines.push(`G1 X${fmt(radius * 2)} Z${fmt(z)} F${fmt(this.setup.xyFeed)}`);
+    this.track(radius * 2, null, z);
   }
 
   latheCutX(radius) {
     this.lines.push(`G1 X${fmt(radius * 2)} F${fmt(this.setup.xyFeed)}`);
+    this.track(radius * 2, null, null);
   }
 
   latheCutZ(z) {
     this.lines.push(`G1 Z${fmt(z)} F${fmt(this.setup.xyFeed)}`);
+    this.track(null, null, z);
   }
 
   rapidZ(z) {
+    if (this.at.z === fmt(z)) return;
     this.lines.push(`G0 Z${fmt(z)}`);
+    this.track(null, null, z);
   }
 
   plunge(z) {
     this.lines.push(`G1 Z${fmt(z)} F${fmt(this.setup.zFeed)}`);
+    this.track(null, null, z);
   }
 
   cut(x, y, z = null) {
     const zWord = z === null ? "" : ` Z${fmt(z)}`;
     this.lines.push(`G1 X${fmt(x)} Y${fmt(y)}${zWord} F${fmt(this.setup.xyFeed)}`);
+    this.track(x, y, z);
   }
 
   arc(clockwise, x, y, i, j, z = null, feed = null) {
@@ -202,6 +314,7 @@ class ProgramBuilder {
     this.lines.push(
       `${clockwise ? "G2" : "G3"} X${fmt(x)} Y${fmt(y)}${zWord} I${fmt(i)} J${fmt(j)} F${fmt(feed ?? this.setup.xyFeed)}`,
     );
+    this.track(x, y, z);
   }
 
   fullCircle(clockwise, centerX, centerY, radius) {
@@ -241,7 +354,7 @@ class ProgramBuilder {
   }
 
   comment(text) {
-    this.lines.push(`(${String(text).replace(/[()]/g, "")})`);
+    this.lines.push(`(${sanitizeComment(text)})`);
   }
 
   finish() {
@@ -350,11 +463,12 @@ function rectanglePerimeter(centerX, centerY, width, height) {
   ];
 }
 
-function traceRectangle(builder, corners, z) {
-  builder.cut(corners[1].x, corners[1].y, z);
-  builder.cut(corners[2].x, corners[2].y);
-  builder.cut(corners[3].x, corners[3].y);
-  builder.cut(corners[0].x, corners[0].y);
+// Climb milling with an M3 spindle, like the circular cycles: counter-
+// clockwise inside pockets and windows, clockwise around an outside boss.
+function traceRectangle(builder, corners, z, outside = false) {
+  const order = outside ? [3, 2, 1, 0] : [1, 2, 3, 0];
+  builder.cut(corners[order[0]].x, corners[order[0]].y, z);
+  for (const index of order.slice(1)) builder.cut(corners[index].x, corners[index].y);
 }
 
 // --- Cycle definitions -----------------------------------------------------
@@ -391,6 +505,7 @@ export const CONVERSATIONAL_CYCLES = [
       const bottom = centerY - height / 2;
       const top = centerY + height / 2;
       const builder = new ProgramBuilder(this.title, setup);
+      builder.approach(left, bottom);
       for (const z of depthPasses(depth, stepDown)) {
         builder.rapidZ(setup.clearZ);
         builder.rapid(left, bottom);
@@ -434,6 +549,7 @@ export const CONVERSATIONAL_CYCLES = [
       const stepOver = (setup.toolDiameter * stepOverPercent) / 100;
       const outerRadius = diameter / 2 + setup.toolDiameter * 0.55;
       const builder = new ProgramBuilder(this.title, setup);
+      builder.approach(centerX + outerRadius, centerY);
       for (const z of depthPasses(depth, stepDown)) {
         builder.rapidZ(setup.clearZ);
         builder.rapid(centerX + outerRadius, centerY);
@@ -485,8 +601,7 @@ export const CONVERSATIONAL_CYCLES = [
       const wallH = height - setup.toolDiameter;
       const rampHalf = Math.min(wallW / 2, setup.toolDiameter * 2);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX - rampHalf, centerY);
+      builder.approach(centerX - rampHalf, centerY);
       builder.rapidZ(0.5);
       let previousLevel = 0.5;
       for (const z of depthPasses(depth, stepDown)) {
@@ -541,15 +656,23 @@ export const CONVERSATIONAL_CYCLES = [
       const stepOver = (setup.toolDiameter * stepOverPercent) / 100;
       const wallRadius = (diameter - setup.toolDiameter) / 2;
       const entryRadius = Math.min(wallRadius, stepOver);
+      const minimumRadius = minimumHelixRadius(setup);
+      if (entryRadius < minimumRadius - 1e-9) {
+        throw new CycleParameterError(
+          `Helical entry radius ${fmt(entryRadius)} mm is below the ${fmt(minimumRadius)} mm minimum (5% of the tool diameter); enlarge the pocket or the stepover.`,
+          entryRadius === wallRadius ? "diameter" : "stepOverPercent",
+        );
+      }
+      // Descend each level in as many turns as the ramp-angle limit needs.
+      const helixPitch = Math.min(stepDown, maximumHelixPitch(entryRadius));
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + entryRadius, centerY);
+      builder.approach(centerX + entryRadius, centerY);
       builder.rapidZ(0.5);
       builder.plunge(0);
       let previousLevel = 0;
       for (const z of depthPasses(depth, stepDown)) {
         // Helical entry at a small radius instead of a straight plunge.
-        helixDescend(builder, centerX, centerY, entryRadius, previousLevel, z, stepDown);
+        helixDescend(builder, centerX, centerY, entryRadius, previousLevel, z, helixPitch);
         builder.fullCircle(false, centerX, centerY, entryRadius);
         const radii = [];
         for (let radius = entryRadius + stepOver; radius < wallRadius; radius += stepOver) radii.push(radius);
@@ -590,18 +713,25 @@ export const CONVERSATIONAL_CYCLES = [
         throw new CycleParameterError("Tool diameter must be smaller than the hole diameter.", "toolDiameter");
       }
       const radius = (diameter - setup.toolDiameter) / 2;
+      const minimumRadius = minimumHelixRadius(setup);
+      if (radius < minimumRadius - 1e-9) {
+        throw new CycleParameterError(
+          `Hole diameter must exceed the tool diameter by at least ${fmt(2 * minimumRadius)} mm for a helical entry (5% of the tool diameter per side).`,
+          "diameter",
+        );
+      }
+      const maximumPitch = maximumHelixPitch(radius);
+      if (helixPitch > maximumPitch + 1e-9) {
+        throw new CycleParameterError(
+          `Helix pitch may be at most ${fmt(Math.floor(maximumPitch * 1000) / 1000)} mm on a ${fmt(radius)} mm helix radius (${MAX_HELIX_RAMP_DEGREES} degree ramp).`,
+          "helixPitch",
+        );
+      }
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + radius, centerY);
+      builder.approach(centerX + radius, centerY);
       builder.rapidZ(1);
       builder.plunge(0);
-      let z = 0;
-      while (z > -depth + 1e-9) {
-        const next = Math.max(-depth, z - helixPitch);
-        builder.arc(false, centerX - radius, centerY, -radius, 0, (z + next) / 2);
-        builder.arc(false, centerX + radius, centerY, radius, 0, next);
-        z = next;
-      }
+      helixDescend(builder, centerX, centerY, radius, 0, -depth, helixPitch);
       builder.comment("FINISH PASS AT FULL DEPTH");
       builder.fullCircle(false, centerX, centerY, radius);
       // Whenever the wall radius exceeds the tool radius the peripheral
@@ -690,8 +820,7 @@ export const CONVERSATIONAL_CYCLES = [
       const stepDown = requireNumber(params, "stepDown", "Depth per pass", { min: 0.01, max: 10 });
       const radius = (diameter + setup.toolDiameter) / 2;
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + radius + setup.toolDiameter, centerY);
+      builder.approach(centerX + radius + setup.toolDiameter, centerY);
       for (const z of depthPasses(depth, stepDown)) {
         builder.plunge(z);
         builder.cut(centerX + radius, centerY);
@@ -728,8 +857,7 @@ export const CONVERSATIONAL_CYCLES = [
         throw new CycleParameterError("Slot start and end points must be at least 0.01 mm apart.", "endX");
       }
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(startX, startY);
+      builder.approach(startX, startY);
       builder.rapidZ(0.5);
       let previousLevel = 0.5;
       for (const z of depthPasses(depth, stepDown)) {
@@ -766,10 +894,9 @@ export const CONVERSATIONAL_CYCLES = [
       const trackOffset = chamferTrackOffset(setup, chamferWidth, tipOffset);
       const corners = rectanglePerimeter(centerX, centerY, width + trackOffset * 2, height + trackOffset * 2);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(corners[0].x, corners[0].y);
+      builder.approach(corners[0].x, corners[0].y);
       builder.plunge(-tipOffset);
-      traceRectangle(builder, corners, null);
+      traceRectangle(builder, corners, null, true);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
     },
@@ -796,8 +923,7 @@ export const CONVERSATIONAL_CYCLES = [
       const tipOffset = requireNumber(params, "tipOffset", "Tip depth", { min: 0.05, max: 10 });
       const radius = diameter / 2 + chamferTrackOffset(setup, chamferWidth, tipOffset);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + radius, centerY);
+      builder.approach(centerX + radius, centerY);
       builder.plunge(-tipOffset);
       builder.fullCircle(true, centerX, centerY, radius);
       builder.rapidZ(setup.clearZ);
@@ -824,30 +950,28 @@ export const CONVERSATIONAL_CYCLES = [
       const majorDiameter = requireNumber(params, "majorDiameter", "Major diameter", { min: 1, max: 500 });
       const pitch = requireNumber(params, "pitch", "Thread pitch", { min: 0.2, max: 6 });
       const threadDepth = requireNumber(params, "threadDepth", "Thread length", { min: 0.5, max: 100 });
-      // ISO metric minor diameter is roughly major - 1.0825 * pitch; the
-      // cutter descends the pre-drilled hole at center, so it must clear
-      // the minor bore with margin.
-      const minorDiameter = majorDiameter - 1.0825 * pitch;
+      // The cutter descends the pre-drilled minor bore (D1) at center, so it
+      // must clear it with margin.
+      const minorDiameter = majorDiameter - ISO_INTERNAL_MINOR_FACTOR * pitch;
       if (setup.toolDiameter >= minorDiameter - 0.2) {
         throw new CycleParameterError(
           "Thread mill must fit the pre-drilled minor bore (tool diameter must be at least 0.2 mm under the thread minor diameter).",
           "toolDiameter",
         );
       }
+      // An internal thread's root is its major diameter D (the nominal size):
+      // the tooth tip tracks D.
       const radius = (majorDiameter - setup.toolDiameter) / 2;
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX, centerY);
-      builder.rapidZ(-threadDepth + 0.0);
+      builder.comment(THREAD_TOOL_NOTE);
+      builder.comment(`INTERNAL: TOOTH TIP TO MAJOR D ${fmt(majorDiameter)}, PITCH ${fmt(pitch)}`);
+      builder.approach(centerX, centerY);
+      // Rapid only to just above the hole, then feed down its center.
+      builder.rapidZ(Math.min(setup.clearZ, 1));
+      builder.plunge(-threadDepth);
       builder.comment("BOTTOM-UP CLIMB THREAD MILL");
       builder.cut(centerX + radius, centerY, null);
-      let z = -threadDepth;
-      while (z < -1e-9) {
-        const next = Math.min(0, z + pitch);
-        builder.arc(false, centerX - radius, centerY, -radius, 0, z + (next - z) / 2);
-        builder.arc(false, centerX + radius, centerY, radius, 0, next);
-        z = next;
-      }
+      threadHelix(builder, false, centerX, centerY, radius, -threadDepth, 0, pitch);
       builder.cut(centerX, centerY);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -873,25 +997,29 @@ export const CONVERSATIONAL_CYCLES = [
       const majorDiameter = requireNumber(params, "majorDiameter", "Major diameter", { min: 1, max: 500 });
       const pitch = requireNumber(params, "pitch", "Thread pitch", { min: 0.2, max: 6 });
       const threadDepth = requireNumber(params, "threadDepth", "Thread length", { min: 0.5, max: 100 });
-      const radius = (majorDiameter + setup.toolDiameter) / 2;
-      const approachRadius = radius + setup.toolDiameter;
+      // An external thread's root is its minor diameter d3, not the major
+      // diameter: the tooth tip must reach d3 or no thread is cut.
+      const rootDiameter = majorDiameter - ISO_EXTERNAL_ROOT_FACTOR * pitch;
+      if (rootDiameter < 0.2) {
+        throw new CycleParameterError("Thread pitch is too coarse for this major diameter.", "pitch");
+      }
+      const radius = (rootDiameter + setup.toolDiameter) / 2;
+      // Lead in and out one tool diameter clear of the major diameter.
+      const approachRadius = (majorDiameter + setup.toolDiameter) / 2 + setup.toolDiameter;
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
-      builder.rapid(centerX + approachRadius, centerY);
+      builder.comment(THREAD_TOOL_NOTE);
+      builder.comment(`EXTERNAL: TOOTH TIP TO ROOT D3 ${fmt(rootDiameter)} = D - ${ISO_EXTERNAL_ROOT_FACTOR} P, PITCH ${fmt(pitch)}`);
+      builder.approach(centerX + approachRadius, centerY);
       builder.rapidZ(0);
       // A right-hand external thread needs a clockwise helix that DESCENDS:
       // G2 with rising Z would cut a left-hand thread. Top-down G2 is also
       // climb milling for an external feature with an M3 spindle.
       builder.comment("TOP-DOWN CLIMB THREAD MILL - EXTERNAL RIGHT-HAND");
       builder.cut(centerX + radius, centerY, null);
-      let z = 0;
-      while (z > -threadDepth + 1e-9) {
-        const next = Math.max(-threadDepth, z - pitch);
-        builder.arc(true, centerX - radius, centerY, -radius, 0, z + (next - z) / 2);
-        builder.arc(true, centerX + radius, centerY, radius, 0, next);
-        z = next;
-      }
-      builder.cut(centerX + approachRadius, centerY);
+      const endAngle = threadHelix(builder, true, centerX, centerY, radius, 0, -threadDepth, pitch);
+      // Leave radially at the end angle; a chord back to the start could
+      // cross the boss.
+      builder.cut(centerX + approachRadius * Math.cos(endAngle), centerY + approachRadius * Math.sin(endAngle));
       builder.rapidZ(setup.clearZ);
       return builder.finish();
     },
@@ -918,7 +1046,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = gridPoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -945,7 +1073,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = gridPoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -971,7 +1099,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = boltCirclePoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -997,7 +1125,7 @@ export const CONVERSATIONAL_CYCLES = [
       const points = linePoints(params);
       const options = drillOptions(params);
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(points[0].x, points[0].y);
       drillPattern(builder, points, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -1022,7 +1150,7 @@ export const CONVERSATIONAL_CYCLES = [
       const options = drillOptions(params);
       if (options.peck <= 0) throw new CycleParameterError("Peck depth must be positive for peck drilling.", "peck");
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(holeX, holeY);
       drillOnePoint(builder, { x: holeX, y: holeY }, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -1047,7 +1175,7 @@ export const CONVERSATIONAL_CYCLES = [
       const holeY = requireNumber(params, "holeY", "Bore Y", { min: -10000, max: 10000 });
       const options = drillOptions(params, { dwellDefault: 0.5 });
       const builder = new ProgramBuilder(this.title, setup);
-      builder.rapidZ(setup.clearZ);
+      builder.approach(holeX, holeY);
       drillOnePoint(builder, { x: holeX, y: holeY }, options);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -1058,11 +1186,11 @@ export const CONVERSATIONAL_CYCLES = [
     title: "Face (lathe)",
     group: "Turning",
     machine: "lathe",
-    description: "Faces the end of round stock toward center in Z steps. X words are radii; Z0 is the finished face.",
+    description: "Faces the end of round stock toward center in Z steps. Touch off Z0 on the raw, unfaced stock face: passes cut to Z-depth, which becomes the finished face. X words are diameters (G7).",
     params: [
       ...LATHE_COMMON_PARAMS,
       { key: "stockDiameter", label: "Stock diameter", unit: "mm", value: 30, min: 0.5, max: 300, step: 0.5 },
-      { key: "depth", label: "Total face depth", unit: "mm", value: 0.6, min: 0.02, max: 20, step: 0.1 },
+      { key: "depth", label: "Face depth below raw face (Z0)", unit: "mm", value: 0.6, min: 0.02, max: 20, step: 0.1 },
       { key: "stepDown", label: "Depth per pass", unit: "mm", value: 0.2, min: 0.02, max: 3, step: 0.05 },
     ],
     generate(params) {
@@ -1072,8 +1200,10 @@ export const CONVERSATIONAL_CYCLES = [
       const stepDown = requireNumber(params, "stepDown", "Depth per pass", { min: 0.02, max: 3 });
       const outsideX = stockDiameter / 2 + setup.clearX;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(outsideX);
+      builder.comment(`Z0 = RAW STOCK FACE, FINISHED FACE AT Z${fmt(-depth)}, X = DIAMETER`);
+      // Z approaches outside the stock diameter, so no clearance/depth
+      // combination can rapid into the stock.
+      builder.latheApproach(outsideX);
       for (const z of depthPasses(depth, stepDown)) {
         builder.latheCutZ(z);
         builder.latheCutX(0);
@@ -1109,8 +1239,7 @@ export const CONVERSATIONAL_CYCLES = [
       const stockRadius = stockDiameter / 2;
       const targetRadius = targetDiameter / 2;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(stockRadius + setup.clearX);
+      builder.latheApproach(stockRadius + setup.clearX);
       let radius = stockRadius;
       for (;;) {
         radius = Math.max(targetRadius, radius - depthOfCut);
@@ -1142,8 +1271,7 @@ export const CONVERSATIONAL_CYCLES = [
       const endDiameter = requireNumber(params, "endDiameter", "End diameter", { min: 0.2, max: 300 });
       const length = requireNumber(params, "length", "Taper length", { min: 0.05, max: 300 });
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(Math.max(startDiameter, endDiameter) / 2 + setup.clearX);
+      builder.latheApproach(Math.max(startDiameter, endDiameter) / 2 + setup.clearX);
       builder.latheRapidX(startDiameter / 2);
       builder.latheCutZ(0);
       builder.latheCut(endDiameter / 2, -length);
@@ -1182,8 +1310,7 @@ export const CONVERSATIONAL_CYCLES = [
       const outsideX = stockDiameter / 2 + setup.clearX;
       const floorRadius = grooveDiameter / 2;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(outsideX);
+      builder.latheApproach(outsideX);
       const steps = Math.max(1, Math.ceil((grooveWidth - setup.toolDiameter) / (setup.toolDiameter * 0.8)) + 1);
       const zStep = steps > 1 ? (grooveWidth - setup.toolDiameter) / (steps - 1) : 0;
       for (let index = 0; index < steps; index += 1) {
@@ -1225,8 +1352,7 @@ export const CONVERSATIONAL_CYCLES = [
       const peck = requireNumber(params, "peck", "Radial peck", { min: 0.1, max: 10 });
       const outsideX = stockDiameter / 2 + setup.clearX;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(outsideX);
+      builder.latheApproach(outsideX);
       builder.rapidZ(zPosition - setup.toolDiameter / 2);
       let reached = stockDiameter / 2;
       while (reached > 1e-9) {
@@ -1256,8 +1382,7 @@ export const CONVERSATIONAL_CYCLES = [
       const depth = requireNumber(params, "depth", "Hole depth", { min: 0.1, max: 200 });
       const peck = requireNumber(params, "peck", "Peck depth", { min: 0, max: 200 });
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(0);
+      builder.latheApproach(0);
       builder.rapidZ(1);
       if (peck > 0) {
         let reached = 0;
@@ -1300,8 +1425,7 @@ export const CONVERSATIONAL_CYCLES = [
       const startRadius = holeDiameter / 2;
       const targetRadius = targetDiameter / 2;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
-      builder.rapidZ(setup.clearZ);
-      builder.latheRapidX(Math.max(0.2, startRadius - 0.5));
+      builder.latheApproach(Math.max(0.2, startRadius - 0.5));
       let radius = startRadius;
       for (;;) {
         radius = Math.min(targetRadius, radius + depthOfCut);
@@ -1345,8 +1469,10 @@ function chainSegments(gcode, setup) {
   };
 }
 
+// grblHAL comments do not nest, so comment text never carries parentheses,
+// and the controller loader refuses realtime (! ? ~) and non-ASCII bytes.
 function sanitizeComment(text) {
-  return String(text).replace(/[()]/g, "").toUpperCase();
+  return String(text).replace(/[()!?~]|[^\x20-\x7e]/g, "").toUpperCase();
 }
 
 export function generateConversationalChain(operations) {
@@ -1407,6 +1533,9 @@ export function generateConversationalChain(operations) {
       if (Math.round(setup.rpm) !== Math.round(current.rpm)) lines.push(`S${Math.round(setup.rpm)}`);
       if (setup.coolant && !current.coolant) lines.push("M8");
       if (!setup.coolant && current.coolant) lines.push("M9");
+      // Each body opens with an XY approach at the current height, which is
+      // the previous operation's clearance: rise first if this one needs more.
+      if (setup.clearZ > current.clearZ) lines.push(`G0 Z${fmt(setup.clearZ)}`);
     }
     lines.push(...operation.segments.body);
     current = setup;
@@ -1458,8 +1587,7 @@ function generateRectContour(title, setup, params, side) {
     ? { x: corners[0].x - offset * 2, y: corners[0].y - offset * 2 }
     : { x: centerX, y: centerY };
   const builder = new ProgramBuilder(title, setup);
-  builder.rapidZ(setup.clearZ);
-  builder.rapid(approach.x, approach.y);
+  builder.approach(approach.x, approach.y);
   if (side === "inside") builder.rapidZ(0.5);
   let previousLevel = 0.5;
   for (const z of depthPasses(depth, stepDown)) {
@@ -1472,7 +1600,7 @@ function generateRectContour(title, setup, params, side) {
       builder.rampEntry(centerX, centerY, centerX + rampHalf, centerY, previousLevel, z);
     }
     builder.cut(corners[0].x, corners[0].y);
-    traceRectangle(builder, corners, null);
+    traceRectangle(builder, corners, null, side === "outside");
     builder.cut(approach.x, approach.y);
     previousLevel = z;
   }
@@ -1529,9 +1657,13 @@ export function estimateProgramSeconds(gcode) {
     const targetZ = Number.isFinite(words.Z) ? words.Z : z;
     let distance;
     if (motion === 2 || motion === 3) {
+      const centerX = x + (words.I ?? 0);
+      const centerY = y + (words.J ?? 0);
       const radius = Math.hypot(words.I ?? 0, words.J ?? 0);
-      // The generators only emit half or full-circle arc spans.
-      distance = Math.PI * radius + Math.abs(targetZ - z);
+      let sweep = Math.atan2(targetY - centerY, targetX - centerX) - Math.atan2(y - centerY, x - centerX);
+      if (motion === 3 && sweep <= 1e-9) sweep += 2 * Math.PI;
+      if (motion === 2 && sweep >= -1e-9) sweep -= 2 * Math.PI;
+      distance = Math.hypot(radius * sweep, targetZ - z);
     } else {
       distance = Math.hypot(targetX - x, targetY - y, targetZ - z);
     }

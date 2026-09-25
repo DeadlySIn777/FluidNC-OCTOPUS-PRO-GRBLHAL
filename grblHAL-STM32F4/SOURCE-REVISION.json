@@ -331,6 +331,174 @@
     {
       "path": "mr1/_vendor_docs/CL57T-V41_user_manual_extract.txt",
       "reason": "Vendor manual extraction omitted; official publication linked from mr1/_vendor_docs/README.md."
+    },
+    {
+      "path": "check_settings.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/check_settings.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "check_spindle.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/check_spindle.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "check_tmc.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/check_tmc.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "check_tmc_settings.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/check_tmc_settings.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "check_uart_comm.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/check_uart_comm.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "check_vfd.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/check_vfd.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "debug_tmc.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/debug_tmc.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "deep_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/deep_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "diagnose.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/diagnose.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "diagnose_motors.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/diagnose_motors.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "diagnose_tmc.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/diagnose_tmc.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "diagnose_uart.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/diagnose_uart.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "disable_check.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/disable_check.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "enter_dfu.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/enter_dfu.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "fix_alarm.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/fix_alarm.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "full_diag.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/full_diag.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "full_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/full_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "m122.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/m122.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "move_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/move_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "quick_check.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/quick_check.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "quick_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/quick_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "read_tmc.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/read_tmc.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "rotation_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/rotation_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "scan_settings.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/scan_settings.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "simple_jog_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/simple_jog_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "slow_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/slow_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "stress_reset.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/stress_reset.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "stress_test_3axis.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/stress_test_3axis.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "stress_test_segmented.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/stress_test_segmented.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "test_all_axes.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/test_all_axes.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "test_limits.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/test_limits.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "test_motion.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/test_motion.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "test_move.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/test_move.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "test_no_vfd.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/test_no_vfd.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "test_tmc_uart.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/test_tmc_uart.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "test_uart_current.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/test_uart_current.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "tmc_diagnose.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/tmc_diagnose.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "tmc_status.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/tmc_status.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "tmc_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/tmc_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "torque_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/torque_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "unlimited_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/unlimited_test.py; not part of the MR1 firmware source."
+    },
+    {
+      "path": "visual_test.py",
+      "reason": "Unsafe legacy bench diagnostic moved to legacy/grblhal-diagnostics-2025/visual_test.py; not part of the MR1 firmware source."
     }
   ],
   "upstreamFileHashes": [
@@ -5321,74 +5489,9 @@
       "sha256": "cb86c1caf91799572ced6fec876f1527f11f5622e22d8223b62f4535fded1295"
     },
     {
-      "path": "check_settings.py",
-      "bytes": 1517,
-      "sha256": "91a3de878eab3d980cfd974153c24ca736b4f7a77b708fd5dc7db7814d04b8ee"
-    },
-    {
-      "path": "check_spindle.py",
-      "bytes": 2077,
-      "sha256": "d231b84fb449c4c893fe27003b21f2f7c4576f965dd8e534da33c05c55e3d912"
-    },
-    {
-      "path": "check_tmc.py",
-      "bytes": 2737,
-      "sha256": "b02e3acb399bb861a200a2486dd6b46d4c808bec3bb9a0fdd017d216824cd72d"
-    },
-    {
-      "path": "check_tmc_settings.py",
-      "bytes": 1815,
-      "sha256": "de3138d07112a64b4243991d73a940a07b597486871b002ed164d83c264ea360"
-    },
-    {
-      "path": "check_uart_comm.py",
-      "bytes": 2310,
-      "sha256": "f045df1ca9c7c2b5fd3c7cbd8c19a6b5876fdfe695745ec11bf41885dc3a5439"
-    },
-    {
-      "path": "check_vfd.py",
-      "bytes": 1474,
-      "sha256": "b11477ad5d00fb84aed11a44b94cbb7054cdad5f2b65df67bbadec10505ff630"
-    },
-    {
       "path": "COPYING",
       "bytes": 36789,
       "sha256": "dfed780aca5c25b864b9acb483de5b82adf80566e3b88273cb4e8785e09f1443"
-    },
-    {
-      "path": "debug_tmc.py",
-      "bytes": 2248,
-      "sha256": "d3ddcfeac90b2cddaef5e70adccea296d399207518f3be56b868c426a963288f"
-    },
-    {
-      "path": "deep_test.py",
-      "bytes": 1878,
-      "sha256": "c35a73a6138091c0b09d4697dd359e3b8f924fda5b17d41863ce304db13c12a8"
-    },
-    {
-      "path": "diagnose.py",
-      "bytes": 2181,
-      "sha256": "ab38e8e91ce1edc55832d8d665e33364a332bc9af5922c18004fe973b2ac504c"
-    },
-    {
-      "path": "diagnose_motors.py",
-      "bytes": 4778,
-      "sha256": "aaaec75b3acbd668ba4366d7dbf0df2cb8d5b4fe4285dd03b5017df3424ca4ec"
-    },
-    {
-      "path": "diagnose_tmc.py",
-      "bytes": 6074,
-      "sha256": "602183efb70ce6536497e3584dfcca18ffe087d1898f7a0bc15d35b408b741b7"
-    },
-    {
-      "path": "diagnose_uart.py",
-      "bytes": 2656,
-      "sha256": "64ef0972618e47eba1cb66f39ac8b2a4c5ac4b7979ed5dc3a2301405a2895dfd"
-    },
-    {
-      "path": "disable_check.py",
-      "bytes": 2114,
-      "sha256": "c3a7bb8f6f0e4d94fbc4d5449e0acdee29b71c7a421e8da7aabebd36866818e5"
     },
     {
       "path": "driver.json",
@@ -6171,11 +6274,6 @@
       "sha256": "0d94ff3193b377489fe35df63d821cfeb6dc7cd2b4257626a3f7189f5af8b90a"
     },
     {
-      "path": "enter_dfu.py",
-      "bytes": 566,
-      "sha256": "8b6544cfd663cc4c88357abac4855ecdb4bef95df622c42f8773103807ce4a83"
-    },
-    {
       "path": "extra_script.py",
       "bytes": 289,
       "sha256": "335c060bedf4b3721fe4968b5df1af59552849f5e10851c7c31cac5c8587352c"
@@ -6241,9 +6339,9 @@
       "sha256": "8c954132f4ac4b3c47d97ee1633daa03a1f4392efe7e1404d0ed240ea350af54"
     },
     {
-      "path": "fix_alarm.py",
-      "bytes": 4575,
-      "sha256": "e888a334e9e797111696314ffb1ebbc18df137b9a36b5b4e15a3abb5483ff909"
+      "path": "FIRMWARE-KNOWN-ISSUES.md",
+      "bytes": 6105,
+      "sha256": "c160b9ba65229a02cad45c78b0cc5b2768528c679cb6717b1fbcc27e33efdfd1"
     },
     {
       "path": "flexi_script.py",
@@ -6254,16 +6352,6 @@
       "path": "FLEXI_STM32F446RETX_BL_FLASH.ld",
       "bytes": 4742,
       "sha256": "56332b0fc754f7b565c29045691fa3e3941ce3adffd2ccbb8b66a42b7a3d0a8f"
-    },
-    {
-      "path": "full_diag.py",
-      "bytes": 1663,
-      "sha256": "764c01c4e6fb590d008eff6fc36efa4f06a35e8699678509eb76555152a11bfb"
-    },
-    {
-      "path": "full_test.py",
-      "bytes": 4791,
-      "sha256": "bfb4eaee342ca5566502cc548b6f50750a750f8f5c31dddf7bf3d36048fe31c6"
     },
     {
       "path": "grbl/.gitattributes",
@@ -6982,8 +7070,8 @@
     },
     {
       "path": "Inc/my_machine.h",
-      "bytes": 12264,
-      "sha256": "dbf229e88628cb879a4cadd8484704b73c0a476f946a8a18cee1434d85abb484"
+      "bytes": 12452,
+      "sha256": "de7d3ab0df4c44bcaf4c1c8e957d62ddee7c7be62c63357751115f9146081368"
     },
     {
       "path": "Inc/pwm.h",
@@ -7049,11 +7137,6 @@
       "path": "LWIP/dp83848/Target/lwipopts.h",
       "bytes": 4641,
       "sha256": "9ffc1fcd33e76dc0531a11b966414f9da4ce773cdf6e1d84f265ade6a0d15440"
-    },
-    {
-      "path": "m122.py",
-      "bytes": 2700,
-      "sha256": "7442442515183b3619bfebc297242a6cef7296536b483853a328b8805466b1e1"
     },
     {
       "path": "media/library.json",
@@ -8341,29 +8424,24 @@
       "sha256": "e3412b047ae9f0637c9e1c301274eeb9be5e5b698d997cb0abb4b1d5c5c8c541"
     },
     {
-      "path": "move_test.py",
-      "bytes": 1569,
-      "sha256": "d734f7b251edef4fe5e5b981c2db701b58e3560de277af4e190816f120ac1da7"
-    },
-    {
       "path": "mr1/_vendor_docs/README.md",
       "bytes": 973,
       "sha256": "95616a2c8ad7fe9eec292bddb2e8e2b0738b2ec5f774cbb347f05d436792eb18"
     },
     {
       "path": "mr1/BOM.md",
-      "bytes": 14233,
-      "sha256": "588e0398833e63f82a243af3ef4e2f8013256474a429eb69ecf7993df568abd8"
+      "bytes": 14312,
+      "sha256": "c0bf47cac980ec77906817467980cdc3ac099a85ba1e65fef29a0751a31cce00"
     },
     {
       "path": "mr1/BUILD_REPORT.md",
-      "bytes": 7821,
-      "sha256": "4163ca98f3fb1a890db7169aa3918c8cdce31b78f881ccd0bec6898a6493bfa7"
+      "bytes": 8043,
+      "sha256": "ca3e5ef9fea6550707622f534e425896594d781e9ecdec510f6670aa0ebe15a8"
     },
     {
       "path": "mr1/cable-schedule.csv",
-      "bytes": 15266,
-      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+      "bytes": 16563,
+      "sha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12"
     },
     {
       "path": "mr1/CL57T_ARRIVAL_CAPTURE.md",
@@ -8372,18 +8450,18 @@
     },
     {
       "path": "mr1/CL57T_QUICK_WIRING.md",
-      "bytes": 17587,
-      "sha256": "9176f9b01a90c217191771eb7f4fabddd5ca3e0d11199081a0b24308828ca456"
+      "bytes": 18425,
+      "sha256": "c07af5e37010dbdbcc03c929f46eb89b9ba03ae8f7fe72f5414d1132b7e6d7cc"
     },
     {
       "path": "mr1/COMMISSIONING.md",
-      "bytes": 32052,
-      "sha256": "b0df2412c5b647c9eae4b5e04bd4284205bfad7bd324f205371b0b07a32ed719"
+      "bytes": 35993,
+      "sha256": "bd24df90b1fbda549d5a57e4fb2b2b44ad7a9574f3483df3204af9c15b873032"
     },
     {
       "path": "mr1/DM860T_QUICK_WIRING.md",
-      "bytes": 8072,
-      "sha256": "0f8b09b101ec1a3fad5185d3754f5e235165c244e36998dc5f0c627906a16cd3"
+      "bytes": 8329,
+      "sha256": "2f4a9cc6ebe4a724a2b939a0e46c1cbe873bbe26f1b5d0e64d9515e786ecfecf"
     },
     {
       "path": "mr1/expected-settings.json",
@@ -8392,13 +8470,13 @@
     },
     {
       "path": "mr1/INTERFACE_BOARD.md",
-      "bytes": 20332,
-      "sha256": "15431a15717901b895a487dbc048cd0a0c15290fcb5f5cdd6e3eef64dd748e09"
+      "bytes": 25506,
+      "sha256": "8039985429e9e9143d72a05ba3a176673b0feedcec38d2f9bd5229a62b2e01f0"
     },
     {
       "path": "mr1/io-manifest.json",
-      "bytes": 12431,
-      "sha256": "5ff586c6a720151987b5612a30d96c6c6afb800194db1cd5e5d80b3b826a36f4"
+      "bytes": 13342,
+      "sha256": "95d71acf8266852a0b592ec76cefc471ffb24c6fac0b59632e251d30b8d10094"
     },
     {
       "path": "mr1/macros/manifest.json",
@@ -8422,8 +8500,8 @@
     },
     {
       "path": "mr1/MR1_GITHUB_CROSSCHECK.md",
-      "bytes": 4962,
-      "sha256": "60f69c35f0918b97b534fef15861df03ca21a0fe392a413f9b0e2ed438f4d8cc"
+      "bytes": 5092,
+      "sha256": "7645f9785a6249d45a1f1254fff67ae3b9eb9b86ce1cd0fdd4cbd6083ce846ef"
     },
     {
       "path": "mr1/OCTOPUS_QUALIFICATION.md",
@@ -8437,23 +8515,23 @@
     },
     {
       "path": "mr1/ORDER_LIST.md",
-      "bytes": 13546,
-      "sha256": "77e0e7ca5cb5f952237b1c5181fc08bc609c03703c70cdebaf521f1607a9733c"
+      "bytes": 13861,
+      "sha256": "0256a3af4721af5df9bd56acd85775c50de6fcb448891d616c872ca2c02d7472"
     },
     {
       "path": "mr1/PIGTAIL_SCHEDULE.md",
-      "bytes": 13607,
-      "sha256": "f64eacc58ba6f0d11ca59e0a11ea92a30ae48da5a5fbadf8c8c945d6a8362329"
+      "bytes": 13993,
+      "sha256": "bcc7e4e1e7b56d8e8cf1c1d4191cfa1ecb8c506db07181ce853f2bff2d2dc833"
     },
     {
       "path": "mr1/README.md",
-      "bytes": 3602,
-      "sha256": "08129f25370d71ebaefdd8424c8ea3d37e3c8e93575e81e0c6b4201b0ea17846"
+      "bytes": 3797,
+      "sha256": "15abce1069e80f53f426175bd1c14396a366108b31c661e7f68e4f4dfb2580f9"
     },
     {
       "path": "mr1/RESEARCH.md",
-      "bytes": 21780,
-      "sha256": "ab3652d44b1db684ef5a40569b25ce978f2ec20ea5f146a5098030b9223894cf"
+      "bytes": 22078,
+      "sha256": "6396df1fb6cced1e8c46617fa5cfcffd1749e665de00f8f4f252eae35b0aef77"
     },
     {
       "path": "mr1/RIGID_TAPPING.md",
@@ -8472,8 +8550,8 @@
     },
     {
       "path": "mr1/SPINDLE_SUPERVISION.md",
-      "bytes": 18072,
-      "sha256": "19ac2cd5b12e4e1b7a438726514b673c97fd3b5374f5671b7ff47f0be3cace3d"
+      "bytes": 19351,
+      "sha256": "416b1bfc50f3019629de980bc43e0cb290ba53b63d68bfdd23ae66ff3a53835a"
     },
     {
       "path": "mr1/UI_STYLE.md",
@@ -8482,13 +8560,13 @@
     },
     {
       "path": "mr1/WIRING.md",
-      "bytes": 41264,
-      "sha256": "5d4069ca27c33cdb2273b6d5abf54ceac2bde3c37481f092d5389af49de6ba18"
+      "bytes": 46923,
+      "sha256": "8d057aba6a847256ca69783b4048a0188982e9cd87bc0584e4601364ac15b97d"
     },
     {
       "path": "mr1/WIRING_SIMPLE.md",
-      "bytes": 11266,
-      "sha256": "d32238ccb945aaa2bd0e777ea98a72055febf2726a736b70913aa27a380d0cee"
+      "bytes": 12190,
+      "sha256": "283bd6cdbad3a197cb5a99c271eb10d6532ba015d45b83a2b4d29e33bd632fc3"
     },
     {
       "path": "platformio.ini",
@@ -8501,49 +8579,14 @@
       "sha256": "90e94eae96efb835a43cf996f715683a7f64d24199fe5afae422acc5559e4525"
     },
     {
-      "path": "quick_check.py",
-      "bytes": 960,
-      "sha256": "ea982339c1483302f383695a81301c348338a312d2a982e7cec42f52080af7dd"
-    },
-    {
-      "path": "quick_test.py",
-      "bytes": 3144,
-      "sha256": "b0b705c90ec54ee951246e1b627e645c7b0b412a98d8d242ff9516b3250e7a39"
-    },
-    {
-      "path": "read_tmc.py",
-      "bytes": 1259,
-      "sha256": "871b2e07e0d81ad9f3ef593472c5299bfce876d3f20ec85219510d902cdaa06d"
-    },
-    {
       "path": "README.md",
-      "bytes": 3485,
-      "sha256": "f2a7fce60bdb608c65e20fe33bc79f8007dabd5ab47af6b271972f1d9108b4b4"
-    },
-    {
-      "path": "rotation_test.py",
-      "bytes": 1487,
-      "sha256": "ea0eedbc9ab7f006413c15227e1b02537240680006373718bf9690e4d32e2c5f"
-    },
-    {
-      "path": "scan_settings.py",
-      "bytes": 2765,
-      "sha256": "2086a4922008c5328023c8d19022aec7a8859525f93b852100bc66c143a6b40c"
-    },
-    {
-      "path": "simple_jog_test.py",
-      "bytes": 2172,
-      "sha256": "76461dd16ae46ce92db503be88edfa5c9bb19650849e63539547c7960a9118d2"
-    },
-    {
-      "path": "slow_test.py",
-      "bytes": 1365,
-      "sha256": "8b977d2aea45951e85065d0170cd7bec3926eacc8c658efec1ee5930aecf56d5"
+      "bytes": 4180,
+      "sha256": "ae3eadf4d88c05f78cffb48ef2ffb092c2d38dbefa64c3a23addf1dd0c5639d6"
     },
     {
       "path": "SOURCE-PROVENANCE.md",
-      "bytes": 3744,
-      "sha256": "f6db6013feaaf9df0b11a8ed4a2ba7c97dd8613e443bd63989d0e428fe83d371"
+      "bytes": 7983,
+      "sha256": "2d18c0e4ea8b79fae658ae3c6a9c6a405892e0058836eeacbd4ffd007a880b16"
     },
     {
       "path": "spindle/.gitattributes",
@@ -8926,71 +8969,6 @@
       "sha256": "86aebbf6d95d33bd1da9cc6478182f2008a8b986865577fe6f8a1c51c511644c"
     },
     {
-      "path": "stress_reset.py",
-      "bytes": 4532,
-      "sha256": "4bc3563d7cfa4591022d4aa0c6d2b21a8ee2afff3c5c12ed0fcedaa3bda65a70"
-    },
-    {
-      "path": "stress_test_3axis.py",
-      "bytes": 4679,
-      "sha256": "bc0424ec1c97cbac33c1048aeb53eb0ab810ca441ee58f0a40517668506fa7c1"
-    },
-    {
-      "path": "stress_test_segmented.py",
-      "bytes": 3440,
-      "sha256": "15a353b9fd6ec6abf5f4664aa43fd48988fbed98b19c2857cd86f13d363cee80"
-    },
-    {
-      "path": "test_all_axes.py",
-      "bytes": 1980,
-      "sha256": "9a75f048e839c0caab1818f208f66a3ee266e6af250ac207936920761124761c"
-    },
-    {
-      "path": "test_limits.py",
-      "bytes": 3363,
-      "sha256": "1e416d2cc069badbd92bac596cc8ac8cf3598517f6eddedc0193062ff1c7a02a"
-    },
-    {
-      "path": "test_motion.py",
-      "bytes": 3864,
-      "sha256": "ed062acc360dd9b30af28bd0cd134ff50fb052996143999d3e905d47f5565147"
-    },
-    {
-      "path": "test_move.py",
-      "bytes": 1404,
-      "sha256": "77f3d294717a7c8eedab7d1c73521bbf73bdb20f153f052f93d4ec2ecc3b0097"
-    },
-    {
-      "path": "test_no_vfd.py",
-      "bytes": 2818,
-      "sha256": "32c734cf2444a3da99f6e0e59c964131ad819d5ebea3e6c924b90f2615211e72"
-    },
-    {
-      "path": "test_tmc_uart.py",
-      "bytes": 1841,
-      "sha256": "f1e7485592b251a9bf847deafbf6ec6e78bc8ca59136980f5523e723ed00a16f"
-    },
-    {
-      "path": "test_uart_current.py",
-      "bytes": 1831,
-      "sha256": "80f5e7974efd0e70e5efc1fd1bbc8fbe3c58a73a8d95c307e4211d1d55849f4b"
-    },
-    {
-      "path": "tmc_diagnose.py",
-      "bytes": 3070,
-      "sha256": "6668651d8f770a8ba813c4f63cfb60ddd0af4e3448872edcfd984bcbd6c0c685"
-    },
-    {
-      "path": "tmc_status.py",
-      "bytes": 3656,
-      "sha256": "c7816daa83c0fede2eaad60f65bec9f8919de41fc4df00daa578fe45143d0a9e"
-    },
-    {
-      "path": "tmc_test.py",
-      "bytes": 2069,
-      "sha256": "989b8e2e637fb3f2cf8a4cd9cdfa0d34049ad176fa60b8564fb165cdc3d81766"
-    },
-    {
       "path": "tools/mr1_preflight.ps1",
       "bytes": 10158,
       "sha256": "e30fc6ca05c97e617bf27089c50f5dcc5c32c74091290fb93eb207cec3d0d67c"
@@ -9007,18 +8985,13 @@
     },
     {
       "path": "tools/validate_mr1_profile.py",
-      "bytes": 46048,
-      "sha256": "c7fe1be5a17695d9aff266502493a76f7ca6bb88e4181f74f69bbf0bc5f392c5"
+      "bytes": 46314,
+      "sha256": "79ac08272db6ec3cc002fe294eac8d49eefff2f8d4da3b0aa68906d701033b6d"
     },
     {
       "path": "tools/verify_source_export.py",
       "bytes": 877,
       "sha256": "e0183f361d673f001610bb94965cf5bc7b5cbcee702af36c9bb4b17062abbc27"
-    },
-    {
-      "path": "torque_test.py",
-      "bytes": 3534,
-      "sha256": "539df557cec53dd32985653c7d61d3e0e32a736b159fe8bb06fcfd7744f51235"
     },
     {
       "path": "uf2conv.py",
@@ -9029,11 +9002,6 @@
       "path": "uf2families.json",
       "bytes": 4296,
       "sha256": "bedc8c60f2fd1c22c0686a425079064e5056eaba636dd56b4370c560de315bd4"
-    },
-    {
-      "path": "unlimited_test.py",
-      "bytes": 3606,
-      "sha256": "5ba4a7e9fbf00a92561ad70793e4e8c1f321586971fa20b2a03e0d14c6712d6f"
     },
     {
       "path": "USB_DEVICE/App/library.json",
@@ -9086,26 +9054,37 @@
       "sha256": "b676de380f9bf2cca16a82c20847d7de1b1c59d52e27382bd8332832fc8fc57e"
     },
     {
-      "path": "visual_test.py",
-      "bytes": 2963,
-      "sha256": "0b344aae70a0ed4c69382bdd404ce2859a15ade9d0154038db242b242cbfdcaa"
-    },
-    {
       "path": "WIRING_GUIDE.md",
       "bytes": 13740,
       "sha256": "e17f678c5e8dd96d2c6fad90a9dbf3c7da9898e8313b08fcdccb05b848d07136"
     }
   ],
   "releaseOverlayFiles": [
+    "FIRMWARE-KNOWN-ISSUES.md",
+    "Inc/my_machine.h",
     "mr1/_vendor_docs/README.md",
+    "mr1/BOM.md",
     "mr1/BUILD_REPORT.md",
+    "mr1/cable-schedule.csv",
+    "mr1/CL57T_QUICK_WIRING.md",
     "mr1/COMMISSIONING.md",
+    "mr1/DM860T_QUICK_WIRING.md",
+    "mr1/INTERFACE_BOARD.md",
+    "mr1/io-manifest.json",
+    "mr1/MR1_GITHUB_CROSSCHECK.md",
     "mr1/OPERATOR.md",
+    "mr1/ORDER_LIST.md",
+    "mr1/PIGTAIL_SCHEDULE.md",
     "mr1/README.md",
+    "mr1/RESEARCH.md",
+    "mr1/SPINDLE_SUPERVISION.md",
+    "mr1/WIRING.md",
+    "mr1/WIRING_SIMPLE.md",
     "platformio.ini",
     "README.md",
     "SOURCE-PROVENANCE.md",
     "STM32F401CCUX_BL16K_FLASH.ld",
+    "tools/validate_mr1_profile.py",
     "tools/verify_source_export.py",
     "WIRING_GUIDE.md"
   ],
@@ -9118,8 +9097,58 @@
     "workflowTests": "6/6 PASS",
     "compiledImage": "Not included; binary-vector checks deferred",
     "physicalAcceptance": false,
-    "sourceLogicIntegrity": "626 C/C++/assembly source and header files byte-identical to pinned revisions",
+    "sourceLogicIntegrity": "626 C/C++/assembly source and header files byte-identical to pinned revisions; except Inc/my_machine.h (credential placeholders, compiled by no environment)",
     "canonicalProfiles": "Four canonical JSON files byte-identical to corrected reference bundle"
   },
-  "validatedAt": "2026-09-25T06:18:59.522412+00:00"
+  "validatedAt": "2026-09-25T06:18:59.522412+00:00",
+  "postExportChanges": {
+    "reason": "Post-audit corrections (2026-09-25): documentation, validator messages, credential placeholders and relocation of unsafe bench scripts. Production firmware C/C++ sources and the pinned image are unchanged.",
+    "sourceExceptions": {
+      "Inc/my_machine.h": "network credential placeholders; -D OVERRIDE_MY_MACHINE excludes it from every environment"
+    },
+    "relocated": [
+      "check_settings.py",
+      "check_spindle.py",
+      "check_tmc.py",
+      "check_tmc_settings.py",
+      "check_uart_comm.py",
+      "check_vfd.py",
+      "debug_tmc.py",
+      "deep_test.py",
+      "diagnose.py",
+      "diagnose_motors.py",
+      "diagnose_tmc.py",
+      "diagnose_uart.py",
+      "disable_check.py",
+      "enter_dfu.py",
+      "fix_alarm.py",
+      "full_diag.py",
+      "full_test.py",
+      "m122.py",
+      "move_test.py",
+      "quick_check.py",
+      "quick_test.py",
+      "read_tmc.py",
+      "rotation_test.py",
+      "scan_settings.py",
+      "simple_jog_test.py",
+      "slow_test.py",
+      "stress_reset.py",
+      "stress_test_3axis.py",
+      "stress_test_segmented.py",
+      "test_all_axes.py",
+      "test_limits.py",
+      "test_motion.py",
+      "test_move.py",
+      "test_no_vfd.py",
+      "test_tmc_uart.py",
+      "test_uart_current.py",
+      "tmc_diagnose.py",
+      "tmc_status.py",
+      "tmc_test.py",
+      "torque_test.py",
+      "unlimited_test.py",
+      "visual_test.py"
+    ]
+  }
 }

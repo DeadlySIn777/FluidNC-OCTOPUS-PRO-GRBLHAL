@@ -376,6 +376,15 @@ export function createTelemetryService(options = {}) {
   const backpressuredClients = new WeakSet();
   const startedAt = new Date().toISOString();
   const startedPerformanceAt = performance.now();
+  // Exact Host allow-list against DNS rebinding. A LAN companion reaches this
+  // service by the same host name as its allowed page origin.
+  const allowedHostNames = new Set([LOOPBACK_HOST, "localhost",
+    ...(config.httpHost === LAN_HOST ? [...config.allowedOrigins].map((origin) => new URL(origin).hostname) : [])]);
+  const hostAllowed = (host) => {
+    const port = httpServer?.address()?.port;
+    return typeof host === "string" && Number.isInteger(port)
+      && [...allowedHostNames].some((name) => host.toLowerCase() === `${name}:${port}`);
+  };
   let httpServer;
   let serial;
   let sensorSerial;
@@ -1608,6 +1617,11 @@ export function createTelemetryService(options = {}) {
 
   const requestHandler = (request, response) => {
     const requestReceivedEpochMs = Date.now();
+    if (!hostAllowed(request.headers.host)) {
+      sendJson(response, 403, { error: "Host not allowed.", code: "HOST_DENIED" });
+      request.resume();
+      return;
+    }
     let url;
     try {
       url = new URL(request.url ?? "/", `http://${LOOPBACK_HOST}`);

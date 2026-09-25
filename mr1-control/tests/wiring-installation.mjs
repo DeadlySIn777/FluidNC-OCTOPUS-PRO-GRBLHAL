@@ -186,22 +186,37 @@ test("source ledger separates exact wiring authorities from the MR-1 community c
   assert.match(html, /DO NOT COPY FROM THE MESA BUILD/);
 });
 
-test("driver socket adapter routes only the four approved 18-position contacts", () => {
+test("driver socket adapter routes only STEP, DIR and GND; EN stays reserved and unconnected", () => {
   assert.equal(OCTOPUS_DRIVER_SOCKET_PINOUT.length, 18);
   assert.deepEqual(
     OCTOPUS_DRIVER_SOCKET_PINOUT.filter((contact) => contact.disposition === "ROUTE")
       .map(({ pin, signal }) => [pin, signal]),
-    [[1, "EN"], [7, "STEP"], [8, "DIR"], [9, "GND"]],
+    [[7, "STEP"], [8, "DIR"], [9, "GND"]],
   );
+  assert.deepEqual(
+    OCTOPUS_DRIVER_SOCKET_PINOUT.filter((contact) => contact.disposition === "RESERVED")
+      .map(({ pin, signal }) => [pin, signal]),
+    [[1, "EN"]],
+  );
+  assert.ok(OCTOPUS_DRIVER_SOCKET_PINOUT.every((contact) => ["ROUTE", "RESERVED", "NC"].includes(contact.disposition)));
   assert.equal(new Set(OCTOPUS_DRIVER_SOCKET_PINOUT.map((contact) => contact.pin)).size, 18);
   assert.equal(manifest.motion.octopus_driver_socket.positions, 18);
   assert.deepEqual(manifest.motion.octopus_driver_socket.routed_contacts, {
-    enable: 1,
     step: 7,
     direction: 8,
     logic_ground: 9,
   });
+  assert.deepEqual(manifest.motion.octopus_driver_socket.reserved_contacts, { enable: 1 });
   assert.match(WIRING_AUDIT.commandInterface, /5V-BUFFERED SOCKET/);
+  assert.match(WIRING_AUDIT.commandInterface, /8 ACTIVE \+ 4 RESERVED/);
+  assert.doesNotMatch(WIRING_AUDIT.commandInterface, /12-CHANNEL/);
+
+  const html = readFileSync(appHtmlUrl, "utf8");
+  const harness = html.slice(html.indexOf('<section id="harness-panel"'), html.indexOf('<section id="probes-panel"'));
+  assert.match(harness, /<code>1<\/code><strong>EN<\/strong><span>RESERVED<\/span>/);
+  assert.match(harness, /ONLY STEP, DIR, AND GND LEAVE THE BOARD/);
+  assert.match(harness, /2x8 adapter candidate remains on HOLD/);
+  assert.doesNotMatch(html, /12-channel MOSFET|ONLY EN, STEP, DIR, AND GND|pins 1-16|pins 3-18/);
 });
 
 test("pigtail schedule separates build, fit-check, and held stock connectors", () => {
@@ -210,7 +225,10 @@ test("pigtail schedule separates build, fit-check, and held stock connectors", (
   assert.ok(WIRING_PIGTAIL_SCHEDULE.every((item) => ["exact", "meter", "hold"].includes(item.state)));
   const byId = Object.fromEntries(WIRING_PIGTAIL_SCHEDULE.map((item) => [item.id, item]));
   assert.equal(byId.motor_socket_adapters.quantity, 4);
-  assert.match(byId.motor_socket_adapters.populate, /PIN 1 EN \/ 7 STEP \/ 8 DIR \/ 9 GND/);
+  assert.match(byId.motor_socket_adapters.populate, /7 STEP \/ 8 DIR \/ 9 GND ONLY/);
+  assert.match(byId.motor_socket_adapters.populate, /PIN 1 EN RESERVED, NOT CONNECTED/);
+  assert.match(byId.motor_socket_adapters.detail, /2x8 adapter candidate remains on HOLD/);
+  assert.doesNotMatch(byId.motor_socket_adapters.detail, /pins 1-16/);
   assert.equal(byId.stop_housings.quantity, 8);
   assert.match(byId.stop_housings.detail, /5 V cavity empty/);
   assert.equal(byId.pb7_tool_setter_housing.quantity, 1);
@@ -363,14 +381,60 @@ test('alarm instructions require individual conditioning, supervised healthy sta
   const gate = WIRING_EVIDENCE_GATES.find(item => item.id === 'cl57t_alarm_truth');
   assert.match(gate.detail, /Each raw ALM\/COMO pair has its own isolated, current-limited conditioner/);
   assert.match(gate.detail, /Combine only conditioned healthy outputs/);
-  assert.match(gate.detail, /PG12-PG15 are diagnostics only/);
+  assert.match(gate.detail, /PG12-PG15 are not read by the current firmware/);
+  assert.match(gate.detail, /PB1 stops motion before any coupled dual-Y motion/);
+  for (const macro of ['X_MOTOR_FAULT', 'Y_MOTOR_FAULT', 'Z_MOTOR_FAULT', 'M3_MOTOR_FAULT']) {
+    const signal = signalByMacro(macro);
+    assert.equal(signal.stopsMotion, false);
+    assert.equal(signal.firmwareReadsState, false);
+    assert.match(signal.role, /not read by the current firmware/);
+  }
   const html = readFileSync(appHtmlUrl, 'utf8');
   const alarms = html.slice(html.indexOf('ROUTE EACH DRIVE ALARM'), html.indexOf('HARDWIRED STOP FIRST'));
+  assert.match(alarms, /the current firmware does not read them/);
+  assert.doesNotMatch(alarms, /axis diagnostics/);
   assert.match(alarms, /Never series-chain raw alarm transistors/);
   assert.match(alarms, /software inversion cannot distinguish it from a broken cable/);
   assert.match(alarms, /never hot-unplug motor or encoder cables/);
   assert.match(alarms, /never use an ohmmeter on an energized output/);
   assert.match(alarms, /Arrange cable-open tests de-energized/);
+});
+
+test('E-stop monitor uses a contact closed while the safety relay is energized, and the stop design stays a blocking hold', () => {
+  const gate = WIRING_EVIDENCE_GATES.find(item => item.id === 'safety_chain');
+  assert.match(gate.detail, /closed while the relay is energized \(not an NC auxiliary\)/);
+  assert.match(gate.detail, /Never invert \$14/);
+  assert.match(gate.detail, /SON dropout is not a stop/);
+  const reset = signalByMacro('RESET');
+  assert.match(reset.role, /closed to GND while the relay is energized/);
+  assert.doesNotMatch(reset.role, /^NC /);
+  const html = readFileSync(appHtmlUrl, 'utf8');
+  const inputs = html.slice(html.indexOf('<section id="inputs-panel"'), html.indexOf('<section id="power-panel"'));
+  assert.match(inputs, /Never invert \$14 to suit a wrong contact/);
+  assert.match(inputs, /HOLD before energizing/);
+  assert.doesNotMatch(inputs, /E-STOP AUX|SAFETY RELAY AUX/);
+});
+
+test('EXP2 and PB7 inputs require interface-board pull-up/RC and the onboard SW2 is guarded', () => {
+  const byId = Object.fromEntries(WIRING_PIGTAIL_SCHEDULE.map(item => [item.id, item]));
+  assert.match(byId.exp2_breakout.detail, /PB1\/PB2 have no board pull-up or RC/);
+  assert.match(byId.exp2_breakout.detail, /Guard or remove onboard SW2, which shares PB2/);
+  assert.match(byId.pb7_tool_setter_housing.detail, /PB7 has no board pull-up or RC/);
+  const html = readFileSync(appHtmlUrl, 'utf8');
+  const inputs = html.slice(html.indexOf('<section id="inputs-panel"'), html.indexOf('<section id="power-panel"'));
+  assert.match(inputs, /No contact goes straight to an MCU header/);
+  assert.match(inputs, /Guard or remove SW2 before commissioning/);
+});
+
+test('reset/bootloader STEP-DIR float and the non-fail-safe probe circuit stay visible hold points', () => {
+  const gates = Object.fromEntries(WIRING_EVIDENCE_GATES.map(item => [item.id, item]));
+  assert.match(gates.cl57t_interface_scope.detail, /STEP\/DIR are scoped during MCU reset, power-up and an SD-bootloader pass/);
+  assert.match(gates.cl57t_interface_scope.detail, /design decision pending review/);
+  assert.match(gates.probe_truth.detail, /not fail-safe/);
+  assert.match(gates.probe_truth.detail, /Before every probing cycle/);
+  const html = readFileSync(appHtmlUrl, 'utf8');
+  assert.match(html, /STEP\/DIR are undefined while the MCU is in reset or the SD bootloader/);
+  assert.match(html, /NOT FAIL-SAFE: the optocoupler conducts only on trigger/);
 });
 
 test('isolation checks distinguish the bare assembly from mounted PE references and unqualified module topology', () => {

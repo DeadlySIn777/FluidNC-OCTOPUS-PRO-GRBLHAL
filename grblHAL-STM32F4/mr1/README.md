@@ -13,13 +13,13 @@ Active hardware plan: **Octopus Pro v1.1 / STM32F429ZGT6**, four external **CL57
 - [Windows operator guide](OPERATOR.md), [staged commissioning reference](COMMISSIONING.md)
 - [Source build and licensing](../README.md), [historical build evidence](BUILD_REPORT.md)
 
-The release-level corrected wiring reference and current visual guide are the primary presentation. Older generic maps and root diagnostic scripts are historical and can describe other machines. DM860T documents concern the preserved rollback set only.
+The release-level corrected wiring reference and current visual guide are the primary presentation. Older generic maps are historical and can describe other machines. The former root diagnostic scripts now live in `legacy/grblhal-diagnostics-2025/` and must not be run on the MR1. DM860T documents concern the preserved rollback set only.
 
 ## Physical hold points
 
 Confirm actual board/MCU and all four drive revisions; photograph printed terminal names and switch settings; prove connector viewing sides and continuity. Qualify the actual command and sensor interfaces, independent homes, raw alarm conditioning and supervised aggregate, power domains/protection/earthing, independent E-stop, motor/encoder pairing and mechanical fit. Spindle/coolant load wiring, thermal sensor identity and oil/lubrication assignment remain unresolved. Secure test motors and support gravity-loaded Z before any separately permitted energization.
 
-Generic TLP281/HW-399 names do not qualify module circuits or terminal assignments. Raw ALM/COMO outputs must not be chained directly into PB1. STOP4–7 diagnostics are separate from the PB1 aggregate. Neither the existing motor supply nor a proposed replacement is accepted for simultaneous four-drive loading/regeneration without evidence. The old unqualified 48 V capacitor/NTC/bleeder recipe is withdrawn.
+Generic TLP281/HW-399 names do not qualify module circuits or terminal assignments. Raw ALM/COMO outputs must not be chained directly into PB1. STOP4–7 per-axis fault wiring is not read by the current firmware; the PB1 aggregate is the only drive-fault stop and must be qualified before coupled dual-Y motion. Neither the existing motor supply nor a proposed replacement is accepted for simultaneous four-drive loading/regeneration without evidence. The old unqualified 48 V capacitor/NTC/bleeder recipe is withdrawn.
 
 ## Software baseline
 

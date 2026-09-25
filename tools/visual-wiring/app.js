@@ -268,4 +268,4 @@ $('print-label').addEventListener('click',()=>{
   window.print();
 });
 render();
-if(location.hash==='#octopus')switchView('board');
+if(location.hash==='#octopus'){switchView('board');$('view-board').scrollIntoView({block:'start'});}

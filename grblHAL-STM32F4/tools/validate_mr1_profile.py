@@ -641,7 +641,12 @@ def audit() -> list[str]:
 
     expected_exti = {0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15}
     require(set(exti) == expected_exti, f"unexpected EXTI allocation: {sorted(exti)}")
-    notes.append(f"{len(occupied)} unique GPIO assignments; {len(exti)} unique EXTI inputs")
+    irq_inputs = sum(not name.endswith("_MOTOR_FAULT") for name in exti.values())
+    notes.append(
+        f"{len(occupied)} unique GPIO assignments; {len(exti)} inputs reserved on distinct EXTI "
+        "line numbers; the PG12-PG15 per-axis drive-fault inputs get no IRQ and are not read, "
+        f"so at most {irq_inputs} EXTI lines are used"
+    )
 
     expected_config = {
         "DEFAULT_X_STEPS_PER_MM": manifest["motion"]["steps_per_mm"]["x"],
@@ -766,7 +771,7 @@ def audit() -> list[str]:
             "MOTOR3 enable is not the Octopus Pro v1.1 pin PA2")
     notes.append("Octopus Pro v1.1 MOTOR3 enable revision check: PA2")
     require(macro_gpio(board, "AUXOUTPUT2") == "PE15",
-            "reserved future spindle-direction output is not PE15/FAN5")
+            "reserved future spindle-direction output is not PE15 (EXP1-8)")
     require(macro_gpio(board, "AUXINPUT2") == "PB7",
             "fixed tool-setter input is not PB7")
     require(manifest["board"].get("bltouch_hardware_installed") is False,

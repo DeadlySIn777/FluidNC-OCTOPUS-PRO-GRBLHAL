@@ -8,7 +8,9 @@ import { validateMr1Nc } from "../src/nc-safety-validator.js";
 function printIssue(kind, item) {
   const location = item.line > 0 ? `line ${item.line}` : "program";
   process.stdout.write(`${kind} ${location} [${item.code}] ${item.message}\n`);
-  if (item.source) process.stdout.write(`  ${item.source}\n`);
+  // Never echo raw control or realtime bytes from a rejected file.
+  const source = String(item.source ?? "").replace(/[^\x20-\x7e]/g, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
+  if (source) process.stdout.write(`  ${source}\n`);
 }
 
 export async function validateFiles(filePaths) {

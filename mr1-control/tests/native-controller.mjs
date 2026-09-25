@@ -782,3 +782,156 @@ test('intentional feed hold during program persistence stays resumable without a
   await running;
   assert.equal(controller.job.state, 'complete');
 });
+
+// Pinned $10=511 leaves bit 12 (report while homing) clear: grblHAL sends one
+// forced report as the cycle starts and answers no status request until it ends.
+class SilentHomingPort extends WireController {
+  write(data, cb) {
+    const command = Buffer.isBuffer(data) ? null : String(data).trim();
+    if (!/^\$H[XYZ]?$/.test(command ?? '')) return super.write(data, cb);
+    this.writes.push(command); cb?.();
+    if (this.homeSilently !== false) queueMicrotask(() => { this.state = 'Home'; this.send(this.status()); this.silent = true; });
+    else this.silent = true;
+  }
+  finishHome({ report = true } = {}) { this.silent = !report; this.homed = true; this.state = 'Idle'; this.send('ok\r\n'); }
+}
+const until = async predicate => { for (let i = 0; i < 200 && !predicate(); i++) await delay(5); assert.ok(predicate()); };
+const energy = port => port.writes.filter(bytes => Array.isArray(bytes) && [REALTIME.hold, REALTIME.reset].includes(bytes[0]));
+async function silentHome(t, options = {}) {
+  let now = Date.now();
+  const port = new SilentHomingPort();
+  const { controller } = await setup(t, { port, now: () => now, ...options });
+  port.state = 'Alarm'; port.homed = false; port.send(port.status()); controller.arm();
+  const home = controller.home();
+  return { controller, port, home, advance: ms => { now += ms; } };
+}
+
+test('a silent homing cycle does not trip the stale-status watchdog', async t => {
+  const { controller, port, home, advance } = await silentHome(t);
+  await until(() => controller.pending?.homing === true);
+  const polls = port.writes.length;
+  advance(10_000); await delay(250);
+  assert.equal(controller.fault, null); assert.equal(controller.armed, true);
+  assert.ok(port.writes.slice(polls).some(bytes => Array.isArray(bytes) && bytes[0] === REALTIME.status), 'status is still requested');
+  port.finishHome(); await home;
+  assert.equal(controller.status.homing.complete, true);
+  assert.equal(controller.fault, null);
+  assert.deepEqual(energy(port), []);
+});
+
+test('stop still reaches a silent homing cycle', async t => {
+  const { controller, port, home, advance } = await silentHome(t);
+  await until(() => controller.pending?.homing === true);
+  advance(10_000); controller.stop();
+  await assert.rejects(home, /Stopped/);
+  assert.deepEqual(energy(port).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset]);
+});
+
+test('after the homing acknowledgement a fresh status report is required again', async t => {
+  const { controller, port, home, advance } = await silentHome(t);
+  await until(() => controller.pending?.homing === true);
+  advance(10_000); port.finishHome({ report: false });
+  await until(() => controller.pending === null);
+  await delay(150); assert.equal(controller.fault, null, 'the final report gets its own stale window');
+  advance(2000);
+  await assert.rejects(home, /status timed out/);
+  assert.equal(controller.armed, false);
+  assert.ok(energy(port).some(bytes => bytes[0] === REALTIME.reset));
+});
+
+test('homing without the forced Home report, or without an acknowledgement, stays bounded', async t => {
+  const first = await silentHome(t);
+  first.port.homeSilently = false;
+  await until(() => first.port.writes.includes('$H'));
+  first.advance(2000);
+  await assert.rejects(first.home, /status timed out/);
+  const second = await silentHome(t, { homeTimeout: 200 });
+  await until(() => second.controller.pending?.homing === true);
+  await assert.rejects(second.home, /acknowledgement timed out/);
+  assert.ok(energy(second.port).some(bytes => bytes[0] === REALTIME.reset));
+});
+
+const BANNER = "GrblHAL 1.1f ['$' or '$HELP' for help]\r\n";
+test('the welcome banner printed 200 ms after the DTR edge of open is consumed before preflight', async t => {
+  class DtrPort extends WireController {
+    send(text) { if (text === BANNER) this.queriesBeforeBanner = this.writes.filter(x => typeof x === 'string').length; super.send(text); }
+  }
+  const port = new DtrPort(); port.welcomeDelay = 200;
+  const { controller } = await setup(t, { port });
+  assert.equal(port.queriesBeforeBanner, 0);
+  assert.equal(controller.fault, null);
+  assert.equal(controller.preflight.preflightPassed, true);
+  await delay(150); assert.equal(controller.fault, null);
+});
+
+test('a startup banner after preflight begins, or a second banner, is still a restart', async t => {
+  class BannerOnQuery extends WireController {
+    write(data, cb) { super.write(data, cb); if (String(data).trim() === this.bannerOn) this.send(BANNER); }
+  }
+  for (const [welcomeDelay, bannerOn] of [[false, '$$'], [0, '$I+']]) {
+    const port = new BannerOnQuery(); port.welcomeDelay = welcomeDelay; port.bannerOn = bannerOn;
+    const controller = new NativeController({ profile, portFactory: async () => port, motionQualified: true, ackTimeout: 120, welcomeMs: 30 });
+    t.after(() => controller.disconnect());
+    await assert.rejects(controller.connect('COM7'), /restarted/);
+    assert.equal(controller.preflight, null); assert.equal(controller.connected, false);
+  }
+});
+
+test('jog cancel sends the realtime jog-cancel byte instead of resetting the controller', async t => {
+  const { controller, port } = await setup(t);
+  controller.arm(); port.ignore = '$J=G21 G91 X1 F50';
+  const move = controller.jog({ axis: 'x', distance: 1, feed: 50 });
+  await until(() => controller.pending?.written === true);
+  port.state = 'Jog'; port.send(port.status()); port.state = 'Idle';
+  const cancelled = controller.cancelJog();
+  await assert.rejects(move, /cancelled/);
+  await cancelled;
+  assert.ok(port.writes.some(bytes => Array.isArray(bytes) && bytes[0] === REALTIME.cancelJog));
+  assert.deepEqual(energy(port), []);
+  assert.equal(controller.armed, false); assert.match(controller.fault, /Jog cancelled/);
+});
+
+test('an unconfirmed jog cancel escalates to hold and reset', async t => {
+  const { controller, port } = await setup(t, { jogCancelMs: 150 });
+  controller.arm(); port.state = 'Jog'; port.send(port.status());
+  await controller.cancelJog();
+  assert.deepEqual(energy(port).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset]);
+  assert.match(controller.fault, /not confirmed/);
+  port.state = 'Idle'; await controller.disconnect(); await controller.connect('COM7');
+  controller.arm(); port.state = 'Run'; port.send(port.status());
+  controller.cancelJog();
+  assert.ok(!port.writes.slice(-3).some(bytes => Array.isArray(bytes) && bytes[0] === REALTIME.cancelJog), 'a running program is reset, not jog-cancelled');
+  assert.deepEqual(energy(port).slice(-2).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset]);
+});
+
+test('a TAB separator is streamed as a space so a loaded program cannot fault mid-job', async t => {
+  const { controller, port } = await setup(t);
+  const source = program.replace('G1 Z0 F100', 'G1\tZ0\tF100');
+  const loaded = controller.loadProgram(source, 'tab.nc'); controller.arm();
+  assert.ok(controller.program.lines.includes('G1 Z0 F100'));
+  assert.equal(controller.program.source, source);
+  const run = controller.runProgram(loaded.sha256);
+  for (let i = 0; i < 100 && controller.job.state !== 'paused'; i++) await delay(5);
+  port.send(port.status()); controller.resume(); await run;
+  assert.equal(controller.job.state, 'complete');
+  assert.ok(port.writes.includes('G1 Z0 F100'));
+});
+
+test('an Idle report before a planned move starts does not complete that move', async t => {
+  class LateCyclePort extends WireController {
+    write(data, cb) {
+      const command = Buffer.isBuffer(data) ? null : String(data).trim();
+      if (command !== 'G21 G91 G94 G1 Z1 F50') return super.write(data, cb);
+      this.writes.push(command); cb?.();
+      // grblHAL acknowledges the planned block and may report Idle before its cycle starts.
+      queueMicrotask(() => { this.send('ok\r\n'); this.send(this.status()); });
+      setTimeout(() => { this.position[2] += 1; this.send(this.status()); }, 150);
+    }
+  }
+  const { controller, port } = await setup(t, { port: new LateCyclePort() });
+  controller.arm();
+  const start = { ...controller.status.position.machine };
+  await controller.idleAfter('G21 G91 G94 G1 Z1 F50', 2000, { target: { ...start, z: start.z + 1 } });
+  assert.equal(controller.status.position.machine.z, start.z + 1);
+  assert.equal(port.position[2], start.z + 1);
+});

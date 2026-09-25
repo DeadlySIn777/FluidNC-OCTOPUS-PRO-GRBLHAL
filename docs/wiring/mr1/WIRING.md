@@ -3,7 +3,7 @@
 > **Changed 2026-09-16.** The four `CL57T V4.1` closed-loop kits arrived, so
 > the machine goes **straight to closed loop** and the DM860T phase is skipped.
 > **Use `CL57T_QUICK_WIRING.md`** for the bench termination sequence and switch
-> settings. `DM860T_QUICK_WIRING.md` is retained as reference for the preserved
+> settings. `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md` (repository path) is retained as reference for the preserved
 > rollback hardware only — **do not wire a CL57T from it.** Its switch letters,
 > its bus-voltage range, and above all its no-polarity power rule are wrong for
 > these drives.
@@ -43,7 +43,7 @@ through formal commissioning. Every item is marked as one of:
 
 The 18 saved evidence checks record photographs, connector fit, meter readings, and bench
 tests. They cannot enable a control, grant motion permission, or replace the
-staged procedure in `COMMISSIONING.md`.
+staged procedure in `grblHAL-STM32F4/mr1/COMMISSIONING.md` (repository path).
 
 The same screen includes BTT's official Octopus Pro V1.1 pinout image dated
 2023-11-02. Eight highlighted connector groups open the matching detailed tab;
@@ -67,8 +67,9 @@ table as equally authoritative:
 - `io-manifest.json` and the matching compiled source own Octopus GPIO assignments.
 - Official BTT v1.1 documents own Octopus connector locations, the 18-position
   driver-socket circuit, and the 5 V HCT signal buffers.
-- The archived CL57T V4.1 manual (`_vendor_docs/`) owns CL57T terminals, limits,
-  switches, and timing. The official STEPPERONLINE V3 manual owns DM860T
+- The [CL57T V4.1 manual](https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf) owns CL57T terminals, limits, switches,
+  and timing. Vendor manuals are linked from their publishers, not bundled in
+  this repository. The official STEPPERONLINE V3 manual owns DM860T
   terminals, limits, and switches for the retained rollback set.
 - Official Langmuir material owns stock machine layout and assembly context.
 - The [alexphredorg MR-1 Mesa/LinuxCNC project](https://github.com/alexphredorg/mr1)
@@ -98,6 +99,29 @@ the E-stop chain opens. Keep the 24 V Octopus supply alive so the controller can
 report the stop. The exact stop category requires a machine risk assessment;
 neither the DM860T nor the CL57T V4.1 has a certified safe-torque-off input.
 
+> **HOLD - blocking prerequisite before energizing.** The stop circuit in this
+> manual is a set of principles, not a design. The 240 VAC spindle servo stays
+> powered when its `SON` input drops, the drives have no certified
+> safe-torque-off, and the flood/mist loads are switched only by firmware
+> outputs. Do not energize the cabinet with any drive, spindle or coolant load
+> connected until a qualified person has produced and reviewed a stop design
+> that, at minimum:
+>
+> 1. removes spindle-servo energy on E-stop with a rated mains contactor on the
+>    servo supply and/or a certified safe-torque-off function. `SON` dropout
+>    through the spindle-enable relay is not the E-stop function;
+> 2. removes 36 V motion power, with a Z-drop analysis for the de-energized
+>    state (removing power also removes holding torque from the gravity-loaded
+>    Z axis): brake, counterbalance or mechanical support;
+> 3. puts the flood pump and mist/air solenoid supplies in the hardwired stop
+>    chain;
+> 4. sets the stop category and restart prevention from the risk assessment;
+> 5. gives a complete terminal schedule for the E-stop station, safety relay,
+>    contactors and the PF3 monitor contact.
+>
+> The USB-only firmware flash (`grblHAL-STM32F4/mr1/COMMISSIONING.md`, Stage 0A)
+> needs no cabinet power and is not affected by this hold.
+
 ## System Architecture
 
 ```text
@@ -105,8 +129,10 @@ neither the DM860T nor the CL57T V4.1 has a certified safe-torque-off input.
   dual-channel E-stop / required interlocks
                 -> safety relay
                 -> motion-power contactor(s) -> 36 VDC -> four CL57T drives
-                -> spindle-enable contactor/contact -> stock servo drive
-                -> monitored auxiliary contact -> Octopus PF3
+                -> spindle servo energy removal: mains contactor and/or
+                   certified STO (HOLD - design review; SON dropout is not it)
+                -> coolant pump / air solenoid supply (HOLD - in the stop chain)
+                -> monitor contact, closed while energized -> Octopus PF3
 
                     CONTROL PATH
   Windows mini PC -- USB --> Octopus Pro v1.1 F429
@@ -243,7 +269,7 @@ Octopus GND-to-PE may then be connected by design.
 | Protective earth | Facility PE | Cabinet, DIN rail, MR-1 frame, spindle chassis, metal connector shells | Permanent bonding; never use PE as a signal return |
 | 36 V motion | `S-360-36`, 36 V 10 A | CL57T `P4` power inputs only | **18-50 VDC absolute, 50 V is a hard ceiling.** Four separately fused star branches; never daisy-chain drives. `P4` is POLARIZED `+VDC`/`GND` |
 | 24 V control | Separate regulated supply | Octopus `MAIN POWER`, relay coils, field interface | Octopus main input is limited to 28 V maximum; never apply 36 V |
-| 5 V motion logic | Protected interface supply | CL57T `P1` PUL/DIR/ENA optocouplers | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
+| 5 V motion logic | Protected interface supply | CL57T `P1` PUL/DIR optocouplers (ENA reserved, not connected) | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
 | Isolated 5 V home field | Isolated, current-limited DC/DC | Stock limit bus through four-channel conditioner | Separate from Octopus GPIO and probe field; omit only if each switch is proved to be a bare dry contact |
 | Isolated 5 V sensor | Isolated, current-limited DC/DC | Stock probe and tool setter only | Floating field side; crosses into Octopus through two optocouplers |
 | CL57T encoder | **Drive-supplied**: `P2 VCC`/`EGND` from each CL57T | That drive's motor encoder only | Never feed `VCC` from the field 5 V or 24 V rail; it is an output of the drive. Do not bond to another drive or controller logic; the manual does not prove internal galvanic isolation of this output. Route away from motor phases and bus cable |
@@ -332,6 +358,14 @@ separately prove polarity, startup/shutdown, power-loss behavior and the
 200 ms ENA-to-DIR requirement at the actual drive. The configured 250 ms delay
 is not physical proof and does not implement a hardware safety function.
 
+**STEP/DIR are undefined while the MCU is in reset or the SD bootloader.** The
+`MC74HCT125` buffers are always enabled and nothing pulls STEP/DIR, and with ENA
+unconnected the drives stay enabled. Scope STEP/DIR at the socket during reset,
+power-up and a bootloader pass with drive power off. Whether to use the
+reserved ENA channel or to interlock motion power to controller health is a
+**design decision pending review** (`INTERFACE_BOARD.md` A). Until then, keep
+drive power off whenever the controller is reset, rebooted or flashed.
+
 ### CL57T V4.1 Starting Switches
 
 Power must be off before changing switches. All settings are read at power-up.
@@ -348,7 +382,7 @@ Use the complete table in `CL57T_QUICK_WIRING.md`. Identical on all four drives:
 | `SW8` | `off` | Pulse filter 1.5 ms. Must be identical on all four, and especially on the two ganged Y drives |
 | `S3` selector | `5V` | Factory is `24V`. Applying 24 V to an input set to 5 V destroys the photocoupler |
 
-The retained DM860T switch table lives in `DM860T_QUICK_WIRING.md` and applies
+The retained DM860T switch table lives in `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md` (repository path) and applies
 only to the rollback hardware.
 
 The firmware provides 5 us pulses, 6 us direction setup, and 250 ms enable
@@ -433,27 +467,33 @@ connector hold points.
 > - That signal is what raises `Alarm_MotorFault` (`grbl/protocol.c:130-133`,
 >   `grbl/motion_control.c:1192-1193`) and what blocks motion
 >   (`grbl/protocol.c:467`).
-> - The per-axis pins PG12-PG15 are enumerated into `motor_fault_inputs` and
->   returned by `get_motor_fault_inputs()` for `$pins` reporting **only**. They
->   are never polled to raise an alarm. `Src/driver.c:72-76` carries the
->   unimplemented note: *"TODO: add support for IRQ driven fault inputs?"*
+> - The per-axis pins PG12-PG15 are in the driver's input table, so `$pins`
+>   lists their assignment, and they are collected into `motor_fault_inputs`.
+>   Nothing reads their state: `get_motor_fault_inputs()` has no caller in this
+>   board build, they are never polled to raise an alarm, and no status report
+>   or app screen shows them. `Src/driver.c:72-76` carries the unimplemented
+>   note: *"TODO: add support for IRQ driven fault inputs?"*
 >
 > **Therefore: combine all four isolated, conditioned drive-healthy outputs into PB1. Never series-chain raw ALM/COMO terminals into the GPIO.**
 > All four healthy = loop closed = PB1 reads healthy. Any drive alarm, any lost
 > drive power, any broken cable opens the loop and stops the machine.
 >
-> Keep PG12-PG15 wired in parallel as per-axis indication so `$pins` tells you
-> *which* axis faulted. That is diagnostics, not protection. Do not rely on
-> them, and do not let `$744`/`$745` create the impression that per-axis fault
-> handling is active.
+> PG12-PG15 may still be wired in parallel for a future firmware candidate, but
+> the current firmware does **not** read them: they give no stop, no status and
+> no indication of *which* axis faulted. Do not rely on them, and do not let
+> `$744`/`$745` create the impression that per-axis fault handling is active.
+>
+> **Blocking prerequisite:** the PB1 aggregate chain is the only drive-fault
+> stop. Qualify it - every drive's alarm, drive-power loss and open alarm cable
+> each stop motion through PB1 - before any coupled dual-Y motion.
 >
 > This mattered little with open-loop DM860Ts, which cannot report a meaningful
 > fault. With CL57T closed-loop drives the alarm is the entire point: a
 > following error is the drive telling you it has lost the position the
 > controller thinks it has.
 
-The four DIAG stop connectors are assigned to individual drive faults for
-indication.
+The four DIAG stop connectors are assigned to individual drive faults as wiring
+for a future firmware candidate. The current firmware does not read them.
 
 | Drive | Octopus connector | GPIO |
 | --- | --- | --- |
@@ -485,7 +525,9 @@ conditioner test fixture. Do not hot-unplug a motor to manufacture a fault.
 
 PB1 on EXP2 is the aggregate fault input, and per the box at the top of this
 section it is **the only one that stops motion**. Use an isolated,
-normally-healthy low signal. It must carry the series chain of all four CL57T
+normally-healthy low signal. PB1 has no board pull-up or RC filter (BTT v1.1
+schematic); the interface board supplies the 3.3 V pull-up, RC filter, series
+resistor and TVS (`INTERFACE_BOARD.md` E). It must carry the series chain of all four CL57T
 drive-healthy channels, and may additionally combine spindle alarm,
 safety-relay diagnostics, and cabinet overtemperature in the same series loop.
 
@@ -509,7 +551,8 @@ The touch probe and fixed tool setter do not share an input:
 No BLTouch sensor is installed. PB7 is only a generic isolated tool-setter
 input; `BLTouch` is the locator printed beside the five-pin board header.
 Populate only PB7 and its adjacent GND. Leave PB6 and 5 V empty, and keep the
-BLTouch firmware plugin disabled.
+BLTouch firmware plugin disabled. PB7 has no board pull-up or RC filter; the
+interface board supplies them (`INTERFACE_BOARD.md` E).
 
 The dedicated Octopus `PROBE` port on PC5 is intentionally unused. The official
 v1.1 schematic shows `PROBE -> R46 1K -> U16 EL357C LED`, with that LED returning
@@ -565,9 +608,14 @@ spindle, frame, Octopus ground, USB shield, cable shield, or PE.
 Before connecting either GPIO, prove an open circuit (no low-voltage
 continuity) between `GND` and `HGND`, power each side separately, and verify that OUT never exceeds
 3.3 V. Then record idle/trigger voltage for both channels, perform at least 20
-triggers, flex the cable, remove field power, and confirm the controller enters
-the intended safe state. A broken sensor signal may still look idle, so the
-operating checks must include cable and connector inspection.
+triggers, flex the cable, remove field power, and record the resulting state.
+With this active-low circuit, lost field power and a broken sensor signal both
+read as idle (not triggered), so the operating checks must include cable and
+connector inspection and a trigger test before every probing cycle: select the
+sensor, deflect the stylus or press the setter with motion stopped, and confirm
+`Pn:P` appears and clears. The app's probing workflow rejects an input that is
+already triggered but does not perform this test. See `INTERFACE_BOARD.md` D,
+"Not fail-safe", for the limitation and a future NC / idle-lit option.
 
 ### Input-Path Calibration
 
@@ -589,7 +637,7 @@ the command service and guarded motion sequence are commissioned.
 | Function | Connector | GPIO | Field contact |
 | --- | --- | --- | --- |
 | Enclosure door monitor | PWR-DET signal/GND | PC0 | NC, healthy closed |
-| E-stop safety-relay auxiliary monitor | TB signal/GND | PF3 | NC, healthy closed |
+| E-stop safety-relay monitor | TB signal/GND | PF3 | Closed to GND while the relay is energized; opens on E-stop/trip. Not an NC auxiliary - see below |
 | Feed hold | T0 signal/GND | PF4 | NC, healthy closed |
 | Guarded cycle start | EXP2 PB2/GND | PB2 | NO, pressed closes |
 | Aggregate fault | EXP2 PB1/GND | PB1 | Conditioned healthy-low |
@@ -598,9 +646,36 @@ The PWR-DET header also contains 3.3 V. Use only PC0 and GND for the dry
 contact. TB and T0 are two-pin signal/GND headers. Build keyed harnesses and
 continuity-test them off the board; never identify header pins from cable color.
 
+No field contact goes straight to an MCU header. Each passes the interface
+board's series resistor and TVS. PC0, PF3 and PF4 have onboard pull-ups and RC
+filters; PB1, PB2 and PB7 have none, so the interface board adds a 3.3 V pull-up
+and RC filter for them (`INTERFACE_BOARD.md` E).
+
+**Onboard `SW2` shares PB2 (cycle start).** PB2 is net `BTN_EN1`, also wired
+to the Octopus `SW2` ("BOOT1") pushbutton to GND, and only door/reset inputs are
+debounced. Pressing `SW2` during a feed hold resumes motion. Physically guard or
+disable `SW2` (or remove it) before commissioning. EXP2 pin 8 is the MCU reset
+line (`RST`/NRST), next to PB1/PB2: keep the breakout keyed and never probe it
+live.
+
 Cycle start is deliberately the only normally-open operator input. The firmware
 inverts that bit while leaving E-stop, door, and feed hold fail-safe high on an
 open wire.
+
+**E-stop monitor contact (PF3).** The firmware reads PF3 high as E-stop
+(`ESTOP_ENABLE`; the `$14` default does not invert it, and PF3 has a board
+pull-up). The monitor contact must therefore be **closed to GND while the safety
+relay is energized (healthy)** and **open on E-stop, relay trip or a broken
+wire** - for example a spare NO safety output or an NO auxiliary contact. Do not
+use an NC auxiliary: on typical safety relays it is open while the relay is
+energized and closes on trip, which inverts the reading. The relay model and
+its terminal are HOLD until the relay is selected. **Never invert `$14` to
+"fix" a wrong contact**; that would make a broken monitor wire read healthy.
+
+Commissioning check: pressing the E-stop must make PF3 read E-stop (`Pn:`
+includes `E`); releasing it and resetting the chain clears `E` (the alarm then
+still needs an explicit unlock, `$484=1`); unplugging the monitor wire must also
+read E-stop.
 
 ## Stock Spindle Interface
 
@@ -621,7 +696,7 @@ and configured drive parameters before termination.
 | --- | --- | --- |
 | Analog command return | 10 | Isolated converter `OUT-` |
 | 0-5 V speed command | 26 | Isolated converter `OUT+` |
-| Servo enable, reported active-low | 16 | Isolated dry relay contact to verified enable return |
+| Servo enable (`SON`), reported active-low | 16 | Isolated dry relay contact switching `SON` to the 24 V I/O-supply 0 V (sinking input, `COM+` at +24 V); pending drive-manual and harness verification |
 | I/O supply +24 V | 31 | Existing stock 24 V field supply |
 | I/O supply return | 23 | Existing stock 24 V return |
 | Possible servo alarm | 5 | Isolated conditioner to aggregate fault only after verification |
@@ -632,7 +707,10 @@ and configured drive parameters before termination.
 Langmuir reportedly configures the analog command as 0-5 V even though the
 generic T3 drive can support a different analog range. Do not alter servo
 parameters to make an unverified converter work. First measure the stock command
-at several requested speeds or reproduce the confirmed factory scaling.
+at several requested speeds or reproduce the confirmed factory scaling. Any
+later parameter change (for example analog gain scaling, `SPINDLE_SUPERVISION.md`
+option 1) is a documented, reviewed commissioning step taken only after the
+converter is verified, with the original parameter archive saved first.
 
 Octopus outputs:
 
@@ -682,7 +760,7 @@ in its commanded state.
 - Follow the encoder cable manufacturer's shield termination; never use a shield as encoder return.
 - Keep motor phase, 36 V bus, servo output, spindle mains, and pump conductors away from USB, probe, encoder, limit, and step/direction cable.
 - Cross unavoidable power and signal routes at approximately 90 degrees.
-- Use twisted pairs for PUL+/PUL-, DIR+/DIR-, and ENA+/ENA-; use separate shielded cable for each drive alarm.
+- Use twisted pairs for PUL+/PUL- and DIR+/DIR-; ENA+/ENA- stay unconnected while reserved. Use separate shielded cable for each drive alarm.
 - Keep probe and tool-setter cables separate from spindle power and motor phases.
 - Bond cable glands/connectors to the enclosure before signals enter the interface area.
 - Add strain relief and drip loops anywhere coolant can follow a cable.
@@ -707,10 +785,10 @@ link, part number, or board marking identifies the electrical interface and
 pinout. Three leads and their colors are not sufficient. If it is confirmed as
 a genuine three-wire DS18B20, the conditional Waveshare reference is `VDD -> H2
 pin 3 / 3V3`, `GND -> H2 pin 2 / GND`, and `DQ -> H2 pin 8 / GPIO16`, with one
-4.7 kohm pullup from DQ to 3V3. Never use H2 pin 1 `VBUS`. See
-`../../chatter-amoled-175/TEMP_SENSOR_WIRING.md`. The installed `7.4-mr1`
-firmware still reports internal ESP32 temperature; external-probe firmware is
-not active.
+4.7 kohm pullup from DQ to 3V3. Never use H2 pin 1 `VBUS`. The ESP32
+chatter-sensor firmware and its temperature-sensor wiring note are not part of
+this repository. The installed `7.4-mr1` chatter firmware still reports internal
+ESP32 temperature; external-probe firmware is not active.
 
 ## Pre-Power Continuity Rules
 
@@ -724,4 +802,4 @@ Before any supply is connected, the completed harness must show:
 - Correct DB44 pin numbers from both ends of the actual cable, with shell orientation recorded.
 - No short between adjacent driver-socket pins on the motion adapter.
 
-Proceed to `COMMISSIONING.md` only after a second-person check of those records.
+Proceed to `grblHAL-STM32F4/mr1/COMMISSIONING.md` (repository path) only after a second-person check of those records.

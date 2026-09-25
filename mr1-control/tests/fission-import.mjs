@@ -187,6 +187,103 @@ test("independent preview permits upward safe-Z retracts and rejects every unsaf
   }
 });
 
+test("safe Z must sit above work Z0 before rapid restore can be enabled", () => {
+  for (const safeZ of [-1000, -10, -0.001, 0]) {
+    const evaluation = evaluateFissionImportProfile({ ...DEFAULT_FISSION_IMPORT_PROFILE, safeZ, safeZVerified: true });
+    assert.equal(evaluation.valid, false, `safe Z ${safeZ}`);
+    assert.equal(evaluation.ready, false, `safe Z ${safeZ}`);
+    assert.match(evaluation.errors.join(" "), /above work Z0/);
+  }
+  assert.throws(
+    () => saveFissionImportProfile({ ...DEFAULT_FISSION_IMPORT_PROFILE, safeZ: -10, safeZVerified: true }, storage()),
+    /above work Z0/,
+  );
+  assert.equal(evaluateFissionImportProfile({ ...DEFAULT_FISSION_IMPORT_PROFILE, safeZ: 0.001, safeZVerified: true }).ready, true);
+  assert.equal(evaluateFissionImportProfile({ ...DEFAULT_FISSION_IMPORT_PROFILE, safeZ: 1000.001, safeZVerified: true }).valid, false);
+});
+
+test("cutting moves are never accepted as restored rapids, whatever safe Z is entered", () => {
+  const source = `G21 G90 G94 G17
+G54
+S5000 M3
+G0 X0 Y0 Z5
+G1 Z-5 F200
+G1 X50 F800
+G1 Y20
+G1 Z5 F500
+M5
+M30`;
+  const optimized = source.replace("G1 X50 F800\nG1 Y20", "G0 X50\nG0 Y20");
+  const before = parseGcodeProgram(source);
+  const after = parseGcodeProgram(optimized);
+  for (const safeZ of [-10, 0, 0.001, 3]) {
+    const result = verifyFissionPreview(before, after, { rapidsRestored: 2, rpmCapped: 0 }, { safeZ });
+    assert.equal(result.valid, false, `safe Z ${safeZ}`);
+  }
+  const negative = verifyFissionPreview(before, after, { rapidsRestored: 2, rpmCapped: 0 }, { safeZ: -10 });
+  assert.match(negative.errors.join(" "), /Safe Z must be above work Z0/);
+});
+
+test("safe Z must clear every move that still cuts", () => {
+  // Work Z0 on the table: the part top is near Z10 and the cuts run at Z8,
+  // so a safe Z of 3 is a wrong claim even though the rapids sit at Z20.
+  const source = "G21 G90\nG0 Z20\nG1 X10 Y0 F2\nG1 Z8 F100\nG1 X20 F500\nG1 Z20 F2\n";
+  const optimized = "G21 G90\nG0 Z20\nG0 X10 Y0\nG1 Z8 F100\nG1 X20 F500\nG0 Z20\n";
+  const before = parseGcodeProgram(source);
+  const after = parseGcodeProgram(optimized);
+  const low = verifyFissionPreview(before, after, { rapidsRestored: 2 }, { safeZ: 3 });
+  assert.equal(low.valid, false);
+  assert.match(low.errors.join(" "), /not above the highest cutting move at Z8\.000/);
+  const high = verifyFissionPreview(before, after, { rapidsRestored: 2 }, { safeZ: 12 });
+  assert.equal(high.valid, true, high.errors.join("\n"));
+  assert.equal(high.clearanceSegments, 1);
+  assert.equal(high.retractSegments, 1);
+});
+
+test("dwell, coolant, stop, spindle, tool and offset blocks must survive unchanged and in place", () => {
+  const source = `G21 G90 G94 G17
+G54
+S5000 M3
+M8
+G0 X0 Y0 Z5
+G1 X10 Y0 F2
+G1 Z-1 F100
+G4 P0.5
+G1 X20 F500
+M9
+G1 Z5 F2
+M0
+T2
+M5
+M30
+`;
+  const restored = source.replace("G1 X10 Y0 F2", "G0 X10 Y0").replace("G1 Z5 F2", "G0 Z5");
+  const verify = (optimized) => verifyFissionPreview(
+    parseGcodeProgram(source),
+    parseGcodeProgram(optimized),
+    { rapidsRestored: 2, rpmCapped: 0 },
+    { safeZ: 3 },
+  );
+  const accepted = verify(restored);
+  assert.equal(accepted.valid, true, accepted.errors.join("\n"));
+  for (const [label, changed] of [
+    ["dwell shortened", restored.replace("G4 P0.5", "G4 P0.1")],
+    ["dwell removed", restored.replace("G4 P0.5\n", "")],
+    ["coolant off moved after the retract", restored.replace("M9\nG0 Z5", "G0 Z5\nM9")],
+    ["coolant removed", restored.replace("M8\n", "")],
+    ["mist added", restored.replace("M8\n", "M8\nM7\n")],
+    ["stop removed", restored.replace("M0\n", "")],
+    ["stop made optional", restored.replace("M0\n", "M1\n")],
+    ["tool changed", restored.replace("T2", "T3")],
+    ["spindle stop removed", restored.replace("M5\n", "")],
+    ["work offset changed", restored.replace("G54", "G55")],
+  ]) {
+    const result = verify(changed);
+    assert.equal(result.valid, false, label);
+    assert.match(result.errors.join(" "), /Non-motion block changed/, label);
+  }
+});
+
 test("independent preview rejects cutting-feed and spindle changes", () => {
   const before = parseGcodeProgram("G21 G90\nS5000 M3\nG0 Z5\nG1 X10 F500\n", { name: "a.nc" });
   const feedChanged = parseGcodeProgram("G21 G90\nS5000 M3\nG0 Z5\nG1 X10 F600\n", { name: "b.nc" });

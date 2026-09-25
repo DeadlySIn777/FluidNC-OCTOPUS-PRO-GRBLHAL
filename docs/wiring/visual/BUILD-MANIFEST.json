@@ -3,26 +3,26 @@
   "product": "MR1 Visual Wiring Guide",
   "stage": "Unpowered cable preparation; physical connection/electrical acceptance pending",
   "sourceFiles": {
-    "build.py": "f94ab08ea94f1cb8ef19df419e55220cb6a3a57d62021d4259e7a79571b7d1e0",
-    "cable-data.py": "e0d6708deaca86a71fb23565092c5883357b79e53622c7fa6bbbe340e2426508",
-    "app.js": "1a6382a03243e01cfe852a508b6cd1fca75a8ed70075fae13fd678fe4525d5d1",
+    "build.py": "d45e48b88a349f195a56b3cd203f5491710869558aa72c2d8140743a9d37c92f",
+    "cable-data.py": "e36643246e85e435d448d38b136fea60d8ccb58eeda8db8810e63e67a0da5337",
+    "app.js": "dfc45a6e65b83c194852e6fa1393329626f081a20bcc929993d971bc3a32abba",
     "model.mjs": "ccb723151b05c9a7e1b7994731d4276e44b97af58b416dfdf16b9eaae399f8ca",
     "style.css": "f9d92c44892cd49b07bceace5dbe9bd2370557308bd3098eb4e3cb324e2c513b",
-    "index.template.html": "1710e44644a4e3782d5685ce072df407be93a618a62b0d5cb557d5d67403f8b8",
-    "cable-data.json": "79d137b27fbac932e657e60d23a461a51179d18843b8fa3f5130b145c44260be",
-    "route-content.json": "d961baa2c430b66c63484886c8a0f6e61736d82e02394d008e2eb737c7d22e25",
+    "index.template.html": "bf1a2308af0573bcc218b766ea872b2be0c8b0bb22b9df61f820beb0db217a61",
+    "cable-data.json": "72cd03b67c90ade7a6d289e31dfe004a9a2b879e893baa55d82bc0358405cf0e",
+    "route-content.json": "f0d569f92d5ad36a9b8c1e55ce713689b65e819e9b199a5dcdf084abf984f896",
     "asset-layout.json": "99054e6c798796dda03fb2b26feb3a057b4a5e364bf638035f742e2ae1ec0cec",
-    "coverage.json": "cb859c5205176a28fa39e9a3f3a154cc793cc3834214fc4f8b98b5f860ca86ea",
-    "board-content.json": "99cbe4ccb1044ab5f2453c3b29b5dfec6477f58c7bed6e07843d4aee343537c5",
+    "coverage.json": "3a4e93dd3d09c7ba3836ad40e519dd334d8ff7ac6658e5c29347acabe4a88932",
+    "board-content.json": "4b6c64708b02c9ae26d6fae6076a46c721c50ff764c9fb659cc7d4c5158da9d8",
     "board-regions.json": "cf3bfdf9d33daccdf429c01ffca9a526675c664a25f35a8d297b6fb8c9ee6511"
   },
-  "sourceScheduleSha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b",
+  "sourceScheduleSha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12",
   "cables": 56,
   "defaultVisibleCables": 44,
   "functionalViews": 29,
   "explicitlyMappedCableIds": 21,
   "systemGroups": 10,
-  "pendingCoverageCategories": 4,
+  "pendingCoverageCategories": 7,
   "boardSchematicGroups": 26,
   "boardLocationRegions": 16,
   "sourcePhotos": {
@@ -40,8 +40,8 @@
   "files": [
     {
       "path": "index.html",
-      "bytes": 745102,
-      "sha256": "3397b3cd65b0ee9446ca193807938af1d72421dc7e4e7bee371e67bbb9dec1f0"
+      "bytes": 751772,
+      "sha256": "2f75215ae65b3ec997cb65e5ba5745bf8254430700dfe796c3d57b5009ceadae"
     }
   ],
   "physicalMotionPermitted": false,

@@ -4,13 +4,17 @@ import { REALTIME } from '../../service/native-controller.mjs';
 import { createSimulatedPreflightTranscript } from '../../service/controller-preflight.mjs';
 
 export const profile = JSON.parse(readFileSync(new URL('../../../grblHAL-STM32F4/mr1/expected-settings.json', import.meta.url)));
-export const sampleProgram = 'G90 G94\nG17\nG21\nG40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0 Z5\nG1 Z0 F100\nM5\nM9\nG53 G0 Z-2\nM30';
+export const sampleProgram = 'G90 G94\nG17\nG21\nG40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0\nG0 Z5\nG1 Z0 F100\nM5\nM9\nG53 G0 Z-2\nM30';
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 // Byte-level test double. Never exposed by the production serial factory.
 export class WireController extends EventEmitter {
   constructor() { super(); this.path = 'COM7'; this.isOpen = false; this.writes = []; this.state = 'Idle'; this.homed = true; this.position = [-100, -100, -20]; this.ignore = null; this.pins = ''; this.silent = false; this.sensor = 0; this.probeHits = []; }
-  open(cb) { this.isOpen = true; cb(); }
-  close(cb) { this.isOpen = false; this.emit('close'); cb(); }
+  // Like the USB CDC firmware, print the welcome banner after the DTR edge of every open.
+  open(cb) {
+    this.isOpen = true; cb();
+    if (this.welcomeDelay !== false) this.welcomeTimer = setTimeout(() => { if (this.isOpen) this.send("GrblHAL 1.1f ['$' or '$HELP' for help]\r\n"); }, this.welcomeDelay ?? 0);
+  }
+  close(cb) { clearTimeout(this.welcomeTimer); this.isOpen = false; this.emit('close'); cb(); }
   status(full = false) { return `<${this.state}|MPos:${this.position.join(',')}|WCO:0,0,0|FS:0,0${this.omitPeriodicFields && !full ? '' : `|H:${this.homed ? 1 : 0},${this.homedMask ?? (this.homed ? 7 : 0)}|A:|P:${this.sensor}`}|Pn:${this.pins}>\r\n`; }
   send(text) { this.emit('data', Buffer.from(text)); }
   write(data, cb) {

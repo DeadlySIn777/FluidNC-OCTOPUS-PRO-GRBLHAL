@@ -86,6 +86,19 @@ function unitScale(units) {
   return units === "G20" ? 25.4 : 1;
 }
 
+const MOTION_ONLY_WORDS = new Set(["X", "Y", "Z", "A", "B", "C", "U", "V", "W", "I", "J", "K", "R", "F", "N"]);
+
+// Everything a block does besides work-coordinate motion and feed rate
+// (dwell, spindle, coolant, tool, stops, offsets and other modes), in a
+// normalized form. Machine-reference blocks keep their axis words because
+// that motion is hidden from the segment list.
+function controlSignature(parsed) {
+  const machineReference = parsed.words.some(([letter, value]) => letter === "G" && MACHINE_REFERENCE_CODES.has(value));
+  const words = parsed.words.filter(([letter, value]) => machineReference
+    || !(MOTION_ONLY_WORDS.has(letter) || (letter === "G" && [0, 1, 2, 3].includes(value))));
+  return [...words.map(([letter, value]) => `${letter}${value}`), ...(parsed.cmds ?? [])].join(" ");
+}
+
 // gcode-toolpath attaches axis words to the most recent G/M/T word on the
 // block and silently discards them when that word is not a motion code, so a
 // block like "G54 X10" previews as no motion while a real controller moves.
@@ -272,6 +285,7 @@ export function parseGcodeProgram(source, options = {}) {
     coolant: "off",
   };
   const stats = { arcs: 0, cuts: 0, rapids: 0 };
+  const controlBlocks = [];
   let discontinuity = false;
   let previousMotionWorkOffset = "G54";
 
@@ -357,6 +371,8 @@ export function parseGcodeProgram(source, options = {}) {
       throw new Error("Parameterized G-code must be resolved to numeric motion before preview.");
     }
     if (parsed.words.length === 0 && !parsed.cmds) continue;
+    const control = controlSignature(parsed);
+    if (control) controlBlocks.push({ segment: segments.length, line: index + 1, words: control });
     context = {
       sourceLine: index + 1,
       ...blockMetadata(parsed, state, warnings),
@@ -419,6 +435,7 @@ export function parseGcodeProgram(source, options = {}) {
     warnings: [...warnings],
     outsideTravel,
     stats,
+    controlBlocks,
     source: "file",
   };
 }

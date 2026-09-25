@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { createHash } from 'node:crypto';
+import { Worker } from 'node:worker_threads';
 import { parseControllerLine } from '../src/telemetry/grbl-status.js';
 import { MR1_CONFIG } from '../src/machine-config.js';
 import { validateMr1Nc } from '../src/nc-safety-validator.js';
@@ -43,12 +44,50 @@ function nativeStatusContract(raw) {
   return { valid: true, full };
 }
 
+export function prepareProgram(source, name = 'program.nc', { airRun = false } = {}) {
+  if (typeof source !== 'string' || Buffer.byteLength(source) > 5 * 1024 * 1024) fail('Program exceeds 5 MB.');
+  // Embedded realtime characters execute immediately even inside comments.
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\uffff!?~]/.test(source)) fail('Program contains prohibited control characters.');
+  if (typeof airRun !== 'boolean') fail('Choose an explicit program mode.');
+  const validation = validateMr1Nc(source, { name, allowSpindleOffMotion: airRun });
+  if (!validation.ok) fail(validation.blockers.map(b => `Line ${b.line}: ${b.message}`).join('\n'));
+  // grblHAL discards control characters, so a TAB is only a separator there and
+  // in the validator. Stream it as a space; the hash still covers the source.
+  const lines = source.replace(/\r\n?/g, '\n').split('\n').map(s => parseLine(s, { lineMode: 'stripped' }).line.replace(/\t/g, ' ').trim()).filter(Boolean);
+  if (!lines.length || lines.some(s => Buffer.byteLength(s) > 120 || s.includes('$') || !/^[\x20-\x7e]+$/.test(s))) fail('Program has an invalid or oversized controller line.');
+  for (const line of lines) {
+    const words = parseLine(line).words;
+    if (words.some(([letter, value]) => letter === 'G' && value === 4)) {
+      const dwell = words.find(([letter]) => letter === 'P')?.[1];
+      if (!Number.isFinite(dwell) || dwell < 0 || dwell > 3600) fail('Dwell requires P seconds between 0 and 3600.');
+    }
+  }
+  return { name: String(name).slice(0, 160), source, lines, airRun, validation, sha256: createHash('sha256').update(source).digest('hex') };
+}
+
+// Validating a 5 MB program takes seconds. Off the event loop it cannot delay
+// status ingestion, the stale-status watchdog or an operator stop.
+export function prepareProgramOffThread(source, name, options) {
+  if (typeof source !== 'string' || Buffer.byteLength(source) > 5 * 1024 * 1024) return Promise.reject(new Error('Program exceeds 5 MB.'));
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('./native-program-worker.mjs', import.meta.url), { workerData: { source, name, options } });
+    worker.once('message', ({ program, error }) => {
+      if (error !== undefined) return reject(new Error(error));
+      if (program.sha256 !== createHash('sha256').update(source).digest('hex')) return reject(new Error('Program preparation did not match its source.'));
+      resolve({ ...program, source });
+    });
+    worker.once('error', reject);
+    worker.once('exit', code => reject(new Error(`Program preparation stopped (${code}).`)));
+  });
+}
+
 // Exactly one owner and one outstanding acknowledged line. Never replay a line
 // after a timeout: the controller may already have executed it.
 export class NativeController extends EventEmitter {
-  constructor({ profile, portFactory, now = Date.now, ackTimeout = 5000, portTimeout = 5000, staleMs = 1500, motionQualified = false, beforeWrite = async () => {} } = {}) {
+  constructor({ profile, portFactory, now = Date.now, ackTimeout = 5000, portTimeout = 5000, staleMs = 1500, welcomeMs = 1000,
+    homeTimeout = 120000, jogCancelMs = 1000, motionQualified = false, beforeWrite = async () => {} } = {}) {
     super();
-    Object.assign(this, { profile, portFactory, now, ackTimeout, portTimeout, staleMs, motionQualified, beforeWrite });
+    Object.assign(this, { profile, portFactory, now, ackTimeout, portTimeout, staleMs, welcomeMs, homeTimeout, jogCancelMs, motionQualified, beforeWrite });
     if (!this.profile.settings.some(s => s.id === 13)) this.profile = { ...profile, settings: [...profile.settings,
       { id: 13, name: 'Metric status reports', expected: 0, tolerance: 0, severity: 'blocker' }] };
     this.port = null;
@@ -89,11 +128,15 @@ export class NativeController extends EventEmitter {
   publish() { this.emit('state', this.snapshot()); }
   realtime(byte) {
     const port = this.port, generation = this.generation;
-    if (!port?.isOpen) return;
-    const failed = error => {
-      if (error && this.port === port && this.generation === generation) this.faulted(error.message, false);
-    };
-    try { port.write(Buffer.from([byte]), failed); } catch (error) { failed(error); }
+    if (!port?.isOpen) return Promise.resolve();
+    // Resolves (never rejects) once the driver finished this byte.
+    return new Promise(resolve => {
+      const failed = error => {
+        if (error && this.port === port && this.generation === generation) this.faulted(error.message, false);
+        resolve();
+      };
+      try { port.write(Buffer.from([byte]), failed); } catch (error) { failed(error); }
+    });
   }
   rejectPending(error) {
     if (!this.pending) return;
@@ -136,6 +179,7 @@ export class NativeController extends EventEmitter {
         this.status = { ...event.status, sequence: ++this.sequence };
         if (contract.full) this.lastFullStatusSequence = this.sequence;
         this.lastStatusAt = this.now();
+        if (this.pending?.written && this.pending.homing === false && this.status.state.name === 'Home') this.pending.homing = true;
         if (['Run', 'Hold'].includes(this.status.state.name)) this.lastPlannerWaitAt = this.lastStatusAt;
         if (this.status.state.name !== 'Alarm' && !this.homingOperation) this.awaitingHome = false;
         if (this.armed && (this.status.pins.controls.eStop || this.status.pins.controls.motorFault
@@ -143,10 +187,14 @@ export class NativeController extends EventEmitter {
           || this.status.state.name === 'Door' || (this.status.state.name === 'Alarm' && !this.awaitingHome))) this.faulted('Controller safety input or alarm is active.');
         this.emit('telemetry', this.status);
       } else if (event?.type === 'ok' && this.pending?.written) {
-        const pending = this.pending; this.pending = null; clearTimeout(pending.timer); pending.resolve();
+        const pending = this.pending; this.pending = null; clearTimeout(pending.timer);
+        // The report that ends a silent homing cycle must still arrive within staleMs.
+        if (pending.homing) this.statusGraceFrom = this.now();
+        pending.resolve();
       } else if (event?.type === 'error') this.faulted(`Controller rejected command: error ${event.code}.`);
       else if (event?.type === 'alarm') this.faulted(`Controller alarm ${event.code}.`);
-      else if (event?.type === 'startup' && this.connected && (this.preflight || this.pending || this.fault)) {
+      else if (event?.type === 'startup' && this.connected && this.welcome) this.welcome();
+      else if (event?.type === 'startup' && this.connected) {
         this.status = null; this.preflight = null; this.faulted('Controller restarted. Reconnect and verify before continuing.', false);
       } else if (event?.type === 'probe') { this.probeCounter++; this.probe = { ...event, sequence: this.sequence, at: this.now() }; }
       else if (event?.type === 'parser-state') this.parserState = event.value;
@@ -180,7 +228,7 @@ export class NativeController extends EventEmitter {
     this.busy = true; this.connecting = true;
     const generation = ++this.generation;
     this.status = null; this.preflight = null; this.fault = null; this.lines = []; this.buffer = ''; this.parserState = null; this.lastProbeResult = null;
-    this.lastFullStatusSequence = 0; this.verifiedSettings = null;
+    this.lastFullStatusSequence = 0; this.verifiedSettings = null; this.statusGraceFrom = null;
     this.publish();
     let port;
     try {
@@ -202,8 +250,12 @@ export class NativeController extends EventEmitter {
       this.lastStatusAt = this.now();
       this.timer = setInterval(() => {
         this.realtime(REALTIME.status);
-        if (this.armed && this.now() - this.lastStatusAt > this.staleMs) this.faulted('Controller status timed out.');
+        // With $10 bit 12 clear, grblHAL sends one forced report as homing starts
+        // and none until it ends; the bounded $H acknowledgement covers that gap.
+        if (this.armed && !this.pending?.homing
+          && this.now() - Math.max(this.lastStatusAt, this.statusGraceFrom ?? -Infinity) > this.staleMs) this.faulted('Controller status timed out.');
       }, 100);
+      await this.awaitWelcome(generation);
       await this.preflightRead();
     } catch (error) {
       // Cleanup belongs to this attempt. A cancelled delayed open may complete
@@ -215,6 +267,16 @@ export class NativeController extends EventEmitter {
     }
     finally { this.busy = false; this.connecting = false; this.publish(); }
     return this.snapshot();
+  }
+  async awaitWelcome(generation) {
+    // grblHAL prints its welcome banner 200 ms after every DTR rising edge,
+    // which opening the port causes. Consume that one banner before the first
+    // query; any later startup line is a controller restart.
+    await new Promise(resolve => {
+      const timer = setTimeout(() => { this.welcome = null; resolve(); }, this.welcomeMs);
+      this.welcome = () => { clearTimeout(timer); this.welcome = null; resolve(); };
+    });
+    if (generation !== this.generation || !this.connected || this.fault) fail(this.fault ?? 'Connection cancelled.');
   }
   async preflightRead(profile = this.profile, { beforeSend } = {}) {
     if (this.readingPreflight) fail('A controller preflight is already active.');
@@ -264,14 +326,21 @@ export class NativeController extends EventEmitter {
   }
   async closeConnection() {
     clearInterval(this.timer);
-    if (this.armed || (this.busy && this.preflight)) { this.realtime(REALTIME.hold); this.realtime(REALTIME.reset); }
+    const stopped = this.armed || (this.busy && this.preflight) ? [this.realtime(REALTIME.hold), this.realtime(REALTIME.reset)] : [];
     this.generation++; this.armed = false; this.connected = false; this.preflight = null;
     if (['running', 'paused', 'draining'].includes(this.job.state)) this.job.state = 'stopped';
     this.rejectPending(new Error('Disconnected.'));
+    this.welcome?.();
     const port = this.port; this.port = null; this.closingPort = port;
     const listeners = this.portListeners; this.portListeners = null;
     this.status = null; this.publish();
     try {
+      // Closing the port cancels in-flight writes; let hold/reset reach the driver first.
+      if (stopped.length) {
+        let timer;
+        await Promise.race([Promise.all(stopped), new Promise(resolve => { timer = setTimeout(resolve, Math.min(this.portTimeout, 1000)); })]);
+        clearTimeout(timer);
+      }
       if (port?.isOpen) await this.portTransition(port, 'close', () => this.closingPort === port);
       if (port && listeners) for (const [event, listener] of Object.entries(listeners)) port.off(event, listener);
     } catch (error) {
@@ -282,13 +351,14 @@ export class NativeController extends EventEmitter {
       throw error;
     } finally { this.closingPort = null; }
   }
-  line(command, timeout = this.ackTimeout, { plannerWait = false, beforeSend } = {}) {
+  line(command, timeout = this.ackTimeout, { plannerWait = false, homing = false, beforeSend } = {}) {
     if (this.fault) return Promise.reject(new Error(this.fault));
     if (!this.port?.isOpen) return Promise.reject(new Error('Controller is disconnected.'));
     if (this.pending) return Promise.reject(new Error('A controller command is already awaiting acknowledgement.'));
     if (!/^[\x20-\x7e]+$/.test(command) || Buffer.byteLength(command) > 120) return Promise.reject(new Error('Invalid or oversized controller line.'));
     return new Promise((resolve, reject) => {
-      const pending = { resolve, reject, timer: null, written: false };
+      // homing: false until the written $H produces the firmware's forced Home report.
+      const pending = { resolve, reject, timer: null, written: false, homing: homing ? false : undefined };
       this.pending = pending;
       const generation = this.generation, port = this.port;
       const current = () => this.pending === pending && generation === this.generation && this.port === port;
@@ -368,12 +438,16 @@ export class NativeController extends EventEmitter {
     try { return await operation(); }
     finally { this.busy = false; this.publish(); }
   }
-  async idleAfter(command, timeout = 30000, options = {}) {
+  async idleAfter(command, timeout = 30000, { target, ...options } = {}) {
     const generation = this.generation;
     await this.line(command, timeout, options);
     const afterAck = this.sequence;
     this.realtime(REALTIME.status);
-    await this.waitFor(() => this.sequence > afterAck && this.status?.state.name === 'Idle', timeout, generation);
+    // grblHAL acknowledges a planned move before its cycle starts, so Idle alone
+    // can precede the motion. A move with a known target must also arrive there.
+    const arrived = () => !target || axes.every(axis => !Number.isFinite(target[axis])
+      || Math.abs(this.status.position.machine?.[axis] - target[axis]) <= 0.01);
+    await this.waitFor(() => this.sequence > afterAck && this.status?.state.name === 'Idle' && arrived(), timeout, generation);
   }
   reserveTypedAction(action, args) {
     const receipt = this.authorize(action, args);
@@ -451,10 +525,10 @@ export class NativeController extends EventEmitter {
       try {
       const command = axis === 'all' ? '$H' : `$H${axis.toUpperCase()}`;
       const generation = this.generation;
-      await this.line(command, 120000, { beforeSend: this.typedActionGuard(context, { homed: false, alarm: true, stopped: true }) });
+      await this.line(command, this.homeTimeout, { homing: true, beforeSend: this.typedActionGuard(context, { homed: false, alarm: true, stopped: true }) });
       const after = this.sequence;
       this.realtime(REALTIME.status);
-      await this.waitFor(() => this.sequence > after && ['Idle', 'Alarm'].includes(this.status?.state.name), 120000, generation);
+      await this.waitFor(() => this.sequence > after && ['Idle', 'Alarm'].includes(this.status?.state.name), this.homeTimeout, generation);
       const mask = { x: 1, y: 2, z: 4 }[axis];
       if (axis === 'all' ? this.status.homing.complete !== true : !(this.status.homing.mask & mask)) fail('Controller did not confirm homing.');
       } catch (error) { this.faulted(error.message); throw error; }
@@ -493,7 +567,22 @@ export class NativeController extends EventEmitter {
     if (this.job.state === 'paused') this.job.state = 'running';
     this.publish();
   }
-  cancelJog() { this.faulted('Jog cancelled. Reconnect to synchronize the command channel.', true); }
+  async cancelJog() {
+    const message = 'Jog cancelled. Reconnect to synchronize the command channel.';
+    if (!this.armed || !['Jog', 'Idle'].includes(this.status?.state.name)) return this.faulted(message, true);
+    // 0x85 decelerates a jog and flushes its queued line without the position
+    // loss of a reset. That line may never be acknowledged, so still reconnect.
+    const port = this.port, before = this.sequence, deadline = this.now() + this.jogCancelMs;
+    this.realtime(REALTIME.cancelJog); this.realtime(REALTIME.status);
+    this.faulted(message, false);
+    const generation = this.generation;
+    // One report may predate the cancel; Idle must come from a later one.
+    while (!(this.sequence > before + 1 && this.status?.state.name === 'Idle')) {
+      if (generation !== this.generation || this.port !== port || !port?.isOpen) return;
+      if (this.now() > deadline) return this.faulted('Jog cancel was not confirmed; controller was reset. Reconnect and re-home before continuing.', true);
+      await sleep(10);
+    }
+  }
   disarm() { this.faulted('Disarmed. Reconnect and verify before continuing.', true); }
   stop() {
     this.realtime(REALTIME.hold); this.realtime(REALTIME.reset);
@@ -570,8 +659,9 @@ export class NativeController extends EventEmitter {
       };
       const retract = async () => {
         const delta = -direction * pullOff; checkTarget(delta);
+        const target = { ...this.status.position.machine, [axis]: this.status.position.machine[axis] + delta };
         await this.idleAfter(`G21 G91 G94 G1 ${axis.toUpperCase()}${fmt(delta)} F50`, undefined,
-          { beforeSend: this.typedActionGuard(context, { stopped: true, selectedProbe: sensor, probeContact: true }, () => checkTarget(delta)) });
+          { target, beforeSend: this.typedActionGuard(context, { stopped: true, selectedProbe: sensor, probeContact: true }, () => checkTarget(delta)) });
         clear();
       };
       const seek = async (delta, rate) => {
@@ -627,25 +717,14 @@ export class NativeController extends EventEmitter {
       }
     });
   }
-  loadProgram(source, name = 'program.nc', { airRun = false } = {}) {
+  loadProgram(source, name = 'program.nc', options = {}) {
     if (this.busy) fail('Stop the active operation before loading another program.');
-    if (typeof source !== 'string' || Buffer.byteLength(source) > 5 * 1024 * 1024) fail('Program exceeds 5 MB.');
-    // Embedded realtime characters execute immediately even inside comments.
-    if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\uffff!?~]/.test(source)) fail('Program contains prohibited control characters.');
-    if (typeof airRun !== 'boolean') fail('Choose an explicit program mode.');
-    const validation = validateMr1Nc(source, { name, allowSpindleOffMotion: airRun });
-    if (!validation.ok) fail(validation.blockers.map(b => `Line ${b.line}: ${b.message}`).join('\n'));
-    const lines = source.replace(/\r\n?/g, '\n').split('\n').map(s => parseLine(s, { lineMode: 'stripped' }).line.trim()).filter(Boolean);
-    if (!lines.length || lines.some(s => Buffer.byteLength(s) > 120 || s.includes('$'))) fail('Program has an invalid or oversized controller line.');
-    for (const line of lines) {
-      const words = parseLine(line).words;
-      if (words.some(([letter, value]) => letter === 'G' && value === 4)) {
-        const dwell = words.find(([letter]) => letter === 'P')?.[1];
-        if (!Number.isFinite(dwell) || dwell < 0 || dwell > 3600) fail('Dwell requires P seconds between 0 and 3600.');
-      }
-    }
-    this.program = { name: String(name).slice(0, 160), source, lines, airRun, validation, sha256: createHash('sha256').update(source).digest('hex') };
-    this.job = { state: 'loaded', sent: 0, acknowledged: 0, total: lines.length }; this.publish();
+    return this.commitProgram(prepareProgram(source, name, options));
+  }
+  commitProgram(program) {
+    if (this.busy) fail('Stop the active operation before loading another program.');
+    this.program = program;
+    this.job = { state: 'loaded', sent: 0, acknowledged: 0, total: program.lines.length }; this.publish();
     return this.snapshot().program;
   }
   programReady(sha256) {
