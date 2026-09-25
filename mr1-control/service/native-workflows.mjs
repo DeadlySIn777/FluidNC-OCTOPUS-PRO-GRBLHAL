@@ -225,7 +225,7 @@ async function move(controller, plan, target, feed, options = {}) {
   const distance = Math.hypot(...AXES.map(axis => end[axis] - start[axis]));
   const timeout = Math.ceil(distance / feed * 60000) + 5000;
   await controller.idleAfter(`G21 G90 G94 G53 G1 ${changed.map(axis => `${axis.toUpperCase()}${fmt(end[axis])}`).join(' ')} F${fmt(feed)}`, timeout,
-    { beforeSend: commandGuard(controller, plan, options) });
+    { target: end, beforeSend: commandGuard(controller, plan, options) });
   liveGuard(controller, plan, options);
   if (!equalPoint(end, controller.status.position.machine)) fail('Controller position did not match the protected move target.');
 }
