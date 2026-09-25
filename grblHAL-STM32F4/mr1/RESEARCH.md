@@ -32,9 +32,11 @@ findings can change; revisit the links before buying or altering hardware.
 
 ## Archived Sources
 
-Vendor documents that wiring decisions depend on are copied into
-`_vendor_docs/` so a link rot or a silent vendor revision cannot change what
-this project was built against. Re-hash before trusting a local copy.
+Vendor documents that wiring decisions depend on were reviewed from the copies
+hashed below, so a link rot or a silent vendor revision cannot change what this
+project was built against. This public source export does not bundle them:
+`_vendor_docs/` holds only a README with the official links. Re-hash any copy
+you download before trusting it.
 
 | File | SHA-256 | Retrieved | Owns |
 | --- | --- | --- | --- |
@@ -239,7 +241,8 @@ selected; lead colors and a three-wire cable are not identification. If it is
 confirmed as a genuine DS18B20, the conditional reference is `VDD -> H2 pin 3 /
 3V3`, `GND -> H2 pin 2 / GND`, and `DQ -> H2 pin 8 / GPIO16`, with a 4.7 kohm
 pullup from DQ to 3V3. H2 pin 1 is USB `VBUS` and is never used for that sensor.
-Installed firmware `7.4-mr1` still reports the ESP32's internal chip temperature.
+Installed firmware `7.4-mr1` (the ESP32 chatter-sensor firmware, which is not
+part of this repository) still reports the ESP32's internal chip temperature.
 
 Confidence: high for the Waveshare and DS18B20 reference; sensor identification
 remains unresolved.
@@ -272,8 +275,9 @@ These cannot be answered honestly from web research or source code:
    inputs - `X`, `Y1`, and `Y2/Z` on one input - so either the harness merges
    Y2 and Z on one conductor or that builder did. **If the harness merges them,
    `Y_AUTO_SQUARE` cannot work until one of them gets its own conductor.**
-   Closes with: count conductors at the plug (5 = four signals + common, 4 = a
-   shared pair); ohmmeter across each switch with the leads both ways round
+   Closes with: count conductors at the plug (6 = shared supply + shared
+   return + four signals, the powered case `WIRING.md` expects; 5 = four
+   signals + common; 4 = a shared pair); ohmmeter across each switch with the leads both ways round
    (identical readings = passive contact); continuity from the common to one
    leg of all four. If all three pass, the common lands on Octopus `GND`, each
    signal on its `STOP` SIG, and the isolated conditioner comes out of the

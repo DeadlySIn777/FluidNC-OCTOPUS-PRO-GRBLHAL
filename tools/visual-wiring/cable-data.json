@@ -13,8 +13,8 @@
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 25189,
-      "sha256": "b8ee9b8612db5639e63049ccf35e453e5c5bb6829cc940a905532b45dabdb13c"
+      "bytes": 25373,
+      "sha256": "bd7261f292464012e38455a1fa33b1176c2deb946e9e6e8c1b206358a135c8ca"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
@@ -23,8 +23,8 @@
     },
     "spindle_supervision": {
       "path": "docs/wiring/mr1/SPINDLE_SUPERVISION.md",
-      "bytes": 19310,
-      "sha256": "86f651eb3955328812700526d7f5b9543eaf6f284b195adb1d105a2c780862d5"
+      "bytes": 19351,
+      "sha256": "416b1bfc50f3019629de980bc43e0cb290ba53b63d68bfdd23ae66ff3a53835a"
     }
   },
   "source_fields": [

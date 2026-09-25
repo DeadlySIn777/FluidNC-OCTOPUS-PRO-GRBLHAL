@@ -264,7 +264,7 @@ pass, use the conditional single secured-motor bench procedure in
 Expect: **green LED steady, red LED off.**
 
 Blinking red = alarm. Count the blinks in the 3-second window and read §8 of the
-manual in `_vendor_docs/`.
+[CL57T V4.1 manual](https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf) (linked from STEPPERONLINE, not bundled here).
 
 ---
 

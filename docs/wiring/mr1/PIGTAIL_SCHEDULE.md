@@ -127,7 +127,8 @@ plugs until the actual pitch, contact style, and moulded markings are recorded.
 
 ### Moulded cable conflict
 
-`BOM.md:144` specifies metal EMC glands or bonded connector bulkheads, and
+`BOM.md` ("Cable and Panel Materials", Cable entry row) specifies metal EMC
+glands or bonded connector bulkheads, and
 `WIRING.md` requires motor-cable shields terminated 360 degrees at the cabinet
 entry. Both assume cable that can be cut to length and terminated at the panel
 wall. The kit's motor and encoder extensions are **fixed-length with moulded
@@ -181,8 +182,9 @@ Route the stock home channels through the four-channel isolated conditioner
 unless each switch is separately proved to be a bare NC dry contact; if all
 four prove out, the common lands on Octopus `GND`, each signal on its `STOP`
 SIG, and the conditioner comes out of the build. Never apply stock 5 V to
-STOP0-3. `RESEARCH.md` items 3 and 4 carry the probe and home hypotheses with
-their sources and the exact readings that close them.
+STOP0-3. `grblHAL-STM32F4/mr1/RESEARCH.md` (repository path), "Unresolved
+Physical Checks" items 3 and 4, carries the probe and home hypotheses with their
+sources and the exact readings that close them.
 
 ## Crimp And Label Rules
 

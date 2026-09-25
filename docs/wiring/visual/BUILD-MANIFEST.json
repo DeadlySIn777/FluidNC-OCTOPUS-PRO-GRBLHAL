@@ -9,7 +9,7 @@
     "model.mjs": "ccb723151b05c9a7e1b7994731d4276e44b97af58b416dfdf16b9eaae399f8ca",
     "style.css": "f9d92c44892cd49b07bceace5dbe9bd2370557308bd3098eb4e3cb324e2c513b",
     "index.template.html": "bf1a2308af0573bcc218b766ea872b2be0c8b0bb22b9df61f820beb0db217a61",
-    "cable-data.json": "428f51c83997a00087cc18a19daee907cdd3f4c8fdf497d8a881b7e01aafa82a",
+    "cable-data.json": "60e0f5a38bcb7264b9bbf458a88b15e21f8ef8d87e9a1e2a7a79ef2ef01770d2",
     "route-content.json": "f0d569f92d5ad36a9b8c1e55ce713689b65e819e9b199a5dcdf084abf984f896",
     "asset-layout.json": "99054e6c798796dda03fb2b26feb3a057b4a5e364bf638035f742e2ae1ec0cec",
     "coverage.json": "3a4e93dd3d09c7ba3836ad40e519dd334d8ff7ac6658e5c29347acabe4a88932",
@@ -41,7 +41,7 @@
     {
       "path": "index.html",
       "bytes": 751722,
-      "sha256": "51967cb9d3772e818c635f46c96539e8296362901b284edb18aa38ab3391311f"
+      "sha256": "b45f1c31bba70c8d350c3aeafc5319e9b53364b8bb7c4f372fea062702674567"
     }
   ],
   "physicalMotionPermitted": false,

@@ -47,7 +47,8 @@ installed Langmuir drive configuration:
 6. `M19` and rigid tapping are not commissioned features. This checkout still
    rejects `G33.1`, and production exposes no spindle sync. A separate XYZA +
    Y2 target now qualifies the different coordinated-servo-axis method; it does
-   not turn the unfinished hook into an implementation. See `RIGID_TAPPING.md`.
+   not turn the unfinished hook into an implementation. See
+   `grblHAL-STM32F4/mr1/RIGID_TAPPING.md` (repository path).
 
 ## Intended Architecture
 

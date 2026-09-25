@@ -3,7 +3,7 @@
 > **Changed 2026-09-16.** The four `CL57T V4.1` closed-loop kits arrived, so
 > the machine goes **straight to closed loop** and the DM860T phase is skipped.
 > **Use `CL57T_QUICK_WIRING.md`** for the bench termination sequence and switch
-> settings. `DM860T_QUICK_WIRING.md` is retained as reference for the preserved
+> settings. `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md` (repository path) is retained as reference for the preserved
 > rollback hardware only — **do not wire a CL57T from it.** Its switch letters,
 > its bus-voltage range, and above all its no-polarity power rule are wrong for
 > these drives.
@@ -43,7 +43,7 @@ through formal commissioning. Every item is marked as one of:
 
 The 18 saved evidence checks record photographs, connector fit, meter readings, and bench
 tests. They cannot enable a control, grant motion permission, or replace the
-staged procedure in `COMMISSIONING.md`.
+staged procedure in `grblHAL-STM32F4/mr1/COMMISSIONING.md` (repository path).
 
 The same screen includes BTT's official Octopus Pro V1.1 pinout image dated
 2023-11-02. Eight highlighted connector groups open the matching detailed tab;
@@ -67,8 +67,9 @@ table as equally authoritative:
 - `io-manifest.json` and the matching compiled source own Octopus GPIO assignments.
 - Official BTT v1.1 documents own Octopus connector locations, the 18-position
   driver-socket circuit, and the 5 V HCT signal buffers.
-- The archived CL57T V4.1 manual (`_vendor_docs/`) owns CL57T terminals, limits,
-  switches, and timing. The official STEPPERONLINE V3 manual owns DM860T
+- The [CL57T V4.1 manual](https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf) owns CL57T terminals, limits, switches,
+  and timing. Vendor manuals are linked from their publishers, not bundled in
+  this repository. The official STEPPERONLINE V3 manual owns DM860T
   terminals, limits, and switches for the retained rollback set.
 - Official Langmuir material owns stock machine layout and assembly context.
 - The [alexphredorg MR-1 Mesa/LinuxCNC project](https://github.com/alexphredorg/mr1)
@@ -118,8 +119,8 @@ neither the DM860T nor the CL57T V4.1 has a certified safe-torque-off input.
 > 5. gives a complete terminal schedule for the E-stop station, safety relay,
 >    contactors and the PF3 monitor contact.
 >
-> The USB-only firmware flash in `COMMISSIONING.md` Stage 0A needs no cabinet
-> power and is not affected by this hold.
+> The USB-only firmware flash (`grblHAL-STM32F4/mr1/COMMISSIONING.md`, Stage 0A)
+> needs no cabinet power and is not affected by this hold.
 
 ## System Architecture
 
@@ -381,7 +382,7 @@ Use the complete table in `CL57T_QUICK_WIRING.md`. Identical on all four drives:
 | `SW8` | `off` | Pulse filter 1.5 ms. Must be identical on all four, and especially on the two ganged Y drives |
 | `S3` selector | `5V` | Factory is `24V`. Applying 24 V to an input set to 5 V destroys the photocoupler |
 
-The retained DM860T switch table lives in `DM860T_QUICK_WIRING.md` and applies
+The retained DM860T switch table lives in `grblHAL-STM32F4/mr1/DM860T_QUICK_WIRING.md` (repository path) and applies
 only to the rollback hardware.
 
 The firmware provides 5 us pulses, 6 us direction setup, and 250 ms enable
@@ -784,10 +785,10 @@ link, part number, or board marking identifies the electrical interface and
 pinout. Three leads and their colors are not sufficient. If it is confirmed as
 a genuine three-wire DS18B20, the conditional Waveshare reference is `VDD -> H2
 pin 3 / 3V3`, `GND -> H2 pin 2 / GND`, and `DQ -> H2 pin 8 / GPIO16`, with one
-4.7 kohm pullup from DQ to 3V3. Never use H2 pin 1 `VBUS`. See
-`../../chatter-amoled-175/TEMP_SENSOR_WIRING.md`. The installed `7.4-mr1`
-firmware still reports internal ESP32 temperature; external-probe firmware is
-not active.
+4.7 kohm pullup from DQ to 3V3. Never use H2 pin 1 `VBUS`. The ESP32
+chatter-sensor firmware and its temperature-sensor wiring note are not part of
+this repository. The installed `7.4-mr1` chatter firmware still reports internal
+ESP32 temperature; external-probe firmware is not active.
 
 ## Pre-Power Continuity Rules
 
@@ -801,4 +802,4 @@ Before any supply is connected, the completed harness must show:
 - Correct DB44 pin numbers from both ends of the actual cable, with shell orientation recorded.
 - No short between adjacent driver-socket pins on the motion adapter.
 
-Proceed to `COMMISSIONING.md` only after a second-person check of those records.
+Proceed to `grblHAL-STM32F4/mr1/COMMISSIONING.md` (repository path) only after a second-person check of those records.
