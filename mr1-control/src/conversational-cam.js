@@ -145,7 +145,7 @@ class ProgramBuilder {
     // Last commanded work position as emitted words; null = unknown.
     this.at = { x: null, y: null, z: null };
     this.lines = [
-      `(MR1 CONVERSATIONAL - ${title.toUpperCase()})`,
+      `(MR1 CONVERSATIONAL - ${sanitizeComment(title)})`,
       `G21 G90 G94 ${plane}${latheMode ? ` ${latheMode}` : ""} G40 G49 G80`,
       "G91.1",
       `G53 G0 Z${fmt(safeZ)}`,
@@ -276,7 +276,7 @@ class ProgramBuilder {
   }
 
   comment(text) {
-    this.lines.push(`(${String(text).replace(/[()]/g, "")})`);
+    this.lines.push(`(${sanitizeComment(text)})`);
   }
 
   finish() {
@@ -1366,6 +1366,7 @@ function chainSegments(gcode, setup) {
   };
 }
 
+// grblHAL comments do not nest, so comment text never carries parentheses.
 function sanitizeComment(text) {
   return String(text).replace(/[()]/g, "").toUpperCase();
 }

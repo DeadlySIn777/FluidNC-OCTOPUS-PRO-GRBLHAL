@@ -122,6 +122,9 @@ function commentSyntaxIsBalanced(source) {
   let depth = 0;
   for (const character of String(source)) {
     if (character === ";" && depth === 0) break;
+    // grblHAL's gc_normalize_block does not nest: an inner "(" restarts the
+    // comment and the first ")" ends it, so "(a (b) G0 Z-20)" executes Z-20.
+    if (character === "(" && depth > 0) return false;
     if (character === "(") depth += 1;
     if (character === ")") depth -= 1;
     if (depth < 0) return false;
@@ -207,7 +210,7 @@ export function validateMr1Nc(source, options = {}) {
       block(lineNumber, "POST_BLOCK_MARKER", "The postprocessor explicitly blocked this program.", lines[index].trim());
     }
     if (!commentSyntaxIsBalanced(lines[index])) {
-      block(lineNumber, "MALFORMED_COMMENT", "Parenthesized comments must be balanced on the same source line.", lines[index].trim());
+      block(lineNumber, "MALFORMED_COMMENT", "Parenthesized comments must close on the same source line and cannot nest; grblHAL ends a comment at its first ')'.", lines[index].trim());
     }
     if (!lineSource && !(parsed.cmds?.length)) continue;
     state.seenExecutable = true;

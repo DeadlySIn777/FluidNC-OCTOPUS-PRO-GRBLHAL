@@ -511,6 +511,24 @@ test("a chained operation with a higher clearance rises before its XY approach",
   assert.equal(next[1], "G0 Z5.000");
 });
 
+test("generated comments never nest parentheses (grblHAL does not nest them)", () => {
+  const programs = CONVERSATIONAL_CYCLES.map((cycle) => [cycle.id, generateConversationalProgram(cycle.id, defaultCycleParams(cycle)).gcode]);
+  programs.push(["chain", generateConversationalChain([operation("spiral-face"), operation("thread-mill-internal", { tool: 2 })]).gcode]);
+  for (const [id, gcode] of programs) {
+    for (const line of gcode.split("\n")) {
+      let depth = 0;
+      for (const character of line) {
+        if (character === "(") assert.equal(depth, 0, `${id}: nested comment in ${line}`);
+        if (character === "(") depth += 1;
+        if (character === ")") depth -= 1;
+      }
+      assert.equal(depth, 0, `${id}: unbalanced comment in ${line}`);
+    }
+  }
+  const { gcode } = generateConversationalProgram("lathe-face", defaultCycleParams(getConversationalCycle("lathe-face")));
+  assert.equal(gcode.split("\n")[0], "(MR1 CONVERSATIONAL - FACE LATHE)");
+});
+
 test("generateConversationalProgram rejects unknown cycle ids", () => {
   assert.throws(() => generateConversationalProgram("nope", {}), CycleParameterError);
 });

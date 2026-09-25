@@ -345,3 +345,12 @@ M30
   assert.ok(blockerCodes(known).includes("Z_FEED_RANGE"));
   assert.ok(!blockerCodes(known).includes("Z_FEED_UNVERIFIED"));
 });
+
+test("nested parentheses are malformed because grblHAL ends a comment at its first ')'", () => {
+  // grblHAL executes "G0 X10 (see note (a) Z-20)" as G0X10Z-20.
+  for (const line of ["G0 X10 (see note (a) Z-20)", "(a (b) c)", "G1 X1 F100 (outer (inner))"]) {
+    const source = validMetricProgram.replace("G3 X10 Y0 I5 J0 F800", `G3 X10 Y0 I5 J0 F800\n${line}`);
+    assert.ok(blockerCodes(source).includes("MALFORMED_COMMENT"), line);
+  }
+  assert.equal(validateMr1Nc(validMetricProgram.replace("(MANUAL TOOL CHANGE)", "(MANUAL TOOL CHANGE; SEE SHEET 2) (CHECK STICKOUT)")).ok, true);
+});
