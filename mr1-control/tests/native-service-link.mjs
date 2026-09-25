@@ -162,3 +162,18 @@ test('the worker heartbeat reports refusals and bounds a stalled request', async
   heartbeat.stop(); await clock.advance(5000);
   assert.equal(results.length,2); assert.equal(clock.pending(),0);
 });
+
+test('the worker heartbeat withholds the lease when the page stops reporting that it is alive', async () => {
+  const clock=fakeClock(), sent=[];
+  const heartbeat=createHeartbeat({ ...clock, fetchImpl:()=>{ sent.push(clock.now()); return Promise.resolve(response({ok:true})); } });
+  heartbeat.setToken(token); heartbeat.pageAlive(true);
+  await clock.advance(5000);
+  assert.deepEqual(sent,[1000,2000,3000],'a visible page that stops reporting loses its lease after 3 s');
+  heartbeat.pageAlive(true); await clock.advance(1000);
+  assert.deepEqual(sent.slice(3),[6000],'a live page resumes the heartbeat');
+  heartbeat.pageAlive(false); await clock.advance(89000);
+  assert.equal(sent.length,93,'a hidden page is allowed throttled reports');
+  await clock.advance(5000);
+  assert.equal(sent.length,94,'a hidden page silent for more than 90 s loses its lease');
+  heartbeat.stop(); await clock.advance(5000); assert.equal(clock.pending(),0);
+});

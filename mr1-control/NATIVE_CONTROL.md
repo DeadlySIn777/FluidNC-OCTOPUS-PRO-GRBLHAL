@@ -42,7 +42,8 @@ port 8787.
   Hold, stop, disarm and jog cancel need only a same-origin request, not the
   lease, so a failed read or lost session never delays them. The heartbeat runs
   in a dedicated worker because hidden or occluded windows throttle page timers;
-  closing the tab still ends it.
+  closing the tab still ends it, and a page that stops reporting it is alive
+  (3 s while visible, 90 s while hidden) lets the lease lapse.
 - A single acknowledged line in flight, bounded line size, no retransmission
   after timeout, and durable logging before a line is sent. A journal write that
   cannot be confirmed faults the controller and blocks the line. Stop/hold

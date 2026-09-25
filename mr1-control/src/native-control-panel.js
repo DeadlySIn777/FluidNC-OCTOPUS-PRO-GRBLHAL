@@ -61,6 +61,10 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
     heartbeatWorker.addEventListener('message', event => { if (event.data?.sessionRejected) link.rejected(event.data.token, event.data.error); });
     heartbeatWorker.addEventListener('error', () => { heartbeatWorker?.terminate(); heartbeatWorker = null; });
   } catch { heartbeatWorker = null; }
+  // The worker withholds the lease if this page stops reporting that it is alive.
+  const reportPage = () => heartbeatWorker?.postMessage({ pageVisible: document.visibilityState !== 'hidden' });
+  reportPage();
+  document.addEventListener('visibilitychange', reportPage);
   const link = createNativeServiceLink({
     onState: state => { snapshot = state; render(); },
     onFailure: error => {
@@ -184,7 +188,7 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
   // A lost operator heartbeat stops/disarms on the server, including tab closure.
   // The worker keeps the lease while this page is hidden; the page poll refreshes
   // state and remains the heartbeat fallback.
-  const timer = setInterval(() => { void link.poll(); }, 1000);
+  const timer = setInterval(() => { reportPage(); void link.poll(); }, 1000);
   window.addEventListener('beforeunload', () => { clearInterval(timer); link.close(); heartbeatWorker?.terminate(); });
   void link.refresh().catch(() => {});
   void refreshPorts().catch(error => { message = error.message; render(); });
