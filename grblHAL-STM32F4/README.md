@@ -6,6 +6,8 @@ This is the audited grblHAL STM32F4 driver source for **BIGTREETECH Octopus Pro 
 
 Start with [the MR1 engineering overview](mr1/README.md), the corrected [wiring plan](mr1/WIRING.md), and the repository's current wiring guide. Firmware source and software tests do not qualify physical terminals, modules, power circuits or motion.
 
+Known defects of the pinned firmware that need a new, requalified firmware candidate (no status reports while homing, unread per-axis drive-fault inputs, unclaimed auxiliary outputs, probe wire-break behaviour, unpinned toolchain, legacy-target hazards) are listed in [FIRMWARE-KNOWN-ISSUES.md](FIRMWARE-KNOWN-ISSUES.md).
+
 ## Build and checks on Windows
 
 Install a real Python 3 interpreter, Git if needed for source inspection, and PlatformIO Core. This source export already contains the three required dependencies; no submodule initialization is needed. From this directory:

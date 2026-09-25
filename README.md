@@ -16,6 +16,8 @@ machining.** The software checks are not a physical wiring, motion or E-stop tes
 - [Wiring reference and readiness](docs/wiring/README.md)
 - [Local firmware and optional reference assets](docs/LOCAL-ASSETS.md)
 - [Firmware source and provenance](grblHAL-STM32F4/SOURCE-REVISION.json)
+- [Firmware known issues](grblHAL-STM32F4/FIRMWARE-KNOWN-ISSUES.md): defects in the
+  pinned firmware that need a new firmware candidate.
 
 The wiring guide includes the driver-socket connections, jumper groups, motor
 and encoder cables, drive alarms, home switches, board power and defined outputs.
