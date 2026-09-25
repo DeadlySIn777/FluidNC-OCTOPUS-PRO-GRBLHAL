@@ -1,0 +1,4 @@
+# Source and wiring manifests identify exact bytes, including upstream line endings.
+# Preserve them on Windows and Linux instead of checkout-time normalization.
+* -text
+

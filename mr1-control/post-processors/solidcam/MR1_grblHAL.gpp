@@ -1,0 +1,489 @@
+;
+; MR-1 grblHAL / BTT Octopus Pro post for SolidCAM
+; Contract version 1.0.0
+;
+; This post is intentionally conservative. Unsupported controller features do
+; not fall through: they emit an MR1 POST BLOCKED marker, stop the spindle and
+; coolant, and suppress all following motion. Run every result through the
+; bundled MR-1 NC validator before it reaches a sender.
+;
+
+@init_post
+    num_user_procs = 1
+    line_labels = FALSE
+
+    numeric_def_f = '5.3'
+    integer_def_f = '5.0(p)'
+    gcode_f = '2.0(p)'
+    mcode_f = '2.0(p)'
+    xpos_f = '5.3'
+    ypos_f = '5.3'
+    zpos_f = '5.3'
+    feed_f = '5.1(p)'
+    blknum_f = '5.0(p)'
+    blknum_gen = FALSE
+    blknum_exist = TRUE
+    blknum_letter = 'N'
+    end_block_text = ''
+
+    global logical mr1_blocked
+    global numeric mr1_safe_machine_z
+    global numeric mr1_peck_z
+    global numeric mr1_next_peck_z
+    global string mr1_block_reason
+
+    mr1_blocked = FALSE
+    mr1_safe_machine_z = -2.0
+endp
+
+;-------------------
+
+@start_of_file
+    {nl, '(MR-1 CONTROL SOLIDCAM POST CONTRACT V1)'}
+    {nb, '(HOME THE MACHINE BEFORE RUNNING - G53 Z-2 RETRACTS ARE REQUIRED)'}
+    {nb, '(MANUAL TOOL CHANGES USE Tn THEN M0)'}
+endp
+
+;-------------------
+
+@start_program
+    if inch_system then
+        mr1_safe_machine_z = -0.0787
+        {nb, 'G20'}
+    else
+        mr1_safe_machine_z = -2.000
+        {nb, 'G21'}
+    endif
+    {nb, 'G90 G94'}
+    {nb, 'G17'}
+    {nb, 'G40 G49 G80'}
+    {nb, 'G90 G53 G0 Z'mr1_safe_machine_z}
+endp
+
+;-------------------
+
+@end_program
+    {nb, 'M9'}
+    {nb, 'M5'}
+    {nb, 'G90 G53 G0 Z'mr1_safe_machine_z}
+    {nb, 'M30'}
+endp
+
+;-------------------
+
+@end_of_file
+endp
+
+;-------------------
+
+@mr1_block
+    if not mr1_blocked then
+        {nb, '(MR1 POST BLOCKED: 'mr1_block_reason, ')'}
+        {nb, 'M9'}
+        {nb, 'M5'}
+        {nb, 'M0'}
+    endif
+    mr1_blocked = TRUE
+endp
+
+;-------------------
+
+@absolute_mode
+    if not mr1_blocked then
+        {nb, 'G90'}
+    endif
+    skipline = FALSE
+endp
+
+;-------------------
+
+@relative_mode
+    mr1_block_reason = 'G91 RELATIVE MOTION IS OUTSIDE THE MR-1 POST CONTRACT'
+    call @mr1_block
+    skipline = FALSE
+endp
+
+;-------------------
+
+@machine_plane
+    if not mr1_blocked then
+        gcode = 17
+        if machine_plane eq YZ then
+            gcode = 19
+        endif
+        if machine_plane eq ZX then
+            gcode = 18
+        endif
+        {nb, 'G'gcode}
+    endif
+endp
+
+;-------------------
+
+@def_tool
+endp
+
+;-------------------
+
+@rapid_move
+    if not mr1_blocked then
+        gcode = 0
+        {nb, ['G'gcode], [' X'xpos], [' Y'ypos], [' Z'zpos]}
+    endif
+endp
+
+;-------------------
+
+@line
+    if not mr1_blocked then
+        gcode = 1
+        {nb, ['G'gcode], [' X'xpos], [' Y'ypos], [' Z'zpos], [' F'feed]}
+    endif
+endp
+
+;-------------------
+
+@arc
+    if not mr1_blocked then
+        if arc_direction eq CCW then
+            gcode = 3
+        else
+            gcode = 2
+        endif
+
+        {nb, ['G'gcode], [' X'xpos], [' Y'ypos], [' Z'zpos]}
+        if machine_plane eq XY then
+            {' I'xcenter_rel, ' J'ycenter_rel}
+        endif
+        if machine_plane eq ZX then
+            {' I'xcenter_rel, ' K'zcenter_rel}
+        endif
+        if machine_plane eq YZ then
+            {' J'ycenter_rel, ' K'zcenter_rel}
+        endif
+        {[' F'feed]}
+    endif
+endp
+
+;-------------------
+
+@compensation
+    if side eq COMP_OFF then
+        if not mr1_blocked then
+            {nb, 'G40'}
+        endif
+    else
+        mr1_block_reason = 'G41 OR G42 CUTTER COMPENSATION REQUESTED - USE COMPUTER COMPENSATION'
+        call @mr1_block
+    endif
+    skipline = FALSE
+endp
+
+;-------------------
+
+@home_number
+    if home_number lt 1 or home_number gt 6 then
+        mr1_block_reason = 'WORK OFFSET MUST BE G54 THROUGH G59'
+        call @mr1_block
+    else
+        if not mr1_blocked then
+            gcode = 53 + home_number
+            {nb, 'G'gcode}
+        endif
+    endif
+endp
+
+;-------------------
+
+@change_tool
+    if tool_number lt 1 or tool_number gt 999 then
+        mr1_block_reason = 'TOOL NUMBER MUST BE 1 THROUGH 999'
+        call @mr1_block
+    endif
+
+    if not mr1_blocked then
+        {nb, 'M9'}
+        {nb, 'M5'}
+        {nb, 'G90 G53 G0 Z'mr1_safe_machine_z}
+        {nb, 'G49'}
+        {nb, 'T'tool_number}
+        {nb, '(MANUAL CHANGE TO T'tool_number, ')'}
+        {nb, '(DO NOT RESUME UNTIL THE PROTECTED TOOL SETTER CYCLE COMPLETES)'}
+        {nb, 'M0'}
+        call @home_number
+        call @start_tool
+    endif
+endp
+
+;-------------------
+
+@start_tool
+    if tool_direction ne CW then
+        mr1_block_reason = 'M4 REVERSE SPINDLE IS NOT COMMISSIONED'
+        call @mr1_block
+    endif
+    if spin le 0 or spin gt 8000 then
+        mr1_block_reason = 'SPINDLE SPEED MUST BE ABOVE 0 AND AT OR BELOW 8000 RPM'
+        call @mr1_block
+    endif
+    if not mr1_blocked then
+        {nb, 'S'spin:integer_def_f, ' M3'}
+    endif
+endp
+
+;-------------------
+
+@stop_tool
+    {nb, 'M5'}
+endp
+
+;-------------------
+
+@drill
+    if drill_type eq G84 then
+        mr1_block_reason = 'RIGID TAPPING IS NOT COMMISSIONED - USE THREAD MILLING'
+        call @mr1_block
+    else
+        if drill_type eq G81 or drill_type eq G82 or drill_type eq G83 then
+            call @mr1_drill_current_point
+        else
+            mr1_block_reason = 'THIS DRILL OR BORE CYCLE IS NOT YET QUALIFIED'
+            call @mr1_block
+        endif
+    endif
+endp
+
+;-------------------
+
+@mr1_drill_current_point
+    if not mr1_blocked then
+        {nb, 'G0 Z'drill_upper_z}
+        {nb, 'G0 X'xpos, ' Y'ypos}
+
+        if drill_type eq G83 then
+            if down_step le 0 then
+                mr1_block_reason = 'PECK DEPTH MUST BE GREATER THAN ZERO'
+                call @mr1_block
+            else
+                mr1_peck_z = drill_upper_z - down_step
+                while mr1_peck_z gt drill_lower_z
+                    {nb, 'G1 Z'mr1_peck_z, ' F'feed}
+                    {nb, 'G0 Z'drill_upper_z}
+                    mr1_next_peck_z = mr1_peck_z - down_step
+                    mr1_peck_z = mr1_next_peck_z
+                endw
+                if not mr1_blocked then
+                    {nb, 'G1 Z'drill_lower_z, ' F'feed}
+                endif
+            endif
+        else
+            {nb, 'G1 Z'drill_lower_z, ' F'feed}
+        endif
+
+        if drill_type eq G82 and dwell gt 0 then
+            {nb, 'G4 P'dwell}
+        endif
+        if not mr1_blocked then
+            {nb, 'G0 Z'drill_upper_z}
+        endif
+    endif
+endp
+
+;-------------------
+
+@drill_point
+    if not first_drill then
+        call @drill
+    endif
+endp
+
+;-------------------
+
+@drill4x_pnt
+    mr1_block_reason = 'ROTARY DRILLING IS NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+;-------------------
+
+@end_drill
+    if not mr1_blocked then
+        {nb, 'G80'}
+    endif
+endp
+
+;-------------------
+
+@delay
+    if not mr1_blocked then
+        {nb, 'G4 P'delay_period}
+    endif
+endp
+
+;-------------------
+
+@dwell
+    delay_period = dwell_time
+    call @delay
+endp
+
+;-------------------
+
+@cool_flood
+    if not mr1_blocked then
+        if flood_coolant then
+            {nb, 'M8'}
+        else
+            {nb, 'M9'}
+        endif
+    endif
+endp
+
+;-------------------
+
+@cool_mist
+    if mist_coolant then
+        mr1_block_reason = 'MIST COOLANT M7 IS NOT COMMISSIONED'
+        call @mr1_block
+    else
+        if not mr1_blocked then
+            {nb, 'M9'}
+        endif
+    endif
+endp
+
+;-------------------
+
+@halt_program
+    {nb, 'M0'}
+endp
+
+;-------------------
+
+@machine_opt_stop
+    if optional_stop and not mr1_blocked then
+        {nb, 'M1'}
+    endif
+endp
+
+;-------------------
+
+@message
+    if message ne '' then
+        {nb, '(SOLIDCAM MESSAGE OMITTED BY MR-1 POST)'}
+    endif
+endp
+
+;-------------------
+
+@mco_message
+    call @message
+endp
+
+;-------------------
+
+@start_of_job
+    if msg ne '' then
+        {nb, '(SOLIDCAM OPERATION NAME OMITTED BY MR-1 POST)'}
+    endif
+endp
+
+;-------------------
+
+@end_of_job
+endp
+
+;-------------------
+
+@round_comp
+endp
+
+;-------------------
+
+@call_proc
+    mr1_block_reason = 'SUBPROGRAM CALLS ARE OUTSIDE THE MR-1 POST CONTRACT'
+    call @mr1_block
+endp
+
+@proc
+    mr1_block_reason = 'SUBPROGRAM DEFINITIONS ARE OUTSIDE THE MR-1 POST CONTRACT'
+    call @mr1_block
+endp
+
+@end_proc
+endp
+
+@loop
+    mr1_block_reason = 'POSTED LOOPS ARE OUTSIDE THE MR-1 POST CONTRACT'
+    call @mr1_block
+endp
+
+@end_loop
+endp
+
+@call_simple_proc
+    mr1_block_reason = 'SUBPROGRAM CALLS ARE OUTSIDE THE MR-1 POST CONTRACT'
+    call @mr1_block
+endp
+
+;-------------------
+
+@change_ref_point
+    mr1_block_reason = 'G10 COORDINATE TABLE WRITES ARE DISABLED'
+    call @mr1_block
+endp
+
+@rotate
+    mr1_block_reason = 'COORDINATE ROTATION IS NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@mirror
+    mr1_block_reason = 'COORDINATE MIRRORING IS NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@fourth_axis
+    mr1_block_reason = 'ROTARY AXES ARE NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@rotate_to_plane
+    mr1_block_reason = 'INDEXED WORK PLANES ARE NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@transform_info
+    mr1_block_reason = 'COORDINATE TRANSFORMS ARE NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@move_4x
+    mr1_block_reason = 'FOUR AXIS MOTION IS NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@line_4x
+    mr1_block_reason = 'FOUR AXIS MOTION IS NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@move_5x
+    mr1_block_reason = 'FIVE AXIS MOTION IS NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@line_5x
+    mr1_block_reason = 'FIVE AXIS MOTION IS NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@move_object
+    mr1_block_reason = 'MACHINE CONTROL MOVES ARE NOT COMMISSIONED'
+    call @mr1_block
+endp
+
+@assign_axis
+    mr1_block_reason = 'AXIS REASSIGNMENT IS NOT COMMISSIONED'
+    call @mr1_block
+endp

@@ -1,0 +1,31 @@
+{
+    "name": "FluidCNC",
+    "short_name": "FluidCNC",
+    "description": "Modern CNC Control Interface for grblHAL",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "any",
+    "background_color": "#0a0a0f",
+    "theme_color": "#00d4ff",
+    "icons": [
+        {
+            "src": "icons/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["utilities", "productivity"],
+    "scope": "/",
+    "lang": "en-US",
+    "dir": "ltr",
+    "prefer_related_applications": false,
+    "shortcuts": [
+        {
+            "name": "Connect",
+            "short_name": "Connect",
+            "description": "Connect to CNC",
+            "url": "/?action=connect"
+        }
+    ]
+}

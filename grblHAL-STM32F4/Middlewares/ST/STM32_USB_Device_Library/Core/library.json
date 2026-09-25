@@ -1,0 +1,7 @@
+{
+    "platforms":  "*",
+    "frameworks":  "*",
+    "description":  "STM32 library",
+    "name":  "Middlewares-ST-STM32_USB_Device_Library-Core",
+    "version":  "1.0.0"
+}

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "scope": "Scheduled control cables and motor harnesses; not a complete cabinet power schematic.",
+  "groups": [
+    {"id":"motors","title":"Motors & encoders","description":"All four drives: commands, motor phases, encoder feedback and DC branches.","cableIds":["CMD-X","MOT-X","ENC-X","PWR-36-X","CMD-YL","MOT-YL","ENC-YL","PWR-36-YL","CMD-Z","MOT-Z","ENC-Z","PWR-36-Z","CMD-YR","MOT-YR","ENC-YR","PWR-36-YR"]},
+    {"id":"alarms","title":"Drive alarms","description":"Four individual alarm cables plus the conditioned PB1 aggregate. Separate diagnostic views are included.","cableIds":["ALM-X","ALM-YL","ALM-Z","ALM-YR","FAULT-AGG"]},
+    {"id":"home","title":"Home switches","description":"Separate field and logic routes for X, Y-left, Z and Y-right.","cableIds":["HOME-FIELD-X","HOME-LOGIC-X","HOME-FIELD-YL","HOME-LOGIC-YL","HOME-FIELD-Z","HOME-LOGIC-Z","HOME-FIELD-YR","HOME-LOGIC-YR"]},
+    {"id":"coolant","title":"Coolant & air","description":"Flood and mist/air relay-control inputs. Pump and solenoid load wiring still needs its own design.","cableIds":["FLOOD-CTL","MIST-CTL"]},
+    {"id":"controls","title":"E-stop monitor & buttons","description":"Safety-relay monitor, door, feed hold and cycle start. The energy-removal circuit is separate.","cableIds":["SAFE-MON","DOOR-MON","HOLD-01","START-01"]},
+    {"id":"probe","title":"Probe & tool setter","description":"Two independent sensor routes; actual harness and isolation-module pinouts remain to verify.","cableIds":["PROBE-01","TOOL-01"]},
+    {"id":"spindle","title":"Spindle control","description":"PWM, analog, enable and alarm references. Seven future supervision circuits stay reserved.","cableIds":["SP-PWM","SP-ANALOG","SP-ENABLE","SP-ALARM","SP-RS485-LOGIC","SP-RS485-FIELD","SP-STATUS","SP-CONTROL","SP-ENCODER","SP-INDEX","SP-ORIENT"]},
+    {"id":"control-power","title":"Control power & USB","description":"Board supply, candidate isolated home supply and PC USB link. Branch protection remains to specify.","cableIds":["PWR-24-01","PWR-5I-HOME","USB-01"]},
+    {"id":"temperature","title":"Temperature sensor","description":"Reserved: sensor identity and its voltage, interface and pinout are not established.","cableIds":["TEMP-SPINDLE"]},
+    {"id":"rollback","title":"Old-drive rollback","description":"Four DM860T power records for preserving the old setup. Never substitute them for CL57T power wiring.","cableIds":["PWR-36-X-DM860T","PWR-36-YL-DM860T","PWR-36-Z-DM860T","PWR-36-YR-DM860T"]}
+  ],
+  "gaps": [
+    {"id":"oil","title":"Oil / way lubrication, if fitted","status":"Not identified or assigned","detail":"No oil-pump cable or dedicated lubrication I/O assignment was found in the current cable schedule and I/O manifest. Identify whether this is manual or powered lubrication, the pump model and voltage, and any pressure/level contacts before creating a route. This does not assign it to the mist output."},
+    {"id":"load-power","title":"Pump, solenoid & spindle load power","status":"Control routes are not load-power wiring","detail":"FLOOD-CTL and MIST-CTL end at relay inputs. Supply-to-protection, relay/contactor load contacts, pump/solenoid terminals and spindle power/motor wiring need the actual equipment and a reviewed power circuit. No load ratings, wire sizes or fuse values are assigned here."},
+    {"id":"cabinet-power","title":"Mains, protective earth & hardware safety","status":"Full cabinet terminal schedule pending","detail":"The 56 records do not form a complete mains/PE, safety-relay/contactor or supply-distribution wire list. SAFE-MON only monitors the safety relay. The independent stop, protective bonding and power branches require the actual parts, terminals and electrical review."},
+    {"id":"interface-links","title":"Interface links & additional cable IDs","status":"Some functional segments still have no scheduled harness ID","detail":"Socket-to-interface and individual diagnostic links have functional views but no separate cable IDs. Interface/isolated-sensor supply feeds, conditioner-to-probe/setter GPIO links, internal alarm-aggregation links and FAN4-to-spindle-enable relay input also need explicit terminal schedules. These gaps remain visible; they are not silently counted as completed cables."}
+  ]
+}

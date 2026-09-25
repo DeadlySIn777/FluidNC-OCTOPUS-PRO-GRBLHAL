@@ -1,0 +1,83 @@
+{
+  "schema": "mr1-local-assets-v1",
+  "scope": "Known local engineering artifacts. Hashes establish bytes, not licensing or hardware acceptance.",
+  "assets": [
+    {
+      "id": "firmware",
+      "destination": "mr1-control/public/firmware/octopus-pro-v1.1-f429-mr1/firmware.bin",
+      "sourcePaths": [
+        "public/firmware/octopus-pro-v1.1-f429-mr1/firmware.bin",
+        "dist/firmware/octopus-pro-v1.1-f429-mr1/firmware.bin",
+        ".pio/build/btt_octopus_pro_f429_mr1/firmware.bin"
+      ],
+      "bytes": 221304,
+      "sha256": "f4ab32bd2cb7d0985a07915cf1c4349a3a7fd8546c765265b23eb98b904e5e9d",
+      "reason": "Native startup requires this exact candidate; linked middleware redistribution terms remain unresolved."
+    },
+    {
+      "id": "mr1-model",
+      "destination": "mr1-control/public/models/mr1-lower-assembly.glb",
+      "sourcePaths": [
+        "public/models/mr1-lower-assembly.glb",
+        "dist/models/mr1-lower-assembly.glb"
+      ],
+      "bytes": 845560,
+      "sha256": "c59fff81d7f432d97e930426fd54bf3e87656b61cc195aab94108c9513812823",
+      "reason": "Optional machine CAD reference; manufacturer redistribution grant not recorded."
+    },
+    {
+      "id": "fixture-model",
+      "destination": "mr1-control/public/models/mr1-custom-fixture.glb",
+      "sourcePaths": [
+        "public/models/mr1-custom-fixture.glb",
+        "dist/models/mr1-custom-fixture.glb"
+      ],
+      "bytes": 5917308,
+      "sha256": "71f77b6f5d27d4bd2eafbb0ccef5d7f721b205584dcbdcc0b85506f0067fc315",
+      "reason": "Optional fixture CAD; original design ownership not recorded."
+    },
+    {
+      "id": "vise-model",
+      "destination": "mr1-control/public/models/smw-gen3-hobby-m6.glb",
+      "sourcePaths": [
+        "public/models/smw-gen3-hobby-m6.glb",
+        "dist/models/smw-gen3-hobby-m6.glb"
+      ],
+      "bytes": 205260,
+      "sha256": "5dcc1a703b444b9f165724a03b729279378e5e3073c825b53a15e8d817b6d194",
+      "reason": "Optional SMW CAD reference; vendor redistribution grant not recorded."
+    },
+    {
+      "id": "fusion-post",
+      "destination": "mr1-control/post-processors/fusion/MR1_grblHAL.cps",
+      "sourcePaths": [
+        "post-processors/fusion/MR1_grblHAL.cps"
+      ],
+      "bytes": 90195,
+      "sha256": "ed3d9bf5dd7c06c6dc2dfeb9eb67f2dd1c31847f6a91b71c5437b0a3eb08fe10",
+      "reason": "Optional Autodesk-derived post; applicable redistribution grant not recorded."
+    },
+    {
+      "id": "board-pinout",
+      "destination": "mr1-control/public/assets/octopus-pro-v1.1-official-pinout.jpg",
+      "sourcePaths": [
+        "public/assets/octopus-pro-v1.1-official-pinout.jpg",
+        "dist/assets/octopus-pro-v1.1-official-pinout.jpg"
+      ],
+      "bytes": 1325852,
+      "sha256": "d360491ad8e1f738b1e784bfd62cc2c0f2b4c396d6cd069b9743d62aab0ee285",
+      "reason": "Optional offline BIGTREETECH reference image; public guide links official image."
+    },
+    {
+      "id": "usb-power-image",
+      "destination": "mr1-control/public/assets/octopus-pro-usb-power-official.png",
+      "sourcePaths": [
+        "public/assets/octopus-pro-usb-power-official.png",
+        "dist/assets/octopus-pro-usb-power-official.png"
+      ],
+      "bytes": 585906,
+      "sha256": "55146e2a8174b40723e95ebea305db2168590f879756b314dff23e49f6bd53a0",
+      "reason": "Optional offline BIGTREETECH USB-power reference image."
+    }
+  ]
+}

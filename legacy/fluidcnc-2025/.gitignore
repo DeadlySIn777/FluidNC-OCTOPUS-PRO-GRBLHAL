@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# SSL Certificates (NEVER commit these)
+*.pem
+*.crt
+*.key
+server.crt
+server.key
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.pyo
+*.pyd
+.env
+.venv
+venv/
+ENV/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.min.css
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+
+# Machine-specific configs (uncomment if needed)
+# machine-config.json
+# user-macros.js

@@ -1,0 +1,34 @@
+{
+  "id": "mr1-grblhal",
+  "version": "1.0.0",
+  "controller": "BTT Octopus Pro 1.1 F429 / grblHAL",
+  "axes": ["X", "Y", "Z"],
+  "machineEnvelopeMm": {
+    "x": { "minimum": -564.42, "maximum": -2.0, "maximumRate": 2540, "acceleration": 250 },
+    "y": { "minimum": -544.1, "maximum": -2.0, "maximumRate": 2540, "acceleration": 250 },
+    "z": { "minimum": -152.94, "maximum": -2.0, "maximumRate": 1016, "acceleration": 150 }
+  },
+  "safeMachineRetractZMm": -2.0,
+  "spindle": {
+    "minimumRpm": 1,
+    "maximumRpm": 8000,
+    "directions": ["M3"]
+  },
+  "workOffsets": ["G54", "G55", "G56", "G57", "G58", "G59"],
+  "coolant": ["M8", "M9"],
+  "toolChange": "manual-Tn-M0-protected-tool-setter",
+  "supportedMotion": ["G0", "G1", "G2", "G3"],
+  "blocked": [
+    "M4 reverse spindle",
+    "M6 automatic tool change",
+    "G33/G33.1 spindle synchronization",
+    "G38 CAM probing",
+    "G41/G42 controller cutter compensation",
+    "G43/G43.1 tool-length commands in posted files",
+    "G73-G89 canned cycles",
+    "G91 incremental motion",
+    "coordinate transforms",
+    "rotary axes",
+    "subprograms and macros"
+  ]
+}

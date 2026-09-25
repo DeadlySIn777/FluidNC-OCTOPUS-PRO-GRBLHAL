@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "profile": "btt_octopus_pro_f429_mr1",
+  "status": "engineering baseline; physical wiring must pass commissioning",
+  "board": {
+    "model": "BIGTREETECH Octopus Pro v1.1",
+    "mcu": "STM32F429ZGT6",
+    "hse_hz": 8000000,
+    "bootloader_bytes": 32768,
+    "application_address": "0x08008000",
+    "normal_flash_method": "FAT32 microSD containing firmware.bin",
+    "main_supply_vdc": 24,
+    "main_supply_range_vdc": [15, 28],
+    "motor_bus_connected_to_board": false,
+    "bltouch_hardware_installed": false,
+    "bltouch_plugin_enabled": false,
+    "required_silkscreen_revision": "v1.1"
+  },
+  "machine": {
+    "model": "Langmuir Systems MR-1",
+    "logical_axes": 3,
+    "physical_motors": 4,
+    "travel_mm": {
+      "advertised": {"x": 584.2, "y": 553.72, "z": 154.94},
+      "initial_soft_limit": {"x": 566.42, "y": 546.1, "z": 154.94}
+    },
+    "max_rate_mm_min": {"x": 2540.0, "y": 2540.0, "z": 1016.0}
+  },
+  "motion": {
+    "active_phase": "cl57t_closed_loop_installation_pending",
+    "driver": "STEPPERONLINE CL57T V4.1; verify all four installed labels before power",
+    "motor": "23HS45-4204D-E1000; 4.2 A/phase nameplate and motor/encoder pairing require physical verification",
+    "pulses_per_revolution": 1600,
+    "screw_lead_mm": {"x": 5.0, "y": 5.0, "z": 3.0},
+    "steps_per_mm": {"x": 320.0, "y": 320.0, "z": 533.333333},
+    "pulse_width_us": 5.0,
+    "direction_setup_us": 6.0,
+    "enable_delay_ms": 250,
+    "octopus_driver_socket": {
+      "positions": 18,
+      "layout": "2x9",
+      "signal_buffer": "5 V MC74HCT125A on Octopus Pro v1.1 schematic",
+      "routed_contacts": {"enable": 1, "step": 7, "direction": 8, "logic_ground": 9},
+      "no_connect_contacts": [2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    },
+    "dm860t_v3": {
+      "status": "rollback-only; these switches and power terminals do not apply to CL57T",
+      "revision_status": "User confirmed DM860T V3.0 on 2026-08-23; case and switch-face photograph remains required for the commissioning record",
+      "revision_gate": "Exactly 10 DIP switches SW1-SW10 plus top selector S2; stop if the face differs",
+      "s2": "5V",
+      "sw1": "ON (provisional 3.77 A peak current group)",
+      "sw2": "OFF (provisional 3.77 A peak current group)",
+      "sw3": "ON (provisional 3.77 A peak current group)",
+      "current_status": "HOLD: confirm one stock motor label or the original driver current setting before coupled motion",
+      "sw4": "OFF (50 percent standstill current)",
+      "sw5": "ON (1600 steps/rev)",
+      "sw6": "OFF (1600 steps/rev)",
+      "sw7": "ON (1600 steps/rev)",
+      "sw8": "ON (1600 steps/rev)",
+      "sw9": "OFF (single-pulse STEP/DIR)",
+      "sw10": "OFF (no 12 ms command smoothing)"
+    },
+    "cl57t_v41": {
+      "driver": "STEPPERONLINE CL57T V4.1",
+      "motor": "23HS45-4204D-E1000",
+      "status": "active design; physical installation and commissioning not qualified",
+      "s1": "4 (4 A RMS, 5.6 A peak; initial gain preset)",
+      "s2_sw1_to_sw8_initial": ["ON", "OFF", "ON", "ON", "OFF", "OFF", "OFF", "OFF"],
+      "direction_status": "SW5 OFF is provisional; verify each axis direction, including both Y motors, before coupled motion",
+      "s3": "5V",
+      "ena": "unconnected by default; any reserved enable interface requires separate qualification",
+      "power": "P4 +VDC/GND, polarized 36 V star branch; 18-50 V absolute bus range",
+      "encoder": "P2 EA+/EA-/EB+/EB-/VCC/EGND; VCC is drive-supplied, never externally powered",
+      "fault": "ALM/COMO into individually isolated conditioners; combine proven healthy outputs into PB1, with PG12-PG15 for diagnostics only"
+    }
+  },
+  "electrical_domains": [
+    {
+      "name": "protective_earth",
+      "rule": "Bond cabinet, machine frame, spindle chassis, cable armor, and DIN rail to PE."
+    },
+    {
+      "name": "36v_motion",
+      "rule": "The documented S-360-36 supply is 36 V / 10 A, with simultaneous-load capacity unqualified. Feed each CL57T P4 +VDC/GND through its own polarity-verified fused star branch; never feed Octopus MAIN POWER."
+    },
+    {
+      "name": "24v_control",
+      "rule": "A separate regulated 24 V supply feeds Octopus MAIN POWER, contactors, relays, and field I/O."
+    },
+    {
+      "name": "5v_motion_logic",
+      "rule": "A protected 5 V supply feeds CL57T P1 PUL/DIR optocoupler anodes through the qualified common-anode interface; its 0 V is controller logic return. S3=5V. ENA remains unconnected."
+    },
+    {
+      "name": "drive_encoder_supply",
+      "rule": "Each CL57T P2 VCC/EGND supplies only its matched encoder. Do not inject external power or bond encoder returns to other drives or logic. Internal isolation is not established by the available manual."
+    },
+    {
+      "name": "5v_home_isolated",
+      "rule": "A separate current-limited isolated 5 V field supply feeds the traced stock limit circuit through four energized-healthy optocoupler channels; no stock 5 V reaches a STOP GPIO."
+    },
+    {
+      "name": "5v_probe_isolated",
+      "rule": "Probe and toolsetter use a current-limited isolated 5 V field supply. The provisional HW-399 uses IN1/OUT1 and IN2/OUT2; field GND and logic HGND must never be joined."
+    },
+    {
+      "name": "spindle_analog_isolated",
+      "rule": "Planned isolated 0-5 V spindle command and analog common remain HOLD: installed servo identity, harness continuity, analog gain, and measured RPM are not qualified. Generic T3A/T3L 0-10 V full scale must not be assumed to match 0-5 V."
+    },
+    {
+      "name": "spindle_digital_isolated",
+      "rule": "The final RS-485 command path uses galvanic isolation and break-before-make selection from the retained analog fallback; both command paths may never be active together."
+    },
+    {
+      "name": "logic",
+      "rule": "Octopus GPIO never receives 5 V or 24 V field wiring directly."
+    }
+  ],
+  "signals": [
+    {"macro": "X_STEP", "gpio": "PF13", "connector": "MOTOR0 driver socket", "role": "X pulse", "direction": "output"},
+    {"macro": "X_DIRECTION", "gpio": "PF12", "connector": "MOTOR0 driver socket", "role": "X direction", "direction": "output"},
+    {"macro": "X_ENABLE", "gpio": "PF14", "connector": "MOTOR0 driver socket", "role": "X disable/enable", "direction": "output"},
+    {"macro": "Y_STEP", "gpio": "PG0", "connector": "MOTOR1 driver socket", "role": "Y-left pulse", "direction": "output"},
+    {"macro": "Y_DIRECTION", "gpio": "PG1", "connector": "MOTOR1 driver socket", "role": "Y-left direction", "direction": "output"},
+    {"macro": "Y_ENABLE", "gpio": "PF15", "connector": "MOTOR1 driver socket", "role": "Y-left disable/enable", "direction": "output"},
+    {"macro": "Z_STEP", "gpio": "PF11", "connector": "MOTOR2 driver socket", "role": "Z pulse", "direction": "output"},
+    {"macro": "Z_DIRECTION", "gpio": "PG3", "connector": "MOTOR2 driver socket", "role": "Z direction", "direction": "output"},
+    {"macro": "Z_ENABLE", "gpio": "PG5", "connector": "MOTOR2 driver socket", "role": "Z disable/enable", "direction": "output"},
+    {"macro": "M3_STEP", "gpio": "PG4", "connector": "MOTOR3 driver socket", "role": "Y-right pulse", "direction": "output"},
+    {"macro": "M3_DIRECTION", "gpio": "PC1", "connector": "MOTOR3 driver socket", "role": "Y-right direction", "direction": "output"},
+    {"macro": "M3_ENABLE", "gpio": "PA2", "connector": "MOTOR3 driver socket", "role": "Y-right disable/enable; v1.1 only", "direction": "output"},
+
+    {"macro": "X_LIMIT", "gpio": "PG6", "connector": "DIAG0/STOP0", "role": "conditioned X home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
+    {"macro": "Y_LIMIT", "gpio": "PG9", "connector": "DIAG1/STOP1", "role": "conditioned Y-left home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
+    {"macro": "Z_LIMIT", "gpio": "PG10", "connector": "DIAG2/STOP2", "role": "conditioned Z home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
+    {"macro": "M3_LIMIT", "gpio": "PG11", "connector": "DIAG3/STOP3", "role": "conditioned Y-right home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
+
+    {"macro": "X_MOTOR_FAULT", "gpio": "PG12", "connector": "DIAG4/STOP4", "role": "X driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
+    {"macro": "Y_MOTOR_FAULT", "gpio": "PG13", "connector": "DIAG5/STOP5", "role": "Y-left driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
+    {"macro": "Z_MOTOR_FAULT", "gpio": "PG14", "connector": "DIAG6/STOP6", "role": "Z driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
+    {"macro": "M3_MOTOR_FAULT", "gpio": "PG15", "connector": "DIAG7/STOP7", "role": "Y-right driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
+
+    {"macro": "SAFETY_DOOR", "gpio": "PC0", "connector": "PWR-DET", "role": "NC enclosure interlock monitor", "direction": "input", "interrupt": true},
+    {"macro": "PROBE", "gpio": "PF5", "connector": "T1", "role": "HW-399 OUT1 isolated touch-probe signal", "direction": "input", "interrupt": true},
+    {"macro": "TOOLSETTER", "gpio": "PB7", "connector": "PB7 tool-setter input (five-pin header silked BLTouch)", "role": "HW-399 OUT2 isolated fixed tool-setter signal; no BLTouch hardware or plugin", "direction": "input", "interrupt": true},
+    {"macro": "RESET", "gpio": "PF3", "connector": "TB", "role": "NC E-stop safety relay auxiliary contact", "direction": "input", "interrupt": true},
+    {"macro": "FEED_HOLD", "gpio": "PF4", "connector": "T0", "role": "NC feed-hold pushbutton", "direction": "input", "interrupt": true},
+    {"macro": "CYCLE_START", "gpio": "PB2", "connector": "EXP2 PB2", "role": "NO guarded cycle-start pushbutton", "direction": "input", "interrupt": true},
+    {"macro": "MOTOR_FAULT", "gpio": "PB1", "connector": "EXP2 PB1", "role": "conditioned aggregate drive/spindle/safety/cabinet fault", "direction": "input", "interrupt": true, "stopsMotion": true},
+
+    {"macro": "SPINDLE_PWM", "gpio": "PA8", "connector": "FAN0", "role": "PWM carrier to isolated 0-5 V converter", "direction": "output"},
+    {"macro": "SPINDLE_ENABLE", "gpio": "PD14", "connector": "FAN4", "role": "interposing relay for servo enable", "direction": "output"},
+    {"macro": "COOLANT_FLOOD", "gpio": "PA0", "connector": "HE0 (v1.1)", "role": "flood coolant relay", "direction": "output"},
+    {"macro": "COOLANT_MIST", "gpio": "PA3", "connector": "HE1", "role": "mist or air-blast relay", "direction": "output"}
+  ],
+  "reserved": [
+    {"gpio": "PC5", "connector": "dedicated PROBE port", "reason": "Unused: the v1.1 EL357C circuit is one active-high, 100-kohm-pulldown input and shares board GND across its field connection; the selected profile requires two floating-field, active-low channels on PF5/PB7."},
+    {"gpio": "PE15", "connector": "EXP1 (official v1.1 pinout; the FAN5 connector is PD15)", "reason": "Reserved for an optional future spindle direction/interlock output; the stock profile is forward-only and the final digital path must not create a second command authority. The earlier FAN5 label was incorrect: BTT's 2023-11-02 v1.1 pinout places PE15 in the EXP1 block and FAN5 on PD15; re-audit the pin before this output is ever used."},
+    {"gpio": "PD5/PD6", "connector": "candidate USART2", "reason": "Future isolated servo Modbus only; production MODBUS_ENABLE remains 0 and the pending servo profile does not approve this connection."},
+    {"connector": "onboard microSD", "reason": "Disabled; Windows control PC streams over USB and SD detect would consume an interrupt line used by a drive fault."},
+    {"connector": "spindle encoder", "reason": "Future phase; requires an isolated differential RS-422 receiver, approved drive identity, and a separate pin/timer audit."},
+    {"connector": "ESP32 accelerometer", "reason": "Separate telemetry appliance only; it is not part of motion control or any safety function."}
+  ]
+}

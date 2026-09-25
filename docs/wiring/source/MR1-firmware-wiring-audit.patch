@@ -1,0 +1,1974 @@
+diff --git a/mr1/BOM.md b/mr1/BOM.md
+index 1a1babe..c285750 100644
+--- a/mr1/BOM.md
++++ b/mr1/BOM.md
+@@ -5,14 +5,10 @@ the measurement hold points and current product listings have been checked.
+ 
+ ## Motion Kit Decision
+ 
+-Active phase one uses the already selected stock Langmuir motors with four
+-STEPPERONLINE `DM860T(V3.0)` drives. Verify the 10-switch face plus top `S2`
+-selector before treating a drive as V3.0. The stock motor current label or the
+-original driver current setting is still a purchasing/commissioning hold point.
+-See `DM860T_QUICK_WIRING.md`.
+-
+-The final upgrade remains four STEPPERONLINE TS-series 3.0 Nm closed-loop axes
+-using motor `23HS45-4204D-E1000` and driver `CL57T V4.1`.
++The active build uses four CL57T V4.1 drives with 23HS45-4204D-E1000 motors.
++The DM860T V3.0 drives and stock motors are rollback hardware to preserve intact.
++Verify all actual labels against `CL57T_QUICK_WIRING.md` before assembly; this
++parts list does not establish arrival inspection or physical qualification.
+ 
+ Purchase whichever has the lower delivered price while preserving those exact
+ part numbers:
+@@ -53,12 +49,12 @@ backlash, or gantry movement downstream of the motor remains invisible.
+ | 1 | BTT Octopus Pro | Silkscreen v1.1, STM32F429ZGT6 | Already owned; photograph before use |
+ | 4 | CL57T V4.1 drives + 23HS45-4204D-E1000 motors | `1-CL57T-S30A-V41` singles; no PSU included | **ACTIVE 2026-09-17.** Settings in `CL57T_QUICK_WIRING.md`: S1=4, SW1/3/4 on, SW2 off, SW5-8 off, S3=5V |
+ | 4 | DM860T V3.0 drives + stock Langmuir motors | Exact 10-switch V3 face | **ROLLBACK SET - preserve intact.** Never commissioned; do not sell, modify, or scavenge until closed loop passes |
+-| 1 | **`S-360-36` switch-mode supply (INSTALLED)** | AC in 110/220 V +/-15%, **DC out 36 V 10 A (360 W)** | **Identified 2026-09-20.** Voltage is correct and mid-window with 14 V regen headroom. **Current is the tight spot: 10 A against an estimated 9.6-11.2 A four-drive draw.** See the margin note in `WIRING.md`. Confirm the 110/220 selector is set for 110 V before first power |
+-| 1 | USB-to-RS232 adapter (DB9) | Genuine FTDI chipset preferred | **Not supplied with the kit** - the CL57T `P5` tuning cable is DB9. Optional: `S1` presets cover current and three rigidity settings, so commissioning does not need it. Buy only if an axis misbehaves after trying `S1` 4/5/6 |
++| 1 | **`S-360-36` switch-mode supply (INSTALLED)** | AC in 110/220 V +/-15%, **DC out 36 V 10 A (360 W)** | **Historically identified 2026-09-20; not a fresh electrical test.** 36 V nominal lies within the drive range, but actual ripple/regen and four-drive capacity remain unqualified. The 9.6-11.2 A figure is a sizing heuristic only. Verify the actual supply input selector matches the measured facility service, with power isolated |
++| 1 | USB-to-RS232 adapter (DB9) | Genuine FTDI chipset preferred | **Not supplied with the kit** - the tuning cable has a PC-side DB9; drive-side P5 is a four-contact port. Optional: `S1` presets cover current and three rigidity settings, so commissioning does not need it. Buy only if an axis misbehaves after trying `S1` 4/5/6 |
+ | 1 | 24 V control supply | Regulated, recognized, DIN mount preferred, at least 2.5 A after load calculation | Octopus main power and relay coils only |
+ | 2 | 24-to-5 V isolated DC/DC | Reinforced/functional isolation as required, current-limited output | Separate field domains: one for probe/setter and one for stock home/limit conditioning |
+-| 1 | HW-399 TLP281-4-compatible four-channel module | Separate `GND` and `HGND`; two channels used | Already owned; provisional phase-one sensor adapter only; photograph both faces and bench-qualify |
+-| 1 | **TLP281-4 four-channel opto isolation module (ON HAND)** | Quad photocoupler, 2500 Vrms, ~1k input resistors | **Serves all four stock home channels.** Output VCC left unconnected so outputs act open-collector; never feed that rail 5 V. Bench-verify direction per channel - some vendor variants invert. See `INTERFACE_BOARD.md` A2 |
++| 1 | HW-399 TLP281-4-compatible four-channel module | Candidate only; trace actual circuit and isolated domains | On hand, HOLD pending circuit/terminal proof and bench qualification; two sensor channels planned |
++| 1 | **TLP281-4 four-channel opto isolation module (ON HAND)** | Actual module circuit, resistor values and isolation unverified | **HOLD, candidate for four homes only.** No floating-VCC recipe is approved; shared pullups may couple outputs. Trace and qualify all state combinations per `INTERFACE_BOARD.md` A2 |
+ | 1 | Protected 5 V motion supply | At least 0.75 A, fused | CL57T `P1` PUL/DIR optocouplers only; `S3` on every drive must be `5V` |
+ | 1 | Safety relay | Dual-channel inputs, manual monitored reset, suitable diagnostic contacts | Select from risk assessment, not price alone |
+ | 1 set | Motion/spindle contactors | Correct DC/AC utilization category, coil voltage, interrupt rating, auxiliary contacts | Sized after supply and stop analysis |
+@@ -87,16 +83,16 @@ allowance is:
+ 
+ | Qty | Part class | Purpose |
+ | ---: | --- | --- |
+-| 12 | 2N7002 or characterized N-MOSFET with guaranteed performance at 4.5-5 V gate | Open-drain PUL, DIR, and ENA channels from the Octopus 5 V HCT-buffered socket signals |
+-| 12 | 100 ohm gate resistors | Limit edge current/ringing |
+-| 12 | 100 kohm gate-source resistors | Defined gate state |
+-| 6 minimum | Input optocouplers | Four drive-alarm channels (series-chained to one PB1 result) plus two probe/tool-setter channels. The four stock-home channels are covered by the on-hand TLP281-4 module |
++| 8 active + 4 reserved | 2N7002 or characterized N-MOSFET with guaranteed performance at 4.5-5 V gate | Eight candidate PUL/DIR sinks from 5 V HCT-buffered sockets; four ENA channels reserved and unpopulated |
++| 8 active + 4 reserved | 100 ohm gate resistors | Limit edge current/ringing |
++| 8 active + 4 reserved | 100 kohm gate-source resistors | Defined gate state |
++| HOLD - count after circuit design | Input isolation and logic | Four home + four alarm + two sensor field functions planned. On-hand modules are unqualified. Alarm design must provide a supervised PB1 aggregate plus independent PG12-PG15 indications; this may require extra isolated outputs/logic. Do not equate ten field functions with a fixed ten-component BOM |
+ | 2 | Schmitt/logic conditioners | Clean probe/tool-setter controller outputs if optocoupler edges require them |
+-| 1 set | Polarity/configuration jumpers | Match characterized DM860T now and CL57T after the upgrade |
++| 1 set | Polarity/configuration jumpers | Match characterized active CL57T; any DM860T rollback requires separate review |
+ | 1 set | TVS, resettable fuses, reverse-polarity protection | Field-port protection |
+ | 1 set | Pluggable terminal blocks | Keyed motion, alarms, probes, spindle, controls |
+ | 1 set | Test points | 24 V, 5 V, isolated 5 V, every PUL/DIR/ENA, alarm, probe, analog command |
+-| 4 | 18-position `2x9` driver-socket adapters | Route only pins 1/7/8/9; a `2x8` StepStick blank is allowed only when keyed to pins 1-16 and mechanically retained |
++| 4 | 18-position `2x9` driver-socket adapters | Active contacts 7/8/9; 1 EN reserved. Actual fit/orientation/continuity required; 2x8 candidate on HOLD until mechanically and electrically proved |
+ | 1 | Board support hardware | Standoffs/bracket so socket pins carry no cable load |
+ 
+ Use recognized components with documented temperature and voltage ratings. The
+@@ -147,7 +143,7 @@ break-before-make; it must never drive both at once.
+ | Ventilation | Filtered fan and thermostat if thermal calculation requires it |
+ | Service items | Spare fuses, one spare optocoupler channel, printed terminal labels; buy spare removable plugs only after actual pitch/family measurement |
+ 
+-For the future CL57T kits, use the included separate motor and encoder
++For the active CL57T kits, use the included separate motor and encoder
+ extensions. Keep encoder and alarm cables away from motor phase conductors even
+ if the connector bundles look convenient together.
+ 
+diff --git a/mr1/CL57T_ARRIVAL_CAPTURE.md b/mr1/CL57T_ARRIVAL_CAPTURE.md
+index d89cad3..3aba877 100644
+--- a/mr1/CL57T_ARRIVAL_CAPTURE.md
++++ b/mr1/CL57T_ARRIVAL_CAPTURE.md
+@@ -96,8 +96,8 @@ Then, against the machine:
+ 
+ ## 5. The supply — do this before any drive is powered
+ 
+-The motion supply is nowhere identified in this project by make, model, or
+-rating, and `regulated` has never been required of it.
++The September 20 record below identifies the supply. Retain the nameplate
++photo and verify the actual installed unit before using these values.
+ 
+ - [x] Photograph the supply nameplate — **done 2026-09-20**
+ - [x] Manufacturer / model: **`S-360-36`**
+@@ -106,20 +106,30 @@ rating, and `regulated` has never been required of it.
+ - [x] Input voltage range: **110 / 220 V ±15%**
+ - [x] Regulated or unregulated: **regulated** (enclosed switch-mode)
+ 
+-**Verdict: voltage correct, current adequate but unmargined.** 10 A against an
+-estimated 9.6–11.2 A four-drive draw. See the margin note in `WIRING.md`.
+-Still to confirm: the 110/220 V selector is set for **110 V**.
++**Verdict: nominal voltage compatible; simultaneous four-drive capacity is
++unqualified.** The 9.6–11.2 A estimate is a heuristic, not measured bus demand.
++This 10 A unit does not meet the project's proposed 12 A minimum design margin.
++Do not silently mark it accepted: either replace it with a qualified supply,
++or document a reviewed, measured operating envelope for this specific unit.
++No replacement has been selected or purchased by this audit. See `WIRING.md`.
++Still to confirm: the input selector matches the actual mains supply.
+ 
+ With **all four drive branches disconnected**, at the actual wall voltage:
+ 
+ - [ ] Output measured in **DC** mode: __________ V
+-- [ ] Output measured in **AC** mode: __________ V
++- [ ] Ripple measurement / instrument / bandwidth: ______________________
++- [ ] Later, under a qualified commissioning test: minimum bus voltage,
++      peak deceleration voltage, current, temperature, and test duration: ______
+ 
+-**Accept for CL57T service only if all of these hold:**
++**Power acceptance remains open until all of these are resolved:**
+ 
+-- It is DC, and the AC reading is essentially zero
+-- Unloaded DC is **under 40 V** (hard ceiling is 50 V; leave regen headroom)
+-- Rated current is **≥ 12 A**, or ~430 W (15 A preferred)
++- Correct DC polarity, measured voltage and ripple; a handheld AC reading is
++  not sufficient transient or regulation evidence.
++- Under 40 V unloaded is the current project target for the nominal 36 V bus.
++  Bus voltage remains within the drive limits during load and deceleration.
++- At least 12 A was the proposed project design margin, not a manufacturer
++  minimum. The documented 10 A supply needs replacement or a separately
++  reviewed measured operating envelope, including all four axes together.
+ 
+ If unloaded DC is above 45 V, stop — an unregulated supply can climb further on
+ high mains and during deceleration, and 50 V destroys the drives.
+@@ -130,11 +140,17 @@ The manual says the `ALM`/`COMO` impedance changes "from low to high or high to
+ low depending on configuration" and does **not** state a default. The whole
+ fail-safe design depends on knowing which.
+ 
+-On a bench supply, one drive, motor and encoder connected, nothing else:
++On a current-limited bench setup, motor and encoder connected, with the
++mechanical coupling removed and an appropriate isolated test load:
++
++- [ ] Healthy ALM/COMO output voltage/current: ______________________
++- [ ] Alarm output voltage/current, using a vendor-approved fault method: ____
++- [ ] Lost-drive-power and open-alarm-cable results: ______________________
++
++Never disconnect a powered motor or encoder to force a fault, and do not put
++an ohmmeter across an energized alarm output. A conditioner test input can
++prove the controller path, but does not prove the drive actually signals a fault.
+ 
+-- [ ] Impedance across `ALM`/`COMO` when healthy: ______________________
+-- [ ] Impedance when alarmed (disconnect the encoder to force alarm code 4):
+-      ______________________
+ - [ ] Is the direction configurable, and how? ______________________
+ - [ ] Red LED blink count observed for the forced fault: __________
+ 
+diff --git a/mr1/CL57T_QUICK_WIRING.md b/mr1/CL57T_QUICK_WIRING.md
+index ed87833..11d2579 100644
+--- a/mr1/CL57T_QUICK_WIRING.md
++++ b/mr1/CL57T_QUICK_WIRING.md
+@@ -4,11 +4,11 @@ Peer document to `DM860T_QUICK_WIRING.md`, for the four STEPPERONLINE
+ `1-CL57T-S30A-V41` closed-loop kits (`CL57T V4.1` driver +
+ `23HS45-4204D-E1000` motor, 4.2 A/phase, 3.0 Nm).
+ 
+-Every number here is transcribed from the vendor manual archived at
++Drive electrical limits and switch tables come from the vendor manual archived at
+ `_vendor_docs/CL57T-V41_user_manual.pdf`
+ (SHA-256 `3eec9304c770ff68a5ccbd68f105789edfb35f5c91a9977531a30756a918d7da`,
+ 14 pages, Revision 4.1, May 2023), with a plain-text extraction beside it.
+-Section numbers below refer to that manual.
++Section numbers below refer to that manual. Motor ratings come from the motor datasheet; the selected settings and margins are project design choices, not claims of physical qualification.
+ 
+ **The DM860T document does not apply to these drives.** The switch letters,
+ the power terminals, and the polarity rule are all different. See
+@@ -19,8 +19,7 @@ the power terminals, and the polarity rule are all different. See
+ ## Stop gates — do not skip
+ 
+ 1. **Revision gate.** This document is for **V4.1** only. V4.1 is the revision
+-   that adds the `S1` rotating switch, the `S3` 5/24 V selector, and the `P5`
+-   tuning port (manual, Record of Revisions). If the drive in your hand has no
++   whose revision history adds the `P5` tuning port; `S1` and the 5/24 V selector already appeared in V4.0 (manual, Record of Revisions). If the drive in your hand has no
+    rotating switch or no top-side selector, stop — it is not V4.1 and this
+    table is wrong for it.
+ 2. **Set every switch before applying power.** All switch settings are read at
+@@ -62,9 +61,8 @@ No external resistor is required at 5 V. (At 24 V no resistors are needed
+ either; only the 12 V case needs a 1 kΩ series resistor — §6.1 note 2.)
+ 
+ Because the damaging direction requires 24 V to reach a drive set to 5 V,
+-**prove no 24 V can reach the P1 control pins before first power-up.** The
+-interface board's isolated 5 V field domain is what guarantees this; verify it
+-with a meter, not by assumption.
++**prove no 24 V can reach the 5 V-selected PUL/DIR inputs before first power-up.** The
++protected 5 V command supply and the qualified interface must prevent cross-domain faults. The common-anode interface references controller logic return; it is not an independently isolated encoder supply. P1 also contains ENA and ALM/COMO with separate specifications; S3 selects PUL/DIR levels only. ENA remains unconnected.
+ 
+ ---
+ 
+@@ -88,9 +86,10 @@ behaviour.
+ **Why `4` and not higher:** the motor is rated **4.2 A/phase**. 4 A RMS sits
+ just under it. Code `A`+ would command 5 A RMS into a 4.2 A motor.
+ 
+-**Factory default is `0`, which is only 2 A RMS — half the motor's rating.**
+-Leaving it at `0` will not damage anything, but the axes will be weak and
+-prone to following errors. This switch *must* be changed on all four drives.
++**Factory default `0` is 2 A RMS; this project's initial candidate is `4`
++(4 A RMS).** Lower current changes available torque; neither the manual nor a
++source audit proves that this machine will be weak, fault, or remain safe at
++either setting. Thermal, direction, scale and load tests remain required.
+ 
+ **Gain tuning comes later, not now.** Codes `4`/`5`/`6` share 4 A RMS and
+ differ only in rigidity (Kp 25/25 → 50/15 → 100/5). If an axis oscillates or
+@@ -114,9 +113,10 @@ The MR-1 kinematics require **1600 pulses/rev** (5 mm X/Y lead → 320 steps/mm;
+ 
+ > ### SW1 `on`, SW2 `off`, SW3 `on`, SW4 `on` — all four drives.
+ 
+-Getting this wrong does not damage anything, but it silently scales every
+-axis. Half-right is worse than obviously wrong: 800 pulses/rev makes the
+-machine cut everything at 2× size.
++A wrong setting changes real travel and speed and can cause a collision. For
++example, 800 pulses/rev with firmware assuming 1600 commands twice the intended
++travel. Verify a small, guarded measured move before any full-travel command
++or homing; the screw leads and scale must be checked on the actual machine.
+ 
+ ### SW5–SW8: mode (§5.2.2)
+ 
+@@ -143,8 +143,9 @@ the right default.
+ > (MOTOR3) drive one gantry through two ballscrews. If their SW8 settings
+ > differ, the two sides respond to the same step train with different lag and
+ > will fight each other — racking the gantry and risking a dual-axis homing
+-> fault or mechanical damage. **SW5 through SW8 must be identical on the two Y
+-> drives, without exception.**
++> fault or mechanical damage. **SW6 through SW8 must match on the two Y
++> drives. SW5 and firmware direction masks must produce the correct physical
++> motion on each side; establish that with uncoupled direction tests.**
+ 
+ **SW5 is the only per-axis switch.** Do not guess it. Set all four to OFF
+ initially, then correct individual axes during the Stage 5 direction check,
+@@ -164,16 +165,11 @@ mask so the drives stay identically configured — but record whichever you use.
+ 
+ > ### `P4` is POLARIZED DC. This is the single biggest change from the DM860T.
+ 
+-The DM860T takes bus power on two interchangeable terminals silkscreened `AC`,
+-and **the existing MR-1 documents say so explicitly**:
+-
+-- `PIGTAIL_SCHEDULE.md:87` — *"Land that drive's own fused 36 V star pair on the two no-polarity `AC` contacts."*
+-- `DM860T_QUICK_WIRING.md:119` — `motion supply branch -> AC and AC`
+-- `cable-schedule.csv:3-6` — destination terminal `AC/AC` on all four power rows
+-
+-**Every one of those instructions is wrong for a CL57T.** Reversing `+VDC` and
+-`GND` is a single-event, four-drive loss. Treat any DM860T-era power pigtail as
+-unsafe to reuse without re-terminating and re-labelling.
++The DM860T rollback set uses interchangeable `AC` terminals. The current
++`PIGTAIL_SCHEDULE.md` and active `cable-schedule.csv` rows use polarized CL57T
++P4; AC/AC rows are explicitly ROLLBACK-ONLY. Never apply the rollback power
++rule to CL57T. Inspect, re-terminate where necessary, and re-label any reused
++pigtail before connecting it; reverse polarity can damage the drive.
+ 
+ ### Voltage
+ 
+@@ -189,10 +185,12 @@ explicitly, for *"power line voltage fluctuation and back-EMF voltage charge
+ back"* during deceleration.
+ 
+ **Before landing the supply on any CL57T, with all four drive branches
+-disconnected, meter it in DC and again in AC mode.** The supply is nowhere
+-identified in this project by make, model, or rating, and `regulated` is
+-required of the 24 V supply in three places but never of the 36 V supply. An
+-unregulated supply can sit 15–25% above nameplate at no load.
++disconnected, verify polarity and measure its DC output.** The September 20
++record identifies an S-360-36, 36 V / 10 A switch-mode supply. That historical
++record is not a fresh electrical test. Record ripple with an appropriate
++instrument and measure deceleration transients during commissioning; a handheld
++AC reading alone does not qualify the bus. Simultaneous four-drive capacity
++remains unresolved; see `CL57T_ARRIVAL_CAPTURE.md` section 5.
+ 
+ > **Manual erratum.** §8's over-voltage troubleshooting says *"Check if the
+ > power voltage is higher than 90VDC."* That is a copy-paste error from a
+@@ -222,27 +220,25 @@ Four separate fused branches from the distribution point. No daisy chains.
+ | `COMO` | Out | Common return for the single-ended outputs (common-cathode) |
+ 
+ Logic input current: **7 mA min, 10 mA typical, 16 mA max.** This matches the
+-7–16 mA gate already in `COMMISSIONING.md:259`, so the existing interface-board
+-current budget carries over unchanged.
++7–16 mA design window already recorded in the project. It does not qualify
++the existing circuit or supply: measure current/levels and loading on all
++eight PUL/DIR channels; ENA is unconnected.
+ 
+-### Timing vs the compiled firmware — all four pass
++### Timing source comparison - Loaded Waveforms Still Required
+ 
+-| Manual requirement (§7) | Minimum | `mr1_octopus_config.h` | Margin |
++| Manual requirement (section 7) | Minimum | Configured source value | Evidence limit |
+ | --- | --- | --- | --- |
+-| t3 — pulse width | 1.0 µs | `DEFAULT_STEP_PULSE_MICROSECONDS 5.0` | 5× |
+-| t2 — DIR before PUL | 2.0 µs | `DEFAULT_STEP_PULSE_DELAY 6.0` | 3× |
+-| t1 — ENA before DIR | 200 ms | `DEFAULT_STEPPER_ENABLE_DELAY 250` | 1.25× |
+-| t4 — low-level width | 1.0 µs | ~69 µs at the 13.5 kHz configured peak | ~69× |
+-
+-> ### No firmware change is required for CL57T timing.
+-> The compiled image, its recorded SHA-256, and the
+-> `flash-candidate-2026-09-16` tag all stand. No rebuild, no re-hash, no
+-> re-tag.
+-
+-This was an open blocker before the manual was in hand. It is now closed, and
+-the 250 ms enable delay clearing the 200 ms minimum is the tightest of the
+-four — do not reduce `DEFAULT_STEPPER_ENABLE_DELAY` below 200 without
+-revisiting this table.
++| Pulse width | 1.0 us | `DEFAULT_STEP_PULSE_MICROSECONDS 5.0` | Source value only; scope at loaded PUL input |
++| DIR before PUL | 2.0 us | `DEFAULT_STEP_PULSE_DELAY 6.0` | Scope effective DIR/PUL edges after interface propagation |
++| ENA before DIR | 200 ms | `DEFAULT_STEPPER_ENABLE_DELAY 250` | Not applicable with ENA unconnected; future circuit requires separate proof |
++| Low-level pulse width | 1.0 us | About 69 us at the configured peak rate | Ideal rate calculation, not measured pulse spacing |
++
++The configured values provide a plausible timing starting point; this comparison
++does not qualify the interface, startup behavior or actual drive waveforms.
++Do not close the hardware timing gate until pulse current, levels, effective
++edges, minimum high/low duration and DIR setup are measured into the actual
++drive through the finished harness. No firmware timing change is established
++as necessary by this source comparison, and no image was rebuilt or flashed.
+ 
+ ---
+ 
+@@ -254,10 +250,12 @@ high to low depending on configuration)"*. Output is optional and may be wired
+ sinking or sourcing.
+ 
+ **The direction is configuration-dependent and the manual does not state a
+-default.** Determine it on arrival with a bench supply and a meter across
+-`ALM`/`COMO`: record idle impedance and alarm impedance. Wire so that
+-**healthy = loop closed**, meaning a broken wire or a dead drive reads as a
+-fault. Confirm by physically disconnecting the channel and observing a fault.
++default.** Characterize it with a current-limited test load and voltage/current
++measurements in healthy, alarm, lost-power and open-cable states. Do not use an
++ohmmeter on an energized output. Each pair enters an isolated conditioner; its
++controller-side output is low only when healthy and the cable is intact. A
++healthy-open alarm needs added supervision or a separate ready/power contact.
++Never hot-unplug motor or encoder connectors to force an alarm.
+ 
+ ### Where the alarm must land
+ 
+@@ -267,13 +265,14 @@ motion.** The only input that raises `Alarm_MotorFault` in grblHAL is the
+ **PB1 aggregate** (`boards/btt_octopus_pro_mr1_map.h:223-225`,
+ `WIRING.md:260-263`).
+ 
+-> Series-chain all four drive-healthy channels into the **PB1 aggregate** — all
+-> healthy = loop closed. Keep PG12–PG15 in parallel as per-axis indication for
+-> `$pins` and diagnostics, so you can tell *which* axis faulted, but do not
+-> rely on them to stop the machine.
++> Combine the four **conditioned healthy outputs** into the **PB1 aggregate**:
++> all healthy = low; any fault, open cable or lost power = high. Never chain
++> raw ALM/COMO terminals into a GPIO. Provide separate conditioned indications
++> on PG12–PG15 for `$pins` diagnostics; these do not stop motion.
+ 
+-This mattered little with open-loop DM860Ts, which cannot report a meaningful
+-fault. It is the whole point of closed-loop drives.
++The rollback DM860T also provides fault outputs, although it has no motor
++encoder following-error feedback. CL57T feedback is at the motor shaft; it
++does not detect a loose coupler or prove table position.
+ 
+ ---
+ 
+@@ -290,10 +289,11 @@ fault. It is the whole point of closed-loop drives.
+ isolated 5 V rail or from the 24 V field supply — that bonds two power domains
+ the project deliberately keeps separate (`WIRING.md:97-98`).
+ 
+-The encoder is a new low-voltage domain this project has never had. Add it to
+-the power-domain table and the PE bonding list, and to every hot-plug
+-prohibition — `WIRING.md:187`, `PIGTAIL_SCHEDULE.md:91` and the commissioning
+-equivalents all predate the encoder and do not mention it.
++The current WIRING and PIGTAIL documents include the encoder domain and its
++hot-plug prohibition. Do not add a bond from EGND to PE, another drive, or
++controller logic without an approved schematic. The manual identifies a
++drive-supplied encoder output; it does not establish galvanic isolation of
++that output from the drive power return.
+ 
+ Route encoder extensions away from motor and bus cable. §3.1 notes: shield the
+ control signal wires, and *"don't tie control signal cables and power wires
+@@ -314,21 +314,34 @@ together."*
+ 
+ ---
+ 
+-## First power-up sequence
+-
+-1. All four drives configured: `S1`=`4`, SW1 `on` / SW2 `off` / SW3 `on` /
+-   SW4 `on`, SW5 `off`, SW6 `off`, SW7 `off`, SW8 `off`, `S3`=`5V`.
+-2. Motor (`P3`) and encoder (`P2`) connected. **Never power a drive without
+-   them.**
+-3. `P1` control wiring landed, with the 5 V field domain proven — no path by
+-   which 24 V can reach `PUL`/`DIR`/`ENA`.
+-4. Supply metered: DC, regulated, under 40 V unloaded, no AC component.
+-5. `P4` landed with **verified polarity**, one fused branch per drive, no daisy
+-   chains.
+-6. Energize one axis only. Expect: **green LED steady on, red LED off.**
+-7. A blinking red LED means an alarm — count the blinks in the 3-second period
+-   and read §8. Code 4 ("fail to lock motor shaft") most often means the motor
+-   or encoder cable is not properly connected.
++## First Power-Up - Conditional Bench Procedure, Not Release to Run
++
++Power-up remains on HOLD until the mechanical restraint, hardwired stop,
++protective bonding, branch protection and tested interface are documented.
++No spindle or coupled-axis commissioning is authorized by this source guide.
++
++1. With power isolated, match all four drive/motor revision labels and record
++   the initial settings: S1=4; SW1/3/4 on; SW2/5/6/7/8 off; S3=5V.
++2. Support the gravity-loaded Z assembly before uncoupling it. Secure the one
++   test motor to a rigid fixture, guard the shaft and remove loose shaft keys
++   or couplers. Keep personnel clear: power-up can create holding torque or
++   shaft movement even without a commanded jog.
++3. With all energy sources off and discharged, connect that motor P3 and its
++   matching encoder P2. Check P4 polarity and its protected star branch. Keep
++   the other drives and spindle isolated. Do not hot-plug any connector.
++4. Qualify the supply separately with drive branches disconnected: correct
++   polarity and DC voltage, ripple captured, project target below 40 V unloaded.
++   Later loaded and deceleration tests must remain below the 50 V hard limit;
++   four-drive capacity is not yet proved. Deenergize before landing P4.
++5. Use only the qualified PUL/DIR interface, with its input commands held in the
++   documented inactive state. ENA remains unconnected. The ALM/COMO test circuit
++   must be separately current-limited and characterized; no raw GPIO connection.
++6. Only after the preceding gates pass, energize the one secured test drive with
++   a reachable verified hardware stop. Green steady/red off is the expected
++   healthy indication, not proof that motion or machine wiring is safe.
++7. If red blinks, record the count and consult manual section 8. Isolate power
++   and prove discharge before inspecting motor/encoder connections. Do not
++   unplug a live cable to create or clear an alarm.
+ 
+ ---
+ 
+diff --git a/mr1/INTERFACE_BOARD.md b/mr1/INTERFACE_BOARD.md
+index 800e84a..cda7f0e 100644
+--- a/mr1/INTERFACE_BOARD.md
++++ b/mr1/INTERFACE_BOARD.md
+@@ -3,13 +3,13 @@
+ ## Purpose
+ 
+ The permanent interface board removes the Octopus pigtail problem while keeping
+-the phase-one DM860T drives, future CL57T closed-loop drives, stock probe/tool
++the active CL57T V4.1 closed-loop drives, stock probe/tool
+ setter, stock spindle servo, and field wiring electrically appropriate for a
+ CNC cabinet.
+ 
+ It is not a motor driver and it is not a safety controller. It performs:
+ 
+-- Four socket-to-external-drive PUL/DIR/ENA conversions.
++- Four socket-to-external-drive PUL/DIR interfaces; ENA is reserved and unconnected.
+ - Four isolated stock-home input conditioners.
+ - Four isolated, polarity-configurable external-drive alarm inputs.
+ - Two isolated active-low sensor inputs for probe and tool setter.
+@@ -23,8 +23,9 @@ It is not a motor driver and it is not a safety controller. It performs:
+ ### P0 Bench Prototype
+ 
+ Use four mechanically supported 18-position socket adapters, a DIN interface
+-carrier, and pluggable terminals. A `2x8` StepStick blank is acceptable only
+-when keyed to socket pins 1-16 and retained so it cannot shift onto pins 3-18.
++carrier, and pluggable terminals. A `2x8` candidate remains on HOLD until its
++contact map, fit, orientation, keying and retention are proved on the actual
++18-contact socket. Schematic contact numbers are not physical row counts.
+ Populate one X-axis motion channel,
+ one fault channel, one probe channel, and the spindle analog channel first. Test
+ the circuits under their real electrical loads before duplicating them.
+@@ -55,7 +56,9 @@ pretend-ready PCB layout in this package.
+ 
+ ### A. Motion Outputs
+ 
+-There are 12 identical channels: `X/YL/Z/YR` times `PUL/DIR/ENA`.
++The active CL57T installation uses eight command channels: `X/YL/Z/YR` times
++`PUL/DIR`. Four ENA channels may be reserved, but remain unconnected until
++separately qualified. ENA is not the hardwired motion safety function.
+ 
+ The official v1.1 schematic places a 5 V `MC74HCT125A` buffer between each MCU
+ signal and its driver-socket EN/STEP/DIR contact. Required channel behavior:
+@@ -64,9 +67,9 @@ signal and its driver-socket EN/STEP/DIR contact. Required channel behavior:
+ | --- | --- | --- | --- |
+ | Low | Off | Pulled toward +5 V internally/through input | Off |
+ | High | On | Near 0 V | On |
+-| Octopus unpowered | Off by gate pulldown | High | Off |
++| Octopus unpowered | Intended off by gate pulldown; verify rail decay/backfeed | Intended inactive; measure | Not yet qualified |
+ 
+-Initial circuit:
++Candidate circuit; the table is required behavior, not measured performance:
+ 
+ ```text
+ SOCKET_SIGNAL -- 100R -- Q gate
+@@ -80,11 +83,16 @@ Use a MOSFET whose guaranteed on-resistance and transfer behavior are suitable
+ at a 4.5-5 V gate, not merely a threshold-voltage headline. Validate less than
+ 0.5 V at the drive minus input while sinking its worst-case 16 mA.
+ 
+-`ENA` active means the external drive output stage is disabled. On controller power loss
+-the simple channel leaves ENA inactive, so system safety cannot depend on ENA.
+-The motion contactor must drop with control-power/safety loss. P1 should also
+-provide a hardware `FORCE_DISABLE` input that turns on all four ENA sinks until
+-the panel motion-permit relay is energized.
++`ENA` is optional and remains unconnected in the active installation. Any future
++ENA stage requires separate truth-table, startup/shutdown and timing tests.
++The simple stage is not a safety function: loss of controller power does not
++prove the drive disabled. A hardware safety circuit must remove motion/spindle
++permission as designed, with the Z load mechanically secured where power loss
++can allow descent. A proposed `FORCE_DISABLE` circuit is not implemented or
++qualified by this drawing.
++
++Proposed custom interface connector numbering below is a design choice, **not
++the CL57T P1 terminal order**. Leave its reserved ENA cavities empty.
+ 
+ Required axis connector pin order:
+ 
+@@ -93,70 +101,57 @@ Required axis connector pin order:
+ ```
+ 
+ Use the same order on all axes and key the plugs. Provide test points for the
+-socket side and field side of all 12 channels.
++socket side and field side of the eight active PUL/DIR channels. Four ENA
++channels are reserved only.
+ 
+-Octopus socket contacts used by the adapter:
++Octopus schematic contact identities used by the adapter (BTT schematic sheet
++1). These numbers do not specify a viewing direction or housing orientation;
++prove each fitted contact by trace/continuity on the actual board:
+ 
+ | Contact | Signal | Disposition |
+ | --- | --- | --- |
+-| 1 | EN | Route to gate resistor |
++| 1 | EN | Reserved; do not populate an active ENA circuit |
+ | 7 | STEP | Route to gate resistor |
+ | 8 | DIR | Route to gate resistor |
+ | 9 | GND | Controller logic return |
+ | 2-6, 10-18 | Mode/reset/sleep/VCC_IO/phases/GND/VM/NC/DIAG | No connection |
+ 
+-### A2. Home-Channel Conditioner - TLP281-4 Module (on hand)
+-
+-A four-channel TLP281 optocoupler isolation module is on hand and is a suitable
+-pre-built conditioner for the four stock home channels. It removes the need to
+-build the discrete channel described above, but it does not remove any of the
+-requirements: isolation, fail-safe direction, and no 5 V on an MCU pin.
+-
+-TLP281-4 is a quad photocoupler, 2500 Vrms isolation, Vf about 1.15 V typical,
+-CTR 50% minimum at 5 mA. Module input resistors are typically 1 k, so a 5 V
+-stock field drives roughly (5 - 1.15) / 1k = **3.8 mA** through the LED. At 50%
+-CTR that is about 1.9 mA of collector current; sinking an Octopus input against
+-its onboard pullup needs well under 0.5 mA, so the margin is comfortable even as
+-CTR degrades with age.
+-
+-**The output-side pull-up is the hazard.** These modules carry a pull-up
+-resistor from each output to the output-side `VCC`, so the output is *not*
+-open-collector - it rests at whatever that rail is fed. Feeding it 5 V puts 5 V
+-on a 3.3 V Octopus input.
+-
+-| Output-side `VCC` | Result |
+-| --- | --- |
+-| **Leave unconnected (preferred)** | Pull-up is unsupplied, output behaves as open collector, the Octopus 3.3 V pullup defines the high level. Nothing can exceed 3.3 V |
+-| Tie to Octopus 3.3 V | Defined 3.3 V high. Also safe |
+-| **Tie to 5 V** | **Forbidden.** Puts 5 V on an MCU pin |
+-
+-Output-side `GND` must connect to the STOP header ground regardless - the
+-phototransistor emitter needs a return path.
+-
+-```text
+-FIELD SIDE (stock harness, isolated)   OUTPUT SIDE (controller)
+-stock switch SIG  -> IN1..IN4          OUT1..OUT4 -> STOP0..3 SIG
+-stock field 5 V   -> VCC (field)       GND (out)  -> STOP0..3 GND
+-stock field return-> GND (field)       VCC (out)  -> leave open
+-                                       STOP 5 V cavity -> EMPTY
+-```
+-
+-**Bench-verify the direction before the module goes near the machine.** These
+-modules are not consistent between vendors and some invert. Power the field
+-side, jumper one input to its active state, and meter that output against
+-output ground:
+-
+-- Input active gives `OUT` near 0 V, input removed gives `OUT` floating or high:
+-  **correct**. Healthy reads low, and a triggered switch, broken cable, or lost
+-  field power all read high.
+-- Input active gives `OUT` high, input removed gives `OUT` low: **inverted and
+-  unusable as wired**. A cut cable would be indistinguishable from a healthy
+-  machine, and no firmware invert setting repairs that, because both states
+-  would present the same level. Re-derive the channel or add an inverting stage.
+-
+-Record the measured result per channel in the commissioning evidence. Four
+-channels exactly covers the four home switches; the drive-alarm series chain
+-needs its own path into PB1 and is not served by this module.
++### A2. Home-Channel Conditioner - Unqualified On-Hand Module
++
++The on-hand module described as TLP281-4 is a **candidate, on HOLD**. An IC
++marking does not identify its input network, output topology, common rails,
++terminal pinout, isolation spacing, protection or operating margins. No input
++resistor, LED current, CTR margin or module isolation rating has been proved.
++A component CTR specification at one LED current/temperature cannot qualify a
++different assumed current or an assembled module.
++
++**Do not adopt the former "leave output VCC open" recipe.** If channel pullups
++share that rail, a floating VCC can couple outputs through those resistors.
++Nor is connecting VCC to 3.3 V automatically approved: LEDs, transistors or
++other circuitry may change behavior. Never supply a GPIO-facing pullup from
++5 V. Keep the module and stock harness disconnected from the Octopus until:
++
++1. Both PCB faces, IC marking, resistor values and terminal markings are recorded;
++   trace a complete circuit, including shared rails and every isolation crossing.
++2. The stock switch supply, return and independent signals are identified. Do
++   not assume a module has a field VCC terminal or that its input is active-high.
++3. Select the field current and output circuit from the actual parts' guaranteed
++   limits and the BTT input circuit (STOP: 10 kohm pullup to 3.3 V, series/filter
++   components). Include temperature, input thresholds and propagation delay.
++4. With a current-limited bench supply and a representative controller-side
++   test load, record all four channels' healthy, triggered, unplugged and
++   field-power-loss voltages. Healthy must pull low; every required fault must
++   release high. Test all 16 active/inactive combinations to reveal cross-channel
++   coupling, plus each field/supply cable removal. Repeat with either side unpowered.
++5. Approve the exact terminal-to-terminal wiring only after these checks. Output
++   return belongs to controller logic; the isolated field return stays separate.
++
++The intended destinations remain X/PG6, YL/PG9, Z/PG10 and YR/PG11. Use only
++SIG/GND at STOP0-3; leave adjacent 5 V contacts empty. Independent Y inputs are
++required for squaring. Firmware inversion cannot distinguish a healthy-open
++field circuit from a broken wire presenting that same state; add supervision
++or redesign the conditioner when necessary. This home module is not allocated
++to the four drive-alarm channels or their PB1 aggregate.
+ 
+ ### B. External-Drive Alarm Inputs
+ 
+@@ -167,8 +162,9 @@ DM860T V3 rollback drives provide `ALM+` and `ALM-`. The board accepts the
+ characterized sinking or sourcing arrangement only through an optocoupler and
+ current-limiting network.
+ 
+-**Topology requirement.** The four drive-healthy channels must be series-chained
+-into the PB1 aggregate input, because PB1 is the only input that raises
++**Topology requirement.** Combine the four isolated, conditioned healthy
++outputs into the PB1 aggregate input. Do not series-chain raw ALM/COMO outputs
++into a GPIO. PB1 is the only input that raises
+ `Alarm_MotorFault` in the compiled firmware - see the verification box in
+ `WIRING.md` under "Drive Fault Inputs". Per-axis outputs to PG12-PG15 are
+ parallel indication for `$pins` and carry no protective duty. Budget the
+@@ -195,7 +191,9 @@ Field connector:
+ 1 ALM+ / ALM   2 ALM- / COMO   3 DRIVE_LOGIC_V (optional, protected)   4 shield
+ ```
+ 
+-Controller destinations are PG12, PG13, PG14, and PG15.
++Per-axis indication destinations are PG12, PG13, PG14, and PG15. The separately
++qualified protective aggregate goes to PB1; none of these four indication
++connections substitutes for it.
+ 
+ ### C. Stock Home Inputs
+ 
+@@ -236,9 +234,10 @@ protected isolated supply may feed both after their current is measured.
+ 
+ #### Phase-one HW-399 adapter
+ 
+-The already-owned HW-399/TLP281-4-compatible module may be used provisionally
+-for commissioning after both PCB faces and terminal silk are recorded. For the
+-common module circuit, connect isolated field 0 V to `GND`, sensor signals to
++The already-owned HW-399/TLP281-4-compatible module is on HOLD until its
++actual circuit and all A2 qualification checks are complete. Photographs alone
++do not qualify it. The following is a conditional circuit hypothesis, not a
++released terminal recipe. Only if the traced circuit proves it, connect isolated field 0 V to `GND`, sensor signals to
+ `IN1` and `IN2` through the characterized active-low/pullup network, Octopus
+ 3.3 V/GND from the Octopus I2C header to `HVCC`/`HGND`, `OUT1` to PF5, and
+ `OUT2` to PB7. Leave PB8 and PB9 unpopulated. Sensor V+ comes
+@@ -298,8 +297,17 @@ Keep the analog block physically separated from motion edges and relay coils.
+ 
+ Inputs:
+ 
+-- `SPINDLE_PWM_24`: FAN0+ and FAN0 switched negative.
+-- `SPINDLE_EN_24`: FAN4+ and FAN4 switched negative.
++- Candidate `SPINDLE_PWM_24`: FAN0+ and FAN0 switched negative.
++- Candidate `SPINDLE_EN_24`: FAN4+ and FAN4 switched negative.
++
++Both remain on HOLD. On BTT schematic sheet 3, each FAN positive rail is
++jumper-selected from 5 V, 12 V or VIN. A 24 V MAIN supply does not establish a
++24 V FAN output. Identify the actual jumper, verify its rail, and match the
++converter/coil input rating before connecting a load. The FAN negative terminal
++is a MOSFET-switched return, **not logic GND**; bonding it to GND bypasses the
++switch. FAN6/7 have fixed GND returns and are not substitutes for FAN0/FAN4.
++Confirm output-off and PWM behavior under the real load, including startup,
++reset and power loss, with spindle power disconnected.
+ 
+ Outputs:
+ 
+@@ -348,7 +356,11 @@ is empty and all supervision connectors remain unplugged.
+ 
+ ### G. Coolant Outputs
+ 
+-HE0 and HE1 drive 24 V interposing channels. Put relay/solenoid flyback or surge
++HE0 and HE1 are low-side switched power outputs (BTT sheet 3), with positive
++terminals on fused VIN. A 24 V input/coil is a candidate only after the actual
++VIN rail and selected load are verified. Connect a qualified two-wire load
++across HE+ and its switched HE-; never bond HE- to logic GND. These channels
++remain on HOLD until load ratings and off/startup behavior are tested. Put relay/solenoid flyback or surge
+ suppression at the load and provide a replaceable fuse per output. If switching
+ mains pump power, the PCB drives a listed contactor/relay coil only; mains does
+ not enter the low-voltage interface board.
+@@ -394,7 +406,8 @@ P0 and P1 must each pass these tests before connection to the MR-1:
+ 2. Insulation test between controller, isolated probe, isolated analog, 24 V field, and PE domains at a voltage appropriate to the selected components.
+ 3. Power-rail current limit and reverse-polarity tests.
+ 4. PUL/DIR operation from 1 Hz through at least 25 kHz into the actual active-drive inputs.
+-5. ENA truth-table and forced-disable tests during controller power-up/down.
++5. Active PUL/DIR power-up/down tests; ENA stays unconnected. Any later ENA
++   implementation requires its own truth-table, delay and power-loss tests.
+ 6. Alarm polarity, cable-open, and drive-power-loss tests on all four channels.
+ 7. Probe and tool-setter actuation/release repeat tests, including cable flex and injected noise.
+ 8. PWM calibration at 0, 6.25, 12.5, 25, 50, 75, and 100 percent duty cycle.
+diff --git a/mr1/ORDER_LIST.md b/mr1/ORDER_LIST.md
+index 5f3fcad..e120fc4 100644
+--- a/mr1/ORDER_LIST.md
++++ b/mr1/ORDER_LIST.md
+@@ -1,10 +1,11 @@
+ # MR-1 Conversion Order List — Octopus-Side Connectors
+ 
+-The Octopus Pro v1.1 has **no screw terminals** except `MAIN POWER`. Everything
+-else is 2.54 mm headers, so every field wire needs a crimped housing.
++Identify each actual Octopus connector before buying its mating part. Power
++blocks and signal/output headers serve different domains; position count and
++apparent fit do not prove connector family or terminal rating.
+ 
+-This list covers only the **controller side**, which is fully specified by BTT's
+-v1.1 documentation and can be ordered now. It deliberately does **not** cover
++This list covers only the **controller side**, whose signal identities are documented by BTT, but connector family, actual
++orientation and retention still require physical verification. It deliberately does **not** cover
+ the CL57T drive-side plugs — see "Do not order yet" at the end.
+ 
+ Quantities below include spares, because crimping a housing wrong is routine and
+@@ -36,19 +37,19 @@ pigtail only at the board end.
+ 
+ | Octopus connector | Positions | Qty | Use |
+ | --- | ---: | ---: | --- |
+-| `STOP0`–`STOP3` | 3 | 4 | Home switches, from the TLP281-4 outputs. **5 V cavity stays empty** |
++| `STOP0`–`STOP3` | 3 | 4 | Home switches, from a qualified conditioner (on-hand module on HOLD). **5 V cavity stays empty** |
+ | `STOP4`–`STOP7` | 3 | 4 | Drive-fault indication, PG12–PG15 |
+ | `PWR-DET` | 3 | 1 | Safety door (PC0) |
+ | `TB` | 2 | 1 | E-stop / safety-relay monitor (PF3) |
+ | `T0` | 2 | 1 | Feed hold (PF4) |
+ | `T1` | 2 | 1 | Touch probe (PF5) |
+ | `BLTouch` silk header | 5 | 1 | Tool setter on PB7 only. **PB6 and 5 V stay empty** |
+-| `I2C` | 4 | 1 | HW-399 field power (3.3 V + GND only) |
++| `I2C` | 4 | 1 | Candidate conditioner LOGIC-side power (3.3 V + GND only), never isolated field power |
+ | `FAN0` | 2 | 1 | Spindle PWM carrier (PA8) |
+ | `FAN4` | 2 | 1 | Spindle enable relay (PD14) |
+ 
+-That is roughly **16 housings**: eight 3-pin, four 2-pin (plus spares), one
+-4-pin, one 5-pin. Any of the kits above covers it several times over.
++The table totals **16 housings**: nine 3-pin, five 2-pin, one 4-pin and one
++5-pin, before spares. Candidate kits still require a fit/retention check.
+ 
+ > **Fit-check one sample before crimping the set.** BTT's schematic labels these
+ > generically as `254-2P` / `CON3` / by position count, which establishes 2.54 mm
+@@ -88,7 +89,7 @@ drive. Searching Amazon for "stepper driver adapter" mostly returns **motor
+ extension cables** and A4988 breakout boards, which are a different thing
+ entirely and will not help.
+ 
+-Known-correct parts:
++Candidate parts - no product in this list is physically qualified for this board:
+ 
+ - [External Stepper Motor Driver Adapter — Bart Dring, Tindie](https://www.tindie.com/products/33366583/external-stepper-motor-driver-adapter/)
+ - [External Stepper Driver Adapter for Pololu-style socket — Cohesion3D](https://cohesion3d.com/shop/peripherals/external-stepper-driver-adapter-for-pololu-style-socket/)
+@@ -99,12 +100,13 @@ Quantity **4**, for MOTOR0–MOTOR3.
+ **What to verify on any candidate**, per `PIGTAIL_SCHEDULE.md`:
+ 
+ - Routes socket pin **1 = EN**, pin **7 = STEP**, pin **8 = DIR**, pin **9 = GND**
+-- Fits the **18-position 2×9** footprint, or is a `2x8` covering pins 1–16 **with
+-  a keyed pin-1 feature** and mechanical retention so it cannot sit one row off
++- Fits the actual **18-contact** socket with proved continuity, orientation,
++  clearance, keying and retention. A `2x8` candidate remains on HOLD until
++  those checks pass; schematic numbers are not physical row counts
+ - Leaves phases, `VM`, `VCC_IO`, mode, reset, sleep and `DIAG` unconnected
+ 
+-If you cannot source four adapters, the fallback in your own schedule is a
+-keyed, retained `2x8` StepStick blank. **Loose Dupont leads into a driver socket
++No fallback adapter is released solely from a generic StepStick description.
++A `2x8` candidate requires the same actual-board verification. **Loose Dupont leads into a driver socket
+ are not acceptable** — a one-row offset puts motor-supply voltage onto a logic
+ pin.
+ 
+@@ -140,8 +142,9 @@ than the straight shot.
+ 
+ `CE5-M5-20` is the straightforward choice. AWG20 is the vendor's own gauge for
+ NEMA 23/24 — AWG18 is the NEMA 34 part — so it is matched to the
+-`23HS45-4204D-E1000`. At 4.7 m and 4.2 A/phase the round-trip voltage drop is
+-about 0.4 V on a 36 V bus, which is irrelevant.
++`23HS45-4204D-E1000`. Verify the actual cable SKU, conductor and terminal
++ratings, route length, flex duty and temperature. No voltage-drop calculation
++or cable qualification is established by this shopping list.
+ 
+ **Measure the routed path before ordering.** If it exceeds 4.7 m, use
+ `CL-ME-CABLE` and specify the length rather than coiling excess — coiled motor
+@@ -157,8 +160,9 @@ cable adds inductance and is an avoidable EMI source.
+ This matters twice over. First, the 4.7 m kit would **not** have satisfied this
+ project's own rule that motor-cable shields terminate 360 degrees at the cabinet
+ entry (`WIRING.md`, `BOM.md`) — the motor cable it ships is bare. Second, it
+-means home-made motor extensions are *electrically equivalent to the kit*, so
+-there is no quality penalty in making them.
++means any custom alternative must be qualified for phase mapping, conductor
++ratings, flex life, retention, shielding and insulation; equivalence is not
++established simply because both motor cables are unshielded.
+ 
+ ### Chosen approach (2026-09-19, revised): buy extensions, sleeve the motor runs
+ 
+@@ -197,28 +201,17 @@ probe wiring and to the Octopus itself, while the motor end sits out at the axis
+ away from anything sensitive. Shielding is not binary - covering the section that
+ parallels sensitive cable captures most of the benefit.
+ 
+-Rules that make the sleeve work rather than decorate:
+-
+-1. **Bond it, or it does nothing.** Unbonded braid is a floating conductor -
+-   useless at best, a coupling path at worst.
+-2. **Bond at the cabinet end only.** Frame and cabinet are both PE-bonded, so
+-   bonding both ends invites circulating current through the braid. (Note this
+-   differs from VFD motor cable, where both ends is correct because common-mode
+-   current needs a return to the drive.)
+-3. **Terminate 360 degrees** - fold the braid back over the jacket and clamp with
+-   a P-clip or EMI gland. If bonding to a conductor instead, **solder it**; a
+-   pressure contact relaxes, oxidises and goes intermittent, and an intermittent
+-   shield is worse than none. Keep any drain pigtail under about 50 mm.
+-4. **Be certain which conductor you strip.** Braid soldered to a ground is
+-   correct; braid soldered to a phase is a dead short to the cabinet the first
+-   time the drive energises. Meter it; do not go by colour.
+-5. **Never carry current on the braid**, and do not run the sleeve into a GX16
+-   shell where it can reach a pin.
+-6. **The braid is never a protective earth.** It is not rated or sized as a PE
+-   conductor and it flexes. On a NEMA 23 bolted to a PE-bonded frame the motor
+-   earths through its mounting - but **verify that path with a meter**, because
+-   paint, anodising and isolation mounts break continuity more often than
+-   expected, and the stock enclosure itself sits on three isolation mounts.
++Shield termination remains a cabinet-design hold point. A partial braid sleeve
++is a proposed EMC measure, not proof that an unshielded cable meets a shielded
++cable specification. Document its coverage, routing, connector/shell bonding
++and the selected cable/drive manufacturer's termination requirements. Do not
++choose one-end versus both-end bonding from a universal ground-loop rule.
++
++Use a suitable rated 360-degree clamp/gland where the design calls for one;
++proper pressure termination is not replaced by an unsupported blanket solder
++instruction. Keep braid clear of live phase pins. A shield is never protective
++earth or a phase/signal return. Verify motor/frame protective bonding separately;
++paint, mounting hardware and isolators can interrupt an assumed chassis path.
+ 
+ **Record partial sleeving as a deliberate deviation**, not as compliance:
+ `WIRING.md` and `BOM.md` call for shielded motor cable terminated 360 degrees at
+@@ -241,7 +234,10 @@ or terminal pitch, so an aftermarket plug cannot be chosen from the datasheet.
+ `CL57T_ARRIVAL_CAPTURE.md` §3 asks you to photograph and measure the pitch and
+ position count first. Order after that, not before.
+ 
+-**Additional optocouplers.** The on-hand TLP281-4 module covers all four home
+-channels. The remaining need is six channels — four drive alarms that
+-series-chain to a single PB1 result, plus two for probe and tool setter. Do not
+-re-order the ten the BOM originally listed.
++**Additional optocouplers.** Quantity remains on HOLD. The on-hand home and
++sensor modules are unqualified. Plan four home, four alarm and two sensor field
++functions, then count the actual components needed for the approved circuitry.
++The alarms require a supervised PB1 aggregate and separate PG12-PG15 indications;
++raw ALM/COMO terminals are not series contacts and may need additional logic.
++Do not reduce the order to six or assume one optocoupler per function without
++the reviewed circuit and confirmed on-hand parts.
+diff --git a/mr1/PIGTAIL_SCHEDULE.md b/mr1/PIGTAIL_SCHEDULE.md
+index 66bd692..a1a0e21 100644
+--- a/mr1/PIGTAIL_SCHEDULE.md
++++ b/mr1/PIGTAIL_SCHEDULE.md
+@@ -1,6 +1,6 @@
+ # MR-1 Stock-To-Octopus Pigtail Schedule
+ 
+-This schedule covers the machine as built: BTT Octopus Pro v1.1 F429, four
++This schedule describes the planned, physically unverified build: BTT Octopus Pro v1.1 F429, four
+ STEPPERONLINE `CL57T V4.1` closed-loop drives with `23HS45-4204D-E1000` motors,
+ and the stock Langmuir MR-1 field devices. It preserves every stock plug that
+ can be preserved.
+@@ -29,54 +29,55 @@ accepted until pin 1, contact retention, polarity, and continuity all pass.
+ The official v1.1 schematic defines an 18-position `2x9` driver footprint. Use
+ four supported adapters, one each for MOTOR0 through MOTOR3.
+ 
+-| Socket pin | Signal | Phase-one use |
++| Schematic contact | Signal | Active use |
+ | ---: | --- | --- |
+-| 1 | EN | Route to EN MOSFET gate resistor |
++| 1 | EN | Reserved; leave ENA unconnected |
+ | 7 | STEP | Route to STEP MOSFET gate resistor |
+ | 8 | DIR | Route to DIR MOSFET gate resistor |
+ | 9 | GND | Controller logic return |
+ | 2-6, 10-18 | Mode/reset/sleep/VCC_IO/phases/GND/VM/NC/DIAG | No connection |
+ 
+-A standard `2x8` StepStick blank can occupy pins 1-16 and leave the final
+-NC/DIAG row empty. It is acceptable only with a keyed pin-1 feature and a
+-bracket or standoff that prevents a one-row offset. Loose Dupont leads are not
+-a production adapter.
++Schematic numbers are electrical identities, not row-major positions. A
++`2x8` candidate remains on HOLD until every contact, its physical orientation,
++clearance, keying and retention are verified on the actual 18-contact socket.
++No drawing here supplies the mating-face view. Use a supported adapter and
++prove continuity; loose Dupont leads are not a production adapter.
+ 
+ ## Board-Side Shopping Schedule
+ 
+ | Qty | Status | Board end | Populate | Shop/build note |
+ | ---: | --- | --- | --- | --- |
+-| 4 | FIT CHECK | MOTOR0-3 18-position driver footprints | EN pin 1, STEP pin 7, DIR pin 8, GND pin 9 | Full `2x9` adapter preferred; supported `2x8` pins 1-16 is allowed |
++| 4 | FIT CHECK | MOTOR0-3 18-position driver footprints | STEP contact 7, DIR 8, GND 9; EN 1 reserved | Verify contact map on actual board; `2x8` candidate remains HOLD until fit/keying proof |
+ | 8 | FIT CHECK | STOP0-7 three-position 2.54 mm headers | SIG and GND only; 16 contacts total | Leave every adjacent 5 V cavity empty |
+-| 3 | FIT CHECK | TB, T0, T1 two-position 2.54 mm headers | Named signal and GND | Safety monitor, feed hold, HW-399 OUT1 |
++| 3 | FIT CHECK | TB, T0, T1 two-position 2.54 mm headers | Named signal and GND | Safety monitor, feed hold, Qualified sensor conditioner OUT1; module on HOLD |
+ | 1 | FIT CHECK | PB7 tool-setter five-position 2.54 mm header (board silk: `BLTouch`) | PB7 and its adjacent GND only | Controller housing only; no BLTouch device or plugin; PB6 and 5 V remain empty |
+ | 1 | FIT CHECK | PWR-DET three-position 2.54 mm header | PC0 and GND only | 3.3 V remains empty |
+ | 1 | FIT CHECK | EXP2 `2x5` 2.54 mm header | PB1, PB2, GND only | Use keyed IDC breakout; short internal run; insulate unused wires |
+-| 1 | FIT CHECK | I2C four-position 2.54 mm header | 3.3 V and GND only | HW-399 HVCC/HGND; PB8/PB9 remain empty |
++| 1 | FIT CHECK | I2C four-position 2.54 mm header | 3.3 V and GND only | Candidate logic-side supply only; module circuit on HOLD; PB8/PB9 remain empty |
+ | 1 | USE / BUILD | Octopus MAIN POWER screw terminal | +24 V and 0 V, ferruled | No pigtail; MOTOR POWER and BED POWER remain empty |
+ | 2 | HOLD | FAN0 and FAN4 two-position headers | None during motion commissioning | Spindle PWM/enable wait for servo and DB44 proof |
+ | 1 | USE / BUILD | Octopus USB-C | Shielded USB data cable | Short, strain-relieved, known data cable |
+ 
+-### Verified Signal Order
++### Source Signal Identities - Physical Orientation Still Unverified
+ 
+-Taken from the archived BTT v1.1 pin drawing
+-(`_vendor_docs/BTT_Octopus_Pro_V11-Pin.jpg`, SHA-256 recorded in
+-`RESEARCH.md`). This fixes the **order and the neighbours** of each contact,
+-which is what prevents a one-position offset. It does **not** fix which
+-physical end is position 1 - that still comes off the underside silkscreen,
+-which is why every row above stays at `FIT CHECK`.
++Cross-checked against the archived BTT v1.1 pin drawing and schematic sheets
++1-3. The table records drawing order or schematic identities, **not a universal
++left/right, top/bottom or mating-face pin order**. Establish board revision,
++viewing direction, silkscreen and continuity before inserting contacts. The
++archived schematic filename says v1.1 but its title blocks say Rev V1.0; that
++document alone does not prove the physical board revision.
+ 
+ | Connector | Order as drawn | Populate |
+ | --- | --- | --- |
+-| Main terminal block | `-GND` `+HV` (MOTOR-POWER), `-GND` `+VIN` (POWER), `-GND` `+VB` (BED-POWER), `+VB` `-PA1` (BED-OUT) | Screws 3 and 4 only. The **minus screw is the upper one** of each pair |
++| Main terminal block | `-GND` `+HV` (MOTOR-POWER), `-GND` `+VIN` (POWER), `-GND` `+VB` (BED-POWER), `+VB` `-PA1` (BED-OUT) | Only the actual POWER/MAIN +VIN and GND pair; identify from board markings and verify polarity. Do not count screws from an assumed top |
+ | `STOP_0`-`STOP_7` | signal, `GND`, `5V` | Signal and GND. **`GND` is the centre pin** |
+ | `TB` / `T0`-`T3` | `GND`, `PF3`/`PF4`/`PF5`/`PF6`/`PF7` | TB, T0, T1 only |
+-| Tool setter (silk `BLTouch`) | `GND`, `5V`, `PB6`, `GND`, `PB7` | Positions 4 and 5 only |
++| Tool setter (silk `BLTouch`) | `GND`, `5V`, `PB6`, `GND`, `PB7` | PB7 and adjacent GND only. J43 schematic contacts 1 (PB7) and 2 (GND); these are NOT positions 4/5 counted from a physical end |
+ | `PWR-DET` | `3.3V`, `GND`, `PC0` | GND and PC0. **`GND` is the centre pin** |
+ | `Probe` | `DC`, `GND`, `PC5` | Nothing. Not used on this build |
+ | `EXP2` | col A `PA6` `PB1` `PB2` `PC15` `GND`; col B `PA5` `PA4` `PA7` `RST` `NC` | PB1, PB2, GND - all three in column A |
+ | `HE0`-`HE3` | `VIN`, `PA0`/`PA3`/`PB0`/`PB11` | HE0 and HE1 only; the board switches the low side |
+-| `FAN0`-`FAN7` | `VF`n, `PA8`/`PE5`/`PD12`/`PD13`/`PD14`/`PD15`/`GND`/`GND` | FAN0 and FAN4, on HOLD |
++| `FAN0`-`FAN7` | `VF`n, `PA8`/`PE5`/`PD12`/`PD13`/`PD14`/`PD15`/`GND`/`GND` | FAN0 and FAN4, on HOLD; each positive rail is jumper-selected 5V/12V/VIN. Negative is switched return, not logic GND |
+ | `I2C` | `3.3V`, `GND`, `PB8` SCL, `PB9` SDA | 3.3 V and GND only |
+ 
+ ### Driver-Slot Jumpers
+@@ -105,11 +106,11 @@ pitch into `CL57T_ARRIVAL_CAPTURE.md` §3.
+ 
+ | Qty | Status | Block | Populate | Cable |
+ | ---: | --- | --- | --- | --- |
+-| 4 | USE / BUILD | `P1` control + output | PUL+, PUL-, DIR+, DIR-, ALM, COMO | Three shielded twisted pairs for PUL/DIR; one shielded pair for ALM/COMO. `ENA` left unconnected (drive default). `BRK` unused |
++| 4 | HOLD / QUALIFY | `P1` control + output | PUL+, PUL-, DIR+, DIR-, ALM, COMO | Two shielded twisted pairs for PUL/DIR; one separate shielded pair for ALM/COMO into its isolated conditioner. `ENA` left unconnected (drive default). `BRK` unused |
+ | 4 | KIT CABLE | `P2` encoder | EA+, EA-, EB+, EB-, VCC, EGND | **Kit encoder extension, 1.7 m moulded.** `VCC` is a drive output - never feed it from a field supply |
+ | 4 | KIT CABLE | `P3` motor | A+, A-, B+, B- | **Kit motor extension, 1.7 m moulded, GX16.** Phases only - no bus power on this block |
+ | 4 | USE / BUILD | `P4` power | **+VDC, GND** | That drive's own fused 36 V star branch. **POLARIZED** |
+-| 4 | UNUSED | `P5` tuning | - | DB9 RS232. Needs a USB adapter, not supplied. Optional; see `BOM.md` |
++| 4 | UNUSED | `P5` tuning | - | Drive-side four-contact RS232 tuning port; the supplied cable has a PC-side DB9. Do not mistake DB9 numbering for P5. Optional; verify the actual cable before use |
+ 
+ > **`P4` is the one that bites.** The DM860T's `P3` carried `A+ A- B+ B- AC AC`
+ > with a no-polarity bus pair. On a CL57T the bus is its own block and it is
+@@ -145,42 +146,30 @@ is released only after the actual clamp range and ferrule fit are checked.
+ Power and motor conductor sizes come from the existing cable, branch fuse,
+ length, temperature, and terminal rating, not from this signal schedule.
+ 
+-## Stock Motor Transfer
++## Stock Motor Removal / Rollback Preservation
+ 
+-> **Mostly obsolete 2026-09-17.** The CL57T kits ship their own motors and
+-> moulded motor extensions, so there is no stock-motor phase transfer to do.
+-> The steps below now apply only to *removing* the stock motors and preserving
+-> them, with the DM860T drives, as the rollback set. Retain every old plug and
+-> label; do not cut or re-terminate stock motor leads.
++No stock motor wire lands on the Octopus. The active CL57T kits use their own
++matched motor and encoder cables; the retained DM860T/stock motors are rollback
++hardware, not part of the active wiring steps.
+ 
+-No stock motor wire lands on the Octopus.
++1. Isolate mains, spindle, 36 V, 24 V, field supplies and USB; prove dead after
++   discharge with an appropriate instrument before unplugging anything.
++2. Support the gravity-loaded Z axis before releasing its motor/coupler. Secure
++   other movable assemblies against unexpected travel.
++3. Label both ends X, YL, Z or YR and photograph every existing connection.
++4. Bag and retain each motor, its original connector and its wiring record intact.
++   Do not reterminate it using CL57T instructions.
+ 
+-1. De-energize and prove zero volts on mains, 36 V, 24 V, 5 V, USB, and spindle.
+-2. Label both ends `X`, `YL`, `Z`, or `YR`.
+-3. Photograph every old driver terminal and wire label before release.
+-4. Bag and retain each old green removable plug for rollback.
+-5. Use an ohmmeter to prove two complete coil pairs; color is not evidence.
+-6. Ferrule the four conductors and land one pair on `A+/A-`, the other on `B+/B-`.
+-7. Land that drive's own fused 36 V star pair on the two no-polarity `AC` contacts.
+-8. Continuity-test P3 off the drive, then commission one uncoupled axis at a time.
+-
+-> **DM860T ONLY — step 7 is fatal on a CL57T.** The CL57T V4.1 bus input is
+-> `P4`, and it is **polarized**: `+VDC` to supply positive, `GND` to supply
+-> negative. There is no no-polarity pair. Reversing it destroys the drive.
+-> A DM860T-era power pigtail must be re-terminated and re-labelled before it
+-> goes near a CL57T. See `CL57T_QUICK_WIRING.md`.
+-
+-Do not assume the old green block fits P3 merely because both are removable and
+-green. Do not hot-plug P1, P2, or P3 — **and on a CL57T, never hot-plug the
+-encoder (P2) or power (P4) either**, and never energize the drive with the
+-motor or encoder disconnected (alarm code 4, "fail to lock motor shaft").
++Never hot-plug control, alarm, motor, encoder or power connectors. CL57T P4 is
++polarized +VDC/GND; no DM860T no-polarity AC/AC recipe applies to it. Any future
++rollback requires the separate DM860T document and a fresh review.
+ 
+ ## Stock Harness Hold List
+ 
+ | Qty | Status | Harness | Required proof before an adapter exists |
+ | ---: | --- | --- | --- |
+-| 4 channels | HOLD | Home/limit system | Connector key and **conductor count first** (5 expected = four signals + common; 4 means Y2 and Z share a wire and squaring is blocked), ohmmeter across each switch both polarities, common-to-all-four continuity, then healthy, triggered, unplugged, and lost-power voltages |
+-| 2 | HOLD | Touch probe and tool setter | Mating key, **pin order (expected 1 = 5 V, 2 = signal, 3 = 0 V)**, idle/trigger voltage on a bench supply (expected open-collector, low when triggered), exposed-metal potential (expected 5 V), probe-0 V-to-frame and stylus-to-body continuity, DB44-11/12 continuity |
++| 4 channels | HOLD | Home/limit system | Connector key and **conductor count first** (five may be four signals plus common; fewer conductors require tracing and do not identify which signals share), ohmmeter across each switch both polarities, common-to-all-four continuity, then healthy, triggered, unplugged, and lost-power voltages |
++| 2 | HOLD | Touch probe and tool setter | Mating key, **actual pin order (no numbered field terminal approved)**, idle/trigger voltage on a bench supply (expected open-collector, low when triggered), exposed-metal potential (expected 5 V), probe-0 V-to-frame and stylus-to-body continuity, DB44-11/12 continuity |
+ | 1 | HOLD | Spindle DB44 | Exact servo model, parameter archive, end-to-end continuity, analog common, enable, alarm, and command range |
+ | 1 | HOLD | Temperature sensor | Part number, voltage, interface, pinout, and cable colors |
+ 
+@@ -210,7 +199,7 @@ their sources and the exact readings that close them.
+ ## Source Boundary
+ 
+ - BTT's official v1.1 schematic and pinout own Octopus geometry and signals.
+-- STEPPERONLINE's V3.0 manual owns P1/P2/P3 functions and electrical limits.
++- STEPPERONLINE's CL57T V4.1 manual owns the active P1-P5 functions and electrical limits. The DM860T V3.0 manual applies only to the rollback set.
+ - Langmuir's assembly guide proves the stock high-power-driver harness uses
+   three removable blocks; it does not identify their mating family or pitch.
+ - The pinned alexphredorg MR-1 project is a stock-harness warning and
+diff --git a/mr1/WIRING.md b/mr1/WIRING.md
+index 783f265..9af7120 100644
+--- a/mr1/WIRING.md
++++ b/mr1/WIRING.md
+@@ -136,13 +136,13 @@ Identified 2026-09-20 from the installed nameplate:
+ | DC output | **36 V, 10 A (360 W)** |
+ | Type | Enclosed switch-mode, therefore regulated |
+ 
+-**Voltage is correct.** 36 V sits mid-window in the CL57T's 18-50 V range with
+-14 V of headroom to the ceiling, and being switch-mode it is regulated, so the
+-unregulated-supply concern - no-load output sitting 15-25% above nameplate - does
+-not apply here.
++The recorded 36 V nominal lies within the drive range; it does not prove
++actual output voltage, regulation, ripple, transients or deceleration headroom.
++Measure this supply with branches disconnected before connection, then qualify
++its actual loaded behavior in the guarded commissioning stage.
+ 
+-**Current is the tightest number in the machine.** Four CL57T drives at the
+-configured `S1`=4 setting draw 4.0 A RMS per phase, so:
++Supply capacity remains unresolved. The previous planning estimate used the
++S1=4 current preset and the following heuristic; it is not a DC-bus rating calculation:
+ 
+ ```text
+ 4 drives x 4.0 A RMS        = 16.0 A summed phase current
+@@ -150,13 +150,15 @@ x 0.6-0.7 DC bus factor     = 9.6 - 11.2 A at the 36 V bus
+ supply rating               = 10.0 A
+ ```
+ 
+-The supply lands inside that band rather than above it. In practice this is
+-workable: closed-loop drives command only the current they need, idle draw is
+-far below rated, and all four axes hitting peak acceleration in the same instant
+-is uncommon. But the ganged Y pair always moves together, so a coordinated rapid
+-in X, Y1, Y2 and Z simultaneously is a real case, not a hypothetical.
++This is a sizing heuristic, not a measured load or a proof that the supply is
++adequate. Phase current is not the DC bus current. The ganged Y pair always
++moves together; coordinated X/Y/Z acceleration loads all four drives.
+ 
+-Treat it as **adequate but unmargined**, and specifically:
++Treat simultaneous four-drive capacity as **unqualified**. The documented 10 A
++supply does not meet the proposed 12 A design margin in the arrival checklist.
++Either select a suitable replacement or document a reviewed operating envelope
++using voltage/current/temperature measurements of this actual supply.
++Specifically:
+ 
+ - **Do not add another load to this rail.** The 24 V control supply stays
+   separate, as the power-domain table already requires.
+@@ -166,91 +168,33 @@ Treat it as **adequate but unmargined**, and specifically:
+   CL57T's 18 V minimum during hard acceleration presents as a drive alarm or a
+   following error, not as an obvious power fault. If that appears during the
+   Stage 5 per-axis speed tests, this is the first suspect.
+-- If the machine is later pushed harder, a 36 V 15 A supply is the upgrade.
+-
+-**Confirm the 110/220 V selector is set for 110 V** before first power. This
+-model accepts both and is selected by switch or link.
+-
+-### Planned upgrade: higher-current bus with regen absorption
+-
+-Under consideration 2026-09-20: replacing the `S-360-36` with a **48 V 25 A
+-(1200 W)** supply. Recorded here as a design note, not a committed change.
+-
+-**What it fixes.** The `S-360-36`'s 10 A leaves no current margin against the
+-estimated 9.6-11.2 A four-drive draw. 25 A removes that problem completely, and
+-higher bus voltage raises available torque above 300 RPM, which is where this
+-machine's 508 RPM rapids sit.
+-
+-**What it costs.** The CL57T ceiling is a hard 50 V. At 48 V nominal only 2 V of
+-regen headroom remains, against 14 V at 36 V today.
+-
+-#### Why regen matters here despite the machine's mass
+-
+-The intuition that a heavy lead-screw machine cannot generate much regeneration
+-is correct at present speeds, but the margin is thinner than it feels and it
+-scales badly.
+-
+-Order-of-magnitude, assuming ~40 kg moving mass and a 135 mm NEMA 23 rotor:
+-
+-| Source | Energy at 2540 mm/min |
+-| --- | --- |
+-| Linear kinetic (mass at 42 mm/s) | ~0.04 J - negligible, as expected |
+-| Rotor kinetic, per motor at 508 rpm | ~0.11 J |
+-| X plus the ganged Y pair stopping together | **~0.34 J** |
+-
+-Against roughly 3000 uF of existing bus capacitance, a 48 to 50 V excursion
+-absorbs about 0.29 J. Friction and winding resistance burn part of the total
+-before it reaches the bus, so 100 IPM is probably survivable - but it is the same
+-order of magnitude, not a comfortable ratio.
+-
+-**The scaling is the real argument.** Regen energy goes with velocity squared:
+-
+-| Rapids | Approx. regen | vs ~0.29 J headroom at 48 V |
+-| --- | --- | --- |
+-| 100 IPM | ~0.37 J | marginal |
+-| 150 IPM | ~0.83 J | over |
+-| 200 IPM | ~1.5 J | well over |
+-
+-So 48 V untrimmed has just enough headroom at today's speeds and loses it at
+-exactly the speeds the extra voltage was bought to reach.
+-
+-#### Design if the upgrade proceeds
+-
+-1. **Trim the supply to about 44 V.** Confirm a `V-ADJ` pot exists before
+-   purchase; skip any fixed-output 48 V unit. This keeps the full 25 A headroom
+-   and most of the torque gain while restoring roughly 6 V of regen margin.
+-2. **Add bus capacitance, about 10,000 uF at 63 V.** A switch-mode supply is
+-   unidirectional and absorbs no regeneration, so capacitance is the only place
+-   for that energy to go. At 44 V with 6 V of rise, ~13,000 uF total absorbs
+-   about 3.7 J - comfortably above the 200 IPM case. Rate it 63 V, not 50 V.
+-3. **Inrush limiter, mandatory.** 13 mF presents as a short at power-on and will
+-   weld relay contacts, trip breakers, or damage the supply. An NTC inrush
+-   thermistor in series with the bus feed, roughly 5-10 ohm and 20 A rated, is
+-   sufficient at this scale.
+-4. **Bleeder resistor, mandatory.** 13 mF at 48 V stores about 15 J and stays
+-   charged after switch-off - enough to vaporise metal at a dropped tool. Fit a
+-   permanent ~2.2 kohm 5 W resistor across the bank: about 1 W continuous, drains
+-   in roughly two minutes. **Meter the bus before touching anything**, the same
+-   discipline a VFD demands.
+-5. Connect the bank at the distribution point, across the same node as the four
+-   `P4` feeds. Watch polarity; a reversed electrolytic on a 25 A supply fails
+-   violently.
+-
+-**A brake chopper is not needed.** Those dissipate kilojoules from spindle-class
+-braking. This machine's regeneration is single-digit joules, which capacitance
+-absorbs directly.
+-
+-#### Consequences to carry forward
+-
+-- Per-drive branch fusing becomes essential rather than good practice: 1200 W
+-  puts far more fault energy on the rail. Size fuses to the drive, not the supply.
+-- Measure the backplate before ordering. 1200 W enclosed supplies are physically
+-  large and the plate is already populated.
+-- Drives run hotter on a higher bus. The 40 C limit and 30 mm spacing from the
+-  CL57T manual become real constraints.
+-- `S1` stays at `4`. The current setting is independent of bus voltage.
+-- Re-run the rapids and acceleration decision after the change, since raising
+-  them is the reason for the upgrade and regen scales with the square of speed.
++- Select any replacement only after a measured load/regeneration study; a
++  current rating alone does not establish suitability.
++
++**With supply power isolated, verify the actual input selector and nameplate
++against the measured facility service.** Do not assume a 110 V feed or move a
++selector while energized.
++
++### Higher-Current / Higher-Voltage Supply Proposal - HOLD
++
++An earlier design note proposed a 48 V / 25 A supply with an added capacitor
++bank. **No upgrade, trim voltage, capacitor bank, inrush limiter, bleeder or
++braking circuit is released for construction.** The previous mass, rotor
++inertia, capacitance and regeneration figures were assumptions. They do not
++bound actual deceleration, gravity-loaded Z energy, supply behavior or faults.
++The claim that a brake chopper is unnecessary is withdrawn.
++
++Before selecting any replacement, document the actual four-drive load, supply
++transient response/overvoltage behavior, returned energy for the full operating
++envelope including Z descent, drive bus limit, branch protection and stop
++architecture. Any energy-storage/braking design must include component ripple,
++voltage/temperature ratings, inrush and repetitive restart behavior, contactor
++ratings, fusing, discharge time and measured safe-to-service indication.
++Do not infer adequacy from nominal watts or a generic NTC label.
++
++The active candidate remains the recorded 36 V supply, with simultaneous
++four-drive capacity and transient voltage unqualified. The CL57T manual's
++50 V maximum is a hard limit, not an operating target.
+ 
+ ### Cabinet bonding and board mounting
+ 
+@@ -261,21 +205,21 @@ enclosure containing 120 VAC machine loads and a 240 VAC spindle must be earthed
+ so if the mounts break continuity to the frame the enclosure gets its **own
+ dedicated PE conductor**. Do not rely on the leg.
+ 
+-Two other things depend on that bond: the motor-sleeve shield terminates "at the
+-cabinet" and does nothing if the cabinet floats, and the TLP281 isolated field
+-domain assumes a solid reference.
++The cabinet shield termination depends on the protective bond. The isolated
++home-field supply remains separate; its signal return is not a PE connection.
+ 
+-**The controller references PE at exactly one point** - normally the 24 V supply
+-0 V terminal. A second bond through mounting screws creates a loop, and spindle
+-and stepper noise then returns through signal ground. That presents as phantom
+-limit trips and probe glitches, which are miserable to diagnose once the cabinet
+-is closed.
++**Document the controller-0V/PE bonding topology.** The intended cabinet
++reference is the 24 V supply 0 V terminal; verify that choice against the actual
++supply and interface design. USB connected to an earthed PC may add another
++return path. Do not claim an exactly-one-point system until all connected paths
++are traced, and never remove protective earth to obtain an open meter reading.
++Use insulated controller mounting to avoid an unintended chassis path.
+ 
+ | Item | Mounting | Expected PE continuity |
+ | --- | --- | --- |
+ | Backplate | Bonded | Dead short to PE |
+-| CL57T drives x4 | Metal, chassis bonded | Dead short to PE - the heatsink carries chopped current and must be earthed |
+-| Octopus Pro | **M3 male-female nylon standoffs** | **Open.** Its single reference comes later at the 24 V supply 0 V |
++| CL57T drives x4 | Exposed chassis bonded through a verified suitable connection | Verify protective bond; do not assume operating current flows through the heatsink or use chassis as signal return |
++| Octopus Pro | **M3 male-female nylon standoffs** | Open only with power, signal cables and USB disconnected; final connected continuity follows the documented reference paths |
+ 
+ **Tapped backplate holes do not bond through paint.** Threads tapped into a
+ painted or powder-coated plate line with coating, and a screw can feel tight
+@@ -289,8 +233,10 @@ and the nylon body breaks the path even if the board's mounting holes tie to
+ `GND` internally. A metal screw through the board into the nylon top is fine; it
+ contacts the board pad and nothing else.
+ 
+-Verify before anything is powered: backplate to PE shorted, each drive chassis to
+-PE shorted, Octopus `GND` to PE **open**.
++With all power removed, verify the protective bonds. Check Octopus mounting
++isolation with power, USB and field interfaces disconnected. After connecting
++the intentional control-0V reference and USB, record the final continuity paths;
++Octopus GND-to-PE may then be connected by design.
+ 
+ | Domain | Source | Loads | Rule |
+ | --- | --- | --- | --- |
+@@ -300,7 +246,7 @@ PE shorted, Octopus `GND` to PE **open**.
+ | 5 V motion logic | Protected interface supply | CL57T `P1` PUL/DIR/ENA optocouplers | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
+ | Isolated 5 V home field | Isolated, current-limited DC/DC | Stock limit bus through four-channel conditioner | Separate from Octopus GPIO and probe field; omit only if each switch is proved to be a bare dry contact |
+ | Isolated 5 V sensor | Isolated, current-limited DC/DC | Stock probe and tool setter only | Floating field side; crosses into Octopus through two optocouplers |
+-| CL57T encoder | **Drive-supplied**: `P2 VCC`/`EGND` from each CL57T | That drive's motor encoder only | Never feed `VCC` from the field 5 V or 24 V rail; it is an output of the drive. One isolated domain per drive, never bonded to another drive or to controller logic. Route away from motor phases and bus cable |
++| CL57T encoder | **Drive-supplied**: `P2 VCC`/`EGND` from each CL57T | That drive's motor encoder only | Never feed `VCC` from the field 5 V or 24 V rail; it is an output of the drive. Do not bond to another drive or controller logic; the manual does not prove internal galvanic isolation of this output. Route away from motor phases and bus cable |
+ | Octopus logic | Onboard regulators | MCU and GPIO | No external 5 V or 24 V may reach an MCU pin |
+ 
+ The STEPPERONLINE manual explicitly recommends star-feeding shared driver
+@@ -311,9 +257,10 @@ manual, not from motor phase current alone.
+ 
+ For the Octopus:
+ 
+-- Connect 24 V only to the terminal block silked `POWER` (`MAIN POWER` in older
+-  notes): screws 3 and 4 from the top, minus on the upper screw, polarity
+-  verified with a meter before landing.
++- Connect 24 V only to the actual terminal pair silked `POWER` (`MAIN POWER`
++  in older notes), +VIN and GND. Identify it from the actual board markings and
++  continuity; do not count screws from a presumed top. Verify the disconnected
++  supply separately, then isolate/discharge again before landing it.
+ - Leave `MOTOR POWER` and `BED POWER` unconnected for this design.
+ - Install no plug-in TMC/A4988 driver in MOTOR0 through MOTOR3.
+ - Remove every jumper on the driver slots. There are three separate blocks per
+@@ -346,50 +293,44 @@ not a fourth logical axis.
+ | Z | MOTOR2 | PF11 | PG3 | PG5 | Z drive |
+ | Y-right | MOTOR3 | PG4 | PC1 | PA2 | YR drive |
+ 
+-The BTT v1.1 schematic defines each driver footprint as an 18-position `2x9`
+-interface. Route only pin 1 `EN`, pin 7 `STEP`, pin 8 `DIR`, and pin 9 `GND`.
+-Pins 2-6 and 10-18 remain unconnected. In particular, never route `VCC_IO`,
+-`VM`, `A1/A2/B1/B2`, or `DIAG` into the external-drive interface.
++BTT schematic sheet 1 identifies the driver contacts as 1 EN, 7 STEP, 8 DIR,
++9 GND. These are schematic identifiers, not physical row counts. The active
++adapter uses STEP/DIR/GND; EN is reserved and unconnected. Other contacts,
++including VCC_IO, VM, motor phases and DIAG, must not reach the external drive.
+ 
+-Use a mechanically supported socket adapter or the permanent interface board,
+-not loose Dupont leads. A normal `2x8` StepStick blank may occupy pins 1-16 only
+-when pin-1 alignment is keyed and the board is mechanically retained; the extra
+-NC/DIAG row then remains empty. Confirm pitch, row spacing, orientation, and
+-retention on the actual board before crimping production cables. The motor
+-screw terminals beside the sockets do not expose step and direction.
++Use a mechanically supported adapter. A 2x8 candidate is on HOLD until its
++complete contact map, actual orientation, clearance, keying and retention are
++proved on the 18-contact socket; do not infer that fit from numbering alone.
++No loose Dupont leads. Motor phase connectors do not expose STEP/DIR.
+ 
+ The schematic also shows `MC74HCT125A` buffers powered from 5 V between the MCU
+ and the socket EN/STEP/DIR pins. The interface gate input is therefore a 5 V
+ buffered socket signal, not a raw 3.3 V GPIO.
+ 
+-Each of the 12 motion channels uses this open-drain stage:
++Each of the eight active PUL/DIR channels uses this candidate open-drain stage;
++component values and loaded behavior still require bench qualification:
+ 
+ ```text
+ Octopus socket signal -- 100 ohm -- gate, 2N7002
+                                   |
+                                100k to source
+ 2N7002 source ---------------- controller logic 0 V
+-2N7002 drain ----------------- CL57T P1 PUL-, DIR-, or ENA-
+-protected +5 V --------------- CL57T P1 PUL+, DIR+, or ENA+
++2N7002 drain ----------------- CL57T P1 PUL- or DIR-
++protected +5 V --------------- CL57T P1 PUL+ or DIR+
+ ```
+ 
+ The CL57T input optocouplers provide the field isolation. Retain the MOSFET
+ stage because the CL57T logic input is specified at 7-16 mA (10 mA typical,
+-manual S2.1) - the same window the DM860T used, so this stage carries over
+-unchanged - and direct loading of the HCT output has not been qualified. Select a MOSFET with guaranteed low
++manual S2.1) - so the earlier interface is a candidate, not a proven carry-over. Direct
++loading of the HCT output has not been qualified. Select a MOSFET with guaranteed low
+ resistance at a 4.5-5 V gate, then verify every channel with an oscilloscope
+-under its real opto load before attaching a motor.
+-
+-Firmware drives the Octopus enable pins low while an axis is energized. With
+-the circuit above, low leaves CL57T ENA open and the drive enabled; high sinks
+-ENA current and disables the drive. Confirm this truth table on one loose drive
+-before populating the other three channels.
++under its real opto load with the motor uncoupled and secured; never energize a
++CL57T without its matched motor and encoder connected.
+ 
+-Note that `ENA` is **optional and unconnected by default** on the CL57T
+-(manual S3.1). If it is used, the manual requires `ENA` to lead `DIR` by at
+-least 200 ms; the compiled `DEFAULT_STEPPER_ENABLE_DELAY 250` satisfies that
+-with 50 ms to spare. Do not reduce that setting below 200 without revisiting
+-the timing table in `CL57T_QUICK_WIRING.md`.
++ENA stays unconnected (manual section 3.1). A future ENA implementation must
++separately prove polarity, startup/shutdown, power-loss behavior and the
++200 ms ENA-to-DIR requirement at the actual drive. The configured 250 ms delay
++is not physical proof and does not implement a hardware safety function.
+ 
+ ### CL57T V4.1 Starting Switches
+ 
+@@ -399,7 +340,7 @@ Use the complete table in `CL57T_QUICK_WIRING.md`. Identical on all four drives:
+ 
+ | Control | Set to | Meaning |
+ | --- | --- | --- |
+-| `S1` rotating | `4` | 5.6 A peak / 4 A RMS, under the motor's 4.2 A/phase. Factory `0` is 2 A RMS and must be changed |
++| `S1` rotating | `4` | 5.6 A peak / 4 A RMS, under the motor's 4.2 A/phase. Initial project preset, not a verified thermal/load result; factory `0` is 2 A RMS |
+ | `SW1`-`SW4` | `on`,`off`,`on`,`on` | 1600 pulses/rev, holding 320/320/533.333333 steps/mm |
+ | `SW5` | `off` | Direction. Prefer correcting direction in the firmware mask so all four drives stay identical |
+ | `SW6` | `off` | **Closed loop.** ON is open loop and silently discards the upgrade |
+@@ -411,8 +352,9 @@ The retained DM860T switch table lives in `DM860T_QUICK_WIRING.md` and applies
+ only to the rollback hardware.
+ 
+ The firmware provides 5 us pulses, 6 us direction setup, and 250 ms enable
+-delay. Maximum configured step rate is about 13.55 kHz, below the V3 manual's
+-200 kHz limit. Do not hot-plug command, motor, alarm, or power connectors.
++delay. Maximum configured step rate is about 13.55 kHz, below the
++500 kHz CL57T V4.1 input limit. Do not hot-plug command, motor, encoder, alarm,
++or power connectors.
+ Label both ends X, YL, YR, or Z before routing.
+ 
+ ## Home and Limit Inputs
+@@ -443,32 +385,19 @@ Before trusting it, with the stock controller unplugged, meter at the connector:
+ which conductor is supply, which is return, and confirm each of the four signals
+ is independent - in particular that Y-left reads independently of Y-right.
+ 
+-Route the four stock home channels through the on-hand **TLP281-4 four-channel
+-opto isolation module**. Full specification, current math, and the bench test
+-are in `INTERFACE_BOARD.md` section A2.
+-
+-```text
+-FIELD SIDE (stock harness, isolated)   OUTPUT SIDE (controller)
+-stock switch SIG  -> IN1..IN4          OUT1..OUT4 -> STOP0..3 SIG
+-stock field 5 V   -> VCC (field)       GND (out)  -> STOP0..3 GND
+-stock field return-> GND (field)       VCC (out)  -> LEAVE UNCONNECTED
+-                                       STOP 5 V cavity -> EMPTY
+-```
+-
+-**Leave the module's output-side `VCC` unconnected.** These modules pull each
+-output up to that rail rather than presenting an open collector, so feeding it
+-5 V would place 5 V on a 3.3 V Octopus input. Unsupplied, the output behaves as
+-an open collector and the Octopus onboard pullup sets the high level, which
+-cannot exceed 3.3 V. Output-side `GND` must still bond to the STOP header ground
+-so the phototransistor emitter has a return.
+-
+-Factory harnesses are reused intact: only the signal conductors land on `IN1`-
+-`IN4`, with the stock supply and return staying on the module's field side.
++Route powered stock channels through a **qualified** isolated conditioner.
++The on-hand TLP281-labelled module remains on HOLD; its input topology,
++terminals, resistors, shared output rail and isolation must first be traced.
++See `INTERFACE_BOARD.md` A2 for qualification. Do not assume leaving output VCC
++open creates independent open collectors: a floating common rail can couple
++channels through pullup resistors. No generic VCC/GND/IN terminal recipe is
++approved, and a GPIO-facing pullup must never be powered from 5 V.
+ 
+-Configure and bench-test the conditioner so the Octopus side is low while the
+-switch, cable, and field power are healthy. A switch trigger, unplugged cable,
+-or lost field power must release the transistor and let the onboard pullup read
+-high. The BTT schematic shows onboard pullups and RC filtering on these inputs.
++The table below gives the required controller truth table, not a claim that
++the untested module achieves it. Test every channel healthy/triggered/open and
++with field power lost; also test combinations and either side unpowered.
++Keep STOP 5 V cavities empty. Preserve the stock harness until its actual
++supply, return and signal paths are documented.
+ 
+ | Function | Octopus connector | GPIO | Healthy | Trigger, broken wire, or field-power loss |
+ | --- | --- | --- | --- | --- |
+@@ -509,7 +438,7 @@ connector hold points.
+ >   are never polled to raise an alarm. `Src/driver.c:72-76` carries the
+ >   unimplemented note: *"TODO: add support for IRQ driven fault inputs?"*
+ >
+-> **Therefore: series-chain all four CL57T drive-healthy channels into PB1.**
++> **Therefore: combine all four isolated, conditioned drive-healthy outputs into PB1. Never series-chain raw ALM/COMO terminals into the GPIO.**
+ > All four healthy = loop closed = PB1 reads healthy. Any drive alarm, any lost
+ > drive power, any broken cable opens the loop and stops the machine.
+ >
+@@ -605,9 +534,10 @@ For each actual sensor:
+ 5. Verify idle and triggered signal voltage at least 20 times and while flexing the cable.
+ 6. Only then terminate the field side of the isolated interface.
+ 
+-The phase-one adapter is the already-owned HW-399/TLP281-4-compatible module.
+-Board variants sold under this name are inconsistent, so its actual silk and
+-both PCB faces are approval evidence. For the common `IN1..IN4/GND` field side
++The already-owned HW-399/TLP281-4-compatible module remains on HOLD until
++its circuit is traced and the qualification checks in `INTERFACE_BOARD.md` A2
++pass. Photographs are evidence, not approval by themselves. The diagram below
++is a conditional hypothesis only, not a released wiring recipe. For the common `IN1..IN4/GND` field side
+ and `OUT1..OUT4/HVCC/HGND` logic side, a verified active-low open-collector
+ sensor is wired as follows:
+ 
+@@ -729,11 +659,16 @@ approved profile deliberately assigns it; digital reverse should normally be a
+ single, drive-specific command path rather than a second independent direction
+ authority.
+ 
+-FAN and heater terminals are low-side power outputs, not logic pins. For a 24 V
+-module, wire its input or coil between that output's positive terminal and its
+-switched negative terminal. Add the module manufacturer's required flyback or
+-surge suppression. The spindle PWM converter must accept the switched 24 V
+-carrier and provide galvanically isolated 0-5 V analog output.
++FAN and heater terminals are low-side power outputs, not logic pins (BTT
++schematic sheet 3). FAN0/FAN4 positive rails are individually jumper-selected
++from 5 V, 12 V or VIN; 24 V MAIN power does not prove their selected voltage.
++HE0/HE1 positives are fused VIN. Keep all these loads on HOLD until the actual
++rail, load input rating, suppression and off/startup behavior are verified.
++A qualified two-wire input/coil connects across its output positive and switched
++negative; never bond that negative to logic GND, which bypasses the switch.
++FAN6/7 negatives are fixed GND and cannot substitute for switched outputs.
++The analog converter must match the measured PWM rail and frequency and provide
++a verified isolated 0-5 V output before the stock servo is connected.
+ 
+ The spindle-enable relay is subordinate to the hardwired safety chain: opening
+ the E-stop must prevent enable even if PD14, firmware, or the relay module fails
+@@ -754,7 +689,7 @@ in its commanded state.
+ 
+ The stock MR-1 motors are advertised as waterproof, but owner reports still
+ describe coolant-ingress failures. Fit rigid splash covers, sealed connector
+-transitions, and drip paths without blocking motor cooling. The future
++transitions, and drip paths without blocking motor cooling. The active
+ STEPPERONLINE encoder motors are not advertised as sealed; do not encapsulate
+ encoder housings in silicone or adhesive.
+ 
+diff --git a/mr1/WIRING_SIMPLE.md b/mr1/WIRING_SIMPLE.md
+index e9eab60..0dd4d00 100644
+--- a/mr1/WIRING_SIMPLE.md
++++ b/mr1/WIRING_SIMPLE.md
+@@ -1,19 +1,24 @@
+ # MR-1 Wiring — The Simple Card
+ 
+-Do these in order. Each step has one check. Don't skip the checks.
++This is a planning/check card. Complete the physical evidence in the detailed
++guides before wiring an unresolved connector. No source audit proves a finished
++machine safe to energize.
+ 
+ Full detail lives in `WIRING.md`, `CL57T_QUICK_WIRING.md` and `INTERFACE_BOARD.md`.
+ This card is the short version.
+ 
+-**Nothing gets powered until Step 10.**
++**Build deenergized. Step 10 is a hold-point review, not automatic permission
++to power or move the machine.** Separate supply/bench tests require their own
++qualified setup; disconnect and prove dead again before landing wires.
+ 
+ ---
+ 
+ ## 0. Before you touch anything
+ 
+-- [ ] Machine unplugged. Spindle disconnected.
++- [ ] Isolate mains, spindle, 36 V, 24 V, field supplies and USB; prevent reconnection.
++- [ ] Support gravity-loaded Z before disconnecting motor/coupler; secure movable assemblies.
+ - [ ] Meter across the 36 V terminals: **0 V**
+-- [ ] Meter across the 24 V terminals: **0 V**
++- [ ] Prove dead after discharge on all affected rails with an appropriate instrument. Never use an ohmmeter on an energized circuit.
+ 
+ ---
+ 
+@@ -22,11 +27,12 @@ This card is the short version.
+ | Connect | To |
+ | --- | --- |
+ | Cabinet / backplate | PE, its **own** conductor |
+-| Each drive chassis | backplate, one screw per drive |
++| Each exposed drive chassis | verified suitable protective bond to PE |
+ 
+ The isolation mounts may have broken continuity to the leg, so run PE to the
+-cabinet directly. Tapped holes in painted plate do **not** bond — scrape the
+-coating or use a star washer at the one bonding screw per drive.
++cabinet directly. Do not assume a mounting screw through paint provides a
++protective bond. Use the reviewed bonding hardware and verify the connection;
++a simple continuity beep is not a complete protective-bond qualification.
+ 
+ - [ ] **Check:** backplate → PE = **short**
+ - [ ] **Check:** each drive chassis → PE = **short**
+@@ -38,9 +44,10 @@ coating or use a star washer at the one bonding screw per drive.
+ - [ ] PETG / nylon standoffs
+ - [ ] No metal screw running through into the tapped plate hole
+ 
+-- [ ] **Check:** Octopus `GND` → PE = **open**
++- [ ] **Assembly check, board isolated from power and USB:** Octopus `GND` → PE = **open**. After the intentional control-0V bond and USB are connected, continuity can be expected; record those paths, not an impossible final open-circuit requirement.
+ 
+-If it reads short, a screw is bridging. Fix it now.
++If continuity appears in that isolated assembly state, find and record the
++path before proceeding; mounting hardware is one possibility, not the only one.
+ 
+ ### Strip every jumper off the driver slots
+ 
+@@ -50,7 +57,7 @@ Do this before the board goes on the plate, while you can still see it.
+ - [ ] Three-by-four pin field **under** each socket — every jumper off
+ - [ ] `DIAG` two-pin position for each slot — all 8 off
+ 
+-The DIAG one is the one that matters. `M0DIAG`–`M7DIAG` sit on `PG6`, `PG9`,
++All jumper removals matter. In particular, `M0DIAG`–`M7DIAG` sit on `PG6`, `PG9`,
+ `PG10`, `PG11`, `PG12`, `PG13`, `PG14`, `PG15` — the same wires as your home
+ switches and drive alarms. A jumper left on hangs a floating socket pin off
+ your home input and you will chase it for a week.
+@@ -77,7 +84,9 @@ before anything is energized.
+ | `SW8` | **off** |
+ | `S3` selector | **5V** |
+ 
+-Factory is `S1`=`0` and `S3`=`24V`. **Both are wrong. Change them.**
++Factory S1=0 and S3=24V differ from this candidate configuration. Record S1=4
++for the initial current/gain plan and S3=5V for the planned PUL/DIR interface.
++Actual motor temperature, pulse scale and direction still need measurement.
+ 
+ - [ ] **Check:** photograph all four switch faces
+ 
+@@ -95,8 +104,8 @@ kills all four.
+ 
+ One fused branch per drive, straight from the supply. **No daisy chains.**
+ 
+-- [ ] **Check:** meter the supply first — DC, under 40 V unloaded, no AC
+-- [ ] **Check:** `+VDC` really is positive at each drive before the fuse goes in
++- [ ] **Deenergized check:** trace +VDC to that branch positive and GND to its return; verify actual terminal labels, no assumed viewing order.
++- [ ] **Later separate supply test:** voltage and polarity recorded before connection; under 40 V unloaded is the project target. Capture ripple with a suitable instrument; a handheld AC reading does not qualify it.
+ 
+ ---
+ 
+@@ -112,8 +121,9 @@ motor shaft."
+ 
+ `P2 VCC` is an output from the drive. Never feed it from any field supply.
+ 
+-Two black wires in the encoder cable: **thin = `EA+`, thick = shield.** Don't mix
+-them up.
++Use the matched, verified kit encoder cable. Do not assign encoder pins from
++wire color or thickness. Record end-to-end continuity and connector orientation;
++the shield is not an encoder return and receives only its documented termination.
+ 
+ - [ ] **Check:** no phase shorted to motor frame
+ 
+@@ -121,11 +131,13 @@ them up.
+ 
+ ## 6. Control signals — Octopus to `P1`
+ 
+-Through the driver-socket adapters. Only four pins matter:
++Through the qualified driver-socket adapters and 5 V open-drain interface.
++These are **schematic contact identities**, not physical row counts or a mating
++view. Establish actual orientation and continuity before fitting an adapter:
+ 
+ | Socket pin | Signal |
+ | --- | --- |
+-| 1 | `EN` |
++| 1 | `EN` - reserved, leave unconnected |
+ | 7 | `STEP` |
+ | 8 | `DIR` |
+ | 9 | `GND` |
+@@ -139,7 +151,7 @@ Through the driver-socket adapters. Only four pins matter:
+ 
+ `ENA` is optional and unconnected by default. Leave it.
+ 
+-- [ ] **Check:** nothing but 5 V ever reaches `P1`. `S3` is set to `5V`.
++- [ ] **Check:** P1 PUL/DIR use only the qualified 5 V command domain; `S3` is `5V`. P1 ALM/COMO is a separate, current-limited field circuit through isolation, never a direct GPIO connection.
+ 
+ ---
+ 
+@@ -149,8 +161,8 @@ Through the driver-socket adapters. Only four pins matter:
+ 
+ | Count | Meaning |
+ | --- | --- |
+-| 5 | four signals + one common — fine |
+-| 4 | two axes share a wire — one of them needs its own run before Y can square |
++| 5 | candidate four signals plus common; trace every conductor to prove it |
++| 4 | cannot provide four independent dry-contact signals plus common; trace sharing before planning squaring |
+ 
+ Then prove each switch is a bare contact:
+ 
+@@ -158,31 +170,30 @@ Then prove each switch is a bare contact:
+ - [ ] Common conductor → one leg of **all four** switches = short
+ - [ ] Y-left and Y-right read **independently**
+ 
+-**All three pass → wire it straight in.** The common goes to any Octopus
+-`GND`; X / Y-left / Z / Y-right signals go to `STOP_0` / `1` / `2` / `3` SIG.
+-The board's own pull-ups do the rest and the TLP281 comes out of the build.
++Also prove NC behavior (closed healthy, open actuated), no electronics in the
++contact path, and complete disconnection from every stock powered circuit.
++Conductor count and an ohmmeter test alone do not establish those facts.
+ 
+-**Any switch fails → it goes through the TLP281.** Bench-test the module
+-first, off the machine. Jumper one input, meter that output:
++**Only fully verified bare NC contacts may connect directly.** Their common
++goes to Octopus `GND`; X / Y-left / Z / Y-right signals go to `STOP_0` / `1` /
++`2` / `3` SIG. Use the board pull-ups. Otherwise retain the isolated conditioner
++and first identify the installed module circuit and required field supply.
+ 
+-- Input active → `OUT` ≈ **0 V** ✅
+-- Input active → `OUT` high ❌ **stop, it's inverted**
++**Otherwise: HOLD for a qualified conditioner.** The on-hand TLP281-labelled
++module is not approved from its IC name. Trace both faces, input/output networks,
++shared rails and isolation, then qualify healthy/trigger/open/power-loss states
++and channel independence against a representative 3.3 V load.
+ 
+-| TLP281 field side | Wire |
+-| --- | --- |
+-| `IN1`–`IN4` | stock home **signal** conductors |
+-| field `VCC` / `GND` | stock 5 V and return |
++Do not leave a shared output VCC floating as a generic recipe: pullups can couple
++channels through it. Do not connect it to 5 V. The approved circuit must specify
++its actual supplies and terminal map. See `INTERFACE_BOARD.md` A2.
+ 
+-| TLP281 output side | Octopus |
++| Qualified conditioner channel | Intended Octopus destination |
+ | --- | --- |
+-| `OUT1` | `STOP0` SIG — X |
+-| `OUT2` | `STOP1` SIG — Y-left |
+-| `OUT3` | `STOP2` SIG — Z |
+-| `OUT4` | `STOP3` SIG — Y-right |
+-| output `GND` | matching `STOP` GND |
+-| output `VCC` | **LEAVE UNCONNECTED** |
+-
+-**Leave output `VCC` open.** Feed it 5 V and you put 5 V on a 3.3 V pin.
++| X | STOP0 PG6 + controller GND |
++| Y-left | STOP1 PG9 + controller GND |
++| Z | STOP2 PG10 + controller GND |
++| Y-right | STOP3 PG11 + controller GND |
+ 
+ **Every `STOP` header's 5 V cavity stays empty.**
+ 
+@@ -190,18 +201,20 @@ first, off the machine. Jumper one input, meter that output:
+ 
+ ---
+ 
+-## 8. Drive alarms — series into PB1
++## 8. Drive alarms - Qualified Aggregate into PB1
++
++Each `ALM`/`COMO` pair first enters its own opto-isolated, current-limited conditioner. Combine the four **conditioned healthy outputs** into the PB1 aggregate: all healthy pulls PB1 low; any alarm, lost drive power, or open cable releases it high.
+ 
+-All four `ALM`/`COMO` outputs in **one series loop**. All healthy = loop closed.
++**Do not series-chain raw ALM/COMO transistor outputs into PB1.** They are not verified dry contacts. Their polarity and power-loss behavior must be characterized. A healthy-open output needs additional supervision or a separate ready/power contact; inversion alone cannot distinguish it from a broken wire. See `INTERFACE_BOARD.md`, External-Drive Alarm Inputs.
+ 
+ | From | To |
+ | --- | --- |
+-| series loop result | `EXP2` **PB1** |
++| conditioned, 3.3 V-compatible aggregate output plus logic return | `EXP2` **PB1/GND** |
+ 
+ `PG12`–`PG15` are display only. They **do not stop the machine.** PB1 is the
+ only one that does.
+ 
+-- [ ] **Check:** open the loop at each drive in turn — machine must fault each time
++- [ ] **Later protected bench check:** remove each field alarm connection in turn and verify PB1 faults; also test drive power loss and a safely induced documented alarm. Never hot-unplug motor or encoder.
+ 
+ ---
+ 
+@@ -209,17 +222,17 @@ only one that does.
+ 
+ | Octopus terminal block | Wire |
+ | --- | --- |
+-| `POWER` screw 4, `+VIN` | **24 V** |
+-| `POWER` screw 3, `-GND` | 24 V return |
++| Verified `POWER` / `MAIN POWER` terminal `+VIN` | **24 V** |
++| Matching verified `POWER` terminal `GND` | 24 V return |
+ 
+-The block is silked `POWER` (older docs call it `MAIN POWER`). Screws 3 and 4
+-counted from the top, and **the minus screw is the upper one of the pair**.
++Identify the pair from actual board markings and continuity. Do not count
++screws from an assumed top or infer polarity from a rotated picture.
+ 
+ **24 V only. 28 V absolute maximum. 36 V destroys the board.**
+ 
+-`MOTOR-POWER` (screws 1–2) and both `BED` pairs (screws 5–8) stay **empty**.
++`MOTOR-POWER`, `BED-POWER` and `BED-OUT` remain empty.
+ 
+-- [ ] **Check:** meter the pair before landing it. If it reads 36 V, stop.
++- [ ] **Later separate supply check:** verify the 24 V pair while disconnected from the board, then isolate and discharge again before landing it.
+ 
+ ---
+ 
+@@ -229,16 +242,21 @@ Run every one of these:
+ 
+ - [ ] Backplate → PE: short
+ - [ ] Drive chassis → PE: short
+-- [ ] Octopus `GND` → PE: open
+-- [ ] 36 V supply: DC, under 40 V, no AC component
++- [ ] With board isolated from power and USB, Octopus `GND` → PE: open. Final connected bonding matches the recorded control-0V/PE and USB topology.
++- [ ] 36 V supply: polarity and DC voltage verified; record ripple. Under 40 V unloaded is the existing project target; verify transient voltage stays below 50 V. Four-axis load capacity is still unqualified.
+ - [ ] `P4` polarity correct on all four drives
+-- [ ] `POWER` screws 3–4 read 24 V, not 36 V
++- [ ] Actual MAIN/POWER +VIN/GND identified; separate supply verification records 24 V
+ - [ ] Motor and encoder connected on every drive
+ - [ ] All four drives: `S1`=4, `S3`=`5V`, `SW6`/`SW7` **off**
+ - [ ] Every `STOP` 5 V cavity empty
+-- [ ] TLP281 output `VCC` unconnected
++- [ ] Exact conditioner circuitry qualified; no generic floating-VCC recipe
++- [ ] PUL/DIR waveforms/current and PB1 alarm supervision proved on the protected bench
++- [ ] Hardware stop, protective bonding and branch protection documented
++- [ ] Z mechanically supported; test motor uncoupled, rigidly secured and shaft guarded
+ 
+-Then energize **one drive only**.
++If any item lacks evidence, stop at deenergized preparation. Once those gates
++pass, use the conditional single secured-motor bench procedure in
++`CL57T_QUICK_WIRING.md`; this card does not release the coupled machine.
+ 
+ Expect: **green LED steady, red LED off.**
+ 
+@@ -258,4 +276,5 @@ manual in `_vendor_docs/`.
+ ## Not yet
+ 
+ Spindle, coolant, probe and tool setter come later. So does any motion. Getting
+-power and signals verified is this stage — nothing turns yet.
++power and signals verified is this stage. Even an uncommanded powered motor
++can develop torque or move; secure it before any permitted bench energization.
+diff --git a/mr1/cable-schedule.csv b/mr1/cable-schedule.csv
+index 6ab8bd8..b4aeb4b 100644
+--- a/mr1/cable-schedule.csv
++++ b/mr1/cable-schedule.csv
+@@ -1,57 +1,57 @@
+ cable_id,from_device,from_terminal,to_device,to_terminal,cable_class,shield_termination,state,notes
+-PWR-24-01,24V control PSU,+24V/0V,Octopus Pro,MAIN POWER +/-,power pair,none,TBD,"Verify polarity; 15-28V board range; use 24V only"
+-PWR-36-X-DM860T,36V motion distribution,X fused branch,DM860T X,AC/AC,power pair,none,ROLLBACK-ONLY,"DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T"
++PWR-24-01,24V control PSU,+24V/0V,Octopus Pro,MAIN POWER +/-,power pair,none,TBD,Verify polarity; 15-28V board range; use 24V only
++PWR-36-X-DM860T,36V motion distribution,X fused branch,DM860T X,AC/AC,power pair,none,ROLLBACK-ONLY,DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T
+ PWR-36-X,36V motion distribution,X fused branch,CL57T X,P4 +VDC/GND,power pair,none,TBD,"POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute"
+-PWR-36-YL-DM860T,36V motion distribution,YL fused branch,DM860T Y-left,AC/AC,power pair,none,ROLLBACK-ONLY,"DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T"
++PWR-36-YL-DM860T,36V motion distribution,YL fused branch,DM860T Y-left,AC/AC,power pair,none,ROLLBACK-ONLY,DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T
+ PWR-36-YL,36V motion distribution,YL fused branch,CL57T Y-left,P4 +VDC/GND,power pair,none,TBD,"POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute"
+-PWR-36-Z-DM860T,36V motion distribution,Z fused branch,DM860T Z,AC/AC,power pair,none,ROLLBACK-ONLY,"DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T"
++PWR-36-Z-DM860T,36V motion distribution,Z fused branch,DM860T Z,AC/AC,power pair,none,ROLLBACK-ONLY,DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T
+ PWR-36-Z,36V motion distribution,Z fused branch,CL57T Z,P4 +VDC/GND,power pair,none,TBD,"POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute"
+-PWR-36-YR-DM860T,36V motion distribution,YR fused branch,DM860T Y-right,AC/AC,power pair,none,ROLLBACK-ONLY,"DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T"
++PWR-36-YR-DM860T,36V motion distribution,YR fused branch,DM860T Y-right,AC/AC,power pair,none,ROLLBACK-ONLY,DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T
+ PWR-36-YR,36V motion distribution,YR fused branch,CL57T Y-right,P4 +VDC/GND,power pair,none,TBD,"POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute"
+-PWR-5I-HOME,24V control distribution,fused branch,isolated 5V home supply,+24V/0V,power pair,none,TBD,"Field output remains isolated from controller logic and probe field. Feeds the TLP281-4 module FIELD side only; the module output side takes no supply"
+-CMD-X,MR1 interface,JX,CL57T X,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,"Octopus MOTOR0 PF13/PF12/PF14. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler"
+-CMD-YL,MR1 interface,JYL,CL57T Y-left,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,"Octopus MOTOR1 PG0/PG1/PF15. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler"
+-CMD-Z,MR1 interface,JZ,CL57T Z,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,"Octopus MOTOR2 PF11/PG3/PG5. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler"
+-CMD-YR,MR1 interface,JYR,CL57T Y-right,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,"Octopus MOTOR3 PG4/PC1/PA2 v1.1. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler"
+-MOT-X,CL57T X,P3 A+/A-/B+/B-,X CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it","360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",TBD,"RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run"
+-MOT-YL,CL57T Y-left,P3 A+/A-/B+/B-,Y-left CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it","360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",TBD,"RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run"
+-MOT-Z,CL57T Z,P3 A+/A-/B+/B-,Z CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it","360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",TBD,"RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run"
+-MOT-YR,CL57T Y-right,P3 A+/A-/B+/B-,Y-right CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it","360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",TBD,"RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run"
+-ENC-X,CL57T X motor,encoder,CL57T X,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,"RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases"
+-ENC-YL,CL57T Y-left motor,encoder,CL57T Y-left,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,"RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases"
+-ENC-Z,CL57T Z motor,encoder,CL57T Z,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,"RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases"
+-ENC-YR,CL57T Y-right motor,encoder,CL57T Y-right,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,"RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases"
+-ALM-X,CL57T X,P1 ALM/COMO,MR1 interface,JFX,shielded pair/field logic,one planned field termination,TBD,"SERIES into the PB1 aggregate - PB1 is the ONLY input that raises Alarm_MotorFault (driver.c:1662). PG12 is parallel indication for $pins only and cannot stop motion. Healthy = loop closed. Alarm direction is configuration-dependent and must be metered on arrival"
+-ALM-YL,CL57T Y-left,P1 ALM/COMO,MR1 interface,JFYL,shielded pair/field logic,one planned field termination,TBD,"SERIES into the PB1 aggregate - PB1 is the ONLY input that raises Alarm_MotorFault (driver.c:1662). PG13 is parallel indication for $pins only and cannot stop motion. Healthy = loop closed. Alarm direction is configuration-dependent and must be metered on arrival"
+-ALM-Z,CL57T Z,P1 ALM/COMO,MR1 interface,JFZ,shielded pair/field logic,one planned field termination,TBD,"SERIES into the PB1 aggregate - PB1 is the ONLY input that raises Alarm_MotorFault (driver.c:1662). PG14 is parallel indication for $pins only and cannot stop motion. Healthy = loop closed. Alarm direction is configuration-dependent and must be metered on arrival"
+-ALM-YR,CL57T Y-right,P1 ALM/COMO,MR1 interface,JFYR,shielded pair/field logic,one planned field termination,TBD,"SERIES into the PB1 aggregate - PB1 is the ONLY input that raises Alarm_MotorFault (driver.c:1662). PG15 is parallel indication for $pins only and cannot stop motion. Healthy = loop closed. Alarm direction is configuration-dependent and must be metered on arrival"
+-HOME-FIELD-X,Stock X home harness,UNRESOLVED signal conductor,TLP281-4 module,IN1 (field side),stock harness,verify after trace,HOLD,"Trace stock supply/signal/return and all four voltage states; never land stock 5V on Octopus. Factory harness reused intact - signal to IN1, stock 5V and return to the module field VCC/GND"
+-HOME-FIELD-YL,Stock Y-left home harness,UNRESOLVED signal conductor,TLP281-4 module,IN2 (field side),stock harness,verify after trace,HOLD,"Trace separately from Y-right; no color assumptions. Factory harness reused intact - signal to IN2, stock 5V and return to the module field VCC/GND"
+-HOME-FIELD-Z,Stock Z home harness,UNRESOLVED signal conductor,TLP281-4 module,IN3 (field side),stock harness,verify after trace,HOLD,"Trace stock supply/signal/return and all four voltage states. Factory harness reused intact - signal to IN3, stock 5V and return to the module field VCC/GND"
+-HOME-FIELD-YR,Stock Y-right home harness,UNRESOLVED signal conductor,TLP281-4 module,IN4 (field side),stock harness,verify after trace,HOLD,"Trace separately from Y-left; no color assumptions. Factory harness reused intact - signal to IN4, stock 5V and return to the module field VCC/GND"
+-HOME-LOGIC-X,TLP281-4 module,OUT1 + output GND,Octopus Pro,STOP0 PG6/GND,twisted pair,none,TBD,"STOP0 5V cavity empty; trigger/unplug/lost field power must read high. Module output VCC LEFT UNCONNECTED so the output is open-collector and the Octopus 3.3V pullup sets the high level - never feed that rail 5V. Bench-verify: IN1 active gives OUT1 near 0V, IN1 released gives OUT1 high"
+-HOME-LOGIC-YL,TLP281-4 module,OUT2 + output GND,Octopus Pro,STOP1 PG9/GND,twisted pair,none,TBD,"STOP1 5V cavity empty; separate Y-left squaring input. Module output VCC LEFT UNCONNECTED so the output is open-collector and the Octopus 3.3V pullup sets the high level - never feed that rail 5V. Bench-verify: IN2 active gives OUT2 near 0V, IN2 released gives OUT2 high"
+-HOME-LOGIC-Z,TLP281-4 module,OUT3 + output GND,Octopus Pro,STOP2 PG10/GND,twisted pair,none,TBD,"STOP2 5V cavity empty; trigger/unplug/lost field power must read high. Module output VCC LEFT UNCONNECTED so the output is open-collector and the Octopus 3.3V pullup sets the high level - never feed that rail 5V. Bench-verify: IN3 active gives OUT3 near 0V, IN3 released gives OUT3 high"
+-HOME-LOGIC-YR,TLP281-4 module,OUT4 + output GND,Octopus Pro,STOP3 PG11/GND,twisted pair,none,TBD,"STOP3 5V cavity empty; separate Y-right squaring input. Module output VCC LEFT UNCONNECTED so the output is open-collector and the Octopus 3.3V pullup sets the high level - never feed that rail 5V. Bench-verify: IN4 active gives OUT4 near 0V, IN4 released gives OUT4 high"
+-PROBE-01,MR-1 touch probe,V+/SIG/0V,MR1 interface,JP ISO5V/SIG/ISO0V,flexible shielded 3-core,shield to cabinet only,TBD,Meter actual sensor before power; controller PF5
+-TOOL-01,MR-1 tool setter,V+/SIG/0V,MR1 interface,JT ISO5V/SIG/ISO0V,flexible shielded 3-core,shield to cabinet only,TBD,Meter actual sensor before power; controller PB7
++PWR-5I-HOME,24V control distribution,fused branch,isolated 5V home supply,+24V/0V,power pair,none,HOLD,Candidate isolated home field supply only. Actual home voltage/current and module circuit unverified; do not assume module output takes no supply. Follow INTERFACE_BOARD.md A2; keep field separate from logic/probe domains.
++CMD-X,MR1 interface,JX,CL57T X,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,Octopus MOTOR0 PF13/PF12/PF14. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler
++CMD-YL,MR1 interface,JYL,CL57T Y-left,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,Octopus MOTOR1 PG0/PG1/PF15. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler
++CMD-Z,MR1 interface,JZ,CL57T Z,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,Octopus MOTOR2 PF11/PG3/PG5. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler
++CMD-YR,MR1 interface,JYR,CL57T Y-right,P1 PUL+/PUL-/DIR+/DIR-,2 shielded twisted pairs,360deg cabinet clamp,TBD,Octopus MOTOR3 PG4/PC1/PA2 v1.1. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler
++MOT-X,CL57T X,P3 A+/A-/B+/B-,X CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md,TBD,RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run
++MOT-YL,CL57T Y-left,P3 A+/A-/B+/B-,Y-left CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md,TBD,RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run
++MOT-Z,CL57T Z,P3 A+/A-/B+/B-,Z CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md,TBD,RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run
++MOT-YR,CL57T Y-right,P3 A+/A-/B+/B-,Y-right CL57T motor,GX16 motor lead,"kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md,TBD,RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run
++ENC-X,CL57T X motor,encoder,CL57T X,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases
++ENC-YL,CL57T Y-left motor,encoder,CL57T Y-left,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases
++ENC-Z,CL57T Z motor,encoder,CL57T Z,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases
++ENC-YR,CL57T Y-right motor,encoder,CL57T Y-right,encoder input,"kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",per kit cable,TBD,RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases
++ALM-X,CL57T X,P1 ALM/COMO,MR1 interface,JFX,shielded pair/field logic,one planned field termination,HOLD,ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG12 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.
++ALM-YL,CL57T Y-left,P1 ALM/COMO,MR1 interface,JFYL,shielded pair/field logic,one planned field termination,HOLD,ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG13 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.
++ALM-Z,CL57T Z,P1 ALM/COMO,MR1 interface,JFZ,shielded pair/field logic,one planned field termination,HOLD,ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG14 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.
++ALM-YR,CL57T Y-right,P1 ALM/COMO,MR1 interface,JFYR,shielded pair/field logic,one planned field termination,HOLD,ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG15 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.
++HOME-FIELD-X,Stock X home harness,UNRESOLVED signal conductor,Unqualified home conditioner candidate,UNRESOLVED field input,stock harness,verify after trace,HOLD,"Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2."
++HOME-FIELD-YL,Stock Y-left home harness,UNRESOLVED signal conductor,Unqualified home conditioner candidate,UNRESOLVED field input,stock harness,verify after trace,HOLD,"Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2."
++HOME-FIELD-Z,Stock Z home harness,UNRESOLVED signal conductor,Unqualified home conditioner candidate,UNRESOLVED field input,stock harness,verify after trace,HOLD,"Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2."
++HOME-FIELD-YR,Stock Y-right home harness,UNRESOLVED signal conductor,Unqualified home conditioner candidate,UNRESOLVED field input,stock harness,verify after trace,HOLD,"Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2."
++HOME-LOGIC-X,Unqualified home conditioner candidate,UNRESOLVED qualified output plus logic return,Octopus Pro,STOP0 PG6/GND,twisted pair,none,HOLD,"Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2."
++HOME-LOGIC-YL,Unqualified home conditioner candidate,UNRESOLVED qualified output plus logic return,Octopus Pro,STOP1 PG9/GND,twisted pair,none,HOLD,"Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2."
++HOME-LOGIC-Z,Unqualified home conditioner candidate,UNRESOLVED qualified output plus logic return,Octopus Pro,STOP2 PG10/GND,twisted pair,none,HOLD,"Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2."
++HOME-LOGIC-YR,Unqualified home conditioner candidate,UNRESOLVED qualified output plus logic return,Octopus Pro,STOP3 PG11/GND,twisted pair,none,HOLD,"Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2."
++PROBE-01,MR-1 touch probe,V+/SIG/0V,MR1 interface,JP ISO5V/SIG/ISO0V,flexible shielded 3-core,shield to cabinet only,HOLD,Meter actual sensor before power; controller PF5
++TOOL-01,MR-1 tool setter,V+/SIG/0V,MR1 interface,JT ISO5V/SIG/ISO0V,flexible shielded 3-core,shield to cabinet only,HOLD,Meter actual sensor before power; controller PB7
+ SAFE-MON,Safety relay,NC auxiliary contact,Octopus Pro,TB PF3/GND,twisted pair,none,TBD,Monitor only; never route safety channels through Octopus
+ DOOR-MON,Door switch,NC monitor contact,Octopus Pro,PWR-DET PC0/GND,twisted pair,none,TBD,Do not connect adjacent 3V3
+ HOLD-01,Feed-hold button,NC contact,Octopus Pro,T0 PF4/GND,twisted pair,none,TBD,Software control only
+ START-01,Guarded cycle-start,NO contact,Octopus Pro,EXP2 PB2/GND,twisted pair,none,TBD,Only NO operator input
+-FAULT-AGG,Fault conditioner,healthy-low output,Octopus Pro,EXP2 PB1/GND,shielded pair,one planned field termination,TBD,Spindle/safety/cabinet aggregate
+-SP-PWM,Octopus Pro,FAN0 PA8,MR1 interface,SPINDLE_PWM_24,twisted pair,none,TBD,24V switched PWM input to isolated 0-5V converter
+-SP-ANALOG,MR1 interface,0-5V/ANALOG_COM,MR-1 servo DB44,community pins 26/10,shielded analog pair,per verified servo design,TBD,Continuity-map actual DB44 first
+-SP-ENABLE,MR1 interface,dry relay contact,MR-1 servo DB44,community pin 16 and verified return,shielded pair,none,TBD,Series with hardwired spindle permit
+-SP-ALARM,MR-1 servo DB44,community pin 5/return,MR1 interface,aggregate-fault input,shielded pair,one planned field termination,TBD,Optional only after servo alarm is verified
+-SP-RS485-LOGIC,Octopus Pro,candidate USART2 PD5/PD6,Spindle supervision interface,isolated UART side,short logic pair,none,HOLD,"MODBUS_ENABLE=0; do not connect before approved MCU/drive profile"
+-SP-RS485-FIELD,Spindle supervision interface,isolated RS485 A/B,MR-1 servo drive,verified RS485 connector/pins,shielded twisted pair,verified cabinet termination,HOLD,"Generic CN1 40/41/42 reference is not installed-drive proof"
+-SP-STATUS,MR-1 servo drive,verified SRDY/ALM/ASP/ZSP/COIN-PtoS outputs,Spindle supervision interface,isolated 12-24V inputs,shielded multi-pair,verified cabinet termination,HOLD,"Assignment and polarity must come from archived installed parameters"
+-SP-CONTROL,Spindle supervision interface,isolated SON/CMODE/ACLR outputs,MR-1 servo drive,verified digital inputs,shielded multi-pair,verified cabinet termination,HOLD,"SON passes through hardwired permission; CMODE and ACLR remain locked"
+-SP-ENCODER,MR-1 servo drive,verified OA/OB/OZ differential pairs,Spindle supervision interface,isolated RS422 receiver,3 shielded twisted pairs,per verified encoder design,HOLD,"No STM32 timer pins assigned; never land encoder pairs directly on GPIO"
+-SP-INDEX,Spindle-side index sensor,UNSELECTED,Spindle supervision interface,conditioned index input,shielded pair,verified sensor design,HOLD,"One pulse per spindle revolution; rigid mount and coolant protection required"
+-SP-ORIENT,Octopus Pro,UNASSIGNED differential step-direction source,Spindle supervision interface,future position-command line driver,2 shielded twisted pairs,verified cabinet termination,HOLD,"M19 stage only; no board pins or electronic gearing approved"
+-FLOOD-CTL,Octopus Pro,HE0 PA0,MR1 interface,flood relay input,twisted pair,none,TBD,HE0 is PA0 only on Octopus Pro v1.1
+-MIST-CTL,Octopus Pro,HE1 PA3,MR1 interface,mist/air relay input,twisted pair,none,TBD,Fit load suppression
+-USB-01,Windows mini PC,USB,Octopus Pro,USB-C,shielded USB cable,chassis through connector,TBD,Select grblHAL protocol in sender
+-TEMP-SPINDLE,ESP32 AMOLED,UNASSIGNED,ordered temperature sensor,UNVERIFIED,short flexible cable,none,HOLD,"Identify exact sensor and pinout before wiring; DS18B20 H2 map is conditional only"
++FAULT-AGG,Fault conditioner,healthy-low output,Octopus Pro,EXP2 PB1/GND,shielded pair,one planned field termination,HOLD,Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PG12-PG15 indication alone cannot stop motion.
++SP-PWM,Octopus Pro,FAN0 positive / PA8 switched negative,MR1 interface,SPINDLE_PWM_24,twisted pair,none,HOLD,FAN0 positive is jumper-selected 5V/12V/VIN; actual selection/load rating unverified. Two-wire input across positive and switched negative; never bond negative to logic GND. Converter/servo remain HOLD.
++SP-ANALOG,MR1 interface,0-5V/ANALOG_COM,MR-1 servo DB44,community pins 26/10,shielded analog pair,per verified servo design,HOLD,Continuity-map actual DB44 first
++SP-ENABLE,MR1 interface,dry relay contact,MR-1 servo DB44,community pin 16 and verified return,shielded pair,none,HOLD,Series with hardwired spindle permit
++SP-ALARM,MR-1 servo DB44,community pin 5/return,MR1 interface,aggregate-fault input,shielded pair,one planned field termination,HOLD,Optional only after servo alarm is verified
++SP-RS485-LOGIC,Octopus Pro,candidate USART2 PD5/PD6,Spindle supervision interface,isolated UART side,short logic pair,none,HOLD,MODBUS_ENABLE=0; do not connect before approved MCU/drive profile
++SP-RS485-FIELD,Spindle supervision interface,isolated RS485 A/B,MR-1 servo drive,verified RS485 connector/pins,shielded twisted pair,verified cabinet termination,HOLD,Generic CN1 40/41/42 reference is not installed-drive proof
++SP-STATUS,MR-1 servo drive,verified SRDY/ALM/ASP/ZSP/COIN-PtoS outputs,Spindle supervision interface,isolated 12-24V inputs,shielded multi-pair,verified cabinet termination,HOLD,Assignment and polarity must come from archived installed parameters
++SP-CONTROL,Spindle supervision interface,isolated SON/CMODE/ACLR outputs,MR-1 servo drive,verified digital inputs,shielded multi-pair,verified cabinet termination,HOLD,SON passes through hardwired permission; CMODE and ACLR remain locked
++SP-ENCODER,MR-1 servo drive,verified OA/OB/OZ differential pairs,Spindle supervision interface,isolated RS422 receiver,3 shielded twisted pairs,per verified encoder design,HOLD,No STM32 timer pins assigned; never land encoder pairs directly on GPIO
++SP-INDEX,Spindle-side index sensor,UNSELECTED,Spindle supervision interface,conditioned index input,shielded pair,verified sensor design,HOLD,One pulse per spindle revolution; rigid mount and coolant protection required
++SP-ORIENT,Octopus Pro,UNASSIGNED differential step-direction source,Spindle supervision interface,future position-command line driver,2 shielded twisted pairs,verified cabinet termination,HOLD,M19 stage only; no board pins or electronic gearing approved
++FLOOD-CTL,Octopus Pro,HE0 positive / PA0 switched negative,MR1 interface,flood relay input,twisted pair,none,HOLD,Positive is fused VIN; verify actual voltage and qualified load/suppression. Connect input across positive and switched negative. Never bond switched negative to logic GND. Load and startup/off behavior remain unqualified.
++MIST-CTL,Octopus Pro,HE1 positive / PA3 switched negative,MR1 interface,mist/air relay input,twisted pair,none,HOLD,Positive is fused VIN; verify actual voltage and qualified load/suppression. Connect input across positive and switched negative. Never bond switched negative to logic GND. Load and startup/off behavior remain unqualified.
++USB-01,Windows mini PC,USB,Octopus Pro,USB-C,shielded USB cable,chassis through connector,TBD,Use the custom MR1 native controller with verified grblHAL identity; USB may add a logic-ground/PE path. Record that path; never treat USB as proof of power isolation.
++TEMP-SPINDLE,ESP32 AMOLED,UNASSIGNED,ordered temperature sensor,UNVERIFIED,short flexible cable,none,HOLD,Identify exact sensor and pinout before wiring; DS18B20 H2 map is conditional only
+diff --git a/mr1/expected-settings.json b/mr1/expected-settings.json
+index b8dd3ad..402287b 100644
+--- a/mr1/expected-settings.json
++++ b/mr1/expected-settings.json
+@@ -2,7 +2,7 @@
+   "schemaVersion": 1,
+   "profile": "btt_octopus_pro_f429_mr1",
+   "boardIdentityContains": "BTT Octopus Pro v1.1 F429 - Langmuir MR-1",
+-  "readOnlyQueries": ["?", "$I+", "$$", "$G", "$#", "?"],
++  "readOnlyQueries": ["?", "$I+", "$$", "$G", "$#", "$N", "?"],
+   "settings": [
+     {"id": 0, "name": "Step pulse time", "expected": 5.0, "tolerance": 0.001, "severity": "blocker", "source": {"macro": "DEFAULT_STEP_PULSE_MICROSECONDS"}},
+     {"id": 1, "name": "Step idle delay", "expected": 255, "tolerance": 0, "severity": "blocker", "source": {"macro": "DEFAULT_STEPPER_IDLE_LOCK_TIME"}},
+@@ -14,6 +14,7 @@
+     {"id": 8, "name": "Ganged direction invert", "expected": 0, "tolerance": 0, "severity": "blocker", "source": {"macro": "DEFAULT_GANGED_DIRECTION_INVERT_MASK"}},
+     {"id": 9, "name": "PWM spindle options", "expected": 3, "tolerance": 0, "severity": "blocker"},
+     {"id": 10, "name": "Status report mask", "expected": 511, "tolerance": 0, "severity": "blocker", "source": {"bitMacros": [{"macro": "DEFAULT_REPORT_MACHINE_POSITION", "bit": 0}, {"macro": "DEFAULT_REPORT_BUFFER_STATE", "bit": 1}, {"macro": "DEFAULT_REPORT_LINE_NUMBERS", "bit": 2}, {"macro": "DEFAULT_REPORT_CURRENT_FEED_SPEED", "bit": 3}, {"macro": "DEFAULT_REPORT_PIN_STATE", "bit": 4}, {"macro": "DEFAULT_REPORT_WORK_COORD_OFFSET", "bit": 5}, {"macro": "DEFAULT_REPORT_OVERRIDES", "bit": 6}, {"macro": "DEFAULT_REPORT_PROBE_COORDINATES", "bit": 7}, {"macro": "DEFAULT_REPORT_SYNC_ON_WCO_CHANGE", "bit": 8}, {"macro": "DEFAULT_REPORT_PARSER_STATE", "bit": 9}, {"macro": "DEFAULT_REPORT_ALARM_SUBSTATE", "bit": 10}, {"macro": "DEFAULT_REPORT_RUN_SUBSTATE", "bit": 11}, {"macro": "DEFAULT_REPORT_WHEN_HOMING", "bit": 12}, {"macro": "DEFAULT_REPORT_DISTANCE_TO_GO", "bit": 13}]}},
++    {"id": 13, "name": "Report positions in inches", "expected": 0, "tolerance": 0, "severity": "blocker", "source": {"coreMacro": "DEFAULT_REPORT_INCHES"}},
+     {"id": 14, "name": "Control input invert", "expected": 4, "tolerance": 0, "severity": "blocker", "source": {"macro": "DEFAULT_CONTROL_SIGNALS_INVERT_MASK"}},
+     {"id": 17, "name": "Control pullups disabled", "expected": 0, "tolerance": 0, "severity": "blocker", "source": {"macro": "DEFAULT_DISABLE_CONTROL_PINS_PULL_UP_MASK"}},
+     {"id": 18, "name": "Limit pullups disabled", "expected": 0, "tolerance": 0, "severity": "blocker", "source": {"macro": "DEFAULT_LIMIT_SIGNALS_PULLUP_DISABLE_MASK"}},
+diff --git a/mr1/io-manifest.json b/mr1/io-manifest.json
+index 8edfbb0..baa046b 100644
+--- a/mr1/io-manifest.json
++++ b/mr1/io-manifest.json
+@@ -27,9 +27,9 @@
+     "max_rate_mm_min": {"x": 2540.0, "y": 2540.0, "z": 1016.0}
+   },
+   "motion": {
+-    "active_phase": "phase_1_stock_open_loop",
+-    "driver": "STEPPERONLINE DM860T V3.0; user-confirmed 2026-08-23, photograph at commissioning",
+-    "motor": "Stock Langmuir MR-1 four-lead NEMA 23; exact phase-current label pending",
++    "active_phase": "cl57t_closed_loop_installation_pending",
++    "driver": "STEPPERONLINE CL57T V4.1; verify all four installed labels before power",
++    "motor": "23HS45-4204D-E1000; 4.2 A/phase nameplate and motor/encoder pairing require physical verification",
+     "pulses_per_revolution": 1600,
+     "screw_lead_mm": {"x": 5.0, "y": 5.0, "z": 3.0},
+     "steps_per_mm": {"x": 320.0, "y": 320.0, "z": 533.333333},
+@@ -44,6 +44,7 @@
+       "no_connect_contacts": [2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+     },
+     "dm860t_v3": {
++      "status": "rollback-only; these switches and power terminals do not apply to CL57T",
+       "revision_status": "User confirmed DM860T V3.0 on 2026-08-23; case and switch-face photograph remains required for the commissioning record",
+       "revision_gate": "Exactly 10 DIP switches SW1-SW10 plus top selector S2; stop if the face differs",
+       "s2": "5V",
+@@ -59,10 +60,18 @@
+       "sw9": "OFF (single-pulse STEP/DIR)",
+       "sw10": "OFF (no 12 ms command smoothing)"
+     },
+-    "future_closed_loop": {
++    "cl57t_v41": {
+       "driver": "STEPPERONLINE CL57T V4.1",
+       "motor": "23HS45-4204D-E1000",
+-      "status": "deferred upgrade; preserve as the final closed-loop plan"
++      "status": "active design; physical installation and commissioning not qualified",
++      "s1": "4 (4 A RMS, 5.6 A peak; initial gain preset)",
++      "s2_sw1_to_sw8_initial": ["ON", "OFF", "ON", "ON", "OFF", "OFF", "OFF", "OFF"],
++      "direction_status": "SW5 OFF is provisional; verify each axis direction, including both Y motors, before coupled motion",
++      "s3": "5V",
++      "ena": "unconnected by default; any reserved enable interface requires separate qualification",
++      "power": "P4 +VDC/GND, polarized 36 V star branch; 18-50 V absolute bus range",
++      "encoder": "P2 EA+/EA-/EB+/EB-/VCC/EGND; VCC is drive-supplied, never externally powered",
++      "fault": "ALM/COMO into individually isolated conditioners; combine proven healthy outputs into PB1, with PG12-PG15 for diagnostics only"
+     }
+   },
+   "electrical_domains": [
+@@ -72,7 +81,7 @@
+     },
+     {
+       "name": "36v_motion",
+-      "rule": "The 36 V supply feeds each DM860T through an individual star branch; it never feeds Octopus MAIN POWER."
++      "rule": "The documented S-360-36 supply is 36 V / 10 A, with simultaneous-load capacity unqualified. Feed each CL57T P4 +VDC/GND through its own polarity-verified fused star branch; never feed Octopus MAIN POWER."
+     },
+     {
+       "name": "24v_control",
+@@ -80,7 +89,11 @@
+     },
+     {
+       "name": "5v_motion_logic",
+-      "rule": "A protected 5 V supply feeds only the DM860T PUL, DIR, and ENA optocoupler anodes; its 0 V is controller logic return."
++      "rule": "A protected 5 V supply feeds CL57T P1 PUL/DIR optocoupler anodes through the qualified common-anode interface; its 0 V is controller logic return. S3=5V. ENA remains unconnected."
++    },
++    {
++      "name": "drive_encoder_supply",
++      "rule": "Each CL57T P2 VCC/EGND supplies only its matched encoder. Do not inject external power or bond encoder returns to other drives or logic. Internal isolation is not established by the available manual."
+     },
+     {
+       "name": "5v_home_isolated",
+@@ -92,7 +105,7 @@
+     },
+     {
+       "name": "spindle_analog_isolated",
+-      "rule": "The calibrated 0-5 V spindle command and analog common are galvanically isolated from Octopus logic and verified against the installed servo drive."
++      "rule": "Planned isolated 0-5 V spindle command and analog common remain HOLD: installed servo identity, harness continuity, analog gain, and measured RPM are not qualified. Generic T3A/T3L 0-10 V full scale must not be assumed to match 0-5 V."
+     },
+     {
+       "name": "spindle_digital_isolated",
+@@ -122,10 +135,10 @@
+     {"macro": "Z_LIMIT", "gpio": "PG10", "connector": "DIAG2/STOP2", "role": "conditioned Z home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
+     {"macro": "M3_LIMIT", "gpio": "PG11", "connector": "DIAG3/STOP3", "role": "conditioned Y-right home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
+ 
+-    {"macro": "X_MOTOR_FAULT", "gpio": "PG12", "connector": "DIAG4/STOP4", "role": "X driver ready/fault", "direction": "input", "interrupt": true},
+-    {"macro": "Y_MOTOR_FAULT", "gpio": "PG13", "connector": "DIAG5/STOP5", "role": "Y-left driver ready/fault", "direction": "input", "interrupt": true},
+-    {"macro": "Z_MOTOR_FAULT", "gpio": "PG14", "connector": "DIAG6/STOP6", "role": "Z driver ready/fault", "direction": "input", "interrupt": true},
+-    {"macro": "M3_MOTOR_FAULT", "gpio": "PG15", "connector": "DIAG7/STOP7", "role": "Y-right driver ready/fault", "direction": "input", "interrupt": true},
++    {"macro": "X_MOTOR_FAULT", "gpio": "PG12", "connector": "DIAG4/STOP4", "role": "X driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
++    {"macro": "Y_MOTOR_FAULT", "gpio": "PG13", "connector": "DIAG5/STOP5", "role": "Y-left driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
++    {"macro": "Z_MOTOR_FAULT", "gpio": "PG14", "connector": "DIAG6/STOP6", "role": "Z driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
++    {"macro": "M3_MOTOR_FAULT", "gpio": "PG15", "connector": "DIAG7/STOP7", "role": "Y-right driver ready/fault", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false},
+ 
+     {"macro": "SAFETY_DOOR", "gpio": "PC0", "connector": "PWR-DET", "role": "NC enclosure interlock monitor", "direction": "input", "interrupt": true},
+     {"macro": "PROBE", "gpio": "PF5", "connector": "T1", "role": "HW-399 OUT1 isolated touch-probe signal", "direction": "input", "interrupt": true},
+@@ -133,7 +146,7 @@
+     {"macro": "RESET", "gpio": "PF3", "connector": "TB", "role": "NC E-stop safety relay auxiliary contact", "direction": "input", "interrupt": true},
+     {"macro": "FEED_HOLD", "gpio": "PF4", "connector": "T0", "role": "NC feed-hold pushbutton", "direction": "input", "interrupt": true},
+     {"macro": "CYCLE_START", "gpio": "PB2", "connector": "EXP2 PB2", "role": "NO guarded cycle-start pushbutton", "direction": "input", "interrupt": true},
+-    {"macro": "MOTOR_FAULT", "gpio": "PB1", "connector": "EXP2 PB1", "role": "aggregate spindle/safety/cabinet fault", "direction": "input", "interrupt": true},
++    {"macro": "MOTOR_FAULT", "gpio": "PB1", "connector": "EXP2 PB1", "role": "conditioned aggregate drive/spindle/safety/cabinet fault", "direction": "input", "interrupt": true, "stopsMotion": true},
+ 
+     {"macro": "SPINDLE_PWM", "gpio": "PA8", "connector": "FAN0", "role": "PWM carrier to isolated 0-5 V converter", "direction": "output"},
+     {"macro": "SPINDLE_ENABLE", "gpio": "PD14", "connector": "FAN4", "role": "interposing relay for servo enable", "direction": "output"},
+diff --git a/tools/validate_mr1_profile.py b/tools/validate_mr1_profile.py
+index ac5462b..3cebe76 100644
+--- a/tools/validate_mr1_profile.py
++++ b/tools/validate_mr1_profile.py
+@@ -32,6 +32,7 @@ CORE_MOTION_PATH = ROOT / "grbl" / "motion_control.c"
+ CORE_PLANNER_PATH = ROOT / "grbl" / "planner.c"
+ CORE_STEPPER_PATH = ROOT / "grbl" / "stepper.c"
+ CORE_CONFIG_PATH = ROOT / "grbl" / "config.h"
++CORE_CONSTANTS_PATH = ROOT / "grbl" / "nuts_bolts.h"
+ LINKER_PATH = ROOT / "STM32F429ZGTX_BL32K_I2C_FLASH.ld"
+ FIRMWARE_PATH = ROOT / ".pio" / "build" / "btt_octopus_pro_f429_mr1" / "firmware.bin"
+ SERVO_AXIS_FIRMWARE_PATH = (
+@@ -688,7 +689,7 @@ def audit() -> list[str]:
+     require(expected_settings["schemaVersion"] == 1, "unsupported expected-settings schema")
+     require(expected_settings["profile"] == manifest["profile"],
+             "expected-settings profile does not match the I/O manifest")
+-    require(expected_settings["readOnlyQueries"] == ["?", "$I+", "$$", "$G", "$#", "?"],
++    require(expected_settings["readOnlyQueries"] == ["?", "$I+", "$$", "$G", "$#", "$N", "?"],
+             "preflight query policy contains a command that is not approved read-only traffic")
+     setting_ids: set[int] = set()
+     fixed_firmware_values = {9: 3.0, 32: 0.0}
+@@ -715,6 +716,17 @@ def audit() -> list[str]:
+             actual = parse_number(resolve(config, config[macro])) * float(source.get("scale", 1.0))
+             if source.get("invertBoolean", False):
+                 actual = 0.0 if actual else 1.0
++        elif "coreMacro" in source:
++            # Inspect an inherited core default without inventing a profile override.
++            # Force-included machine configuration takes precedence over core defaults.
++            # Off/On are resolved from the core's real definitions, not assumed here.
++            macro = source["coreMacro"]
++            core_defaults = parse_defines(CORE_CONFIG_PATH)
++            require(macro in core_defaults, f"${setting_id}: missing core default {macro}")
++            inherited = {**parse_defines(CORE_CONSTANTS_PATH), **core_defaults, **config}
++            actual = parse_number(resolve(inherited, macro)) * float(source.get("scale", 1.0))
++            if source.get("invertBoolean", False):
++                actual = 0.0 if actual else 1.0
+         else:
+             bit_macros = source.get("bitMacros")
+             require(isinstance(bit_macros, list) and bit_macros,

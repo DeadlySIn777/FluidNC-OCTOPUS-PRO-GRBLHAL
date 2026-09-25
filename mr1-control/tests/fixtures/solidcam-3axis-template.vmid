@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Machine ID="0" DeviceNumber="0" Name="Generic_3X" CatalogNum="TEST" Type="0" Ver="24" MinSpin="0" MaxSpin="0" Company="Template" Model="3 Axis" ControllerName="Generic" RelativeGppFolder="" OperationType="0" FullyConverted="1" MachSimName="" TechDBName="">
+  <SubDevices>
+    <SubDevice ID="1" DeviceNumber="1" Name="Spindle" CatalogNum="TEST-SPINDLE" Type="2" Ver="16" MinSpin="0" MaxSpin="12000">
+      <SubDevices>
+        <SubDevice ID="2" DeviceNumber="1" Name="XYZ" CatalogNum="TEST-XYZ" Type="1" Ver="14" MinSpin="0" MaxSpin="0">
+          <Axes>
+            <Axis Name="X" Ver="8" Id="2101" Type="0" VecX="1" VecY="0" VecZ="0" HomeRef="0" UsedInMillingAs="2" UsedInTurningAs="2" UsedInWireEdmAs="0" MinLim="-1000" MaxLim="1000" InterpolationStep="0.001" Rapid="5000" MinSpeed="0" MaxSpeed="5000" RapidRotationUnits="0" MinFeedRotationUnits="0" MaxFeedRotationUnits="0" Acceleration="1000" Deceleration="1000" MaxVelocityForDirChange="100">
+              <AxisChildren>
+                <Axis Name="Y" Ver="8" Id="2102" Type="0" VecX="0" VecY="1" VecZ="0" HomeRef="0" UsedInMillingAs="2" UsedInTurningAs="2" UsedInWireEdmAs="0" MinLim="-1000" MaxLim="1000" InterpolationStep="0.001" Rapid="5000" MinSpeed="0" MaxSpeed="5000" RapidRotationUnits="0" MinFeedRotationUnits="0" MaxFeedRotationUnits="0" Acceleration="1000" Deceleration="1000" MaxVelocityForDirChange="100">
+                  <AxisChildren>
+                    <Axis Name="Z" Ver="8" Id="2103" Type="0" VecX="0" VecY="0" VecZ="1" HomeRef="0" UsedInMillingAs="2" UsedInTurningAs="2" UsedInWireEdmAs="0" MinLim="-1000" MaxLim="1000" InterpolationStep="0.001" Rapid="5000" MinSpeed="0" MaxSpeed="5000" RapidRotationUnits="0" MinFeedRotationUnits="0" MaxFeedRotationUnits="0" Acceleration="1000" Deceleration="1000" MaxVelocityForDirChange="100" />
+                  </AxisChildren>
+                </Axis>
+              </AxisChildren>
+            </Axis>
+          </Axes>
+        </SubDevice>
+      </SubDevices>
+    </SubDevice>
+  </SubDevices>
+</Machine>

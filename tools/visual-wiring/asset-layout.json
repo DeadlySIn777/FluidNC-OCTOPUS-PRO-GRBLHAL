@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Photographic component placement reference only. Never a terminal pinout, connection approval or energization checklist.",
+  "coordinateSystem": {
+    "units": "normalized 0..1 of the original cabinet photo",
+    "origin": "top left",
+    "xDirection": "right",
+    "yDirection": "down",
+    "regions": "x/y/width/height; approximate component display highlights, not exact physical footprints",
+    "points": "whole-component label anchors, never cable or terminal landing points"
+  },
+  "assets": {
+    "cabinet": {
+      "file": "assets/cabinet.jpg",
+      "width": 1152,
+      "height": 1536,
+      "sha256": "81e2fe6d38b6fa4cf4b828ce97f92e4a800627b87dbb24f9f4254f2b3baf0ef4",
+      "sourcePath": "tools/visual-wiring/assets/cabinet.jpg",
+      "transformation": "None. Exact byte copy; no overlays or crops.",
+      "originalProjectPath": "mr1/wiring-map/assets/cabinet.jpg",
+      "sourceDescription": "Project-provided cabinet photograph copied unchanged from the existing MR1 project. Photographer and capture date are not separately recorded."
+    },
+    "board": {
+      "width": 1912,
+      "height": 1534,
+      "sha256": "d360491ad8e1f738b1e784bfd62cc2c0f2b4c396d6cd069b9743d62aab0ee285",
+      "sourcePath": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg",
+      "transformation": "None. Exact byte copy; no overlays or crops.",
+      "corroboratingSourcePath": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg",
+      "sourceDescription": "BIGTREETECH Octopus Pro V1.1-Pin image, dated 2023-11-02.",
+      "componentPlacement": "No cabinet-coordinate or terminal-cavity overlays extracted for this image.",
+      "url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg",
+      "distribution": "External official reference by default; optional hash-verified local image for a private offline build.",
+      "licenseStatus": "No explicit redistribution license found in the official repository; not included in the public source or default HTML."
+    }
+  },
+  "sources": {
+    "placementGenerator": {
+      "sha256": "5d4ab52ca92adec9434adae980322ef79a1aae1cae5348b3c393b7904c061b55",
+      "originalProjectPath": "mr1/wiring-map/genoverlay.py",
+      "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+    },
+    "legacyCanvasMetadata": {
+      "sha256": "d5cca288cfee81ab8b57fd80587b944cf6825564b26d83e287cfcb06dbcfdfa3",
+      "value": {
+        "W": 2239,
+        "H": 2330,
+        "photo": {
+          "left": 52,
+          "top": 214,
+          "width": 1543,
+          "height": 2058
+        }
+      },
+      "originalProjectPath": "mr1/wiring-map/overlay.json",
+      "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+    }
+  },
+  "components": [
+    {
+      "id": "X",
+      "label": "X drive",
+      "asset": "cabinet",
+      "point": {
+        "x": 0.765,
+        "y": 0.43
+      },
+      "region": {
+        "x": 0.7,
+        "y": 0.33,
+        "width": 0.13,
+        "height": 0.2
+      },
+      "placementEvidence": "Legacy generator DR component region; broad drive-body placement visually checked against the unchanged photo.",
+      "source": {
+        "line": 136,
+        "expression": "DR['X']",
+        "originalProjectPath": "mr1/wiring-map/genoverlay.py",
+        "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+      },
+      "axisAssignmentVerifiedOnMachine": false,
+      "terminalPositionsVerified": false
+    },
+    {
+      "id": "YL",
+      "label": "Y-left drive",
+      "asset": "cabinet",
+      "point": {
+        "x": 0.915,
+        "y": 0.42
+      },
+      "region": {
+        "x": 0.85,
+        "y": 0.32,
+        "width": 0.13,
+        "height": 0.2
+      },
+      "placementEvidence": "Legacy generator DR component region; broad drive-body placement visually checked against the unchanged photo.",
+      "source": {
+        "line": 136,
+        "expression": "DR['YL']",
+        "originalProjectPath": "mr1/wiring-map/genoverlay.py",
+        "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+      },
+      "axisAssignmentVerifiedOnMachine": false,
+      "terminalPositionsVerified": false
+    },
+    {
+      "id": "Z",
+      "label": "Z drive",
+      "asset": "cabinet",
+      "point": {
+        "x": 0.76,
+        "y": 0.7
+      },
+      "region": {
+        "x": 0.69,
+        "y": 0.6,
+        "width": 0.14,
+        "height": 0.2
+      },
+      "placementEvidence": "Legacy generator DR component region; broad drive-body placement visually checked against the unchanged photo.",
+      "source": {
+        "line": 136,
+        "expression": "DR['Z']",
+        "originalProjectPath": "mr1/wiring-map/genoverlay.py",
+        "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+      },
+      "axisAssignmentVerifiedOnMachine": false,
+      "terminalPositionsVerified": false
+    },
+    {
+      "id": "YR",
+      "label": "Y-right drive",
+      "asset": "cabinet",
+      "point": {
+        "x": 0.905,
+        "y": 0.7
+      },
+      "region": {
+        "x": 0.83,
+        "y": 0.6,
+        "width": 0.15,
+        "height": 0.2
+      },
+      "placementEvidence": "Legacy generator DR component region; broad drive-body placement visually checked against the unchanged photo.",
+      "source": {
+        "line": 136,
+        "expression": "DR['YR']",
+        "originalProjectPath": "mr1/wiring-map/genoverlay.py",
+        "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+      },
+      "axisAssignmentVerifiedOnMachine": false,
+      "terminalPositionsVerified": false
+    },
+    {
+      "id": "octopus",
+      "label": "Octopus controller",
+      "asset": "cabinet",
+      "point": {
+        "x": 0.585,
+        "y": 0.74
+      },
+      "region": null,
+      "placementEvidence": "Legacy generator component tag; point visually checked against the unchanged photo. Source does not define a component rectangle.",
+      "source": {
+        "line": 375,
+        "expression": "tag(58.5, 74, 'OCTOPUS PRO', ...)",
+        "originalProjectPath": "mr1/wiring-map/genoverlay.py",
+        "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+      },
+      "terminalPositionsVerified": false
+    },
+    {
+      "id": "psu36",
+      "label": "S-360-36 supply",
+      "asset": "cabinet",
+      "point": {
+        "x": 0.41,
+        "y": 0.63
+      },
+      "region": null,
+      "placementEvidence": "Legacy generator component tag; point visually checked against the unchanged photo. Source does not define a component rectangle.",
+      "source": {
+        "line": 374,
+        "expression": "tag(41, 63, '36 V PSU', ...)",
+        "originalProjectPath": "mr1/wiring-map/genoverlay.py",
+        "availability": "Historical project provenance; source generator is not required or distributed with this portable guide."
+      },
+      "terminalPositionsVerified": false
+    }
+  ],
+  "unknowns": [
+    "The photo capture date and whether it matches the current cabinet are unverified.",
+    "X/Y-left/Z/Y-right labels are inherited planned axis assignments; cable continuity to the actual motors is unverified.",
+    "Drive model, terminal numbering, removable-plug orientation and actual switch settings are not inferred from this photo.",
+    "Octopus and PSU rectangles are unknown; only original component-label anchors are provided.",
+    "No location is assigned to planned interface boards, buffers, conditioners, fuse blocks or additional supplies."
+  ],
+  "excluded": [
+    "Legacy wire routes",
+    "Legacy terminal arrows",
+    "Legacy electrical prescriptions",
+    "Old planned-parts overlays"
+  ]
+}

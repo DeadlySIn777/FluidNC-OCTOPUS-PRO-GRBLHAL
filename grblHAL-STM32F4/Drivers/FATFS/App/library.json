@@ -1,0 +1,7 @@
+{
+    "platforms":  "*",
+    "frameworks":  "*",
+    "description":  "STM32 library",
+    "name":  "Drivers-FATFS-App",
+    "version":  "1.0.0"
+}

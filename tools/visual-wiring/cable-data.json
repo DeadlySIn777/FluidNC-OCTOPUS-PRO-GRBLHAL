@@ -1,0 +1,2070 @@
+{
+  "schema_version": 1,
+  "protocol": "mr1-visual-cable-reference-v1",
+  "generator": {
+    "name": "cable-data.py",
+    "version": 1
+  },
+  "source": {
+    "csv": {
+      "path": "docs/wiring/mr1/cable-schedule.csv",
+      "bytes": 15266,
+      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+    },
+    "readiness": {
+      "path": "docs/wiring/MR1-wiring-readiness.md",
+      "bytes": 21217,
+      "sha256": "2b2c0db82a3ac1749219dd345a8bd9b60f20882a2df17ecdf966d1cac7aa3a3f"
+    },
+    "second_pass": {
+      "path": "docs/wiring/MR1-wiring-second-pass.md",
+      "bytes": 8959,
+      "sha256": "453cd1947cee5cd4b4e9133b5be596b380570e4ff37b97eb2844f60d88f6ae4f"
+    },
+    "spindle_supervision": {
+      "path": "docs/wiring/mr1/SPINDLE_SUPERVISION.md",
+      "bytes": 18425,
+      "sha256": "ba83c352a4ce56cda98a1d6ade39227b613a5c332e0cf5663956eba968239441"
+    }
+  },
+  "source_fields": [
+    "cable_id",
+    "from_device",
+    "from_terminal",
+    "to_device",
+    "to_terminal",
+    "cable_class",
+    "shield_termination",
+    "state",
+    "notes"
+  ],
+  "scope": "Deenergized cable identification, route planning and matching labels. No completed continuity, termination, electrical or motion evidence.",
+  "endpoint_notice": "Device and terminal text is preserved from the reference schedule, not a verified physical cavity map. JX/JYL/JZ/JYR, JF names, JP/JT and interface function labels are planned names.",
+  "safety_status": {
+    "physical_evidence": "unverified",
+    "may_energize": false,
+    "may_machine": false
+  },
+  "default_filter": {
+    "exclude_dispositions": [
+      "reserved",
+      "rollback"
+    ]
+  },
+  "counts": {
+    "total": 56,
+    "active": 44,
+    "by_disposition": {
+      "trace-only": 22,
+      "hold": 22,
+      "reserved": 8,
+      "rollback": 4
+    },
+    "by_axis": {
+      "X": 8,
+      "YL": 8,
+      "Z": 8,
+      "YR": 8,
+      "shared": 24
+    },
+    "by_family": {
+      "command": 4,
+      "motor": 4,
+      "encoder": 4,
+      "power": 10,
+      "home": 8,
+      "fault": 5,
+      "probe": 2,
+      "controls": 6,
+      "spindle": 11,
+      "other": 2
+    }
+  },
+  "active_ids": [
+    "PWR-24-01",
+    "PWR-36-X",
+    "PWR-36-YL",
+    "PWR-36-Z",
+    "PWR-36-YR",
+    "PWR-5I-HOME",
+    "CMD-X",
+    "CMD-YL",
+    "CMD-Z",
+    "CMD-YR",
+    "MOT-X",
+    "MOT-YL",
+    "MOT-Z",
+    "MOT-YR",
+    "ENC-X",
+    "ENC-YL",
+    "ENC-Z",
+    "ENC-YR",
+    "ALM-X",
+    "ALM-YL",
+    "ALM-Z",
+    "ALM-YR",
+    "HOME-FIELD-X",
+    "HOME-FIELD-YL",
+    "HOME-FIELD-Z",
+    "HOME-FIELD-YR",
+    "HOME-LOGIC-X",
+    "HOME-LOGIC-YL",
+    "HOME-LOGIC-Z",
+    "HOME-LOGIC-YR",
+    "PROBE-01",
+    "TOOL-01",
+    "SAFE-MON",
+    "DOOR-MON",
+    "HOLD-01",
+    "START-01",
+    "FAULT-AGG",
+    "SP-PWM",
+    "SP-ANALOG",
+    "SP-ENABLE",
+    "SP-ALARM",
+    "FLOOD-CTL",
+    "MIST-CTL",
+    "USB-01"
+  ],
+  "cables": [
+    {
+      "cable_id": "PWR-24-01",
+      "from_device": "24V control PSU",
+      "from_terminal": "+24V/0V",
+      "to_device": "Octopus Pro",
+      "to_terminal": "MAIN POWER +/-",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "Verify polarity; 15-28V board range; use 24V only",
+      "source_record": 1,
+      "axis": "shared",
+      "family": "power",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "PWR-24-01",
+        "to": "PWR-24-01"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify the control PSU pair and Octopus MAIN POWER markings; record the isolated route and both endpoint views.",
+      "missing_evidence": [
+        "Actual PSU identity, output polarity and board MAIN POWER terminal orientation.",
+        "Reviewed conductor and branch-protection selection; MAIN is distinct from MOTOR/BED POWER.",
+        "Recorded PSU/logic/USB/protective-earth return topology."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-X-DM860T",
+      "from_device": "36V motion distribution",
+      "from_terminal": "X fused branch",
+      "to_device": "DM860T X",
+      "to_terminal": "AC/AC",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "ROLLBACK-ONLY",
+      "notes": "DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T",
+      "source_record": 2,
+      "axis": "X",
+      "family": "power",
+      "disposition": "rollback",
+      "disposition_reason": "Original DM860T preservation record; excluded from the active CL57T wiring list.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "PWR-36-X-DM860T",
+        "to": "PWR-36-X-DM860T"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock X DM860T cable as a separate rollback item; do not include it in the CL57T route.",
+      "missing_evidence": [
+        "Photographed identity of the stock X DM860T and its original harness.",
+        "Original unpowered continuity and connector-orientation record for restoration.",
+        "Clear physical segregation from polarized CL57T P4 power wiring."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-X",
+      "from_device": "36V motion distribution",
+      "from_terminal": "X fused branch",
+      "to_device": "CL57T X",
+      "to_terminal": "P4 +VDC/GND",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute",
+      "source_record": 3,
+      "axis": "X",
+      "family": "power",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "PWR-36-X",
+        "to": "PWR-36-X"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the proposed X star branch to that drive's marked P4 +VDC/GND pair; record polarity from markings, not wire color.",
+      "missing_evidence": [
+        "Actual X drive identity and photographed polarized P4 mating view.",
+        "Unpowered end-to-end continuity, route length and reviewed protection for the X branch.",
+        "Reviewed supply/load design and measured ripple/regeneration peak; no higher-voltage upgrade is qualified."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-YL-DM860T",
+      "from_device": "36V motion distribution",
+      "from_terminal": "YL fused branch",
+      "to_device": "DM860T Y-left",
+      "to_terminal": "AC/AC",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "ROLLBACK-ONLY",
+      "notes": "DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T",
+      "source_record": 4,
+      "axis": "YL",
+      "family": "power",
+      "disposition": "rollback",
+      "disposition_reason": "Original DM860T preservation record; excluded from the active CL57T wiring list.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "PWR-36-YL-DM860T",
+        "to": "PWR-36-YL-DM860T"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock Y-left DM860T cable as a separate rollback item; do not include it in the CL57T route.",
+      "missing_evidence": [
+        "Photographed identity of the stock Y-left DM860T and its original harness.",
+        "Original unpowered continuity and connector-orientation record for restoration.",
+        "Clear physical segregation from polarized CL57T P4 power wiring."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-YL",
+      "from_device": "36V motion distribution",
+      "from_terminal": "YL fused branch",
+      "to_device": "CL57T Y-left",
+      "to_terminal": "P4 +VDC/GND",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute",
+      "source_record": 5,
+      "axis": "YL",
+      "family": "power",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "PWR-36-YL",
+        "to": "PWR-36-YL"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the proposed Y-left star branch to that drive's marked P4 +VDC/GND pair; record polarity from markings, not wire color.",
+      "missing_evidence": [
+        "Actual Y-left drive identity and photographed polarized P4 mating view.",
+        "Unpowered end-to-end continuity, route length and reviewed protection for the Y-left branch.",
+        "Reviewed supply/load design and measured ripple/regeneration peak; no higher-voltage upgrade is qualified."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-Z-DM860T",
+      "from_device": "36V motion distribution",
+      "from_terminal": "Z fused branch",
+      "to_device": "DM860T Z",
+      "to_terminal": "AC/AC",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "ROLLBACK-ONLY",
+      "notes": "DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T",
+      "source_record": 6,
+      "axis": "Z",
+      "family": "power",
+      "disposition": "rollback",
+      "disposition_reason": "Original DM860T preservation record; excluded from the active CL57T wiring list.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "PWR-36-Z-DM860T",
+        "to": "PWR-36-Z-DM860T"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock Z DM860T cable as a separate rollback item; do not include it in the CL57T route.",
+      "missing_evidence": [
+        "Photographed identity of the stock Z DM860T and its original harness.",
+        "Original unpowered continuity and connector-orientation record for restoration.",
+        "Clear physical segregation from polarized CL57T P4 power wiring."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-Z",
+      "from_device": "36V motion distribution",
+      "from_terminal": "Z fused branch",
+      "to_device": "CL57T Z",
+      "to_terminal": "P4 +VDC/GND",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute",
+      "source_record": 7,
+      "axis": "Z",
+      "family": "power",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "PWR-36-Z",
+        "to": "PWR-36-Z"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the proposed Z star branch to that drive's marked P4 +VDC/GND pair; record polarity from markings, not wire color.",
+      "missing_evidence": [
+        "Actual Z drive identity and photographed polarized P4 mating view.",
+        "Unpowered end-to-end continuity, route length and reviewed protection for the Z branch.",
+        "Reviewed supply/load design and measured ripple/regeneration peak; no higher-voltage upgrade is qualified."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-YR-DM860T",
+      "from_device": "36V motion distribution",
+      "from_terminal": "YR fused branch",
+      "to_device": "DM860T Y-right",
+      "to_terminal": "AC/AC",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "ROLLBACK-ONLY",
+      "notes": "DM860T rollback set only; AC/AC is no-polarity. NEVER apply to a CL57T",
+      "source_record": 8,
+      "axis": "YR",
+      "family": "power",
+      "disposition": "rollback",
+      "disposition_reason": "Original DM860T preservation record; excluded from the active CL57T wiring list.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "PWR-36-YR-DM860T",
+        "to": "PWR-36-YR-DM860T"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock Y-right DM860T cable as a separate rollback item; do not include it in the CL57T route.",
+      "missing_evidence": [
+        "Photographed identity of the stock Y-right DM860T and its original harness.",
+        "Original unpowered continuity and connector-orientation record for restoration.",
+        "Clear physical segregation from polarized CL57T P4 power wiring."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-36-YR",
+      "from_device": "36V motion distribution",
+      "from_terminal": "YR fused branch",
+      "to_device": "CL57T Y-right",
+      "to_terminal": "P4 +VDC/GND",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "POLARIZED: +VDC to supply positive, GND to negative. Star branch; no daisy chain. Bus max 50VDC absolute",
+      "source_record": 9,
+      "axis": "YR",
+      "family": "power",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "PWR-36-YR",
+        "to": "PWR-36-YR"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the proposed Y-right star branch to that drive's marked P4 +VDC/GND pair; record polarity from markings, not wire color.",
+      "missing_evidence": [
+        "Actual Y-right drive identity and photographed polarized P4 mating view.",
+        "Unpowered end-to-end continuity, route length and reviewed protection for the Y-right branch.",
+        "Reviewed supply/load design and measured ripple/regeneration peak; no higher-voltage upgrade is qualified."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PWR-5I-HOME",
+      "from_device": "24V control distribution",
+      "from_terminal": "fused branch",
+      "to_device": "isolated 5V home supply",
+      "to_terminal": "+24V/0V",
+      "cable_class": "power pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Candidate isolated home field supply only. Actual home voltage/current and module circuit unverified; do not assume module output takes no supply. Follow INTERFACE_BOARD.md A2; keep field separate from logic/probe domains.",
+      "source_record": 10,
+      "axis": "shared",
+      "family": "power",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "PWR-5I-HOME",
+        "to": "PWR-5I-HOME"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Locate the proposed home-field supply route; leave its module connections undefined until the actual home circuits are traced.",
+      "missing_evidence": [
+        "Actual stock home supply voltage/current and return arrangement.",
+        "Actual isolated supply and conditioner schematic, terminal map and supply-domain separation.",
+        "All four home-channel combinations and either-side-unpowered behavior; no generic floating-VCC recipe."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "CMD-X",
+      "from_device": "MR1 interface",
+      "from_terminal": "JX",
+      "to_device": "CL57T X",
+      "to_terminal": "P1 PUL+/PUL-/DIR+/DIR-",
+      "cable_class": "2 shielded twisted pairs",
+      "shield_termination": "360deg cabinet clamp",
+      "state": "TBD",
+      "notes": "Octopus MOTOR0 PF13/PF12/PF14. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler",
+      "source_record": 11,
+      "axis": "X",
+      "family": "command",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "CMD-X",
+        "to": "CMD-X"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [
+        "JX"
+      ],
+      "trace_task": "Identify the X PUL/DIR route and drive P1 markings; locate the planned interface endpoint without assigning it a physical cavity.",
+      "missing_evidence": [
+        "Actual X socket/adapter fit, mating view and signal continuity; schematic contact IDs are not a physical pin-counting view.",
+        "Released interface terminal map for JX; the J-name is a planned interface name.",
+        "Photographed X S3 command-level selection and loaded PUL/DIR current, pulse and direction-setup captures.",
+        "Confirmed ENA left unconnected and separate hardware stop; no enable safety function is credited."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "CMD-YL",
+      "from_device": "MR1 interface",
+      "from_terminal": "JYL",
+      "to_device": "CL57T Y-left",
+      "to_terminal": "P1 PUL+/PUL-/DIR+/DIR-",
+      "cable_class": "2 shielded twisted pairs",
+      "shield_termination": "360deg cabinet clamp",
+      "state": "TBD",
+      "notes": "Octopus MOTOR1 PG0/PG1/PF15. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler",
+      "source_record": 12,
+      "axis": "YL",
+      "family": "command",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "CMD-YL",
+        "to": "CMD-YL"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [
+        "JYL"
+      ],
+      "trace_task": "Identify the Y-left PUL/DIR route and drive P1 markings; locate the planned interface endpoint without assigning it a physical cavity.",
+      "missing_evidence": [
+        "Actual Y-left socket/adapter fit, mating view and signal continuity; schematic contact IDs are not a physical pin-counting view.",
+        "Released interface terminal map for JYL; the J-name is a planned interface name.",
+        "Photographed Y-left S3 command-level selection and loaded PUL/DIR current, pulse and direction-setup captures.",
+        "Confirmed ENA left unconnected and separate hardware stop; no enable safety function is credited."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "CMD-Z",
+      "from_device": "MR1 interface",
+      "from_terminal": "JZ",
+      "to_device": "CL57T Z",
+      "to_terminal": "P1 PUL+/PUL-/DIR+/DIR-",
+      "cable_class": "2 shielded twisted pairs",
+      "shield_termination": "360deg cabinet clamp",
+      "state": "TBD",
+      "notes": "Octopus MOTOR2 PF11/PG3/PG5. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler",
+      "source_record": 13,
+      "axis": "Z",
+      "family": "command",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "CMD-Z",
+        "to": "CMD-Z"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [
+        "JZ"
+      ],
+      "trace_task": "Identify the Z PUL/DIR route and drive P1 markings; locate the planned interface endpoint without assigning it a physical cavity.",
+      "missing_evidence": [
+        "Actual Z socket/adapter fit, mating view and signal continuity; schematic contact IDs are not a physical pin-counting view.",
+        "Released interface terminal map for JZ; the J-name is a planned interface name.",
+        "Photographed Z S3 command-level selection and loaded PUL/DIR current, pulse and direction-setup captures.",
+        "Confirmed ENA left unconnected and separate hardware stop; no enable safety function is credited."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "CMD-YR",
+      "from_device": "MR1 interface",
+      "from_terminal": "JYR",
+      "to_device": "CL57T Y-right",
+      "to_terminal": "P1 PUL+/PUL-/DIR+/DIR-",
+      "cable_class": "2 shielded twisted pairs",
+      "shield_termination": "360deg cabinet clamp",
+      "state": "TBD",
+      "notes": "Octopus MOTOR3 PG4/PC1/PA2 v1.1. ENA unconnected - CL57T default. S3 MUST be 5V; 24V into a 5V-set input destroys the photocoupler",
+      "source_record": 14,
+      "axis": "YR",
+      "family": "command",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "CMD-YR",
+        "to": "CMD-YR"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [
+        "JYR"
+      ],
+      "trace_task": "Identify the Y-right PUL/DIR route and drive P1 markings; locate the planned interface endpoint without assigning it a physical cavity.",
+      "missing_evidence": [
+        "Actual Y-right socket/adapter fit, mating view and signal continuity; schematic contact IDs are not a physical pin-counting view.",
+        "Released interface terminal map for JYR; the J-name is a planned interface name.",
+        "Photographed Y-right S3 command-level selection and loaded PUL/DIR current, pulse and direction-setup captures.",
+        "Confirmed ENA left unconnected and separate hardware stop; no enable safety function is credited."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "MOT-X",
+      "from_device": "CL57T X",
+      "from_terminal": "P3 A+/A-/B+/B-",
+      "to_device": "X CL57T motor",
+      "to_terminal": "GX16 motor lead",
+      "cable_class": "kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",
+      "shield_termination": "360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run",
+      "source_record": 15,
+      "axis": "X",
+      "family": "motor",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "MOT-X",
+        "to": "MOT-X"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Match the X motor lead to the same-axis drive P3; trace the isolated factory cable without treating colors as phase identities.",
+      "missing_evidence": [
+        "Matching X motor/drive labels and actual P3/GX16 connector views.",
+        "Unpowered phase-pair continuity and terminal-to-terminal mapping; no assumed GX16 cavities.",
+        "Measured route length, flex/strain relief and shield plan; preserve moulded ends.",
+        "Verified motor/encoder pairing, secure mechanical restraint and supported gravity-loaded Z before any separate bench qualification."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "MOT-YL",
+      "from_device": "CL57T Y-left",
+      "from_terminal": "P3 A+/A-/B+/B-",
+      "to_device": "Y-left CL57T motor",
+      "to_terminal": "GX16 motor lead",
+      "cable_class": "kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",
+      "shield_termination": "360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run",
+      "source_record": 16,
+      "axis": "YL",
+      "family": "motor",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "MOT-YL",
+        "to": "MOT-YL"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Match the Y-left motor lead to the same-axis drive P3; trace the isolated factory cable without treating colors as phase identities.",
+      "missing_evidence": [
+        "Matching Y-left motor/drive labels and actual P3/GX16 connector views.",
+        "Unpowered phase-pair continuity and terminal-to-terminal mapping; no assumed GX16 cavities.",
+        "Measured route length, flex/strain relief and shield plan; preserve moulded ends.",
+        "Verified motor/encoder pairing, secure mechanical restraint and supported gravity-loaded Z before any separate bench qualification."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "MOT-Z",
+      "from_device": "CL57T Z",
+      "from_terminal": "P3 A+/A-/B+/B-",
+      "to_device": "Z CL57T motor",
+      "to_terminal": "GX16 motor lead",
+      "cable_class": "kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",
+      "shield_termination": "360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run",
+      "source_record": 17,
+      "axis": "Z",
+      "family": "motor",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "MOT-Z",
+        "to": "MOT-Z"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Match the Z motor lead to the same-axis drive P3; trace the isolated factory cable without treating colors as phase identities.",
+      "missing_evidence": [
+        "Matching Z motor/drive labels and actual P3/GX16 connector views.",
+        "Unpowered phase-pair continuity and terminal-to-terminal mapping; no assumed GX16 cavities.",
+        "Measured route length, flex/strain relief and shield plan; preserve moulded ends.",
+        "Verified motor/encoder pairing, secure mechanical restraint and supported gravity-loaded Z before any separate bench qualification."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "MOT-YR",
+      "from_device": "CL57T Y-right",
+      "from_terminal": "P3 A+/A-/B+/B-",
+      "to_device": "Y-right CL57T motor",
+      "to_terminal": "GX16 motor lead",
+      "cable_class": "kit motor extension 1.7 m moulded, or terminated shielded cable if run exceeds it",
+      "shield_termination": "360-deg bond at cabinet entry; moulded ends cannot be cut - see PIGTAIL_SCHEDULE.md",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. Never use color as phase truth; do not hot plug; keep clear of encoder run",
+      "source_record": 18,
+      "axis": "YR",
+      "family": "motor",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "MOT-YR",
+        "to": "MOT-YR"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Match the Y-right motor lead to the same-axis drive P3; trace the isolated factory cable without treating colors as phase identities.",
+      "missing_evidence": [
+        "Matching Y-right motor/drive labels and actual P3/GX16 connector views.",
+        "Unpowered phase-pair continuity and terminal-to-terminal mapping; no assumed GX16 cavities.",
+        "Measured route length, flex/strain relief and shield plan; preserve moulded ends.",
+        "Verified motor/encoder pairing, secure mechanical restraint and supported gravity-loaded Z before any separate bench qualification."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ENC-X",
+      "from_device": "CL57T X motor",
+      "from_terminal": "encoder",
+      "to_device": "CL57T X",
+      "to_terminal": "encoder input",
+      "cable_class": "kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",
+      "shield_termination": "per kit cable",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases",
+      "source_record": 19,
+      "axis": "X",
+      "family": "encoder",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ENC-X",
+        "to": "ENC-X"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the matched X encoder harness back to the same drive; keep its route distinct from the motor-phase cable.",
+      "missing_evidence": [
+        "Matched X kit/harness identity and actual connector orientation/continuity.",
+        "Verified EA/EB pair and VCC/EGND identities; P2 VCC is drive-supplied, not an external field-power input.",
+        "Measured route length and qualified extension/shield arrangement; no color or DB9 assumption."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ENC-YL",
+      "from_device": "CL57T Y-left motor",
+      "from_terminal": "encoder",
+      "to_device": "CL57T Y-left",
+      "to_terminal": "encoder input",
+      "cable_class": "kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",
+      "shield_termination": "per kit cable",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases",
+      "source_record": 20,
+      "axis": "YL",
+      "family": "encoder",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ENC-YL",
+        "to": "ENC-YL"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the matched Y-left encoder harness back to the same drive; keep its route distinct from the motor-phase cable.",
+      "missing_evidence": [
+        "Matched Y-left kit/harness identity and actual connector orientation/continuity.",
+        "Verified EA/EB pair and VCC/EGND identities; P2 VCC is drive-supplied, not an external field-power input.",
+        "Measured route length and qualified extension/shield arrangement; no color or DB9 assumption."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ENC-Z",
+      "from_device": "CL57T Z motor",
+      "from_terminal": "encoder",
+      "to_device": "CL57T Z",
+      "to_terminal": "encoder input",
+      "cable_class": "kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",
+      "shield_termination": "per kit cable",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases",
+      "source_record": 21,
+      "axis": "Z",
+      "family": "encoder",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ENC-Z",
+        "to": "ENC-Z"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the matched Z encoder harness back to the same drive; keep its route distinct from the motor-phase cable.",
+      "missing_evidence": [
+        "Matched Z kit/harness identity and actual connector orientation/continuity.",
+        "Verified EA/EB pair and VCC/EGND identities; P2 VCC is drive-supplied, not an external field-power input.",
+        "Measured route length and qualified extension/shield arrangement; no color or DB9 assumption."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ENC-YR",
+      "from_device": "CL57T Y-right motor",
+      "from_terminal": "encoder",
+      "to_device": "CL57T Y-right",
+      "to_terminal": "encoder input",
+      "cable_class": "kit encoder extension 1.7 m moulded, or shielded twisted pair if run exceeds it",
+      "shield_termination": "per kit cable",
+      "state": "TBD",
+      "notes": "RUN LENGTH NOT YET MEASURED. P2 encoder: EA+/EA-/EB+/EB-/VCC/EGND. VCC is drive-supplied 5V - do not feed from field supply. Keep separate from motor phases",
+      "source_record": 22,
+      "axis": "YR",
+      "family": "encoder",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ENC-YR",
+        "to": "ENC-YR"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the matched Y-right encoder harness back to the same drive; keep its route distinct from the motor-phase cable.",
+      "missing_evidence": [
+        "Matched Y-right kit/harness identity and actual connector orientation/continuity.",
+        "Verified EA/EB pair and VCC/EGND identities; P2 VCC is drive-supplied, not an external field-power input.",
+        "Measured route length and qualified extension/shield arrangement; no color or DB9 assumption."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ALM-X",
+      "from_device": "CL57T X",
+      "from_terminal": "P1 ALM/COMO",
+      "to_device": "MR1 interface",
+      "to_terminal": "JFX",
+      "cable_class": "shielded pair/field logic",
+      "shield_termination": "one planned field termination",
+      "state": "HOLD",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG12 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "source_record": 23,
+      "axis": "X",
+      "family": "fault",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ALM-X",
+        "to": "ALM-X"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "JFX"
+      ],
+      "trace_task": "Trace only the X ALM/COMO pair to its own planned isolated conditioner; identify JFX as an interface name, not a proved pinout.",
+      "missing_evidence": [
+        "Actual X alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
+        "Released per-channel current-limited isolation circuit and real terminal map.",
+        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ALM-YL",
+      "from_device": "CL57T Y-left",
+      "from_terminal": "P1 ALM/COMO",
+      "to_device": "MR1 interface",
+      "to_terminal": "JFYL",
+      "cable_class": "shielded pair/field logic",
+      "shield_termination": "one planned field termination",
+      "state": "HOLD",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG13 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "source_record": 24,
+      "axis": "YL",
+      "family": "fault",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ALM-YL",
+        "to": "ALM-YL"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "JFYL"
+      ],
+      "trace_task": "Trace only the Y-left ALM/COMO pair to its own planned isolated conditioner; identify JFYL as an interface name, not a proved pinout.",
+      "missing_evidence": [
+        "Actual Y-left alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
+        "Released per-channel current-limited isolation circuit and real terminal map.",
+        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ALM-Z",
+      "from_device": "CL57T Z",
+      "from_terminal": "P1 ALM/COMO",
+      "to_device": "MR1 interface",
+      "to_terminal": "JFZ",
+      "cable_class": "shielded pair/field logic",
+      "shield_termination": "one planned field termination",
+      "state": "HOLD",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG14 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "source_record": 25,
+      "axis": "Z",
+      "family": "fault",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ALM-Z",
+        "to": "ALM-Z"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "JFZ"
+      ],
+      "trace_task": "Trace only the Z ALM/COMO pair to its own planned isolated conditioner; identify JFZ as an interface name, not a proved pinout.",
+      "missing_evidence": [
+        "Actual Z alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
+        "Released per-channel current-limited isolation circuit and real terminal map.",
+        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "ALM-YR",
+      "from_device": "CL57T Y-right",
+      "from_terminal": "P1 ALM/COMO",
+      "to_device": "MR1 interface",
+      "to_terminal": "JFYR",
+      "cable_class": "shielded pair/field logic",
+      "shield_termination": "one planned field termination",
+      "state": "HOLD",
+      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate; PG15 is separate indication only. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "source_record": 26,
+      "axis": "YR",
+      "family": "fault",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "ALM-YR",
+        "to": "ALM-YR"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "JFYR"
+      ],
+      "trace_task": "Trace only the Y-right ALM/COMO pair to its own planned isolated conditioner; identify JFYR as an interface name, not a proved pinout.",
+      "missing_evidence": [
+        "Actual Y-right alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
+        "Released per-channel current-limited isolation circuit and real terminal map.",
+        "Proved conditioned healthy-output supervision into PB1, with separate diagnostic indication; no series chain of raw alarm terminals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-FIELD-X",
+      "from_device": "Stock X home harness",
+      "from_terminal": "UNRESOLVED signal conductor",
+      "to_device": "Unqualified home conditioner candidate",
+      "to_terminal": "UNRESOLVED field input",
+      "cable_class": "stock harness",
+      "shield_termination": "verify after trace",
+      "state": "HOLD",
+      "notes": "Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2.",
+      "source_record": 27,
+      "axis": "X",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-FIELD-X",
+        "to": "HOME-FIELD-X"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "unresolved"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock X home harness; trace supply, return and independent signal before assigning any candidate-module terminal.",
+      "missing_evidence": [
+        "Actual X switch/sensor type and isolated conductor continuity map.",
+        "Measured stock supply and signal behavior; conductor color/count is not proof.",
+        "Traced candidate conditioner circuit, part values and supply domains; independent Y-left/Y-right signals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-FIELD-YL",
+      "from_device": "Stock Y-left home harness",
+      "from_terminal": "UNRESOLVED signal conductor",
+      "to_device": "Unqualified home conditioner candidate",
+      "to_terminal": "UNRESOLVED field input",
+      "cable_class": "stock harness",
+      "shield_termination": "verify after trace",
+      "state": "HOLD",
+      "notes": "Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2.",
+      "source_record": 28,
+      "axis": "YL",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-FIELD-YL",
+        "to": "HOME-FIELD-YL"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "unresolved"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock Y-left home harness; trace supply, return and independent signal before assigning any candidate-module terminal.",
+      "missing_evidence": [
+        "Actual Y-left switch/sensor type and isolated conductor continuity map.",
+        "Measured stock supply and signal behavior; conductor color/count is not proof.",
+        "Traced candidate conditioner circuit, part values and supply domains; independent Y-left/Y-right signals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-FIELD-Z",
+      "from_device": "Stock Z home harness",
+      "from_terminal": "UNRESOLVED signal conductor",
+      "to_device": "Unqualified home conditioner candidate",
+      "to_terminal": "UNRESOLVED field input",
+      "cable_class": "stock harness",
+      "shield_termination": "verify after trace",
+      "state": "HOLD",
+      "notes": "Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2.",
+      "source_record": 29,
+      "axis": "Z",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-FIELD-Z",
+        "to": "HOME-FIELD-Z"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "unresolved"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock Z home harness; trace supply, return and independent signal before assigning any candidate-module terminal.",
+      "missing_evidence": [
+        "Actual Z switch/sensor type and isolated conductor continuity map.",
+        "Measured stock supply and signal behavior; conductor color/count is not proof.",
+        "Traced candidate conditioner circuit, part values and supply domains; independent Y-left/Y-right signals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-FIELD-YR",
+      "from_device": "Stock Y-right home harness",
+      "from_terminal": "UNRESOLVED signal conductor",
+      "to_device": "Unqualified home conditioner candidate",
+      "to_terminal": "UNRESOLVED field input",
+      "cable_class": "stock harness",
+      "shield_termination": "verify after trace",
+      "state": "HOLD",
+      "notes": "Trace actual stock supply/return/independent signal and actual module circuit before defining terminals. No color, VCC or input-polarity assumptions. Preserve harness; no stock 5V on Octopus GPIO. Qualification: INTERFACE_BOARD.md A2.",
+      "source_record": 30,
+      "axis": "YR",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-FIELD-YR",
+        "to": "HOME-FIELD-YR"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "unresolved"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify and preserve the stock Y-right home harness; trace supply, return and independent signal before assigning any candidate-module terminal.",
+      "missing_evidence": [
+        "Actual Y-right switch/sensor type and isolated conductor continuity map.",
+        "Measured stock supply and signal behavior; conductor color/count is not proof.",
+        "Traced candidate conditioner circuit, part values and supply domains; independent Y-left/Y-right signals."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-LOGIC-X",
+      "from_device": "Unqualified home conditioner candidate",
+      "from_terminal": "UNRESOLVED qualified output plus logic return",
+      "to_device": "Octopus Pro",
+      "to_terminal": "STOP0 PG6/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2.",
+      "source_record": 31,
+      "axis": "X",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-LOGIC-X",
+        "to": "HOME-LOGIC-X"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Locate the intended STOP0 PG6/GND signal/return by reference and board continuity; leave the candidate conditioner output unresolved.",
+      "missing_evidence": [
+        "Actual board revision, keying and mating-side continuity; STOP 5V cavity remains empty.",
+        "Released conditioner output/return map for the X channel.",
+        "Healthy-low and trigger/open/power-loss-high behavior, all 16 input combinations and either side unpowered."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-LOGIC-YL",
+      "from_device": "Unqualified home conditioner candidate",
+      "from_terminal": "UNRESOLVED qualified output plus logic return",
+      "to_device": "Octopus Pro",
+      "to_terminal": "STOP1 PG9/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2.",
+      "source_record": 32,
+      "axis": "YL",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-LOGIC-YL",
+        "to": "HOME-LOGIC-YL"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Locate the intended STOP1 PG9/GND signal/return by reference and board continuity; leave the candidate conditioner output unresolved.",
+      "missing_evidence": [
+        "Actual board revision, keying and mating-side continuity; STOP 5V cavity remains empty.",
+        "Released conditioner output/return map for the Y-left channel.",
+        "Healthy-low and trigger/open/power-loss-high behavior, all 16 input combinations and either side unpowered."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-LOGIC-Z",
+      "from_device": "Unqualified home conditioner candidate",
+      "from_terminal": "UNRESOLVED qualified output plus logic return",
+      "to_device": "Octopus Pro",
+      "to_terminal": "STOP2 PG10/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2.",
+      "source_record": 33,
+      "axis": "Z",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-LOGIC-Z",
+        "to": "HOME-LOGIC-Z"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Locate the intended STOP2 PG10/GND signal/return by reference and board continuity; leave the candidate conditioner output unresolved.",
+      "missing_evidence": [
+        "Actual board revision, keying and mating-side continuity; STOP 5V cavity remains empty.",
+        "Released conditioner output/return map for the Z channel.",
+        "Healthy-low and trigger/open/power-loss-high behavior, all 16 input combinations and either side unpowered."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOME-LOGIC-YR",
+      "from_device": "Unqualified home conditioner candidate",
+      "from_terminal": "UNRESOLVED qualified output plus logic return",
+      "to_device": "Octopus Pro",
+      "to_terminal": "STOP3 PG11/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Intended GPIO destination only, actual conditioner wiring unreleased. STOP 5V cavity empty. No generic floating-VCC recipe: shared pullups may couple channels. Prove healthy low / trigger-open-powerloss high and cross-channel independence per INTERFACE_BOARD.md A2.",
+      "source_record": 34,
+      "axis": "YR",
+      "family": "home",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOME-LOGIC-YR",
+        "to": "HOME-LOGIC-YR"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Locate the intended STOP3 PG11/GND signal/return by reference and board continuity; leave the candidate conditioner output unresolved.",
+      "missing_evidence": [
+        "Actual board revision, keying and mating-side continuity; STOP 5V cavity remains empty.",
+        "Released conditioner output/return map for the Y-right channel.",
+        "Healthy-low and trigger/open/power-loss-high behavior, all 16 input combinations and either side unpowered."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "PROBE-01",
+      "from_device": "MR-1 touch probe",
+      "from_terminal": "V+/SIG/0V",
+      "to_device": "MR1 interface",
+      "to_terminal": "JP ISO5V/SIG/ISO0V",
+      "cable_class": "flexible shielded 3-core",
+      "shield_termination": "shield to cabinet only",
+      "state": "HOLD",
+      "notes": "Meter actual sensor before power; controller PF5",
+      "source_record": 35,
+      "axis": "shared",
+      "family": "probe",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "PROBE-01",
+        "to": "PROBE-01"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "JP ISO5V/SIG/ISO0V"
+      ],
+      "trace_task": "Identify the actual touch probe / PF5 sensor harness and planned interface endpoint; trace the unpowered cable before assigning V+/SIG/0V.",
+      "missing_evidence": [
+        "Actual sensor label, voltage/type, connector orientation and conductor continuity.",
+        "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
+        "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+        "Verified destination signal/return at T1 PF5; no field voltage on the GPIO."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "TOOL-01",
+      "from_device": "MR-1 tool setter",
+      "from_terminal": "V+/SIG/0V",
+      "to_device": "MR1 interface",
+      "to_terminal": "JT ISO5V/SIG/ISO0V",
+      "cable_class": "flexible shielded 3-core",
+      "shield_termination": "shield to cabinet only",
+      "state": "HOLD",
+      "notes": "Meter actual sensor before power; controller PB7",
+      "source_record": 36,
+      "axis": "shared",
+      "family": "probe",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "TOOL-01",
+        "to": "TOOL-01"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "JT ISO5V/SIG/ISO0V"
+      ],
+      "trace_task": "Identify the actual tool setter / PB7 sensor harness and planned interface endpoint; trace the unpowered cable before assigning V+/SIG/0V.",
+      "missing_evidence": [
+        "Actual sensor label, voltage/type, connector orientation and conductor continuity.",
+        "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
+        "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+        "Verified destination signal/return: PB7 uses adjacent proved GND, with PB6 and 5V unpopulated."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SAFE-MON",
+      "from_device": "Safety relay",
+      "from_terminal": "NC auxiliary contact",
+      "to_device": "Octopus Pro",
+      "to_terminal": "TB PF3/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "Monitor only; never route safety channels through Octopus",
+      "source_record": 37,
+      "axis": "shared",
+      "family": "controls",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "SAFE-MON",
+        "to": "SAFE-MON"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the isolated Safety relay contact pair to the intended TB PF3/GND reference; verify contact identity before termination.",
+      "missing_evidence": [
+        "Actual safety-relay auxiliary-contact identity and isolated NC continuity.",
+        "Verified TB PF3/GND orientation and monitor-only separation from safety channels.",
+        "Independent reviewed energy-removal/restart-prevention design; monitor continuity is not a safety-system test."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "DOOR-MON",
+      "from_device": "Door switch",
+      "from_terminal": "NC monitor contact",
+      "to_device": "Octopus Pro",
+      "to_terminal": "PWR-DET PC0/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "Do not connect adjacent 3V3",
+      "source_record": 38,
+      "axis": "shared",
+      "family": "controls",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "DOOR-MON",
+        "to": "DOOR-MON"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the isolated Door switch contact pair to the intended PWR-DET PC0/GND reference; verify contact identity before termination.",
+      "missing_evidence": [
+        "Actual door-monitor NC contact and open/closed continuity.",
+        "Verified PWR-DET PC0/GND mating view; adjacent 3V3 left unconnected.",
+        "Documented separation of monitor behavior from the physical guard/safety design."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "HOLD-01",
+      "from_device": "Feed-hold button",
+      "from_terminal": "NC contact",
+      "to_device": "Octopus Pro",
+      "to_terminal": "T0 PF4/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "Software control only",
+      "source_record": 39,
+      "axis": "shared",
+      "family": "controls",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "HOLD-01",
+        "to": "HOLD-01"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the isolated Feed-hold button contact pair to the intended T0 PF4/GND reference; verify contact identity before termination.",
+      "missing_evidence": [
+        "Actual feed-hold NC contact and button continuity.",
+        "Verified T0 PF4/GND orientation and return path.",
+        "Recorded software-hold behavior; this button is not credited as hazardous-energy isolation."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "START-01",
+      "from_device": "Guarded cycle-start",
+      "from_terminal": "NO contact",
+      "to_device": "Octopus Pro",
+      "to_terminal": "EXP2 PB2/GND",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "TBD",
+      "notes": "Only NO operator input",
+      "source_record": 40,
+      "axis": "shared",
+      "family": "controls",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "START-01",
+        "to": "START-01"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Trace the isolated Guarded cycle-start contact pair to the intended EXP2 PB2/GND reference; verify contact identity before termination.",
+      "missing_evidence": [
+        "Actual guarded cycle-start NO contact and button continuity.",
+        "Verified EXP2 PB2/GND mating view and independent return path.",
+        "Documented prevention of unintended starts and manual restart after faults."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "FAULT-AGG",
+      "from_device": "Fault conditioner",
+      "from_terminal": "healthy-low output",
+      "to_device": "Octopus Pro",
+      "to_terminal": "EXP2 PB1/GND",
+      "cable_class": "shielded pair",
+      "shield_termination": "one planned field termination",
+      "state": "HOLD",
+      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PG12-PG15 indication alone cannot stop motion.",
+      "source_record": 41,
+      "axis": "shared",
+      "family": "fault",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "FAULT-AGG",
+        "to": "FAULT-AGG"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Locate the planned supervised aggregate and intended EXP2 PB1/GND route; keep every raw field alarm off that GPIO pair.",
+      "missing_evidence": [
+        "Released aggregate circuit and actual connector orientation/return continuity.",
+        "All four independently conditioned drive healthy channels plus required cabinet/spindle fault sources.",
+        "Measured healthy-low / fault-open-powerloss-high behavior; healthy-open outputs require added supervision.",
+        "Physical PB1 stopping proof; PG12-PG15 indication alone is not stop protection."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-PWM",
+      "from_device": "Octopus Pro",
+      "from_terminal": "FAN0 positive / PA8 switched negative",
+      "to_device": "MR1 interface",
+      "to_terminal": "SPINDLE_PWM_24",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "FAN0 positive is jumper-selected 5V/12V/VIN; actual selection/load rating unverified. Two-wire input across positive and switched negative; never bond negative to logic GND. Converter/servo remain HOLD.",
+      "source_record": 42,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "SP-PWM",
+        "to": "SP-PWM"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "SPINDLE_PWM_24"
+      ],
+      "trace_task": "Identify both FAN0 conductors as positive and PA8 switched negative; trace the planned converter pair without grounding its switched return.",
+      "missing_evidence": [
+        "Actual FAN0 voltage-selection jumper and measured rail; 24V is not assumed.",
+        "Qualified converter input circuit/load rating, isolation and off/PWM/startup behavior.",
+        "Installed servo identity, actual DB44 mapping and unresolved command-voltage/RPM scaling."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-ANALOG",
+      "from_device": "MR1 interface",
+      "from_terminal": "0-5V/ANALOG_COM",
+      "to_device": "MR-1 servo DB44",
+      "to_terminal": "community pins 26/10",
+      "cable_class": "shielded analog pair",
+      "shield_termination": "per verified servo design",
+      "state": "HOLD",
+      "notes": "Continuity-map actual DB44 first",
+      "source_record": 43,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "SP-ANALOG",
+        "to": "SP-ANALOG"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "community-reference"
+      },
+      "planned_interface_names": [
+        "0-5V/ANALOG_COM"
+      ],
+      "trace_task": "Identify the candidate analog pair and archive the stock DB44 harness; treat community pins 26/10 only as references pending continuity.",
+      "missing_evidence": [
+        "Installed servo model, motor label and complete parameter archive.",
+        "Actual DB44 connector viewing side, keying and end-to-end mapping; community pins are not installed-drive proof.",
+        "Resolved 0-5V versus servo full-scale gain, verified analog common/isolation and measured RPM."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-ENABLE",
+      "from_device": "MR1 interface",
+      "from_terminal": "dry relay contact",
+      "to_device": "MR-1 servo DB44",
+      "to_terminal": "community pin 16 and verified return",
+      "cable_class": "shielded pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Series with hardwired spindle permit",
+      "source_record": 44,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "SP-ENABLE",
+        "to": "SP-ENABLE"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "community-reference"
+      },
+      "planned_interface_names": [
+        "dry relay contact"
+      ],
+      "trace_task": "Identify the proposed dry-contact route and preserve the stock servo harness; leave community pin 16/return unassigned pending the actual map.",
+      "missing_evidence": [
+        "Installed servo enable function, exact return and DB44 continuity/orientation.",
+        "Qualified contact interface and hardwired spindle-permit design.",
+        "Verified startup, loss-of-power, stop and restart behavior; no software-only permit."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-ALARM",
+      "from_device": "MR-1 servo DB44",
+      "from_terminal": "community pin 5/return",
+      "to_device": "MR1 interface",
+      "to_terminal": "aggregate-fault input",
+      "cable_class": "shielded pair",
+      "shield_termination": "one planned field termination",
+      "state": "HOLD",
+      "notes": "Optional only after servo alarm is verified",
+      "source_record": 45,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "SP-ALARM",
+        "to": "SP-ALARM"
+      },
+      "endpoint_status": {
+        "from": "community-reference",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "aggregate-fault input"
+      ],
+      "trace_task": "Trace the preserved servo harness for the candidate alarm pair without treating community pin 5 as confirmed.",
+      "missing_evidence": [
+        "Installed servo alarm assignment, polarity and exact return from its parameter archive.",
+        "Actual DB44 orientation/continuity and measured healthy/fault/open/power-loss states.",
+        "Qualified isolated conditioner and reviewed aggregate-fault inclusion."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-RS485-LOGIC",
+      "from_device": "Octopus Pro",
+      "from_terminal": "candidate USART2 PD5/PD6",
+      "to_device": "Spindle supervision interface",
+      "to_terminal": "isolated UART side",
+      "cable_class": "short logic pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "MODBUS_ENABLE=0; do not connect before approved MCU/drive profile",
+      "source_record": 46,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "reserved",
+      "disposition_reason": "Future digital spindle path; MODBUS_ENABLE=0 and no approved MCU/drive profile.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "SP-RS485-LOGIC",
+        "to": "SP-RS485-LOGIC"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Approved MCU pin/alternate-function conflict audit and production plugin/profile.",
+        "Actual isolated UART interface terminal map and supply-domain qualification."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-RS485-FIELD",
+      "from_device": "Spindle supervision interface",
+      "from_terminal": "isolated RS485 A/B",
+      "to_device": "MR-1 servo drive",
+      "to_terminal": "verified RS485 connector/pins",
+      "cable_class": "shielded twisted pair",
+      "shield_termination": "verified cabinet termination",
+      "state": "HOLD",
+      "notes": "Generic CN1 40/41/42 reference is not installed-drive proof",
+      "source_record": 47,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "reserved",
+      "disposition_reason": "Future digital spindle path; no approved installed-drive connector/profile.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "SP-RS485-FIELD",
+        "to": "SP-RS485-FIELD"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Installed drive connector/pin continuity, model/software and parameter archive.",
+        "Approved isolated link polarity/termination and drive-specific read/write whitelist."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-STATUS",
+      "from_device": "MR-1 servo drive",
+      "from_terminal": "verified SRDY/ALM/ASP/ZSP/COIN-PtoS outputs",
+      "to_device": "Spindle supervision interface",
+      "to_terminal": "isolated 12-24V inputs",
+      "cable_class": "shielded multi-pair",
+      "shield_termination": "verified cabinet termination",
+      "state": "HOLD",
+      "notes": "Assignment and polarity must come from archived installed parameters",
+      "source_record": 48,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "reserved",
+      "disposition_reason": "Future spindle supervision; installed output assignments and polarity are unproved.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "SP-STATUS",
+        "to": "SP-STATUS"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Installed SRDY/ALM/ASP/ZSP/COIN-PtoS assignments and polarity from archived parameters.",
+        "Qualified isolated input circuits and every operating/loss-of-power state."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-CONTROL",
+      "from_device": "Spindle supervision interface",
+      "from_terminal": "isolated SON/CMODE/ACLR outputs",
+      "to_device": "MR-1 servo drive",
+      "to_terminal": "verified digital inputs",
+      "cable_class": "shielded multi-pair",
+      "shield_termination": "verified cabinet termination",
+      "state": "HOLD",
+      "notes": "SON passes through hardwired permission; CMODE and ACLR remain locked",
+      "source_record": 49,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "reserved",
+      "disposition_reason": "Future spindle supervision; SON permission is unproved and CMODE/ACLR remain locked.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "SP-CONTROL",
+        "to": "SP-CONTROL"
+      },
+      "endpoint_status": {
+        "from": "planned-interface",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Installed SON/CMODE/ACLR assignments, polarity and parameter archive.",
+        "Reviewed hardware permission/watchdog and command interlocks; CMODE/ACLR remain locked."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-ENCODER",
+      "from_device": "MR-1 servo drive",
+      "from_terminal": "verified OA/OB/OZ differential pairs",
+      "to_device": "Spindle supervision interface",
+      "to_terminal": "isolated RS422 receiver",
+      "cable_class": "3 shielded twisted pairs",
+      "shield_termination": "per verified encoder design",
+      "state": "HOLD",
+      "notes": "No STM32 timer pins assigned; never land encoder pairs directly on GPIO",
+      "source_record": 50,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "reserved",
+      "disposition_reason": "Future spindle feedback; no approved STM32 timer/pin or receiver map.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "SP-ENCODER",
+        "to": "SP-ENCODER"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Installed differential encoder connector, signal levels and receiver/isolation circuit.",
+        "Approved MCU timer/pin map and measured counts; no direct GPIO landing."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-INDEX",
+      "from_device": "Spindle-side index sensor",
+      "from_terminal": "UNSELECTED",
+      "to_device": "Spindle supervision interface",
+      "to_terminal": "conditioned index input",
+      "cable_class": "shielded pair",
+      "shield_termination": "verified sensor design",
+      "state": "HOLD",
+      "notes": "One pulse per spindle revolution; rigid mount and coolant protection required",
+      "source_record": 51,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "reserved",
+      "disposition_reason": "Future spindle index; sensor is unselected and mounting unqualified.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "SP-INDEX",
+        "to": "SP-INDEX"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Selected sensor identity, actual pinout, one-pulse-per-spindle-turn relationship and qualified conditioner.",
+        "Rigid mounting, coolant protection and repeatability evidence."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "SP-ORIENT",
+      "from_device": "Octopus Pro",
+      "from_terminal": "UNASSIGNED differential step-direction source",
+      "to_device": "Spindle supervision interface",
+      "to_terminal": "future position-command line driver",
+      "cable_class": "2 shielded twisted pairs",
+      "shield_termination": "verified cabinet termination",
+      "state": "HOLD",
+      "notes": "M19 stage only; no board pins or electronic gearing approved",
+      "source_record": 52,
+      "axis": "shared",
+      "family": "spindle",
+      "disposition": "reserved",
+      "disposition_reason": "Future M19/position-control path; board pins and electronic gearing are unapproved.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "SP-ORIENT",
+        "to": "SP-ORIENT"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Approved physical command source, interface, installed position-mode parameters and electronic gearing.",
+        "Separate orientation/mechanical safety qualification; production M19 remains unapproved."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "FLOOD-CTL",
+      "from_device": "Octopus Pro",
+      "from_terminal": "HE0 positive / PA0 switched negative",
+      "to_device": "MR1 interface",
+      "to_terminal": "flood relay input",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Positive is fused VIN; verify actual voltage and qualified load/suppression. Connect input across positive and switched negative. Never bond switched negative to logic GND. Load and startup/off behavior remain unqualified.",
+      "source_record": 53,
+      "axis": "shared",
+      "family": "controls",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "FLOOD-CTL",
+        "to": "FLOOD-CTL"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "flood relay input"
+      ],
+      "trace_task": "Identify the HE0 positive / PA0 switched negative pair and planned relay input; preserve the switched negative instead of bonding it to logic ground.",
+      "missing_evidence": [
+        "Actual fused VIN voltage and physical output connector orientation.",
+        "Qualified relay/load input rating and suppression circuit.",
+        "Measured startup/off behavior and verified return/isolation topology; no guessed coil or component rating."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "MIST-CTL",
+      "from_device": "Octopus Pro",
+      "from_terminal": "HE1 positive / PA3 switched negative",
+      "to_device": "MR1 interface",
+      "to_terminal": "mist/air relay input",
+      "cable_class": "twisted pair",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Positive is fused VIN; verify actual voltage and qualified load/suppression. Connect input across positive and switched negative. Never bond switched negative to logic GND. Load and startup/off behavior remain unqualified.",
+      "source_record": 54,
+      "axis": "shared",
+      "family": "controls",
+      "disposition": "hold",
+      "disposition_reason": "Source schedule is HOLD; trace and label references only, with physical termination/qualification unresolved.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "MIST-CTL",
+        "to": "MIST-CTL"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "planned-interface"
+      },
+      "planned_interface_names": [
+        "mist/air relay input"
+      ],
+      "trace_task": "Identify the HE1 positive / PA3 switched negative pair and planned relay input; preserve the switched negative instead of bonding it to logic ground.",
+      "missing_evidence": [
+        "Actual fused VIN voltage and physical output connector orientation.",
+        "Qualified relay/load input rating and suppression circuit.",
+        "Measured startup/off behavior and verified return/isolation topology; no guessed coil or component rating."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "USB-01",
+      "from_device": "Windows mini PC",
+      "from_terminal": "USB",
+      "to_device": "Octopus Pro",
+      "to_terminal": "USB-C",
+      "cable_class": "shielded USB cable",
+      "shield_termination": "chassis through connector",
+      "state": "TBD",
+      "notes": "Use the custom MR1 native controller with verified grblHAL identity; USB may add a logic-ground/PE path. Record that path; never treat USB as proof of power isolation.",
+      "source_record": 55,
+      "axis": "shared",
+      "family": "other",
+      "disposition": "trace-only",
+      "disposition_reason": "Source schedule is TBD; deenergized identification, routing and labels only. No physical acceptance is recorded.",
+      "active_by_default": true,
+      "endpoint_labels": {
+        "from": "USB-01",
+        "to": "USB-01"
+      },
+      "endpoint_status": {
+        "from": "reference-only",
+        "to": "reference-only"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Identify the Windows-PC to Octopus USB cable and routing; record connector/shield paths without treating USB as power isolation.",
+      "missing_evidence": [
+        "Actual port/cable identity and mechanical retention.",
+        "Recorded USB shield/logic-ground/protective-earth path within the complete cabinet.",
+        "Actual read-only firmware/configuration identity and disconnection behavior during separately authorized commissioning."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    },
+    {
+      "cable_id": "TEMP-SPINDLE",
+      "from_device": "ESP32 AMOLED",
+      "from_terminal": "UNASSIGNED",
+      "to_device": "ordered temperature sensor",
+      "to_terminal": "UNVERIFIED",
+      "cable_class": "short flexible cable",
+      "shield_termination": "none",
+      "state": "HOLD",
+      "notes": "Identify exact sensor and pinout before wiring; DS18B20 H2 map is conditional only",
+      "source_record": 56,
+      "axis": "shared",
+      "family": "other",
+      "disposition": "reserved",
+      "disposition_reason": "Future temperature circuit; actual sensor and pinout are unidentified.",
+      "active_by_default": false,
+      "endpoint_labels": {
+        "from": "TEMP-SPINDLE",
+        "to": "TEMP-SPINDLE"
+      },
+      "endpoint_status": {
+        "from": "unresolved",
+        "to": "unresolved"
+      },
+      "planned_interface_names": [],
+      "trace_task": "Inventory and label this future circuit only; keep it outside the active wiring sequence until its design and endpoints are approved.",
+      "missing_evidence": [
+        "Exact ordered sensor identity and actual pinout; no conditional DS18B20 mapping assumed.",
+        "Approved interface voltage, connector map, placement and cable route."
+      ],
+      "evidence_status": "unverified",
+      "may_energize": false
+    }
+  ]
+}

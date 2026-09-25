@@ -1,0 +1,54 @@
+name: MR1 source checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-source:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: mr1-control/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify exported firmware source and profiles
+        working-directory: grblHAL-STM32F4
+        run: |
+          python tools/verify_source_export.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/validate_mr1_profile.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/validate_mr1_macros.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/test_mr1_workflows.py
+      - name: Verify visual wiring data and rebuild
+        run: |
+          python tools/visual-wiring/cable-data.py --test
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/visual-wiring/cable-data.py --check
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          node --test tools/visual-wiring/model.test.mjs
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/visual-wiring/build.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          git diff --exit-code -- docs/wiring/visual
+      - name: Check local import safeguards
+        run: node --test tools/import-local-assets.test.mjs
+      - name: Install pinned application dependencies
+        working-directory: mr1-control
+        run: npm ci
+      - name: Build native application web assets
+        working-directory: mr1-control
+        run: npm run build
+      - name: Test source and synthetic controllers
+        working-directory: mr1-control
+        run: npm test

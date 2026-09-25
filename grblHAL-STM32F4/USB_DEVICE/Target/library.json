@@ -1,0 +1,7 @@
+{
+    "platforms":  "*",
+    "frameworks":  "*",
+    "description":  "STM32 library",
+    "name":  "USB_DEVICE-Target",
+    "version":  "1.0.0"
+}

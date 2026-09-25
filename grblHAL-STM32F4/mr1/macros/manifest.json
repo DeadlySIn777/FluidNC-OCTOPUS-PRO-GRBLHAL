@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "phase": 0,
+  "policy": "non-motion-only",
+  "macros": [
+    {
+      "file": "safe-idle.gcode",
+      "name": "MR-1 Safe Idle",
+      "purpose": "Stop spindle and coolant, then restore the touch probe as the default input.",
+      "motion": false,
+      "finalProbe": "primary",
+      "exactCommands": ["M5", "M9", "G65P5Q0"]
+    },
+    {
+      "file": "select-touch-probe.gcode",
+      "name": "Select Touch Probe",
+      "purpose": "Stop spindle and coolant, then select the movable touch probe.",
+      "motion": false,
+      "finalProbe": "primary",
+      "exactCommands": ["M5", "M9", "G65P5Q0"]
+    },
+    {
+      "file": "select-tool-setter.gcode",
+      "name": "Select Tool Setter",
+      "purpose": "Stop spindle and coolant, then select the fixed tool setter.",
+      "motion": false,
+      "finalProbe": "toolsetter",
+      "exactCommands": ["M5", "M9", "G65P5Q1"]
+    }
+  ]
+}

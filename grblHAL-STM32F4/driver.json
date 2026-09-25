@@ -1,0 +1,779 @@
+{
+  "caps":
+  {
+    "informal": 1,
+    "axes": 6,
+    "usb_cdc": 1,
+    "uart": 1,
+    "spindle_pwm": 1,
+    "spindle_dir": 1,
+    "spindle_encoder": 1,
+    "spindle_sync": 1,
+    "serial_ports": 2,
+    "eeprom": 1,
+    "i2c_strobe": 1,
+    "ganged_axes": 1,
+    "auto_square": 1,
+    "digital_in": 7,
+    "digital_out": 8,
+    "analog_in": 2,
+    "analog_out": 2,
+    "analog_pwm_out": 2,
+    "probe": 1,
+    "spi_strobe": 1,
+    "safety_door": 1,
+    "neopixels": 1,
+    "estop": 1,
+    "mpg_mode": 1,
+    "sdcard": 1,
+    "ethernet": 1,
+    "wiznet": 1,
+    "rgb_out": 2,
+    "mcp3221_adc": 1,
+    "pio_board": "genericSTM32F407VGT6",
+    "ldscript": "STM32F407VGTX_FLASH.ld",
+    "plugins": [
+      { "id": "bluetooth" },
+      { "id": "eeprom" },
+      { "id": "keypad" },
+      { "id": "macros" },
+      { "id": "laser_ppi" },
+      { "id": "laser_cluster" },
+      { "id": "laser_coolant" },
+      { "id": "laser_overdrive" },
+      { "id": "motors" },
+      { "id": "odometer" },
+      { "id": "sdcard" },
+      { "id": "webui" },
+      { "id": "fans" },
+      { "id": "networking" },
+      { "id": "spindle" },
+      { "id": "modbus" },
+      { "id": "openpnp" },
+      { "id": "rgb_leds" },
+      { "id": "eventout" },
+      { "id": "homing_pulloff" },
+      { "id": "feed_override" },
+      { "id": "pwm_servo" },
+      { "id": "bltouch" },
+      { "id": "esp_at" },
+      { "id": "embroidery" }
+    ]
+  },
+  "symbols": {
+    "USE_HAL_DRIVER": ""
+  },
+  "symbols_networking": {
+    "ETH_TX_DESC_CNT": 12,
+    "TCP_MSS": 1460,
+    "TCP_SND_BUF": 5840,
+    "LWIP_NUM_NETIF_CLIENT_DATA": 2,
+    "LWIP_HTTPD_CUSTOM_FILES": 0,
+    "MEM_SIZE": 16384,
+    "LWIP_IGMP": 1,
+    "LWIP_MDNS_RESPONDER": 1,
+    "LWIP_NETIF_STATUS_CALLBACK": 1,
+    "LWIP_HTTPD_DYNAMIC_HEADERS": 1,
+    "LWIP_HTTPD_DYNAMIC_FILE_READ": 1,
+    "LWIP_HTTPD_SUPPORT_V09": 0,
+    "LWIP_HTTPD_SUPPORT_11_KEEPALIVE": 1,
+    "LWIP_HTTPD_CGI_ADV": 1,
+    "LWIP_HTTPD_SUPPORT_POST": 1,
+    "LWIP_HTTPD_SUPPORT_WEBDAV": 1
+  },
+  "boards": [
+    {
+      "name": "Devtronic CNC Controller V2 (BlackPill F411)",
+      "symbol": "BOARD_DEVTRONIC_CNC_V2",
+      "URL": "https://github.com/Devtronic-US/CNC-Controller",
+      "MAP": "boards/Devtronic_CNC_Controller_V2_map.h",
+      "caps": {
+        "axes": 5,
+        "digital_in": 1,
+        "digital_out": 2,
+        "eeprom": 256,
+        "fram": 1,
+        "i2c": 1,
+        "i2c_strobe": 1,
+        "spindle_sync": 1,
+        "keypad": 1,
+        "pio_board": "blackpill_f411ce",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": ""
+      }
+    },
+    {
+      "name": "Devtronic CNC Controller (BlackPill F411)",
+      "symbol": "BOARD_DEVTRONIC_CNC",
+      "URL": "https://github.com/Devtronic-US/CNC-Controller",
+      "MAP": "boards/Devtronic_CNC_Controller_map.h",
+      "caps": {
+        "axes": 5,
+        "digital_in": 1,
+        "digital_out": 2,
+        "eeprom": 16,
+        "fram": 1,
+        "i2c": 1,
+        "i2c_strobe": 1,
+        "spindle_sync": 1,
+        "keypad": 1,
+        "pio_board": "blackpill_f411ce",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": ""
+      }
+    },
+    {
+      "name": "BlackPill (STM32F401)",
+      "symbol": "BOARD_BLACKPILL",
+      "MAP": "boards/blackpill_map.h",
+      "URL": "",
+      "caps": {
+        "axes": 4,
+        "serial_ports": 0,
+        "digital_in": 1,
+        "digital_out": 2,
+        "spindle_sync": 1,
+        "pio_board": "blackpill_f401cc",
+        "ldscript": "STM32F401CCUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F401xC": ""
+      }
+    },
+    {
+      "name": "BlackPill (STM32F411)",
+      "symbol": "BOARD_BLACKPILL",
+      "URL": "",
+      "MAP": "boards/blackpill_map.h",
+      "caps": {
+        "axes": 4,
+        "serial_ports": 0,
+        "digital_in": 1,
+        "digital_out": 2,
+        "spindle_sync": 1,
+        "pio_board": "blackpill_f411ce",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": ""
+      }
+    },
+    {
+      "name": "BlackPill Alt. 2 (STM32F411)",
+      "symbol": "BOARD_BLACKPILL_ALT2",
+      "URL": "",
+      "MAP": "boards/blackpill_alt2_map.h",
+      "caps": {
+        "axes": 4,
+        "digital_in": 1,
+        "digital_out": 2,
+        "eeprom": 1,
+        "fram": 0,
+        "i2c": 1,
+        "i2c_strobe": 1,
+        "spindle_sync": 1,
+        "keypad": 1,
+        "pio_board": "blackpill_f411ce",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": ""
+      }
+    },
+    {
+      "name": "BTT SKR-2 STM32F407",
+      "symbol": "BOARD_BTT_SKR_20",
+      "URL": "https://github.com/bigtreetech/SKR-2",
+      "MAP": "boards/btt_skr_2.0_map.h",
+      "caps": {
+        "uart": 0,
+        "axes": 5,
+        "serial_ports": 2,
+        "digital_in": 1,
+        "sdcard": 1,
+        "i2c": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_n": 1,
+        "wiznet": 1,
+        "ldscript": "STM32F407VGTX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F407xx": "",
+          "HSE_VALUE": 8000000
+      }
+    },
+    {
+      "name": "BTT SKR-2 STM32F407 (Bootloader)",
+      "symbol": "BOARD_BTT_SKR_20",
+      "URL": "https://github.com/bigtreetech/SKR-2",
+      "MAP": "boards/btt_skr_2.0_map.h",
+      "caps": {
+        "uart": 0,
+        "axes": 5,
+        "serial_ports": 2,
+        "digital_in": 1,
+        "sdcard": 1,
+        "i2c": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_n": 1,
+        "wiznet": 1,
+        "ldscript": "STM32F407VGTX_BL32K_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F407xx": "",
+          "HSE_VALUE": 8000000,
+          "HAS_BOOTLOADER": ""
+      }
+    },
+    {
+      "name": "BTT SKR PRO v1.2",
+      "symbol": "BOARD_BTT_SKR_PRO_1_2",
+      "URL": "https://github.com/bigtreetech/BIGTREETECH-SKR-PRO-V1.1/tree/master/SKR-PRO-V1.2",
+      "MAP": "boards/btt_skr_pro_v1_1_map.h",
+      "caps": {
+        "axes": 6,
+		"auto_square": 2,
+        "serial_ports": 3,
+        "digital_in": 4,
+        "digital_out": 6,
+        "motor_fault": 1,
+        "safety_door": 1,
+        "eeprom": 1,
+        "fram": 1,
+        "sdcard": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_n": 1
+      },
+      "symbols": {
+          "STM32F407xx": "",
+          "HSE_VALUE": 8000000
+      }
+    },
+    {
+      "name": "BTT SKR PRO v1.2 (Bootloader)",
+      "symbol": "BOARD_BTT_SKR_PRO_1_2",
+      "URL": "https://github.com/bigtreetech/BIGTREETECH-SKR-PRO-V1.1/tree/master/SKR-PRO-V1.2",
+      "MAP": "boards/btt_skr_pro_v1_1_map.h",
+      "caps": {
+        "axes": 6,
+		    "auto_square": 2,
+        "serial_ports": 3,
+        "digital_in": 4,
+        "digital_out": 6,
+        "motor_fault": 1,
+        "safety_door": 1,
+        "eeprom": 1,
+        "fram": 1,
+        "sdcard": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_n": 1,
+        "ldscript": "STM32F407VGTX_BL32K_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F407xx": "",
+          "HSE_VALUE": 8000000,
+          "HAS_BOOTLOADER": ""
+      }
+    },
+    {
+      "name": "BTT Octopus Pro 1.1 F429",
+      "symbol": "BOARD_BTT_OCTOPUS_PRO",
+      "notes": "Untested, may not work.",
+      "URL": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro",
+      "MAP": "boards/btt_octopus_pro_map.h",
+      "caps": {
+        "axes": 8,
+        "eeprom": -32,
+        "fram": 0,
+        "safety_door": 1,
+        "serial_ports": 3,
+        "sdcard": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_addr": 1,
+        "pio_board": "nucleo_f429zi",
+        "ldscript": "STM32F429VGTX_NONVS_FLASH.ld"
+      },
+      "symbols" : {
+        "STM32F429xx": "",
+        "HSE_VALUE": 12000000
+      }
+    },
+    {
+      "name": "BTT Octopus Pro 1.1 F429 (32K Bootloader)",
+      "symbol": "BOARD_BTT_OCTOPUS_PRO",
+      "notes": "Untested, may not work.",
+      "URL": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro",
+      "MAP": "boards/btt_octopus_pro_map.h",
+      "caps": {
+        "axes": 8,
+        "eeprom": -32,
+        "fram": 0,
+        "safety_door": 1,
+        "serial_ports": 3,
+        "sdcard": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_addr": 1,
+        "pio_board": "nucleo_f429zi",
+        "ldscript": "STM32F429VGTX_BL32K_NONVS_FLASH.ld"
+      },
+      "symbols" : {
+        "STM32F429xx": "",
+        "HSE_VALUE": 12000000
+      }
+    },
+    {
+      "name": "BTT Octopus Pro 1.1 F446",
+      "symbol": "BOARD_BTT_OCTOPUS_PRO",
+      "notes": "Untested, may not work.",
+      "URL": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro",
+      "MAP": "boards/btt_octopus_pro_map.h",
+      "caps": {
+        "axes": 8,
+        "eeprom": -32,
+        "fram": 0,
+        "safety_door": 1,
+        "serial_ports": 3,
+        "sdcard": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_addr": 1,
+        "pio_board": "nucleo_f446ze",
+        "ldscript": "STM32F446ZETX_NONVS_FLASH.ld"
+      },
+      "symbols" : {
+        "STM32F446xx": "",
+        "HSE_VALUE": 12000000
+      }
+    },
+    {
+      "name": "BTT Octopus Pro 1.1 F446 (32K Bootloader)",
+      "symbol": "BOARD_BTT_OCTOPUS_PRO",
+      "notes": "Untested, may not work.",
+      "URL": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro",
+      "MAP": "boards/btt_octopus_pro_map.h",
+      "caps": {
+        "axes": 8,
+        "eeprom": -32,
+        "fram": 0,
+        "safety_door": 1,
+        "serial_ports": 3,
+        "sdcard": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_addr": 1,
+        "pio_board": "nucleo_f446ze",
+        "ldscript": "STM32F446ZETX_BL32K_NONVS_FLASH.ld"
+      },
+      "symbols" : {
+        "STM32F446xx": "",
+        "HSE_VALUE": 12000000
+      }
+    },
+    {
+      "name": "MKS Robin Nano 3.0 (48K Bootloader)",
+      "symbol": "BOARD_MKS_ROBIN_NANO_30",
+      "URL": "https://github.com/makerbase-mks/MKS-Robin-Nano-V3.X",
+      "MAP": "boards/mks_robin_nano_v3.0_map.h",
+      "caps": {
+        "axes": 5,
+        "motor_fault": 1,
+        "safety_door": 1,
+        "eeprom": 32,
+        "sdcard": 1,
+        "trinamic_spi_cs": 1,
+        "trinamic_uart_n": 1,
+        "ldscript": "STM32F407VGTX_BL48K_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F407xx": "",
+          "HSE_VALUE": 8000000,
+          "HAS_BOOTLOADER": ""
+      }
+    },
+    {
+      "name": "CNC 3040 (STM32F401)",
+      "symbol": "BOARD_CNC3040",
+      "MAP": "boards/cnc3040_map.h",
+      "URL": "https://github.com/shaise/GrblCNC",
+      "caps": {
+        "axes": 5,
+        "auto_square": 0,
+        "digital_in": 1,
+        "serial_ports": 0,
+        "spindle_dir": 0,
+        "pio_board": "blackpill_f401cc",
+        "ldscript": "STM32F401CCUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F401xC": ""
+      }
+    },
+    {
+      "name": "CNC 3040 (STM32F411)",
+      "symbol": "BOARD_CNC3040",
+      "URL": "https://github.com/shaise/GrblCNC",
+      "MAP": "boards/cnc3040_map.h",
+      "caps": {
+        "axes": 5,
+        "auto_square": 0,
+        "digital_in": 1,
+        "serial_ports": 0,
+        "spindle_dir": 0,
+        "pio_board": "blackpill_f411ce",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": ""
+      }
+    },
+    {
+      "name": "Fysetc S6 V2.0",
+      "notes": "This board comes with different EEPROM sizes, select the matching one in the Plugins tab.",
+      "symbol": "BOARD_FYSETC_S6",
+      "URL": "https://wiki.fysetc.com/FYSETC_S6/",
+      "MAP": "boards/fysetc_s6_map.h",
+      "caps": {
+        "axes": 6,
+        "auto_square": 0,
+        "safety_door": 0,
+        "eeprom": 16,
+        "fram": 0,
+        "sdcard": 1,
+        "rgb_out": 1,
+        "trinamic_uart_n": 1,
+        "pio_board": "fysetc_s6",
+        "ldscript": "STM32F446RETX_NO_BL_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F446xx": "",
+          "HSE_VALUE": 12000000
+      }
+    },
+    {
+      "name": "Minimal BlackPill (STM32F401)",
+      "symbol": "BOARD_MINI_BLACKPILL",
+      "URL": "https://github.com/avizienis/Minimal-Black-Pill--STM32F4xx-BOB-for-grblHAL",
+      "MAP": "boards/mini_blackpill_map.h",
+      "caps": {
+        "axes": 4,
+        "auto_square": 0,
+        "digital_in": 1,
+        "digital_out": 2,
+        "pio_board": "blackpill_f401cc",
+        "ldscript": "STM32F401CCUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F401xC": ""
+      }
+    },
+    {
+      "name": "Minimal BlackPill (STM32F411)",
+      "symbol": "BOARD_MINI_BLACKPILL",
+      "URL": "https://github.com/avizienis/Minimal-Black-Pill--STM32F4xx-BOB-for-grblHAL",
+      "MAP": "boards/mini_blackpill_map.h",
+      "caps": {
+        "axes": 4,
+        "auto_square": 0,
+        "digital_in": 1,
+        "digital_out": 2,
+        "pio_board": "blackpill_f411ce",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": ""
+      }
+    },
+    {
+      "name": "Protoneer v3/Nucleo-64 (STM32F411)",
+      "symbol": "BOARD_PROTONEER_3XX",
+      "URL": "https://blog.protoneer.co.nz/arduino-cnc-shield/",
+      "MAP": "boards/protoneer_3.xx_map.h",
+      "caps": {
+        "axes": 4,
+        "auto_square": 0,
+        "usb_cdc": 0,
+        "spindle_sync": 1,
+        "wiznet": 1,
+        "pio_board": "nucleo_f411re",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": "",
+          "NUCLEO_F411": "",
+	      "PROTONEER_SPINDLE_PWM": "",
+          "RTC_ENABLE": 1
+      }
+    },
+    {
+      "name": "Protoneer v3/Nucleo-64 (STM32F446)",
+      "symbol": "BOARD_PROTONEER_3XX",
+      "URL": "https://blog.protoneer.co.nz/arduino-cnc-shield/",
+      "MAP": "boards/protoneer_3.xx_map.h",
+      "caps": {
+        "axes": 4,
+        "auto_square": 0,
+        "usb_cdc": 0,
+        "spindle_sync": 1,
+        "wiznet": 1,
+        "pio_board": "nucleo_f446re",
+        "ldscript": "STM32F446RETX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F446xx": "",
+          "NUCLEO_F446": "",
+	      "PROTONEER_SPINDLE_PWM": "",
+          "RTC_ENABLE": 1
+      }
+    },
+    {
+      "name": "Flexi-HAL",
+      "symbol": "BOARD_FLEXI_HAL",
+      "URL": "https://github.com/Expatria-Technologies/Flexi-HAL",
+      "MAP": "boards/flexi_hal_map.h",
+      "caps": {
+        "axes": 5,
+        "auto_square": 2,
+        "digital_in": 5,
+        "digital_out": 4,
+        "serial_ports": 2,
+        "eeprom": -128,
+        "fram": 0,
+        "i2c": 1,
+        "i2c_strobe": 1,
+        "sdcard": 1,
+        "keypad": 1,
+        "wiznet": 5500,
+        "pio_board": "genericSTM32F446RE",
+        "ldscript": "FLEXI_STM32F446RETX_BL_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F446xx": "",
+          "HAS_BOOTLOADER": "",
+          "UF2_BOOTLOADER": ""
+      }
+    },
+    {
+      "name": "SuperLongBoard (SLB)",
+      "notes": "Preliminary - not tested in a machine.",
+      "symbol": "BOARD_LONGBOARD32",
+      "URL": "https://resources.sienci.com/view/slb-welcome/",
+      "MAP": "boards/longboard32_map.h",
+      "caps": {
+        "axes": 5,
+        "auto_square": 1,
+        "usb_cdc": 1,
+        "serial_ports": 2,
+        "safety_door": 1,
+        "digital_in": 5,
+        "digital_out": 5,
+        "eeprom": 128,
+        "fram": 0,
+        "i2c_strobe": 1,
+        "sdcard": 1,
+        "spindle_pwm": 2,
+        "spindle_sync": 0,
+        "rgb_out": 2,
+        "trinamic": 2660,
+        "trinamic_spi_cs": 1,
+        "wiznet": 5500,
+		    "control_inputs": 1,
+		    "modbus_rtu_dir": 1,
+        "pio_board": "genericSTM32F412VG",
+        "ldscript": "STM32F412VGTX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F412Vx": "",
+          "STEP_PULSE_LATENCY": 1.3,
+          "TRINAMIC_DYNAMIC_CURRENT": 1,
+          "RTC_ENABLE": 1,
+          "TMC_X_ENABLE": 1,
+          "TMC_Y_ENABLE": 1,
+          "TMC_Z_ENABLE": 1
+      }
+    },
+    {
+      "name": "SuperLongBoard External (SLB EXT)",
+      "notes": "Preliminary - not tested in a machine.",
+      "symbol": "BOARD_LONGBOARD32_EXT",
+      "URL": "https://resources.sienci.com/view/slb-welcome/",
+      "MAP": "boards/longboard32_map.h",
+      "caps": {
+        "axes": 5,
+        "usb_cdc": 1,
+        "serial_ports": 2,
+        "safety_door": 1,
+        "digital_in": 5,
+        "digital_out": 5,
+        "eeprom": 128,
+        "fram": 0,
+        "i2c_strobe": 1,
+        "sdcard": 1,
+        "spindle_pwm": 2,
+        "spindle_sync": 0,
+        "rgb_out": 2,
+        "wiznet": 5500,
+		"control_inputs": 1,
+		"modbus_rtu_dir": 1,
+        "pio_board": "genericSTM32F412VG",
+        "ldscript": "STM32F412VGTX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F412Vx": "",
+          "STEP_PULSE_LATENCY": 1.3,
+          "RTC_ENABLE": 1
+      }
+    },
+    {
+      "name": "JZ-F407VET6 Industrial Control Board",
+      "notes": "Preliminary - pin map subject to change.",
+      "symbol": "BOARD_STM32F407VET6_DEV",
+      "URL": "https://github.com/yym36100/stm32f407_industrial_control_board",
+      "MAP": "boards/stm32f407vet6_dev_board.h",
+      "caps": {
+        "axes": 5,
+        "usb_cdc": 1,
+        "serial_ports": 2,
+        "safety_door": 0,
+        "digital_in": 0,
+        "digital_out": 0,
+        "eeprom": 0,
+        "fram": 0,
+        "i2c_strobe": 0,
+        "sdcard": 1,
+        "spindle_sync": 0,
+        "rgb_out": 0,
+        "ethernet": 1,
+        "pio_board": "genericSTM32F407VET6",
+        "ldscript": "STM32F407VETX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F407xx": "",
+          "HSE_VALUE": 25000000
+      }
+    },
+    {
+      "name": "Nucleo-64 CNC Breakout (STM32F401)",
+      "symbol": "BOARD_MORPHO_CNC",
+      "URL": "https://github.com/terjeio/CNC_Breakout_Nucleo64",
+      "MAP": "boards/st_morpho_map.h",
+      "caps": {
+        "axes": 4,
+        "usb_cdc": 0,
+        "serial_ports": 2,
+        "safety_door": 1,
+        "digital_in": 4,
+        "digital_out": 6,
+        "eeprom": 1,
+        "fram": 1,
+        "i2c_strobe": 1,
+        "sdcard": 1,
+        "spindle_sync": 1,
+        "trinamic_spi_chain": 1,
+        "trinamic_uart_addr": 1,
+        "wiznet": 1,
+        "pio_board": "nucleo_f401re",
+        "ldscript": "STM32F401CCUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F401xE": "",
+          "NUCLEO_F401": ""
+      }
+    },
+    {
+      "name": "Nucleo-64 CNC Breakout (STM32F411)",
+      "symbol": "BOARD_MORPHO_CNC",
+      "URL": "https://github.com/terjeio/CNC_Breakout_Nucleo64",
+      "MAP": "boards/st_morpho_map.h",
+      "caps": {
+        "axes": 4,
+        "usb_cdc": 0,
+        "serial_ports": 2,
+        "safety_door": 1,
+        "digital_in": 4,
+        "digital_out": 6,
+        "eeprom": 1,
+        "fram": 1,
+        "i2c_strobe": 1,
+        "sdcard": 1,
+        "spindle_sync": 1,
+        "trinamic_spi_chain": 1,
+        "trinamic_uart_addr": 1,
+        "wiznet": 1,
+        "pio_board": "nucleo_f411re",
+        "ldscript": "STM32F411CEUX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F411xE": "",
+          "NUCLEO_F411": "",
+          "RTC_ENABLE": 1
+      }
+    },
+    {
+      "name": "Nucleo-64 CNC Breakout (STM32F446)",
+      "symbol": "BOARD_MORPHO_CNC",
+      "URL": "https://github.com/terjeio/CNC_Breakout_Nucleo64",
+      "MAP": "boards/st_morpho_map.h",
+      "caps": {
+        "axes": 4,
+        "usb_cdc": 0,
+        "serial_ports": 2,
+        "safety_door": 1,
+        "digital_in": 4,
+        "digital_out": 6,
+        "eeprom": 1,
+        "fram": 1,
+        "i2c_strobe": 1,
+        "sdcard": 1,
+        "spindle_sync": 1,
+        "trinamic_spi_chain": 1,
+        "trinamic_uart_addr": 1,
+        "wiznet": 1,
+        "pio_board": "nucleo_f446re",
+        "ldscript": "STM32F446RETX_FLASH.ld"
+      },
+      "symbols": {
+          "STM32F446xx": "",
+          "NUCLEO_F446": "",
+          "RTC_ENABLE": 1
+      }
+    },
+    {
+      "name": "Generic Uno/Nucleo-64 (STM32F411)",
+      "symbol": "BOARD_GENERIC_UNO",
+      "URL": "https://www.makerfabs.com/arduino-cnc-shield-v3.html",
+      "MAP": "boards/uno_map.h",
+      "caps": {
+        "usb_cdc": 0,
+        "ganged_axes": 0,
+        "safety_door": 0,
+        "pio_board": "nucleo_f411re",
+        "ldscript": "STM32F411CEUX_FLASH.ld"    
+      },
+      "symbols": {
+          "STM32F411xE": "",
+          "NUCLEO_F411": "",
+          "RTC_ENABLE": 1
+      }
+    },
+    {
+      "name": "Generic Uno/Nucleo-64 (STM32F446)",
+      "symbol": "BOARD_GENERIC_UNO",
+      "URL": "https://www.makerfabs.com/arduino-cnc-shield-v3.html",
+      "MAP": "boards/uno_map.h",
+      "caps": {
+        "usb_cdc": 0,
+        "ganged_axes": 0,
+        "safety_door": 0,
+        "pio_board": "nucleo_f446re",
+        "ldscript": "STM32F446RETX_FLASH.ld"    
+      },
+      "symbols": {
+          "STM32F446xx": "",
+          "NUCLEO_F446": "",
+          "RTC_ENABLE": 1
+      }
+    }
+  ]
+}

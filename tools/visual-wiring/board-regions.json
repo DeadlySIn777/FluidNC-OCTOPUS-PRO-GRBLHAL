@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "imageWidth": 1912,
+  "imageHeight": 1534,
+  "purpose": "Approximate component-group locations on the unchanged official BTT V1.1 image. Rectangles never identify an individual contact or mating-plug cavity.",
+  "regions": [
+    {"id":"socket-area","label":"MOTOR0–3 empty driver-socket area","groups":["driver0","driver1","driver2","driver3"],"rect":[307,261,601,212],"note":"This locates the four-socket group. Match the selected MOTOR number on the actual board; the highlight is not a contact position."},
+    {"id":"phase-plugs","label":"A1 / A2 / B2 / B1 motor-output plugs — LEAVE EMPTY","groups":["motor-phase-plugs"],"rect":[355,186,1153,53]},
+    {"id":"voltage-links","label":"HV / VM / VIN — REMOVE DRIVER JUMPER CAPS","groups":["jumper-voltage"],"rect":[335,236,1128,61]},
+    {"id":"mode-links","label":"Mode / SPI — REMOVE DRIVER JUMPER CAPS","groups":["jumper-mode-spi"],"rect":[337,385,1169,89]},
+    {"id":"diag-links","label":"M0DIAG–M7DIAG — REMOVE ALL EIGHT CAPS","groups":["jumper-diag"],"rect":[1229,840,190,50]},
+    {"id":"main-power","label":"POWER / MAIN POWER — identify +VIN and GND","groups":["power-main"],"rect":[159,496,146,182]},
+    {"id":"power-block","label":"Power-terminal block — MAIN POWER only is used","groups":["power-unused"],"rect":[154,305,160,742]},
+    {"id":"stop-bank","label":"STOP bank — homes and separate drive diagnostics","groups":["homes-stop0-3","diagnostics-stop4-7"],"rect":[1198,897,244,210],"note":"This locates the whole STOP bank. Match STOP0–3 for homes or STOP4–7 for diagnostics; the groups have different duties."},
+    {"id":"tb-t0-t1","label":"TB / T0 / T1 — safety monitor, hold and probe","groups":["tb-t0-t1"],"rect":[1115,738,184,80]},
+    {"id":"tool-setter","label":"BLTouch header — tool-setter signal PB7 and its GND","groups":["tool-setter"],"rect":[1073,889,133,37]},
+    {"id":"exp-pair","label":"EXP headers — identify EXP2 from the board marking","groups":["exp2"],"rect":[1236,492,176,196],"note":"Both EXP housings are highlighted. Identify EXP2 from its actual board marking before locating PB1, PB2 and GND."},
+    {"id":"door","label":"PWR-DET — door monitor","groups":["door-pwr-det"],"rect":[1067,823,98,56]},
+    {"id":"fan0","label":"FAN0 — spindle PWM interface","groups":["spindle-fan0-fan4"],"rect":[730,1028,66,76]},
+    {"id":"fan4","label":"FAN4 — spindle-enable relay interface","groups":["spindle-fan0-fan4"],"rect":[961,1028,65,76]},
+    {"id":"coolant","label":"HE0 / HE1 — flood and mist/air relay controls","groups":["coolant-he0-he1"],"rect":[332,988,203,112]},
+    {"id":"usb-c","label":"USB-C — Windows PC connection","groups":["usb"],"rect":[1569,353,87,92]}
+  ]
+}

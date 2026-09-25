@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FluidCNC Pendant</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        
+        :root {
+            --bg: #0a0a0f;
+            --panel: #1a1a24;
+            --border: #2a2a3a;
+            --text: #ffffff;
+            --text-dim: #888;
+            --accent: #00d4ff;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --danger: #ff4466;
+            --x: #ff6b6b;
+            --y: #4ecdc4;
+            --z: #45b7d1;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+        .status-dot.connected { background: var(--success); }
+        
+        .machine-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: var(--border);
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .machine-status.idle { background: var(--success); color: #000; }
+        .machine-status.run { background: var(--accent); color: #000; }
+        .machine-status.alarm { background: var(--danger); }
+        
+        /* DRO */
+        .dro {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 12px;
+            background: var(--panel);
+        }
+        
+        .dro-axis {
+            text-align: center;
+            padding: 8px;
+            background: var(--bg);
+            border-radius: 8px;
+            border: 2px solid var(--border);
+        }
+        .dro-axis.x { border-color: var(--x); }
+        .dro-axis.y { border-color: var(--y); }
+        .dro-axis.z { border-color: var(--z); }
+        
+        .dro-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .dro-axis.x .dro-label { color: var(--x); }
+        .dro-axis.y .dro-label { color: var(--y); }
+        .dro-axis.z .dro-label { color: var(--z); }
+        
+        .dro-value {
+            font-size: 24px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-weight: bold;
+        }
+        
+        /* Jog Pad */
+        .jog-container {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+        }
+        
+        .jog-xy {
+            flex: 2;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .jog-z {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .jog-btn {
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .jog-btn:active {
+            background: var(--accent);
+            transform: scale(0.95);
+        }
+        
+        .jog-btn.y-plus { grid-column: 2; grid-row: 1; border-color: var(--y); }
+        .jog-btn.x-minus { grid-column: 1; grid-row: 2; border-color: var(--x); }
+        .jog-btn.xy-zero { grid-column: 2; grid-row: 2; font-size: 14px; }
+        .jog-btn.x-plus { grid-column: 3; grid-row: 2; border-color: var(--x); }
+        .jog-btn.y-minus { grid-column: 2; grid-row: 3; border-color: var(--y); }
+        
+        .jog-btn.z-plus { flex: 1; border-color: var(--z); }
+        .jog-btn.z-minus { flex: 1; border-color: var(--z); }
+        .jog-btn.z-zero { font-size: 14px; padding: 16px; }
+        
+        /* Step Selector */
+        .step-selector {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: var(--panel);
+        }
+        
+        .step-btn {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .step-btn.active {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: #000;
+        }
+        
+        /* Action Buttons */
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 12px;
+            background: var(--panel);
+        }
+        
+        .action-btn {
+            padding: 16px 8px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .action-btn .icon { font-size: 20px; display: block; margin-bottom: 4px; }
+        
+        .action-btn.estop {
+            background: var(--danger);
+            border-color: var(--danger);
+            grid-column: span 2;
+        }
+        .action-btn.home { border-color: var(--warning); }
+        .action-btn.unlock { border-color: var(--success); }
+        
+        /* Connect Overlay */
+        .connect-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            z-index: 100;
+        }
+        .connect-overlay.hidden { display: none; }
+        
+        .connect-overlay input {
+            width: 80%;
+            max-width: 300px;
+            padding: 16px;
+            font-size: 18px;
+            background: var(--panel);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            text-align: center;
+        }
+        
+        .connect-overlay button {
+            width: 80%;
+            max-width: 300px;
+            padding: 16px;
+            font-size: 18px;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* Haptic feedback indicator */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        .jog-btn:active, .action-btn:active, .step-btn:active {
+            animation: pulse 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <!-- Connect Overlay -->
+    <div class="connect-overlay" id="connectOverlay">
+        <h2>🎮 FluidCNC Pendant</h2>
+        <input type="text" id="ipInput" placeholder="Machine IP (e.g., 192.168.1.100)">
+        <button onclick="connect()">Connect</button>
+    </div>
+    
+    <!-- Main UI -->
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="connectionText">Offline</span>
+        </div>
+        <div class="machine-status" id="machineStatus">--</div>
+    </div>
+    
+    <div class="dro">
+        <div class="dro-axis x">
+            <div class="dro-label">X</div>
+            <div class="dro-value" id="posX">0.000</div>
+        </div>
+        <div class="dro-axis y">
+            <div class="dro-label">Y</div>
+            <div class="dro-value" id="posY">0.000</div>
+        </div>
+        <div class="dro-axis z">
+            <div class="dro-label">Z</div>
+            <div class="dro-value" id="posZ">0.000</div>
+        </div>
+    </div>
+    
+    <div class="jog-container">
+        <div class="jog-xy">
+            <div class="jog-btn y-plus" ontouchstart="jogStart('Y',1)" ontouchend="jogEnd()">▲</div>
+            <div class="jog-btn x-minus" ontouchstart="jogStart('X',-1)" ontouchend="jogEnd()">◀</div>
+            <div class="jog-btn xy-zero" onclick="zeroXY()">Zero<br>XY</div>
+            <div class="jog-btn x-plus" ontouchstart="jogStart('X',1)" ontouchend="jogEnd()">▶</div>
+            <div class="jog-btn y-minus" ontouchstart="jogStart('Y',-1)" ontouchend="jogEnd()">▼</div>
+        </div>
+        <div class="jog-z">
+            <div class="jog-btn z-plus" ontouchstart="jogStart('Z',1)" ontouchend="jogEnd()">Z+</div>
+            <div class="jog-btn z-zero" onclick="zeroZ()">Zero Z</div>
+            <div class="jog-btn z-minus" ontouchstart="jogStart('Z',-1)" ontouchend="jogEnd()">Z-</div>
+        </div>
+    </div>
+    
+    <div class="step-selector">
+        <button class="step-btn" onclick="setStep(0.1)">0.1</button>
+        <button class="step-btn active" onclick="setStep(1)">1</button>
+        <button class="step-btn" onclick="setStep(10)">10</button>
+        <button class="step-btn" onclick="setStep(50)">50</button>
+    </div>
+    
+    <div class="actions">
+        <button class="action-btn estop" onclick="estop()">
+            <span class="icon">🛑</span> E-STOP
+        </button>
+        <button class="action-btn home" onclick="home()">
+            <span class="icon">🏠</span> Home
+        </button>
+        <button class="action-btn unlock" onclick="unlock()">
+            <span class="icon">🔓</span> Unlock
+        </button>
+    </div>
+    
+    <script>
+        // State
+        let ws = null;
+        let connected = false;
+        let step = 1;
+        let feed = 3000;
+        let jogInterval = null;
+        let pollInterval = null;
+        let reconnectAttempts = 0;
+        let reconnectTimer = null;
+        const MAX_RECONNECT_ATTEMPTS = 10;
+        
+        // Connect
+        function connect() {
+            if (reconnectTimer) {
+                clearTimeout(reconnectTimer);
+                reconnectTimer = null;
+            }
+            
+            const ip = document.getElementById('ipInput').value.trim() || '192.168.1.100';
+            localStorage.setItem('pendant-ip', ip);
+            
+            document.getElementById('connectionText').textContent = 'Connecting...';
+            
+            try {
+                ws = new WebSocket(`ws://${ip}:81`);
+            } catch (e) {
+                console.error('WebSocket creation failed:', e);
+                scheduleReconnect();
+                return;
+            }
+            
+            // SAFETY: Connection timeout
+            const connectTimeout = setTimeout(() => {
+                if (ws && ws.readyState !== WebSocket.OPEN) {
+                    console.warn('Connection timeout');
+                    ws.close();
+                }
+            }, 5000);
+            
+            ws.onopen = () => {
+                clearTimeout(connectTimeout);
+                connected = true;
+                reconnectAttempts = 0;
+                document.getElementById('connectOverlay').classList.add('hidden');
+                document.getElementById('statusDot').classList.add('connected');
+                document.getElementById('connectionText').textContent = 'Online';
+                vibrate(50);
+                
+                // Start polling - STORE interval for cleanup
+                if (pollInterval) clearInterval(pollInterval);
+                pollInterval = setInterval(() => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send('?');
+                    }
+                }, 250);
+            };
+            
+            ws.onclose = (e) => {
+                clearTimeout(connectTimeout);
+                connected = false;
+                
+                // Clear poll interval
+                if (pollInterval) {
+                    clearInterval(pollInterval);
+                    pollInterval = null;
+                }
+                
+                document.getElementById('statusDot').classList.remove('connected');
+                document.getElementById('connectionText').textContent = 'Disconnected';
+                
+                // CRITICAL: Show reconnect UI
+                showReconnectUI();
+                
+                // Attempt auto-reconnect
+                scheduleReconnect();
+            };
+            
+            ws.onerror = (e) => {
+                console.error('WebSocket error:', e);
+            };
+            
+            ws.onmessage = (e) => handleMessage(e.data);
+        }
+        
+        function showReconnectUI() {
+            const overlay = document.getElementById('connectOverlay');
+            overlay.classList.remove('hidden');
+            
+            // Add reconnect button if not already there
+            let reconnectBtn = document.getElementById('reconnectBtn');
+            if (!reconnectBtn) {
+                const inputContainer = overlay.querySelector('.ip-input');
+                if (inputContainer) {
+                    reconnectBtn = document.createElement('button');
+                    reconnectBtn.id = 'reconnectBtn';
+                    reconnectBtn.className = 'connect-btn';
+                    reconnectBtn.style.background = 'var(--warning)';
+                    reconnectBtn.textContent = `Reconnecting (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`;
+                    reconnectBtn.onclick = () => {
+                        reconnectAttempts = 0;
+                        connect();
+                    };
+                    inputContainer.appendChild(reconnectBtn);
+                }
+            } else {
+                reconnectBtn.textContent = `Reconnecting (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`;
+            }
+        }
+        
+        function scheduleReconnect() {
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                document.getElementById('connectionText').textContent = 'Connection failed - tap to retry';
+                const reconnectBtn = document.getElementById('reconnectBtn');
+                if (reconnectBtn) {
+                    reconnectBtn.textContent = 'Tap to Reconnect';
+                    reconnectBtn.style.background = 'var(--danger)';
+                }
+                return;
+            }
+            
+            reconnectAttempts++;
+            const delay = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 10000);
+            
+            console.log(`Reconnect attempt ${reconnectAttempts} in ${delay}ms`);
+            
+            reconnectTimer = setTimeout(() => {
+                connect();
+            }, delay);
+        }
+        }
+        
+        function handleMessage(data) {
+            // Parse status: <Idle|WPos:0.000,0.000,0.000|...>
+            if (data.startsWith('<') && data.endsWith('>')) {
+                const inner = data.slice(1, -1);
+                const parts = inner.split('|');
+                
+                // Status
+                const status = parts[0];
+                const statusEl = document.getElementById('machineStatus');
+                statusEl.textContent = status;
+                statusEl.className = 'machine-status ' + status.toLowerCase();
+                
+                // Position
+                parts.forEach(part => {
+                    if (part.startsWith('WPos:') || part.startsWith('MPos:')) {
+                        const coords = part.split(':')[1].split(',');
+                        document.getElementById('posX').textContent = parseFloat(coords[0]).toFixed(3);
+                        document.getElementById('posY').textContent = parseFloat(coords[1]).toFixed(3);
+                        document.getElementById('posZ').textContent = parseFloat(coords[2]).toFixed(3);
+                    }
+                });
+            }
+        }
+        
+        // Jog
+        function jogStart(axis, dir) {
+            vibrate(10);
+            sendJog(axis, dir);
+            jogInterval = setInterval(() => sendJog(axis, dir), 100);
+        }
+        
+        function jogEnd() {
+            if (jogInterval) {
+                clearInterval(jogInterval);
+                jogInterval = null;
+                // Send jog cancel
+                if (ws && connected) ws.send(String.fromCharCode(0x85));
+            }
+        }
+        
+        function sendJog(axis, dir) {
+            const dist = step * dir;
+            if (ws && connected) {
+                ws.send(`$J=G91 ${axis}${dist} F${feed}\n`);
+            }
+        }
+        
+        function setStep(s) {
+            step = s;
+            vibrate(10);
+            document.querySelectorAll('.step-btn').forEach(btn => {
+                btn.classList.toggle('active', parseFloat(btn.textContent) === s);
+            });
+        }
+        
+        // Actions
+        function zeroXY() { vibrate(20); send('G92 X0 Y0'); }
+        function zeroZ() { vibrate(20); send('G92 Z0'); }
+        function home() { vibrate(30); send('$H'); }
+        function unlock() { vibrate(20); send('$X'); }
+        
+        function estop() {
+            vibrate([50, 30, 50, 30, 50]);
+            if (ws && connected) {
+                ws.send(String.fromCharCode(0x18)); // Soft reset
+                ws.send('M5\n');  // Spindle off
+                ws.send('M9\n');  // Coolant off
+            }
+        }
+        
+        function send(cmd) {
+            if (ws && connected) ws.send(cmd + '\n');
+        }
+        
+        function vibrate(pattern) {
+            if (navigator.vibrate) navigator.vibrate(pattern);
+        }
+        
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedIp = localStorage.getItem('pendant-ip');
+            if (savedIp) document.getElementById('ipInput').value = savedIp;
+        });
+        
+        // Prevent zoom on double-tap
+        document.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>

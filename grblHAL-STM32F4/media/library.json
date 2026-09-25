@@ -1,0 +1,7 @@
+{
+    "platforms":  "*",
+    "frameworks":  "*",
+    "description":  "grblHAL media library",
+    "name":  "media",
+    "version":  "1.0.0"
+}

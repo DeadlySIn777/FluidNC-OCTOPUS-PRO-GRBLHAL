@@ -1,0 +1,36 @@
+[Unit]
+Description=FluidCNC CNC Control Web Interface
+Documentation=https://github.com/yourrepo/fluidcnc
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=lepotato
+Group=lepotato
+WorkingDirectory=/home/lepotato/fluidcnc
+
+# Simple HTTP server (WebSerial requires HTTPS or localhost)
+# localhost works for kiosk mode since browser trusts it
+ExecStart=/usr/bin/python3 -m http.server 8080 --bind 127.0.0.1
+
+# For remote access, use the HTTPS server instead:
+# ExecStart=/home/lepotato/fluidcnc/venv/bin/python https-server.py
+
+Restart=always
+RestartSec=5
+StartLimitBurst=5
+StartLimitIntervalSec=60
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/lepotato/fluidcnc/uploads /home/lepotato/fluidcnc/jobs
+PrivateTmp=true
+
+# Environment
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,52 @@
+{
+  "schema": "mr1-controller-firmware-v1",
+  "candidateId": "mr1-f429-production-2026-08-27",
+  "releaseState": "SOURCE CANDIDATE - PHYSICAL FLASH UNVERIFIED",
+  "boardIdentity": {
+    "manufacturer": "BIGTREETECH",
+    "model": "Octopus Pro",
+    "revision": "V1.1",
+    "mcu": "STM32F429ZGT6",
+    "crystalHz": 8000000
+  },
+  "bootloader": {
+    "reservedBytes": 32768,
+    "applicationAddress": "0x08008000",
+    "method": "FAT32 microSD through the stock BTT bootloader",
+    "requiredFilename": "firmware.bin",
+    "successFilename": "FIRMWARE.CUR",
+    "dfuPolicy": "RECOVERY ONLY - NEVER MASS ERASE THE STOCK BOOTLOADER"
+  },
+  "power": {
+    "method": "USB-C with the BTT MCU power jumper fitted",
+    "main24V": "PHYSICALLY DISCONNECTED",
+    "motor36V": "PHYSICALLY DISCONNECTED",
+    "externalLoads": "PHYSICALLY DISCONNECTED",
+    "removeUsbPowerJumperBeforeMainPower": true
+  },
+  "artifact": {
+    "filename": "firmware.bin",
+    "bytes": 221304,
+    "sha256": "F4AB32BD2CB7D0985A07915CF1C4349A3A7FD8546C765265B23EB98B904E5E9D"
+  },
+  "preflight": {
+    "protocol": "mr1-controller-preflight-v1",
+    "profile": "btt_octopus_pro_f429_mr1",
+    "maximumAgeMs": 900000,
+    "source": "physical serial controller only",
+    "requirements": "exact board identity, all settings exact, no warnings or blockers, clear inputs, Idle or Alarm state",
+    "simulationAccepted": false
+  },
+  "validation": {
+    "cleanBuild": "PASS",
+    "profileAudit": "PASS",
+    "workflowTests": "6 OF 6 PASS",
+    "physicalFlash": "NOT RUN",
+    "physicalMotionPermitted": false
+  },
+  "sources": [
+    "https://github.com/bigtreetech/docs/blob/master/docs/Octopus%20Pro.md",
+    "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro",
+    "grblHAL-STM32F4/mr1/BUILD_REPORT.md"
+  ]
+}

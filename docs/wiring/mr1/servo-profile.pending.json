@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "profile": "mr1-stock-servo-pending",
+  "status": "identity-required",
+  "commissioningStage": 0,
+  "profileFingerprint": null,
+  "architecture": {
+    "decision": "digital-first-with-analog-fallback",
+    "targetCommandPath": "isolated-rs485-modbus-rtu",
+    "commissioningBaselinePath": "isolated-0-5v-analog-forward-only",
+    "targetCommandOwner": "grblhal-custom-servo-plugin",
+    "currentCommandOwner": "grblhal-pwm-spindle",
+    "browserCommandAuthority": false,
+    "hardwiredSafetyAuthority": true,
+    "dualCommandAuthorityAllowed": false
+  },
+  "permits": {
+    "readOnlyModbus": false,
+    "modbusWrite": false,
+    "servoEnable": false,
+    "reverse": false,
+    "positionMode": false,
+    "orientation": false,
+    "rigidTapping": false,
+    "automaticAdaptiveFeed": false
+  },
+  "controller": {
+    "firmwareTarget": "btt_octopus_pro_f429_mr1",
+    "physicalBoardVerified": false,
+    "physicalMcuMarking": null,
+    "candidateServoUart": {
+      "peripheral": "USART2",
+      "tx": "PD5",
+      "rx": "PD6",
+      "approved": false
+    }
+  },
+  "drive": {
+    "externalModel": null,
+    "hiddenModel": null,
+    "motorModel": null,
+    "softwareVersion": null,
+    "genericReferenceFamily": "T3A/T3L",
+    "genericReferenceApprovedForInstalledDrive": false,
+    "parameterArchiveSha256": null,
+    "cn1ContinuityArchiveSha256": null
+  },
+  "mechanics": {
+    "nominalSpindlePerMotorRatio": 2.0,
+    "ratioVerified": false,
+    "pulleyTeethRecorded": false,
+    "tachometerVerified": false,
+    "spindleSideIndexInstalled": false,
+    "reverseMechanicalReviewComplete": false
+  },
+  "rigidTappingProof": {
+    "status": "blocked-current-controller",
+    "gcode": "G33.1",
+    "controllerDecision": "unselected",
+    "pinnedCoreCommit": "779d41b8d86e3042f13df326d92dd34ae1825e24",
+    "pinnedCoreParserSupport": false,
+    "pinnedCoreMotionImplementation": false,
+    "latestUpstreamAudit": {
+      "auditedAt": "2026-08-23",
+      "coreCommit": "f80fc34d503bd62391a23b197b3e0ee66ce00cb7",
+      "stm32f4Commit": "b7bcf17e7500be5bb71daa403add3fc461b9bc41",
+      "parserHookPresent": true,
+      "motionImplementationPresent": false,
+      "stm32f4OverridePresent": false
+    },
+    "gates": {
+      "productionControllerSelected": false,
+      "directSpindleEncoderInstalled": false,
+      "singleIndexPerSpindleRevolutionVerified": false,
+      "bidirectionalPhaseFeedbackVerified": false,
+      "m4ReverseVerified": false,
+      "atSpeedInterlockVerified": false,
+      "encoderLossFaultVerified": false,
+      "zAxisTrackingVerified": false,
+      "reversalOvershootCharacterized": false,
+      "waxTestPassed": false,
+      "aluminumTestPassed": false
+    },
+    "evidence": {
+      "softwareTestSha256": null,
+      "scopeCaptureSha256": null,
+      "reversalTestSha256": null,
+      "waxTestSha256": null,
+      "aluminumTestSha256": null
+    },
+    "productionAuthorized": false
+  },
+  "commandContract": {
+    "spindleRpmRange": [0, 8000],
+    "nominalMotorRpmRange": [-4000, 4000],
+    "motorSignForM3": null,
+    "motorSignForM4": null,
+    "atSpeedRequiredBeforeCuttingFeed": true,
+    "normalStopSequence": [
+      "command-zero",
+      "confirm-zero-speed",
+      "remove-normal-servo-permission"
+    ],
+    "speedMonitorRegisterIsWriteAuthority": false
+  },
+  "communications": {
+    "enabledInProductionFirmware": false,
+    "protocol": "modbus-rtu",
+    "candidateOnly": {
+      "station": 1,
+      "baud": 19200,
+      "dataBits": 8,
+      "parity": "even",
+      "stopBits": 1
+    },
+    "approved": false
+  },
+  "monitoring": {
+    "genericReferenceOnly": true,
+    "registers": [
+      {"address": "0x0000", "name": "motor_speed_rpm", "approved": false},
+      {"address": "0x0009", "name": "motor_torque_percent", "approved": false},
+      {"address": "0x000B", "name": "instantaneous_current_0_1a", "approved": false},
+      {"address": "0x000C", "name": "peak_current_0_1a", "approved": false},
+      {"address": "0x000E", "name": "speed_command_rpm", "approved": false},
+      {"address": "0x0012", "name": "digital_input_state", "approved": false},
+      {"address": "0x0013", "name": "digital_output_state", "approved": false},
+      {"address": "0x0017", "name": "regenerative_load_percent", "approved": false},
+      {"address": "0x0018", "name": "average_load_percent", "approved": false},
+      {"address": "0x001A", "name": "alarm_code", "approved": false}
+    ]
+  },
+  "writes": {
+    "registerWhitelist": [],
+    "eepromSaveAllowed": false,
+    "modbusServoEnableAllowed": false,
+    "modbusJogAllowed": false,
+    "alarmResetAllowed": false
+  },
+  "hardware": {
+    "analogFallbackRequired": true,
+    "stockHarnessMustRemainReversible": true,
+    "galvanicIsolationRequired": true,
+    "hardwiredServoPermissionRequired": true,
+    "hardwareHeartbeatRequired": true,
+    "directOctopusToServoConnectionAllowed": false,
+    "encoderReceiver": "isolated differential RS-422; exact part and timer pins pending",
+    "digitalIo": "isolated 12-24 V channels; polarity pending installed-drive proof"
+  }
+}

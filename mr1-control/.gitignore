@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.vite/
+playwright-report/
+test-results/
+screenshots/
+.pydeps/
+cad/source/
+cad/work/
+reports/
+*.log
+*.nc.failed
+!package-lock.json
+
+# Optional local references are imported only; not redistributed by this source release.
+public/firmware/octopus-pro-v1.1-f429-mr1/firmware.bin
+public/models/*.glb
+public/assets/octopus-pro-v1.1-official-pinout.jpg
+public/assets/octopus-pro-usb-power-official.png
+post-processors/fusion/MR1_grblHAL.cps
+post-processors/examples/

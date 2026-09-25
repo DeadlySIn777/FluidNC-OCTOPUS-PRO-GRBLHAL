@@ -1,0 +1,1125 @@
+{
+  "schemaVersion": 1,
+  "title": "Octopus board: named terminal → destination",
+  "scope": "Production Octopus Pro v1.1 / STM32F429 with four external CL57T V4.1 drives. Functional names, not a physical mating-face pinout or a complete cabinet power design.",
+  "physicalCheckComplete": false,
+  "mayEnergize": false,
+  "mayMachine": false,
+  "sourceBoard": {
+    "asset": "board",
+    "width": 1912,
+    "height": 1534,
+    "sha256": "d360491ad8e1f738b1e784bfd62cc2c0f2b4c396d6cd069b9743d62aab0ee285",
+    "title": "BIGTREETECH Octopus Pro V1.1-Pin — 2023-11-02",
+    "path": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg",
+    "url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg",
+    "distribution": "External official reference; image bytes are not bundled in the public build."
+  },
+  "instructions": [
+    "Keep all supplies and USB isolated and discharged while preparing or changing wiring.",
+    "Match the actual board revision, printed names, connector viewing side and continuity. A GPIO or schematic contact number is not a physical cavity position.",
+    "Planned interfaces remain on HOLD until actual modules, terminals and electrical behavior are proved. No status in this file records completed hardware acceptance."
+  ],
+  "cableIdMeaning": "cableIds identify the same scheduled cable segment. relatedCableIds provide reference context only; use the referenced cable’s own view for its actual endpoints.",
+  "sources": [
+    {
+      "id": "wiring",
+      "path": "docs/wiring/mr1/WIRING.md",
+      "sha256": "5d4069ca27c33cdb2273b6d5abf54ceac2bde3c37481f092d5389af49de6ba18"
+    },
+    {
+      "id": "pigtails",
+      "path": "docs/wiring/mr1/PIGTAIL_SCHEDULE.md",
+      "sha256": "f64eacc58ba6f0d11ca59e0a11ea92a30ae48da5a5fbadf8c8c945d6a8362329"
+    },
+    {
+      "id": "interface",
+      "path": "docs/wiring/mr1/INTERFACE_BOARD.md",
+      "sha256": "15431a15717901b895a487dbc048cd0a0c15290fcb5f5cdd6e3eef64dd748e09"
+    },
+    {
+      "id": "manifest",
+      "path": "docs/wiring/mr1/io-manifest.json",
+      "sha256": "5ff586c6a720151987b5612a30d96c6c6afb800194db1cd5e5d80b3b826a36f4"
+    },
+    {
+      "id": "cable-schedule",
+      "path": "docs/wiring/mr1/cable-schedule.csv",
+      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+    },
+    {
+      "id": "pin-map",
+      "path": "docs/wiring/source/boards/btt_octopus_pro_mr1_map.h",
+      "sha256": "7d759ac9f9a0f406f326296c03375658753390ed7a9e1ff306b40fe2362aeeb2"
+    },
+    {
+      "id": "installation",
+      "path": "docs/wiring/application-reference/wiring-installation.js",
+      "sha256": "1c6065acc60d341328e8f095f22c091e6e6a3215a3005080ff4e0755b5af6806"
+    },
+    {
+      "id": "btt-pinout",
+      "path": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg",
+      "sha256": "d360491ad8e1f738b1e784bfd62cc2c0f2b4c396d6cd069b9743d62aab0ee285",
+      "description": "Official BTT Octopus Pro V1.1-Pin, 2023-11-02."
+    }
+  ],
+  "groups": [
+    {
+      "id": "motor-phase-plugs",
+      "title": "Four-way MOTOR output plugs: A1 / A2 / B2 / B1",
+      "status": "LEAVE EMPTY",
+      "rows": [
+        {
+          "terminal": "A1",
+          "destination": "No connection in this external-CL57T design."
+        },
+        {
+          "terminal": "A2",
+          "destination": "No connection in this external-CL57T design."
+        },
+        {
+          "terminal": "B2",
+          "destination": "No connection in this external-CL57T design."
+        },
+        {
+          "terminal": "B1",
+          "destination": "No connection in this external-CL57T design."
+        }
+      ],
+      "notes": [
+        "These are the board motor-phase output plugs, distinct from the driver sockets below them in the official image.",
+        "The documented design does not route STEP/DIR through these plugs. No installed conversion adapter or alternate A/B-to-PUL/DIR mapping has been verified.",
+        "Motor windings connect to their own CL57T P3; encoder feedback connects to that same drive P2. Removing jumpers does not change these output plugs into STEP/DIR."
+      ],
+      "sourceIds": [
+        "pigtails",
+        "wiring",
+        "btt-pinout"
+      ]
+    },
+    {
+      "id": "jumper-voltage",
+      "title": "Driver voltage-selector jumpers: ALL eight slots",
+      "status": "REMOVE FITTED CAPS",
+      "rows": [
+        {
+          "terminal": "MOTOR0–MOTOR7: HV / VM / VIN selector",
+          "destination": "Remove each fitted selector cap; keep this driver-slot selector open."
+        }
+      ],
+      "notes": [
+        "For the documented external-drive build with no plug-in drivers. Applies to all eight slots, including unused MOTOR4–7.",
+        "Remove caps, not the fixed headers. Identify the block on the actual v1.1 board; do not use an assumed top/bottom orientation.",
+        "Disconnect mains, all DC/field supplies and USB; prove discharged before changing caps."
+      ],
+      "sourceIds": [
+        "wiring",
+        "pigtails",
+        "btt-pinout"
+      ]
+    },
+    {
+      "id": "jumper-mode-spi",
+      "title": "Driver mode / SPI jumpers: ALL eight slots",
+      "status": "REMOVE FITTED CAPS",
+      "rows": [
+        {
+          "terminal": "MOTOR0–MOTOR7: mode / SPI jumper fields",
+          "destination": "Remove every fitted cap in each driver-slot mode/SPI field."
+        }
+      ],
+      "notes": [
+        "These are the multi-row driver configuration fields, not the USB-power, FAN-voltage or BOOT jumpers.",
+        "The source identifies PA6 / CS / PA5 / PA7 and SLP / 5V reference rows; this list is not a physical cavity order.",
+        "All supplies and USB disconnected and discharged."
+      ],
+      "sourceIds": [
+        "wiring",
+        "pigtails",
+        "btt-pinout"
+      ]
+    },
+    {
+      "id": "jumper-diag",
+      "title": "M0DIAG–M7DIAG jumpers: ALL eight",
+      "status": "REMOVE FITTED CAPS",
+      "rows": [
+        {
+          "terminal": "M0DIAG / M1DIAG / M2DIAG / M3DIAG",
+          "destination": "Caps off: these share STOP0 / STOP1 / STOP2 / STOP3 home nets."
+        },
+        {
+          "terminal": "M4DIAG / M5DIAG / M6DIAG / M7DIAG",
+          "destination": "Caps off: these share STOP4 / STOP5 / STOP6 / STOP7 diagnostic nets."
+        }
+      ],
+      "notes": [
+        "Driver-socket DIAG is not the independent CL57T ALM connection. Remove all eight caps in this design.",
+        "M0–M7 DIAG nets are PG6, PG9, PG10, PG11, PG12, PG13, PG14, PG15 respectively.",
+        "Changing these caps does not route motor-output A/B contacts to STEP/DIR."
+      ],
+      "sourceIds": [
+        "wiring",
+        "pigtails",
+        "btt-pinout"
+      ]
+    },
+    {
+      "id": "driver0",
+      "title": "MOTOR0 driver socket → X command interface",
+      "status": "PLANNED INTERFACE — HOLD",
+      "rows": [
+        {
+          "terminal": "STEP / PF13",
+          "destination": "Planned X STEP interface input; its qualified sinking output then goes to CL57T X P1 PUL−.",
+          "relatedCableIds": [
+            "CMD-X"
+          ]
+        },
+        {
+          "terminal": "DIR / PF12",
+          "destination": "Planned X DIR interface input; its qualified sinking output then goes to CL57T X P1 DIR−.",
+          "relatedCableIds": [
+            "CMD-X"
+          ]
+        },
+        {
+          "terminal": "Logic GND",
+          "destination": "Controller-side return of the planned X command interface.",
+          "relatedCableIds": [
+            "CMD-X"
+          ]
+        },
+        {
+          "terminal": "EN / PF14",
+          "destination": "Reserved and unused. Leave this interface ENA channel unconnected."
+        },
+        {
+          "terminal": "Other driver-socket contacts",
+          "destination": "No connection: VM, VCC_IO, phase, mode/reset/sleep, DIAG and other unused contacts."
+        }
+      ],
+      "notes": [
+        "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
+        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "CMD-X labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
+        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "driver1",
+      "title": "MOTOR1 driver socket → Y-left command interface",
+      "status": "PLANNED INTERFACE — HOLD",
+      "rows": [
+        {
+          "terminal": "STEP / PG0",
+          "destination": "Planned Y-left STEP interface input; its qualified sinking output then goes to CL57T Y-left P1 PUL−.",
+          "relatedCableIds": [
+            "CMD-YL"
+          ]
+        },
+        {
+          "terminal": "DIR / PG1",
+          "destination": "Planned Y-left DIR interface input; its qualified sinking output then goes to CL57T Y-left P1 DIR−.",
+          "relatedCableIds": [
+            "CMD-YL"
+          ]
+        },
+        {
+          "terminal": "Logic GND",
+          "destination": "Controller-side return of the planned Y-left command interface.",
+          "relatedCableIds": [
+            "CMD-YL"
+          ]
+        },
+        {
+          "terminal": "EN / PF15",
+          "destination": "Reserved and unused. Leave this interface ENA channel unconnected."
+        },
+        {
+          "terminal": "Other driver-socket contacts",
+          "destination": "No connection: VM, VCC_IO, phase, mode/reset/sleep, DIAG and other unused contacts."
+        }
+      ],
+      "notes": [
+        "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
+        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "CMD-YL labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
+        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "driver2",
+      "title": "MOTOR2 driver socket → Z command interface",
+      "status": "PLANNED INTERFACE — HOLD",
+      "rows": [
+        {
+          "terminal": "STEP / PF11",
+          "destination": "Planned Z STEP interface input; its qualified sinking output then goes to CL57T Z P1 PUL−.",
+          "relatedCableIds": [
+            "CMD-Z"
+          ]
+        },
+        {
+          "terminal": "DIR / PG3",
+          "destination": "Planned Z DIR interface input; its qualified sinking output then goes to CL57T Z P1 DIR−.",
+          "relatedCableIds": [
+            "CMD-Z"
+          ]
+        },
+        {
+          "terminal": "Logic GND",
+          "destination": "Controller-side return of the planned Z command interface.",
+          "relatedCableIds": [
+            "CMD-Z"
+          ]
+        },
+        {
+          "terminal": "EN / PG5",
+          "destination": "Reserved and unused. Leave this interface ENA channel unconnected."
+        },
+        {
+          "terminal": "Other driver-socket contacts",
+          "destination": "No connection: VM, VCC_IO, phase, mode/reset/sleep, DIAG and other unused contacts."
+        }
+      ],
+      "notes": [
+        "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
+        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "CMD-Z labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
+        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "driver3",
+      "title": "MOTOR3 driver socket → Y-right command interface",
+      "status": "PLANNED INTERFACE — HOLD",
+      "rows": [
+        {
+          "terminal": "STEP / PG4",
+          "destination": "Planned Y-right STEP interface input; its qualified sinking output then goes to CL57T Y-right P1 PUL−.",
+          "relatedCableIds": [
+            "CMD-YR"
+          ]
+        },
+        {
+          "terminal": "DIR / PC1",
+          "destination": "Planned Y-right DIR interface input; its qualified sinking output then goes to CL57T Y-right P1 DIR−.",
+          "relatedCableIds": [
+            "CMD-YR"
+          ]
+        },
+        {
+          "terminal": "Logic GND",
+          "destination": "Controller-side return of the planned Y-right command interface.",
+          "relatedCableIds": [
+            "CMD-YR"
+          ]
+        },
+        {
+          "terminal": "EN / PA2",
+          "destination": "Reserved and unused. Leave this interface ENA channel unconnected."
+        },
+        {
+          "terminal": "Other driver-socket contacts",
+          "destination": "No connection: VM, VCC_IO, phase, mode/reset/sleep, DIAG and other unused contacts."
+        }
+      ],
+      "notes": [
+        "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
+        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "CMD-YR labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
+        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "driver4-7-unused",
+      "title": "MOTOR4–MOTOR7 driver sockets",
+      "status": "LEAVE EMPTY",
+      "rows": [
+        {
+          "terminal": "MOTOR4 / MOTOR5 / MOTOR6 / MOTOR7",
+          "destination": "No plug-in drivers, external command harnesses or active production-axis connections."
+        }
+      ],
+      "notes": [
+        "Production uses MOTOR0–3 for X, Y-left, Z and Y-right. Y-right is the second Y motor, not a rotary axis.",
+        "Any experimental spindle-servo/extra-axis profile is outside this production wiring. Keep the three driver-jumper groups open here too."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "wiring"
+      ]
+    },
+    {
+      "id": "power-main",
+      "title": "POWER / MAIN: 24 V board input",
+      "status": "PLANNED — POLARITY / PROTECTION HOLD",
+      "rows": [
+        {
+          "terminal": "POWER +VIN",
+          "destination": "Protected control-supply +24 V.",
+          "cableIds": [
+            "PWR-24-01"
+          ]
+        },
+        {
+          "terminal": "POWER GND",
+          "destination": "That control supply return.",
+          "cableIds": [
+            "PWR-24-01"
+          ]
+        }
+      ],
+      "notes": [
+        "Use the actual POWER pair, distinct from MOTOR-POWER, BED-POWER and BED-OUT. No screw-number or photo orientation is assumed.",
+        "The 36 V motor-drive bus never connects here. Actual supply, polarity, branch protection and control-0V/PE/USB return topology remain to verify."
+      ],
+      "sourceIds": [
+        "wiring",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "power-unused",
+      "title": "MOTOR-POWER / BED-POWER / BED-OUT",
+      "status": "LEAVE EMPTY",
+      "rows": [
+        {
+          "terminal": "MOTOR-POWER: HV / GND",
+          "destination": "No connection in the external-CL57T design."
+        },
+        {
+          "terminal": "BED-POWER: VB / GND",
+          "destination": "No connection."
+        },
+        {
+          "terminal": "BED-OUT: VB / PA1 switched return",
+          "destination": "No connection."
+        }
+      ],
+      "notes": [
+        "Do not land CL57T bus power or machine motors on these terminals. Motor-drive DC branches stay off the Octopus."
+      ],
+      "sourceIds": [
+        "wiring",
+        "pigtails",
+        "btt-pinout"
+      ]
+    },
+    {
+      "id": "homes-stop0-3",
+      "title": "STOP0–STOP3: four independent home inputs",
+      "status": "CONDITIONER / HARNESS HOLD",
+      "rows": [
+        {
+          "terminal": "STOP0 signal / PG6",
+          "destination": "Qualified X home-conditioner output. Actual module terminal remains unresolved.",
+          "cableIds": [
+            "HOME-LOGIC-X"
+          ]
+        },
+        {
+          "terminal": "STOP0 GND",
+          "destination": "Verified controller-side return for the X home channel.",
+          "cableIds": [
+            "HOME-LOGIC-X"
+          ]
+        },
+        {
+          "terminal": "STOP1 signal / PG9",
+          "destination": "Qualified Y-left home-conditioner output. Actual module terminal remains unresolved.",
+          "cableIds": [
+            "HOME-LOGIC-YL"
+          ]
+        },
+        {
+          "terminal": "STOP1 GND",
+          "destination": "Verified controller-side return for the Y-left home channel.",
+          "cableIds": [
+            "HOME-LOGIC-YL"
+          ]
+        },
+        {
+          "terminal": "STOP2 signal / PG10",
+          "destination": "Qualified Z home-conditioner output. Actual module terminal remains unresolved.",
+          "cableIds": [
+            "HOME-LOGIC-Z"
+          ]
+        },
+        {
+          "terminal": "STOP2 GND",
+          "destination": "Verified controller-side return for the Z home channel.",
+          "cableIds": [
+            "HOME-LOGIC-Z"
+          ]
+        },
+        {
+          "terminal": "STOP3 signal / PG11",
+          "destination": "Qualified Y-right home-conditioner output. Actual module terminal remains unresolved.",
+          "cableIds": [
+            "HOME-LOGIC-YR"
+          ]
+        },
+        {
+          "terminal": "STOP3 GND",
+          "destination": "Verified controller-side return for the Y-right home channel.",
+          "cableIds": [
+            "HOME-LOGIC-YR"
+          ]
+        },
+        {
+          "terminal": "STOP0–STOP3 +5 V",
+          "destination": "Leave each +5 V cavity empty. No stock sensor supply on the GPIO."
+        }
+      ],
+      "notes": [
+        "X, Y-left, Z and Y-right are separate channels. Y-left and Y-right must remain independent for squaring.",
+        "Stock sensor type, field supply and actual conditioner circuit remain unverified. Do not assume a powered stock switch is a bare dry contact.",
+        "Required behavior is healthy low, trigger/open/lost field power high. A direct dry-contact route is only a separately proved alternative, not an assumed bypass."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "cable-schedule",
+        "pigtails"
+      ]
+    },
+    {
+      "id": "diagnostics-stop4-7",
+      "title": "STOP4–STOP7: separate drive diagnostics",
+      "status": "FUNCTIONAL SEGMENTS — HOLD",
+      "rows": [
+        {
+          "terminal": "STOP4 signal / PG12",
+          "destination": "Separate qualified controller-side X drive-fault indication.",
+          "relatedCableIds": [
+            "ALM-X"
+          ]
+        },
+        {
+          "terminal": "STOP4 GND",
+          "destination": "Verified controller-side return for that X diagnostic output.",
+          "relatedCableIds": [
+            "ALM-X"
+          ]
+        },
+        {
+          "terminal": "STOP5 signal / PG13",
+          "destination": "Separate qualified controller-side Y-left drive-fault indication.",
+          "relatedCableIds": [
+            "ALM-YL"
+          ]
+        },
+        {
+          "terminal": "STOP5 GND",
+          "destination": "Verified controller-side return for that Y-left diagnostic output.",
+          "relatedCableIds": [
+            "ALM-YL"
+          ]
+        },
+        {
+          "terminal": "STOP6 signal / PG14",
+          "destination": "Separate qualified controller-side Z drive-fault indication.",
+          "relatedCableIds": [
+            "ALM-Z"
+          ]
+        },
+        {
+          "terminal": "STOP6 GND",
+          "destination": "Verified controller-side return for that Z diagnostic output.",
+          "relatedCableIds": [
+            "ALM-Z"
+          ]
+        },
+        {
+          "terminal": "STOP7 signal / PG15",
+          "destination": "Separate qualified controller-side Y-right drive-fault indication.",
+          "relatedCableIds": [
+            "ALM-YR"
+          ]
+        },
+        {
+          "terminal": "STOP7 GND",
+          "destination": "Verified controller-side return for that Y-right diagnostic output.",
+          "relatedCableIds": [
+            "ALM-YR"
+          ]
+        },
+        {
+          "terminal": "STOP4–STOP7 +5 V",
+          "destination": "Leave each +5 V cavity empty."
+        }
+      ],
+      "notes": [
+        "These are separate conditioned indications, not raw ALM/COMO terminals and not the PB1 motor-fault stop input.",
+        "The ALM-X/YL/Z/YR cables end at their own field conditioners. These conditioner-to-STOP links need separate harness IDs and terminal schedules.",
+        "Do not treat PG12–PG15 diagnostics as verified per-drive telemetry or independent safety protection."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "pigtails"
+      ]
+    },
+    {
+      "id": "tb-t0-t1",
+      "title": "TB / T0 / T1: safety monitor, hold and probe",
+      "status": "PLANNED — PHYSICAL CHECKS OPEN",
+      "rows": [
+        {
+          "terminal": "TB signal / PF3",
+          "destination": "Isolated NC safety-relay auxiliary monitor contact.",
+          "cableIds": [
+            "SAFE-MON"
+          ]
+        },
+        {
+          "terminal": "TB GND",
+          "destination": "Verified return for that monitor contact.",
+          "cableIds": [
+            "SAFE-MON"
+          ]
+        },
+        {
+          "terminal": "T0 signal / PF4",
+          "destination": "NC feed-hold button contact.",
+          "cableIds": [
+            "HOLD-01"
+          ]
+        },
+        {
+          "terminal": "T0 GND",
+          "destination": "Verified return for the feed-hold contact.",
+          "cableIds": [
+            "HOLD-01"
+          ]
+        },
+        {
+          "terminal": "T1 signal / PF5",
+          "destination": "Qualified isolated touch-probe conditioner output; actual module terminal not assigned.",
+          "relatedCableIds": [
+            "PROBE-01"
+          ]
+        },
+        {
+          "terminal": "T1 GND",
+          "destination": "Verified controller-side probe-conditioner return.",
+          "relatedCableIds": [
+            "PROBE-01"
+          ]
+        }
+      ],
+      "notes": [
+        "SAFE-MON reports the safety relay; it does not replace the independent hardware stop. Feed hold is not energy isolation.",
+        "PROBE-01 is the sensor-to-interface cable. The separate interface-to-T1 output harness still needs its own ID and terminal map.",
+        "No probe field supply or raw sensor output goes directly to PF5. T2 and T3 are unused."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "cable-schedule",
+        "pigtails"
+      ]
+    },
+    {
+      "id": "tool-setter",
+      "title": "Five-contact header labelled BLTouch: tool setter only",
+      "status": "CONDITIONER / HARNESS HOLD",
+      "rows": [
+        {
+          "terminal": "PB7",
+          "destination": "Qualified isolated tool-setter conditioner output; actual module terminal not assigned.",
+          "relatedCableIds": [
+            "TOOL-01"
+          ]
+        },
+        {
+          "terminal": "Proved PB7-associated GND",
+          "destination": "Controller-side return for that tool-setter output.",
+          "relatedCableIds": [
+            "TOOL-01"
+          ]
+        },
+        {
+          "terminal": "PB6 / +5 V / unused contact",
+          "destination": "Leave unpopulated in this design."
+        }
+      ],
+      "notes": [
+        "No BLTouch device or plugin is used. This header carries the fixed setter input in the production map.",
+        "Prove the PB7/GND pair from actual markings and continuity; do not count cavities from the end of a loose plug.",
+        "TOOL-01 ends at the sensor interface; the separate interface-to-PB7 harness has no scheduled ID yet."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "pigtails",
+        "interface"
+      ]
+    },
+    {
+      "id": "exp2",
+      "title": "EXP2: aggregate fault and cycle start",
+      "status": "PLANNED — AGGREGATE CIRCUIT HOLD",
+      "rows": [
+        {
+          "terminal": "PB1",
+          "destination": "Qualified supervised combined healthy output from the fault conditioner.",
+          "cableIds": [
+            "FAULT-AGG"
+          ]
+        },
+        {
+          "terminal": "GND associated with PB1 circuit",
+          "destination": "Verified controller-side aggregate return.",
+          "cableIds": [
+            "FAULT-AGG"
+          ]
+        },
+        {
+          "terminal": "PB2",
+          "destination": "NO guarded cycle-start contact.",
+          "cableIds": [
+            "START-01"
+          ]
+        },
+        {
+          "terminal": "GND associated with PB2 circuit",
+          "destination": "Verified cycle-start contact return.",
+          "cableIds": [
+            "START-01"
+          ]
+        },
+        {
+          "terminal": "Other EXP2 contacts",
+          "destination": "Leave unconnected for this design."
+        }
+      ],
+      "notes": [
+        "PB1 is the configured controller motor-fault input: all required contributors healthy = low; fault/open cable/lost power must make it high.",
+        "Every raw CL57T ALM/COMO pair first goes to its own isolated, current-limited and supervised conditioner. No raw transistor series chain or raw alarm GPIO connection.",
+        "Include required spindle/cabinet fault contributors. PB1 remains separate from the independent hardwired safety chain.",
+        "Use a verified keyed breakout and recorded return paths, not generic IDC pin numbering."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "door-pwr-det",
+      "title": "PWR-DET: door monitor",
+      "status": "PLANNED — CONTACT / VIEW CHECK",
+      "rows": [
+        {
+          "terminal": "PC0",
+          "destination": "NC door-monitor contact.",
+          "cableIds": [
+            "DOOR-MON"
+          ]
+        },
+        {
+          "terminal": "GND",
+          "destination": "Verified return for that contact.",
+          "cableIds": [
+            "DOOR-MON"
+          ]
+        },
+        {
+          "terminal": "3.3 V",
+          "destination": "Leave empty."
+        }
+      ],
+      "notes": [
+        "This is a monitored controller input; it does not by itself establish the guard safety circuit."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "spindle-fan0-fan4",
+      "title": "FAN0 / FAN4: spindle interface control",
+      "status": "HOLD — RAIL / LOAD / SERVO UNVERIFIED",
+      "rows": [
+        {
+          "terminal": "FAN0 positive / VF0",
+          "destination": "Qualified isolated PWM-converter input positive.",
+          "cableIds": [
+            "SP-PWM"
+          ]
+        },
+        {
+          "terminal": "FAN0 switched negative / PA8",
+          "destination": "The other PWM-converter input conductor; not logic GND.",
+          "cableIds": [
+            "SP-PWM"
+          ]
+        },
+        {
+          "terminal": "FAN4 positive / VF4",
+          "destination": "Qualified spindle-enable relay/interface input positive; harness ID pending.",
+          "relatedCableIds": [
+            "SP-ENABLE"
+          ]
+        },
+        {
+          "terminal": "FAN4 switched negative / PD14",
+          "destination": "The other spindle-enable interface input conductor; not logic GND.",
+          "relatedCableIds": [
+            "SP-ENABLE"
+          ]
+        }
+      ],
+      "notes": [
+        "FAN0/FAN4 positive rails are individually jumper-selected 5 V / 12 V / VIN. MAIN 24 V does not prove the selected FAN voltage.",
+        "Verify rail, input rating, suppression and startup/off behavior. Never bridge a switched negative to logic GND.",
+        "SP-ENABLE identifies the relay-contact-to-servo segment; FAN4-to-relay input still needs a separate cable ID.",
+        "Servo DB44 mapping and command gain remain unresolved. Neither FAN header connects directly to servo analog or power terminals."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "pigtails",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "coolant-he0-he1",
+      "title": "HE0 / HE1: flood and mist/air control",
+      "status": "HOLD — RELAY / LOAD POWER UNVERIFIED",
+      "rows": [
+        {
+          "terminal": "HE0 positive / VIN",
+          "destination": "Qualified flood relay input positive.",
+          "cableIds": [
+            "FLOOD-CTL"
+          ]
+        },
+        {
+          "terminal": "HE0 switched negative / PA0",
+          "destination": "The other flood relay input conductor.",
+          "cableIds": [
+            "FLOOD-CTL"
+          ]
+        },
+        {
+          "terminal": "HE1 positive / VIN",
+          "destination": "Qualified mist/air relay input positive.",
+          "cableIds": [
+            "MIST-CTL"
+          ]
+        },
+        {
+          "terminal": "HE1 switched negative / PA3",
+          "destination": "The other mist/air relay input conductor.",
+          "cableIds": [
+            "MIST-CTL"
+          ]
+        }
+      ],
+      "notes": [
+        "Positive is fused VIN; prove actual rail and chosen load rating. Switched negative is not logic GND.",
+        "These cables stop at relay inputs. Pump/valve supply, protection, load contacts and load terminals need a separate reviewed circuit.",
+        "No dedicated oil/way-lube function is assigned to either output. HE2 and HE3 remain unused."
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "cable-schedule",
+        "pigtails"
+      ]
+    },
+    {
+      "id": "usb",
+      "title": "USB-C: Windows controller connection",
+      "status": "REFERENCE — POWER / RETURN PATH CHECK",
+      "rows": [
+        {
+          "terminal": "Octopus USB-C",
+          "destination": "Known data cable to the Windows mini PC USB port.",
+          "cableIds": [
+            "USB-01"
+          ]
+        }
+      ],
+      "notes": [
+        "USB can carry power and a ground/shield path; it is not an isolation barrier.",
+        "MCU USB-power jumper use belongs to a separate board-only procedure. It is not included in the driver-jumper removal list."
+      ],
+      "sourceIds": [
+        "cable-schedule",
+        "pigtails",
+        "installation"
+      ]
+    },
+    {
+      "id": "i2c-candidate",
+      "title": "I2C: candidate logic-side module supply",
+      "status": "HOLD — ACTUAL MODULE CIRCUIT UNKNOWN",
+      "rows": [
+        {
+          "terminal": "3.3 V / GND",
+          "destination": "Candidate controller-side supply/reference for the selected sensor interface only after its actual circuit and current demand are qualified."
+        },
+        {
+          "terminal": "PB8 SCL / PB9 SDA",
+          "destination": "Unused in this wiring plan; leave unconnected."
+        }
+      ],
+      "notes": [
+        "This does not approve a TLP281/HW-399 module by name. Verify shared pullups, supply domains and either-side-unpowered behavior.",
+        "Sensor field supply remains separate. No supply harness ID or completed module terminal map is assigned here."
+      ],
+      "sourceIds": [
+        "interface",
+        "pigtails"
+      ]
+    },
+    {
+      "id": "reserved-serial",
+      "title": "Future serial / spindle positioning connections",
+      "status": "RESERVED — LEAVE DISCONNECTED",
+      "rows": [
+        {
+          "terminal": "Candidate USART2 PD5 / PD6",
+          "destination": "Future isolated UART-side spindle interface only; no production Modbus wiring.",
+          "cableIds": [
+            "SP-RS485-LOGIC"
+          ]
+        },
+        {
+          "terminal": "Unassigned future step/direction source",
+          "destination": "No approved Octopus pin or timer assignment for spindle orientation.",
+          "cableIds": [
+            "SP-ORIENT"
+          ]
+        }
+      ],
+      "notes": [
+        "Actual peripheral/pin conflicts, interface terminals and installed servo parameters remain unresolved.",
+        "No raw RS485/RS422 or servo field voltage connects to a GPIO. No reserved record authorizes installation."
+      ],
+      "sourceIds": [
+        "manifest",
+        "cable-schedule"
+      ]
+    },
+    {
+      "id": "unused-headers",
+      "title": "Other board headers / outputs",
+      "status": "LEAVE UNUSED IN THIS PLAN",
+      "rows": [
+        {
+          "terminal": "Dedicated PROBE header / PC5",
+          "destination": "Unused. Touch probe uses conditioned T1/PF5; tool setter uses conditioned PB7."
+        },
+        {
+          "terminal": "T2 / T3",
+          "destination": "Unused temperature inputs; no sensor assigned here."
+        },
+        {
+          "terminal": "HE2 / HE3",
+          "destination": "Unused outputs."
+        },
+        {
+          "terminal": "FAN1 / FAN2 / FAN3 / FAN5 / FAN6 / FAN7",
+          "destination": "No load assigned by this MR1 wiring plan."
+        },
+        {
+          "terminal": "EXP1, including reserved PE15",
+          "destination": "No active field connection; PE15 is not FAN5."
+        },
+        {
+          "terminal": "RGB / PS-ON / CAN / other unused headers",
+          "destination": "No active field connection is released by this guide."
+        },
+        {
+          "terminal": "Onboard microSD",
+          "destination": "Board-only firmware bootloader procedure is separate; no SD job streaming in this production profile."
+        }
+      ],
+      "notes": [
+        "A printed power or signal label is not permission to attach a field cable. Leave unspecified connections alone.",
+        "Future features require a separate pin/interface qualification; this group does not change BOOT, USB-power or FAN-voltage jumpers."
+      ],
+      "sourceIds": [
+        "manifest",
+        "pigtails",
+        "installation",
+        "btt-pinout"
+      ]
+    },
+    {
+      "id": "other-jumpers",
+      "title": "USB-power / FAN-voltage / BOOT and unrelated selectors",
+      "status": "OUTSIDE DRIVER-JUMPER CLEANUP",
+      "rows": [
+        {
+          "terminal": "MCU USB-power jumper",
+          "destination": "Use only under its separate documented board-power procedure."
+        },
+        {
+          "terminal": "FAN-voltage selectors",
+          "destination": "Do not remove or reposition as part of driver cleanup. Actual rail selection remains a load-qualification task."
+        },
+        {
+          "terminal": "BOOT / unrelated selectors",
+          "destination": "Do not change from a generic jumper-removal instruction."
+        }
+      ],
+      "notes": [
+        "The remove-all instruction applies only to the three named DRIVER jumper groups across MOTOR0–7.",
+        "No jumper is changed while powered; USB must also be isolated."
+      ],
+      "sourceIds": [
+        "wiring",
+        "pigtails",
+        "installation"
+      ]
+    },
+    {
+      "id": "off-board",
+      "title": "Motor, encoder, bus and cabinet power stay off this board",
+      "status": "OFF-BOARD CIRCUITS",
+      "rows": [
+        {
+          "terminal": "CL57T P3 A+ / A− / B+ / B−",
+          "destination": "Matched motor winding harness for the same axis.",
+          "relatedCableIds": [
+            "MOT-X",
+            "MOT-YL",
+            "MOT-Z",
+            "MOT-YR"
+          ]
+        },
+        {
+          "terminal": "CL57T P2 EA± / EB± / VCC / EGND",
+          "destination": "Matched encoder on that same drive. VCC is supplied by the drive, not the Octopus.",
+          "relatedCableIds": [
+            "ENC-X",
+            "ENC-YL",
+            "ENC-Z",
+            "ENC-YR"
+          ]
+        },
+        {
+          "terminal": "CL57T P4 +VDC / GND",
+          "destination": "That drive’s polarity-verified protected DC star branch; not an Octopus motor plug.",
+          "relatedCableIds": [
+            "PWR-36-X",
+            "PWR-36-YL",
+            "PWR-36-Z",
+            "PWR-36-YR"
+          ]
+        },
+        {
+          "terminal": "CL57T P1 ALM / COMO",
+          "destination": "Its own isolated alarm-conditioner field input; not directly PB1 or STOP4–7.",
+          "relatedCableIds": [
+            "ALM-X",
+            "ALM-YL",
+            "ALM-Z",
+            "ALM-YR"
+          ]
+        },
+        {
+          "terminal": "Mains / PE / safety relay / contactors / pump load power",
+          "destination": "Separate reviewed cabinet circuits; this board map is not their terminal schedule."
+        }
+      ],
+      "notes": [
+        "All four motors have their own matched motor/encoder pair; Y-left and Y-right share logical Y.",
+        "Supply capacity, branch protection, protective bonding, independent stopping and gravity-loaded Z support remain physical qualification tasks.",
+        "No wire size, fuse rating, encoder cable color or removable-plug cavity order is invented here."
+      ],
+      "sourceIds": [
+        "wiring",
+        "pigtails",
+        "cable-schedule",
+        "interface"
+      ]
+    },
+    {
+      "id": "oil-unassigned",
+      "title": "Oil / way lubrication",
+      "status": "UNASSIGNED",
+      "rows": [
+        {
+          "terminal": "No Octopus terminal assigned",
+          "destination": "Identify whether lubrication is manual or powered and identify any pump, supply and pressure/level contacts before defining a circuit."
+        }
+      ],
+      "notes": [
+        "No oil/lubrication cable or dedicated output exists in the current cable schedule or production I/O manifest.",
+        "Do not substitute HE1 mist/air, a spare FAN output or another pin without a reviewed design."
+      ],
+      "sourceIds": [
+        "manifest",
+        "cable-schedule"
+      ]
+    }
+  ],
+  "coverage": {
+    "scheduledOctopusEndpointCount": 16,
+    "scheduledOctopusCableIds": [
+      "DOOR-MON",
+      "FAULT-AGG",
+      "FLOOD-CTL",
+      "HOLD-01",
+      "HOME-LOGIC-X",
+      "HOME-LOGIC-YL",
+      "HOME-LOGIC-YR",
+      "HOME-LOGIC-Z",
+      "MIST-CTL",
+      "PWR-24-01",
+      "SAFE-MON",
+      "SP-ORIENT",
+      "SP-PWM",
+      "SP-RS485-LOGIC",
+      "START-01",
+      "USB-01"
+    ],
+    "activeScheduledOctopusEndpointCount": 14,
+    "reservedScheduledOctopusEndpointCount": 2,
+    "unmappedScheduledOctopusCableIds": [],
+    "unscheduledFunctionalLinks": [
+      "MOTOR0–3 socket-to-command-interface",
+      "Four separate conditioner-to-STOP4–7 diagnostic links",
+      "Probe conditioner to T1/PF5",
+      "Tool-setter conditioner to PB7",
+      "FAN4 to spindle-enable relay input",
+      "Candidate I2C logic supply and other interface supply feeds"
+    ]
+  }
+}

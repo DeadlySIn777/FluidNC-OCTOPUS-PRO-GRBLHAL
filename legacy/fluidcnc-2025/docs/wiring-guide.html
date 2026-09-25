@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNC Wiring & Setup Guide - BTT Octopus Pro + grblHAL</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-code: #1c2128;
+            --accent: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --accent-purple: #a371f7;
+            --text: #c9d1d9;
+            --text-muted: #8b949e;
+            --border: #30363d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, var(--accent), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1em;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 5px;
+        }
+        
+        .badge-blue { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .badge-green { background: rgba(63, 185, 80, 0.2); color: var(--accent-green); }
+        .badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        .badge-red { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+        
+        nav {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        nav h3 {
+            color: var(--accent);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        nav ul {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            list-style: none;
+        }
+        
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: block;
+            transition: all 0.2s;
+        }
+        
+        nav a:hover {
+            background: var(--bg-code);
+            color: var(--accent);
+        }
+        
+        section {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        section h2 {
+            color: var(--accent);
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        section h2 .icon {
+            font-size: 1.3em;
+        }
+        
+        h3 {
+            color: var(--accent-green);
+            margin: 25px 0 15px 0;
+            font-size: 1.2em;
+        }
+        
+        h4 {
+            color: var(--accent-yellow);
+            margin: 20px 0 10px 0;
+        }
+        
+        p {
+            margin-bottom: 15px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        tr:hover {
+            background: rgba(88, 166, 255, 0.05);
+        }
+        
+        .pin-x { color: #ff6b6b; font-weight: 600; }
+        .pin-y { color: #4ecdc4; font-weight: 600; }
+        .pin-z { color: #45b7d1; font-weight: 600; }
+        .pin-ok { color: var(--accent-green); }
+        .pin-warn { color: var(--accent-yellow); }
+        .pin-danger { color: var(--accent-red); }
+        
+        code {
+            background: var(--bg-code);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.9em;
+            color: var(--accent-green);
+        }
+        
+        pre {
+            background: var(--bg-code);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+        }
+        
+        pre code {
+            padding: 0;
+            background: none;
+        }
+        
+        .wiring-diagram {
+            background: #0a0a0f;
+            padding: 25px;
+            border-radius: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+            overflow-x: auto;
+            border: 2px solid var(--border);
+            margin: 20px 0;
+        }
+        
+        .warning-box {
+            background: rgba(248, 81, 73, 0.1);
+            border: 1px solid var(--accent-red);
+            border-left: 4px solid var(--accent-red);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .warning-box h4 {
+            color: var(--accent-red);
+            margin-top: 0;
+        }
+        
+        .info-box {
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid var(--accent);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .info-box h4 {
+            color: var(--accent);
+            margin-top: 0;
+        }
+        
+        .success-box {
+            background: rgba(63, 185, 80, 0.1);
+            border: 1px solid var(--accent-green);
+            border-left: 4px solid var(--accent-green);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .success-box h4 {
+            color: var(--accent-green);
+            margin-top: 0;
+        }
+        
+        .step-list {
+            counter-reset: step;
+            list-style: none;
+            padding: 0;
+        }
+        
+        .step-list li {
+            counter-increment: step;
+            padding: 15px 15px 15px 60px;
+            position: relative;
+            margin-bottom: 10px;
+            background: var(--bg-code);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .step-list li::before {
+            content: counter(step);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            color: var(--bg-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .card h4 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+        
+        .sequence-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 20px 0;
+        }
+        
+        .seq-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            background: var(--bg-code);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+        
+        .seq-step.drop { border-left-color: var(--accent-yellow); }
+        .seq-step.pick { border-left-color: var(--accent-green); }
+        .seq-step.spindle { border-left-color: var(--accent-purple); }
+        
+        .seq-num {
+            width: 28px;
+            height: 28px;
+            background: var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .seq-code {
+            font-family: monospace;
+            color: var(--accent-green);
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: auto;
+            font-size: 0.85em;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            section { padding: 20px; }
+            header h1 { font-size: 1.8em; }
+            table { font-size: 0.85em; }
+            th, td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔧 CNC Wiring & Setup Guide</h1>
+            <p>BTT Octopus Pro v1.1 + grblHAL + FluidCNC UI + ML Intelligence</p>
+            <div style="margin-top: 15px;">
+                <span class="badge badge-blue">STM32F429</span>
+                <span class="badge badge-green">grblHAL</span>
+                <span class="badge badge-yellow">RapidChange ATC</span>
+                <span class="badge badge-red">5 Tools</span>
+                <span class="badge badge-blue">🧠 ML System</span>
+            </div>
+        </header>
+
+        <nav>
+            <h3>📑 Quick Navigation</h3>
+            <ul>
+                <li><a href="#pinout">📍 Pin Assignments</a></li>
+                <li><a href="#steppers">⚡ Stepper Drivers</a></li>
+                <li><a href="#spindle">🌀 Spindle Wiring</a></li>
+                <li><a href="#probes">📏 Probe & Tool Setter</a></li>
+                <li><a href="#aux">🔌 Aux Outputs</a></li>
+                <li><a href="#sensors">🎯 ESP32 Sensors</a></li>
+                <li><a href="#servo">🦾 Servo Lid Wiring</a></li>
+                <li><a href="#atc">🔄 ATC Operation</a></li>
+                <li><a href="#grblhal">⚙️ grblHAL Settings</a></li>
+            </ul>
+        </nav>
+
+        <!-- Pin Assignments -->
+        <section id="pinout">
+            <h2><span class="icon">📍</span> Pin Assignments Overview</h2>
+            
+            <p>Complete pin mapping for BTT Octopus Pro v1.0.1 running grblHAL firmware.</p>
+
+            <h3>Stepper Motors</h3>
+            <table>
+                <tr>
+                    <th>Axis</th>
+                    <th>Driver</th>
+                    <th>Step Pin</th>
+                    <th>Dir Pin</th>
+                    <th>Enable Pin</th>
+                    <th>UART Pin</th>
+                    <th>Diag Pin</th>
+                </tr>
+                <tr>
+                    <td class="pin-x">X Axis</td>
+                    <td>TMC2209</td>
+                    <td><code>PF13</code></td>
+                    <td><code>PF12</code></td>
+                    <td><code>PF14</code></td>
+                    <td><code>PC4</code></td>
+                    <td><code>PG6</code></td>
+                </tr>
+                <tr>
+                    <td class="pin-y">Y Axis</td>
+                    <td>TMC2209</td>
+                    <td><code>PG0</code></td>
+                    <td><code>PG1</code></td>
+                    <td><code>PF15</code></td>
+                    <td><code>PD11</code></td>
+                    <td><code>PG9</code></td>
+                </tr>
+                <tr>
+                    <td class="pin-z">Z Axis</td>
+                    <td>TMC2208</td>
+                    <td><code>PF11</code></td>
+                    <td><code>PG3</code></td>
+                    <td><code>PG5</code></td>
+                    <td><code>PC6</code></td>
+                    <td><code>PG10</code></td>
+                </tr>
+            </table>
+
+            <h3>Limit Switches & Probes</h3>
+            <table>
+                <tr>
+                    <th>Function</th>
+                    <th>Header</th>
+                    <th>Pin</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td>X Limit</td>
+                    <td>MIN1 / DIAG0</td>
+                    <td><code>PG6</code></td>
+                    <td>Normally Closed recommended</td>
+                </tr>
+                <tr>
+                    <td>Y Limit</td>
+                    <td>MIN2 / DIAG1</td>
+                    <td><code>PG9</code></td>
+                    <td>Normally Closed recommended</td>
+                </tr>
+                <tr>
+                    <td>Z Limit</td>
+                    <td>MIN3 / DIAG2</td>
+                    <td><code>PG10</code></td>
+                    <td><strong>Required</strong> (TMC2208 has no StallGuard)</td>
+                </tr>
+                <tr>
+                    <td class="pin-ok">Touch Probe</td>
+                    <td>Z-Probe Left</td>
+                    <td><code>PB6</code></td>
+                    <td>Workpiece touch plate</td>
+                </tr>
+                <tr>
+                    <td class="pin-ok">Tool Setter</td>
+                    <td>Z-Probe Right</td>
+                    <td><code>PB7</code></td>
+                    <td>Fixed tool length sensor</td>
+                </tr>
+            </table>
+
+            <h3>Spindle & Coolant</h3>
+            <table>
+                <tr>
+                    <th>Function</th>
+                    <th>Header</th>
+                    <th>Pin</th>
+                    <th>Signal Type</th>
+                </tr>
+                <tr>
+                    <td>Spindle PWM</td>
+                    <td>FAN0</td>
+                    <td><code>PA8</code></td>
+                    <td>0-10V or PWM speed control</td>
+                </tr>
+                <tr>
+                    <td>Spindle Enable</td>
+                    <td>FAN4</td>
+                    <td><code>PD14</code></td>
+                    <td>On/Off signal</td>
+                </tr>
+                <tr>
+                    <td>Spindle Direction</td>
+                    <td>FAN5</td>
+                    <td><code>PE15</code></td>
+                    <td>CW/CCW</td>
+                </tr>
+                <tr>
+                    <td>Flood Coolant (M8)</td>
+                    <td>HE0</td>
+                    <td><code>PA0</code></td>
+                    <td>Relay/SSR output</td>
+                </tr>
+                <tr>
+                    <td>Mist Coolant (M7)</td>
+                    <td>HE1</td>
+                    <td><code>PA3</code></td>
+                    <td>Relay/SSR output</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Stepper Drivers -->
+        <section id="steppers">
+            <h2><span class="icon">⚡</span> Stepper Driver Configuration</h2>
+
+            <div class="warning-box">
+                <h4>⚠️ Current Setting - CRITICAL</h4>
+                <p>Using <strong>standalone mode</strong> (VREF potentiometer), NOT UART mode. Trinamic UART caused Error 79 and was disabled.</p>
+            </div>
+
+            <h3>Motor Current Calculation</h3>
+            <p>For NEMA23 motors rated at <strong>2.4A peak</strong>:</p>
+            
+            <div class="card">
+                <h4>TMC2209 VREF Formula</h4>
+                <pre><code>Target RMS Current = 1.2A (safe continuous)
+VREF = RMS Current × 1.41 × 0.11
+VREF = 1.2 × 1.41 × 0.11 = <strong>0.186V</strong></code></pre>
+                <p>Measure between GND and the VREF test point on each driver.</p>
+            </div>
+
+            <h3>Driver Configuration</h3>
+            <table>
+                <tr>
+                    <th>Axis</th>
+                    <th>Driver</th>
+                    <th>StallGuard</th>
+                    <th>Sensorless Homing</th>
+                    <th>Current (VREF)</th>
+                </tr>
+                <tr>
+                    <td class="pin-x">X</td>
+                    <td>TMC2209</td>
+                    <td class="pin-ok">✅ Supported</td>
+                    <td>Optional</td>
+                    <td>0.186V</td>
+                </tr>
+                <tr>
+                    <td class="pin-y">Y</td>
+                    <td>TMC2209</td>
+                    <td class="pin-ok">✅ Supported</td>
+                    <td>Optional</td>
+                    <td>0.186V</td>
+                </tr>
+                <tr>
+                    <td class="pin-z">Z</td>
+                    <td>TMC2208</td>
+                    <td class="pin-danger">❌ Not Available</td>
+                    <td><strong>Use limit switch!</strong></td>
+                    <td>0.186V</td>
+                </tr>
+            </table>
+
+            <div class="info-box">
+                <h4>💡 Microstepping</h4>
+                <p>Set via MS1/MS2 pins or jumpers. Recommended: <strong>16 microsteps</strong> (MS1=GND, MS2=VIO)</p>
+            </div>
+        </section>
+
+        <!-- Spindle -->
+        <section id="spindle">
+            <h2><span class="icon">🌀</span> Spindle Wiring</h2>
+
+            <h3>VFD Spindle (Recommended for CNC)</h3>
+            <div class="wiring-diagram">
+BTT Octopus Pro                    VFD
+┌─────────────┐                 ┌──────────────┐
+│             │                 │              │
+│  FAN0 (PA8) ├────────────────►│ 0-10V Input  │  Speed Control
+│             │                 │              │
+│ FAN4 (PD14) ├────────────────►│ RUN/FWD      │  Enable (M3)
+│             │                 │              │
+│ FAN5 (PE15) ├────────────────►│ REV          │  Reverse (M4)
+│             │                 │              │
+│         GND ├────────────────►│ COM/GND      │  Common Ground
+│             │                 │              │
+└─────────────┘                 └──────────────┘
+
+Note: FAN outputs are 24V logic. May need optoisolator or 
+      level shifter if VFD expects 5V signals.
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ Do NOT tap the VFD motor output</h4>
+                <p>
+                    The U/V/W (motor) outputs of a VFD are high‑voltage, high‑frequency PWM and are <strong>not</strong> safe to measure with an ESP32 “voltage sensor” divider module.
+                    If you want spindle/VFD telemetry, use one of the safe methods below.
+                </p>
+            </div>
+
+            <div class="info-box">
+                <h4>✅ Safe VFD telemetry options</h4>
+                <ul style="margin-left: 20px;">
+                    <li><strong>Modbus/RS‑485 (best)</strong>: read frequency, current, DC bus voltage, alarms/faults directly from the VFD.</li>
+                    <li><strong>Analog monitor output (AM/FM + ACM)</strong>: many VFDs provide 0–10V/0–5V representing frequency/current. Scale to ≤3.3V before any ESP32 ADC.</li>
+                    <li><strong>Pulse / “frequency output”</strong>: open‑collector pulse proportional to RPM/frequency, perfect for a GPIO input.</li>
+                </ul>
+            </div>
+
+            <h3>PWM Router/Spindle (Direct Control)</h3>
+            <div class="wiring-diagram">
+BTT Octopus Pro                    PWM Spindle Controller
+┌─────────────┐                 ┌──────────────┐
+│             │                 │              │
+│  FAN0 (PA8) ├────────────────►│ PWM Input    │  0-100% duty cycle
+│             │                 │              │
+│         GND ├────────────────►│ GND          │
+│             │                 │              │
+│         24V ├────────────────►│ VCC (if req) │  Check voltage!
+│             │                 │              │
+└─────────────┘                 └──────────────┘
+            </div>
+
+            <h3>grblHAL Spindle Settings</h3>
+            <table>
+                <tr><th>Setting</th><th>Value</th><th>Description</th></tr>
+                <tr><td><code>$30</code></td><td>24000</td><td>Max spindle RPM</td></tr>
+                <tr><td><code>$31</code></td><td>0</td><td>Min spindle RPM</td></tr>
+                <tr><td><code>$32</code></td><td>0</td><td>Laser mode OFF</td></tr>
+                <tr><td><code>$33</code></td><td>5000</td><td>Spindle PWM frequency (Hz)</td></tr>
+            </table>
+        </section>
+
+        <!-- Probes -->
+        <section id="probes">
+            <h2><span class="icon">📏</span> Probe & Tool Setter</h2>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>🔴 Touch Probe (Workpiece)</h4>
+                    <p><strong>Pin:</strong> <code>PB6</code> (Z-Probe Left header)</p>
+                    <p><strong>Use:</strong> Finding workpiece edges, corners, center</p>
+                    <p><strong>Wiring:</strong></p>
+                    <pre><code>Probe Tip → Signal (PB6)
+Probe GND → Board GND
+Workpiece → Board GND</code></pre>
+                    <p><strong>Command:</strong> <code>G38.2</code></p>
+                </div>
+                
+                <div class="card">
+                    <h4>🟢 Tool Setter (Fixed)</h4>
+                    <p><strong>Pin:</strong> <code>PB7</code> (Z-Probe Right header)</p>
+                    <p><strong>Use:</strong> Measuring tool length for tool changes</p>
+                    <p><strong>Position:</strong> Fixed location on machine bed</p>
+                    <pre><code>Tool Setter → Signal (PB7)
+Tool Setter → Board GND</code></pre>
+                    <p><strong>Command:</strong> <code>G38.2</code> (with tool setter selected)</p>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Probe Configuration</h4>
+                <p>Both probes use <strong>Normally Open</strong> switches. When probe contacts surface, circuit closes = triggered.</p>
+            </div>
+        </section>
+
+        <!-- Aux Outputs -->
+        <section id="aux">
+            <h2><span class="icon">🔌</span> Auxiliary Outputs (M62-M65)</h2>
+
+            <p>grblHAL provides 4 aux outputs controllable via M-codes:</p>
+
+            <table>
+                <tr>
+                    <th>Port</th>
+                    <th>Header</th>
+                    <th>Pin</th>
+                    <th>M-Code ON</th>
+                    <th>M-Code OFF</th>
+                    <th>Assigned Function</th>
+                </tr>
+                <tr>
+                    <td><strong>P0</strong></td>
+                    <td>HE2</td>
+                    <td><code>PB0</code></td>
+                    <td><code>M64 P0</code></td>
+                    <td><code>M65 P0</code></td>
+                    <td class="pin-ok">🌀 Vacuum / Dust Collection</td>
+                </tr>
+                <tr>
+                    <td><strong>P1</strong></td>
+                    <td>FAN1</td>
+                    <td><code>PE5</code></td>
+                    <td><code>M64 P1</code></td>
+                    <td><code>M65 P1</code></td>
+                    <td class="pin-ok">🔽 Dust Shoe Actuator</td>
+                </tr>
+                <tr>
+                    <td><strong>P2</strong></td>
+                    <td>FAN2</td>
+                    <td><code>PD12</code></td>
+                    <td><code>M64 P2</code></td>
+                    <td><code>M65 P2</code></td>
+                    <td>Available</td>
+                </tr>
+                <tr>
+                    <td><strong>P3</strong></td>
+                    <td>FAN3</td>
+                    <td><code>PD13</code></td>
+                    <td><code>M64 P3</code></td>
+                    <td><code>M65 P3</code></td>
+                    <td>Available</td>
+                </tr>
+            </table>
+
+            <h3>M-Code Reference</h3>
+            <table>
+                <tr>
+                    <th>M-Code</th>
+                    <th>Behavior</th>
+                    <th>Use Case</th>
+                </tr>
+                <tr>
+                    <td><code>M62 P#</code></td>
+                    <td>Turn ON (synchronized with motion)</td>
+                    <td>Turn on at specific point in G-code</td>
+                </tr>
+                <tr>
+                    <td><code>M63 P#</code></td>
+                    <td>Turn OFF (synchronized with motion)</td>
+                    <td>Turn off at specific point</td>
+                </tr>
+                <tr>
+                    <td><code>M64 P#</code></td>
+                    <td>Turn ON (immediate)</td>
+                    <td>Manual control, macros</td>
+                </tr>
+                <tr>
+                    <td><code>M65 P#</code></td>
+                    <td>Turn OFF (immediate)</td>
+                    <td>Manual control, macros</td>
+                </tr>
+            </table>
+
+            <h3>Wiring Aux Outputs to Relays</h3>
+            <div class="wiring-diagram">
+BTT Octopus Pro                    Relay Module (for Vacuum, etc.)
+┌─────────────┐                 ┌──────────────────┐
+│             │                 │                  │
+│  HE2  Signal├────────────────►│ IN1 (Active Low) │
+│       GND   ├────────────────►│ GND              │
+│       24V   ├────────────────►│ VCC              │  Check relay voltage!
+│             │                 │                  │
+└─────────────┘                 │  COM ─── AC Line │
+                                │  NO ──── Vacuum  │  Normally Open
+                                │  NC             │  Normally Closed
+                                └──────────────────┘
+            </div>
+
+            <div class="warning-box">
+                <h4>⚠️ HE# Headers are MOSFET Outputs</h4>
+                <p>HE0, HE1, HE2 are designed for heaters - they switch the <strong>ground side</strong> of 24V loads. They're suitable for relays but NOT for direct logic signals!</p>
+            </div>
+        </section>
+
+        <!-- ESP32 Sensors for ML System -->
+        <section id="sensors">
+            <h2><span class="icon">🎯</span> ESP32 Sensors (ML Intelligence System)</h2>
+
+            <p>The ML Intelligence System in FluidCNC uses ESP32-based sensors for real-time chatter detection and machine monitoring. These feed into the neural network for cut quality prediction.</p>
+
+            <div class="info-box">
+                <h4>ℹ️ Neural Network Inputs</h4>
+                <p>The ML system uses sensor data to predict: <strong>Cut Quality</strong>, <strong>Chatter Risk</strong>, and <strong>Tool Wear Rate</strong>. All sensors connect via USB to LePotato/Raspberry Pi.</p>
+            </div>
+
+            <h3>Waveshare ESP32-S3 Touch LCD 1.46B (Chatter Sensor)</h3>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Specification</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>MCU</td>
+                    <td>ESP32-S3</td>
+                    <td>Processing + USB Serial</td>
+                </tr>
+                <tr>
+                    <td>Accelerometer</td>
+                    <td>QMI8658 (6-axis IMU)</td>
+                    <td>Vibration sensing (±16G)</td>
+                </tr>
+                <tr>
+                    <td>Display</td>
+                    <td>1.46" Round LCD (466×466)</td>
+                    <td>Real-time chatter level</td>
+                </tr>
+                <tr>
+                    <td>Connection</td>
+                    <td>USB-C Serial @ 115200</td>
+                    <td>Data to chatter-detection.js</td>
+                </tr>
+            </table>
+
+            <h4>Mounting Location</h4>
+            <div class="wiring-diagram">
+RECOMMENDED MOUNTING POSITIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OPTION 1: Spindle Mount (BEST)
+┌────────────────────────────┐
+│       ┌─────────────┐      │
+│       │   SPINDLE   │      │
+│       └──────┬──────┘      │
+│              │             │
+│    ┌─────────┴─────────┐   │
+│    │   ESP32 SENSOR    │   │  ← Mount on spindle clamp
+│    │   (Accelerometer) │   │    Closest to cutting forces
+│    └───────────────────┘   │
+│              │ USB         │
+└──────────────┼─────────────┘
+               ▼
+        USB Hub → LePotato
+
+OPTION 2: Gantry Mount
+┌────────────────────────────┐
+│  ┌───────────────────────┐ │
+│  │       X-GANTRY        │ │
+│  │  ┌────────────────┐   │ │
+│  │  │  ESP32 SENSOR  │   │ │  ← Mount on rigid gantry
+│  │  └────────────────┘   │ │    Good for overall vibration
+│  └───────────────────────┘ │
+└────────────────────────────┘
+            </div>
+
+            <h4>Serial Data Format</h4>
+            <pre><code>// JSON sent at 10Hz from ESP32 to chatter-detection.js
+{
+    "audioLevel": 245,        // FFT audio level (0-1024)
+    "vibrationG": 0.45,       // G-force magnitude
+    "accelX": 0.12,           // X acceleration (G)
+    "accelY": -0.08,          // Y acceleration (G)
+    "accelZ": 0.98,           // Z acceleration (G)
+    "status": "running"       // "idle" | "running" | "alarm"
+}</code></pre>
+
+            <h3>XIAO ESP32S3 Sense (Camera)</h3>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Specification</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>MCU</td>
+                    <td>ESP32-S3</td>
+                    <td>WiFi AP + Camera streaming</td>
+                </tr>
+                <tr>
+                    <td>Camera</td>
+                    <td>OV2640 (2MP)</td>
+                    <td>Machine monitoring</td>
+                </tr>
+                <tr>
+                    <td>Microphone</td>
+                    <td>PDM Digital</td>
+                    <td>Audio-based chatter detection</td>
+                </tr>
+                <tr>
+                    <td>Connection</td>
+                    <td>USB (power) + WiFi AP</td>
+                    <td>Stream to camera-module.js</td>
+                </tr>
+            </table>
+
+            <h4>WiFi Configuration</h4>
+            <pre><code>// Camera creates its own WiFi network
+SSID: FluidCNC-Camera
+Password: fluidcnc123
+Camera URL: http://192.168.4.1/stream</code></pre>
+
+            <h3>Data Flow to ML System</h3>
+            <div class="wiring-diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                   ML INTELLIGENCE DATA FLOW                      │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌────────────────┐     USB Serial      ┌───────────────────┐   │
+│  │ ESP32 Chatter  │ ──────────────────► │ chatter-detection │   │
+│  │ (Waveshare)    │     115200 baud     │     .js           │   │
+│  └────────────────┘                     └─────────┬─────────┘   │
+│                                                   │             │
+│  ┌────────────────┐     WiFi Stream     ┌────────┴────────┐    │
+│  │ ESP32 Camera   │ ──────────────────► │ machine-        │    │
+│  │ (XIAO Sense)   │                     │ enhancements.js │    │
+│  └────────────────┘                     │ (ML Neural Net) │    │
+│                                         └────────┬────────┘    │
+│  ┌────────────────┐     USB Serial      ┌────────┴────────┐    │
+│  │ Octopus Pro    │ ──────────────────► │   grblHAL       │    │
+│  │ (grblHAL)      │  StallGuard data    │   .js           │    │
+│  └────────────────┘                     └─────────────────┘    │
+│                                                                  │
+│  ┌────────────────┐     Modbus RS485    ┌─────────────────┐    │
+│  │ VFD Spindle    │ ──────────────────► │ Current, RPM,   │    │
+│  │                │                     │ Temperature     │    │
+│  └────────────────┘                     └─────────────────┘    │
+│                                                                  │
+│                      ┌───────────────────────────┐              │
+│                      │     Neural Network        │              │
+│  7 Inputs ─────────► │     (7 → 12 → 3)          │ ───► 3 Out  │
+│  audio, accel,       │     ReLU + Sigmoid        │     quality │
+│  current, rpm,       │     Online Learning       │     chatter │
+│  feed, DOC, material │                           │     wear    │
+│                      └───────────────────────────┘              │
+└─────────────────────────────────────────────────────────────────┘
+            </div>
+
+            <div class="success-box">
+                <h4>✅ USB Hub Requirements</h4>
+                <p>Use a <strong>powered USB 3.0 hub</strong> to connect all USB devices to LePotato/Raspberry Pi:</p>
+                <ul style="margin: 10px 0 0 20px;">
+                    <li>Port 1: BTT Octopus Pro (grblHAL)</li>
+                    <li>Port 2: ESP32 Chatter Sensor</li>
+                    <li>Port 3: XIAO ESP32 Camera (power only)</li>
+                    <li>Port 4: Available for expansion</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Servo Lid -->
+        <section id="servo">
+            <h2><span class="icon">🦾</span> ATC Servo Lid Wiring</h2>
+
+            <p>The ATC dust cover lid uses a standard hobby servo (requires 6-8.4V power).</p>
+
+            <div class="warning-box">
+                <h4>⚠️ VOLTAGE CRITICAL</h4>
+                <p>The BTT Octopus Pro FAN/HE headers output <strong>24V</strong> which will <strong>destroy</strong> your servo! You MUST use external 6-8V power.</p>
+            </div>
+
+            <h3>Required Components</h3>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li>Hobby servo (rated 6-8.4V, 180° rotation) - e.g., MG996R, DS3218</li>
+                <li>Buck converter (24V → 6-7V) - tap from bed/heater 24V power</li>
+                <li>3 wires for servo connection</li>
+            </ul>
+
+            <h3>Wiring Diagram</h3>
+            <div class="wiring-diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                        SERVO WIRING DIAGRAM                          │
+│                   Using PB6 (SERVO0 Header)                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   24V FROM BED/HEATER                    BUCK CONVERTER (BEC)        │
+│   ┌──────────────┐                      ┌─────────────┐              │
+│   │              │      24V+ ───────────►│ IN+        │              │
+│   │  HE0/BED     │      GND ────────────►│ IN-        │              │
+│   │   POWER      │                       │             │              │
+│   │              │                       │ OUT+ (6-7V)├─────┐        │
+│   └──────────────┘      Adjust to 6-7V → │ OUT- (GND) ├──┐  │        │
+│                                          └─────────────┘  │  │        │
+│                                                           │  │        │
+│   BTT OCTOPUS PRO - SERVO0 HEADER                        │  │        │
+│   ┌──────────────┐                    SERVO              │  │        │
+│   │              │                   ┌───────┐           │  │        │
+│   │ PB6 (Signal)├───────────────────►│ SIG   │ (Orange) │  │        │
+│   │              │                   │       │           │  │        │
+│   │ GND ─────────┼───────────────────►│ GND   │ (Brown)◄─┘  │        │
+│   │              │                   │       │              │        │
+│   └──────────────┘                   │ +V    │ (Red) ◄──────┘        │
+│                                      └───────┘                        │
+│                                                                      │
+│   ⚡ CRITICAL: All GNDs must be connected together!                  │
+│      - Octopus GND                                                   │
+│      - Buck converter GND (IN- and OUT-)                             │
+│      - Servo GND (Brown wire)                                        │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+WIRING SUMMARY:
+  📍 Servo Signal (Orange) → PB6 (SERVO0 header on Octopus)
+  📍 Servo GND (Brown)     → Octopus GND AND Buck converter OUT-
+  📍 Servo +V (Red)        → Buck converter OUT+ (set to 6.0-7.0V)
+  📍 Buck IN+              → 24V from Bed or Heater power
+  📍 Buck IN-              → 24V GND (same as Octopus GND)
+
+SERVO WIRE COLORS:
+  🟤 Brown  = GND (Ground)
+  🔴 Red    = +V  (6-8.4V power from buck converter)
+  🟠 Orange = SIG (PWM signal from PB6)
+            </div>
+
+            <div class="success-box">
+                <h4>✅ Recommended Setup</h4>
+                <p><strong>Buck Converter:</strong> LM2596 module or similar, input 24V, output adjusted to <strong>6.5V</strong></p>
+                <p><strong>Power Source:</strong> Tap 24V from HE0 (bed heater) or main PSU terminal</p>
+                <p><strong>Servo:</strong> MG996R (metal gear, 10kg·cm) or DS3218 (20kg·cm for heavy lids)</p>
+            </div>
+
+            <h3>Pin Assignment</h3>
+            <table>
+                <tr>
+                    <th>Header</th>
+                    <th>Pin</th>
+                    <th>Timer</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                </tr>
+                <tr>
+                    <td><strong>SERVO0</strong></td>
+                    <td><code>PB6</code></td>
+                    <td>TIM4_CH1</td>
+                    <td class="pin-ok">✅ RECOMMENDED</td>
+                    <td>Dedicated servo header - use this!</td>
+                </tr>
+                <tr>
+                    <td>FAN2</td>
+                    <td><code>PD12</code></td>
+                    <td>TIM4_CH1</td>
+                    <td class="pin-warn">Alternative</td>
+                    <td>PWM capable, but SERVO0 is better</td>
+                </tr>
+                <tr>
+                    <td>FAN3</td>
+                    <td><code>PD13</code></td>
+                    <td>TIM4_CH2</td>
+                    <td class="pin-warn">Alternative</td>
+                    <td>PWM capable backup</td>
+                </tr>
+            </table>
+
+            <h3>Servo Control Commands</h3>
+            <pre><code>M280 P0 S0      ; Servo port 0, angle 0° (closed)
+M280 P0 S90     ; Servo port 0, angle 90° (half open)
+M280 P0 S180    ; Servo port 0, angle 180° (fully open)</code></pre>
+
+            <div class="info-box">
+                <h4>💡 FluidCNC ATC Config</h4>
+                <p>In the FluidCNC UI, go to <strong>ATC Config</strong> to set:</p>
+                <ul style="margin-left: 20px;">
+                    <li><strong>Servo Port:</strong> 0 (matches M280 P0)</li>
+                    <li><strong>Open Angle:</strong> 180°</li>
+                    <li><strong>Closed Angle:</strong> 0°</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ATC Operation -->
+        <section id="atc">
+            <h2><span class="icon">🔄</span> RapidChange ATC Operation</h2>
+
+            <p>The RapidChange-style ATC uses <strong>spindle rotation</strong> to tighten/loosen collet nuts against fork-style tool holders.</p>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>⬇️ Loosening (Drop Tool)</h4>
+                    <p>Spindle rotates <strong>CCW (M4)</strong> while pushing down</p>
+                    <p>Unscrews the collet nut from the tool holder</p>
+                    <p>Fast pullout yanks spindle away, leaving tool in fork</p>
+                </div>
+                <div class="card">
+                    <h4>⬆️ Tightening (Pick Tool)</h4>
+                    <p>Spindle pushes down onto tool in fork</p>
+                    <p>Rotates <strong>CW (M3)</strong> to screw in collet nut</p>
+                    <p>Pulls out of fork - tool comes with spindle</p>
+                </div>
+            </div>
+
+            <h3>Tool Change Sequence</h3>
+            
+            <h4>Phase 1: Preparation</h4>
+            <div class="sequence-diagram">
+                <div class="seq-step">
+                    <span class="seq-num">1</span>
+                    <span>Stop spindle and wait for brake</span>
+                    <span class="seq-code">M5 + 2s delay</span>
+                </div>
+                <div class="seq-step">
+                    <span class="seq-num">2</span>
+                    <span>Retract dust shoe</span>
+                    <span class="seq-code">M64 P1</span>
+                </div>
+                <div class="seq-step">
+                    <span class="seq-num">3</span>
+                    <span>Move to safe Z height</span>
+                    <span class="seq-code">G53 G0 Z-5</span>
+                </div>
+                <div class="seq-step">
+                    <span class="seq-num">4</span>
+                    <span>Open ATC dust cover lid</span>
+                    <span class="seq-code">M280 P0 S180</span>
+                </div>
+            </div>
+
+            <h4>Phase 2: Drop Current Tool</h4>
+            <div class="sequence-diagram">
+                <div class="seq-step drop">
+                    <span class="seq-num">5</span>
+                    <span>Move to tool X position</span>
+                    <span class="seq-code">G53 G0 X{toolX}</span>
+                </div>
+                <div class="seq-step drop">
+                    <span class="seq-num">6</span>
+                    <span>Move to fork approach Y</span>
+                    <span class="seq-code">G53 G0 Y335</span>
+                </div>
+                <div class="seq-step drop">
+                    <span class="seq-num">7</span>
+                    <span>Lower to approach Z</span>
+                    <span class="seq-code">G53 G0 Z-40</span>
+                </div>
+                <div class="seq-step drop">
+                    <span class="seq-num">8</span>
+                    <span>Move into fork</span>
+                    <span class="seq-code">G53 G1 Y350 F1000</span>
+                </div>
+                <div class="seq-step drop">
+                    <span class="seq-num">9</span>
+                    <span>Lower to engage Z (nut contacts fork)</span>
+                    <span class="seq-code">G53 G1 Z-47 F1000</span>
+                </div>
+                <div class="seq-step spindle">
+                    <span class="seq-num">10</span>
+                    <span>Start spindle CCW (loosen)</span>
+                    <span class="seq-code">M4 S200</span>
+                </div>
+                <div class="seq-step drop">
+                    <span class="seq-num">11</span>
+                    <span>Push down 7mm while spinning</span>
+                    <span class="seq-code">G53 G1 Z-54 F300</span>
+                </div>
+                <div class="seq-step spindle">
+                    <span class="seq-num">12</span>
+                    <span>Spin for 3 seconds</span>
+                    <span class="seq-code">G4 P3</span>
+                </div>
+                <div class="seq-step spindle">
+                    <span class="seq-num">13</span>
+                    <span>Stop spindle</span>
+                    <span class="seq-code">M5</span>
+                </div>
+                <div class="seq-step drop">
+                    <span class="seq-num">14</span>
+                    <span>FAST pullout (yank up!)</span>
+                    <span class="seq-code">G53 G0 Z-5</span>
+                </div>
+                <div class="seq-step drop">
+                    <span class="seq-num">15</span>
+                    <span>Exit fork</span>
+                    <span class="seq-code">G53 G0 Y335</span>
+                </div>
+            </div>
+
+            <h4>Phase 3: Pick New Tool</h4>
+            <div class="sequence-diagram">
+                <div class="seq-step pick">
+                    <span class="seq-num">16</span>
+                    <span>Move to new tool X position</span>
+                    <span class="seq-code">G53 G0 X{newToolX}</span>
+                </div>
+                <div class="seq-step pick">
+                    <span class="seq-num">17</span>
+                    <span>Lower and move into fork</span>
+                    <span class="seq-code">G53 G0 Z-40 → G1 Y350</span>
+                </div>
+                <div class="seq-step pick">
+                    <span class="seq-num">18</span>
+                    <span>Lower onto tool (push down)</span>
+                    <span class="seq-code">G53 G1 Z-54 F300</span>
+                </div>
+                <div class="seq-step spindle">
+                    <span class="seq-num">19</span>
+                    <span>Start spindle CW (tighten)</span>
+                    <span class="seq-code">M3 S200</span>
+                </div>
+                <div class="seq-step spindle">
+                    <span class="seq-num">20</span>
+                    <span>Spin for 2.5 seconds</span>
+                    <span class="seq-code">G4 P2.5</span>
+                </div>
+                <div class="seq-step spindle">
+                    <span class="seq-num">21</span>
+                    <span>Stop spindle</span>
+                    <span class="seq-code">M5</span>
+                </div>
+                <div class="seq-step pick">
+                    <span class="seq-num">22</span>
+                    <span>Lift and pull out with tool</span>
+                    <span class="seq-code">G53 G0 Z-47 → G1 Y335</span>
+                </div>
+                <div class="seq-step pick">
+                    <span class="seq-num">23</span>
+                    <span>Retract to safe Z</span>
+                    <span class="seq-code">G53 G0 Z-5</span>
+                </div>
+            </div>
+
+            <h4>Phase 4: Cleanup</h4>
+            <div class="sequence-diagram">
+                <div class="seq-step">
+                    <span class="seq-num">24</span>
+                    <span>Close ATC lid</span>
+                    <span class="seq-code">M280 P0 S0</span>
+                </div>
+                <div class="seq-step">
+                    <span class="seq-num">25</span>
+                    <span>Update tool register</span>
+                    <span class="seq-code">T{n}</span>
+                </div>
+                <div class="seq-step">
+                    <span class="seq-num">26</span>
+                    <span>Lower dust shoe</span>
+                    <span class="seq-code">M65 P1</span>
+                </div>
+            </div>
+
+            <h3>ATC Configuration Parameters</h3>
+            <table>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Tool Spacing</td>
+                    <td>50.4 mm</td>
+                    <td>Distance between tool centers</td>
+                </tr>
+                <tr>
+                    <td>Rack X (Tool 1)</td>
+                    <td>-10 mm</td>
+                    <td>X position of first tool (machine coords)</td>
+                </tr>
+                <tr>
+                    <td>Rack Y</td>
+                    <td>350 mm</td>
+                    <td>Y position of fork front edge</td>
+                </tr>
+                <tr>
+                    <td>Safe Z</td>
+                    <td>-5 mm</td>
+                    <td>Z height for safe XY travel</td>
+                </tr>
+                <tr>
+                    <td>Approach Z</td>
+                    <td>-40 mm</td>
+                    <td>Z height before entering fork</td>
+                </tr>
+                <tr>
+                    <td>Engage Z</td>
+                    <td>-47 mm</td>
+                    <td>Z where collet nut touches fork</td>
+                </tr>
+                <tr>
+                    <td>Tighten Z</td>
+                    <td>-54 mm</td>
+                    <td>Z to push down while tightening (7mm below engage)</td>
+                </tr>
+                <tr>
+                    <td>Tighten RPM</td>
+                    <td>200</td>
+                    <td>Low RPM for tightening/loosening</td>
+                </tr>
+                <tr>
+                    <td>Tighten Time</td>
+                    <td>2500 ms</td>
+                    <td>Duration to spin CW for tightening</td>
+                </tr>
+                <tr>
+                    <td>Loosen Time</td>
+                    <td>3000 ms</td>
+                    <td>Duration to spin CCW for loosening</td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- grblHAL Settings -->
+        <section id="grblhal">
+            <h2><span class="icon">⚙️</span> grblHAL Settings Reference</h2>
+
+            <h3>Essential Settings</h3>
+            <table>
+                <tr><th>Setting</th><th>Value</th><th>Description</th></tr>
+                <tr><td><code>$0</code></td><td>10</td><td>Step pulse time (µs)</td></tr>
+                <tr><td><code>$1</code></td><td>255</td><td>Step idle delay (ms) - 255 = always on</td></tr>
+                <tr><td><code>$2</code></td><td>0</td><td>Step port invert mask</td></tr>
+                <tr><td><code>$3</code></td><td>0</td><td>Direction port invert mask</td></tr>
+                <tr><td><code>$4</code></td><td>0</td><td>Enable invert (0 = active low)</td></tr>
+                <tr><td><code>$5</code></td><td>0</td><td>Limit pins invert</td></tr>
+                <tr><td><code>$6</code></td><td>0</td><td>Probe pin invert</td></tr>
+                <tr><td><code>$10</code></td><td>1</td><td>Status report mask</td></tr>
+            </table>
+
+            <h3>Motion Settings</h3>
+            <table>
+                <tr><th>Setting</th><th>X</th><th>Y</th><th>Z</th><th>Description</th></tr>
+                <tr><td><code>$100-102</code></td><td>800</td><td>800</td><td>800</td><td>Steps/mm</td></tr>
+                <tr><td><code>$110-112</code></td><td>5000</td><td>5000</td><td>3000</td><td>Max rate (mm/min)</td></tr>
+                <tr><td><code>$120-122</code></td><td>500</td><td>500</td><td>300</td><td>Acceleration (mm/s²)</td></tr>
+                <tr><td><code>$130-132</code></td><td>400</td><td>400</td><td>80</td><td>Max travel (mm)</td></tr>
+            </table>
+
+            <h3>Homing Settings</h3>
+            <table>
+                <tr><th>Setting</th><th>Value</th><th>Description</th></tr>
+                <tr><td><code>$22</code></td><td>1</td><td>Homing enable</td></tr>
+                <tr><td><code>$23</code></td><td>3</td><td>Homing direction invert (X & Y positive)</td></tr>
+                <tr><td><code>$24</code></td><td>100</td><td>Homing slow feed (mm/min)</td></tr>
+                <tr><td><code>$25</code></td><td>1000</td><td>Homing fast seek (mm/min)</td></tr>
+                <tr><td><code>$26</code></td><td>250</td><td>Homing debounce (ms)</td></tr>
+                <tr><td><code>$27</code></td><td>2</td><td>Homing pull-off (mm)</td></tr>
+            </table>
+
+            <h3>Spindle & Probe Settings</h3>
+            <table>
+                <tr><th>Setting</th><th>Value</th><th>Description</th></tr>
+                <tr><td><code>$30</code></td><td>24000</td><td>Max spindle RPM</td></tr>
+                <tr><td><code>$31</code></td><td>0</td><td>Min spindle RPM</td></tr>
+                <tr><td><code>$32</code></td><td>0</td><td>Laser mode (0 = off for CNC)</td></tr>
+            </table>
+
+            <h3>Firmware Build Settings</h3>
+            <div class="success-box">
+                <h4>✅ Current Build Configuration (platformio.ini)</h4>
+                <pre style="margin: 10px 0; background: rgba(0,0,0,0.3);"><code>-D SDCARD_ENABLE=1          ; SD card via SDIO
+-D EEPROM_ENABLE=32         ; AT24C32 EEPROM (32Kbit = 4KB)
+-D PROBE_ENABLE=1           ; Touch probe on PB6
+-D TOOLSETTER_ENABLE=1      ; Tool setter on PB7
+; -D TRINAMIC_ENABLE=2209   ; DISABLED - using standalone mode</code></pre>
+            </div>
+
+            <h3>Useful Commands</h3>
+            <table>
+                <tr><th>Command</th><th>Description</th></tr>
+                <tr><td><code>$$</code></td><td>View all settings</td></tr>
+                <tr><td><code>$I</code></td><td>View build info</td></tr>
+                <tr><td><code>$N</code></td><td>View startup blocks</td></tr>
+                <tr><td><code>$H</code></td><td>Run homing cycle</td></tr>
+                <tr><td><code>$X</code></td><td>Unlock after alarm</td></tr>
+                <tr><td><code>$RST=$</code></td><td>Reset settings to defaults</td></tr>
+                <tr><td><code>$RST=#</code></td><td>Clear G54-G59 offsets</td></tr>
+            </table>
+        </section>
+
+        <footer>
+            <p>📄 Generated for FluidCNC Project | BTT Octopus Pro + grblHAL + ML Intelligence</p>
+            <p>Last updated: January 2026</p>
+            <p><a href="guia-cableado.html" style="color: #58a6ff;">🇪🇸 Versión en Español</a></p>
+        </footer>
+    </div>
+</body>
+</html>

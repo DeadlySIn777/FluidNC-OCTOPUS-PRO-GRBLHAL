@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FluidCNC Debug</title>
+    <style>
+        body { font-family: monospace; background: #1a1a2e; color: #0f0; padding: 20px; }
+        .ok { color: #0f0; }
+        .err { color: #f00; }
+        .warn { color: #ff0; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+        #log { background: #000; padding: 10px; height: 400px; overflow-y: auto; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>FluidCNC Debug Console</h1>
+    
+    <div>
+        <button onclick="testApp()">1. Test App Exists</button>
+        <button onclick="testGrbl()">2. Test Grbl</button>
+        <button onclick="testDemo()">3. Start Demo</button>
+        <button onclick="testJog()">4. Test Jog X+</button>
+        <button onclick="testConnection()">5. Check Connection</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+    
+    <div id="log"></div>
+    
+    <script>
+        function log(msg, type = 'ok') {
+            const div = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            div.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+            div.scrollTop = div.scrollHeight;
+        }
+        
+        function testApp() {
+            log('--- Testing App ---');
+            if (typeof app === 'undefined') {
+                log('ERROR: app is undefined!', 'err');
+                log('FluidCNCApp class exists: ' + (typeof FluidCNCApp !== 'undefined'));
+            } else {
+                log('app exists: ' + typeof app, 'ok');
+                log('app.grbl exists: ' + (app.grbl ? 'yes' : 'no'));
+                log('app.demoMode: ' + app.demoMode);
+                log('app.connected: ' + app.connected);
+            }
+        }
+        
+        function testGrbl() {
+            log('--- Testing Grbl ---');
+            if (!app) {
+                log('ERROR: app is undefined', 'err');
+                return;
+            }
+            if (!app.grbl) {
+                log('ERROR: app.grbl is undefined', 'err');
+                return;
+            }
+            log('grbl.connected: ' + app.grbl.connected);
+            log('grbl.demoMode: ' + app.grbl.demoMode);
+            log('grbl.isConnected(): ' + app.grbl.isConnected());
+            log('grbl.connectionType: ' + app.grbl.connectionType);
+        }
+        
+        function testDemo() {
+            log('--- Starting Demo Mode ---');
+            if (!app) {
+                log('ERROR: app is undefined', 'err');
+                return;
+            }
+            try {
+                app.startDemo();
+                log('startDemo() called successfully');
+                setTimeout(() => {
+                    log('After demo - grbl.demoMode: ' + app.grbl?.demoMode);
+                    log('After demo - grbl.isConnected(): ' + app.grbl?.isConnected());
+                }, 500);
+            } catch (e) {
+                log('ERROR: ' + e.message, 'err');
+            }
+        }
+        
+        function testJog() {
+            log('--- Testing Jog X+ ---');
+            if (!app) {
+                log('ERROR: app is undefined', 'err');
+                return;
+            }
+            if (!app.grbl) {
+                log('ERROR: app.grbl is undefined', 'err');
+                return;
+            }
+            
+            log('Calling app.startJog("X+")...');
+            try {
+                const result = app.startJog('X+');
+                log('startJog returned: ' + result);
+            } catch (e) {
+                log('ERROR: ' + e.message, 'err');
+            }
+            
+            log('Calling grbl.jog("X", 1, 3000) directly...');
+            try {
+                const result = app.grbl.jog('X', 1, 3000);
+                log('jog returned: ' + result);
+            } catch (e) {
+                log('ERROR: ' + e.message, 'err');
+            }
+        }
+        
+        function testConnection() {
+            log('--- Connection Status ---');
+            if (!app) {
+                log('ERROR: app is undefined', 'err');
+                return;
+            }
+            log('app.connected: ' + app.connected);
+            log('app.demoMode: ' + app.demoMode);
+            if (app.grbl) {
+                log('grbl.connected: ' + app.grbl.connected);
+                log('grbl.demoMode: ' + app.grbl.demoMode);
+                log('grbl.isConnected(): ' + app.grbl.isConnected());
+                log('grbl.serialPort: ' + (app.grbl.serialPort ? 'exists' : 'null'));
+                log('grbl.ws: ' + (app.grbl.ws ? 'exists' : 'null'));
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // Auto-run on load
+        window.onload = () => {
+            log('Debug page loaded. Open main FluidCNC in another tab first!', 'warn');
+            log('This page shares the same scripts as index.html', 'warn');
+        };
+    </script>
+    
+    <!-- Load the same scripts as index.html -->
+    <script src="grblhal.js"></script>
+    <script src="gcode-parser.js"></script>
+    <script src="visualizer.js"></script>
+    <script src="visualizer-3d.js"></script>
+    <script src="probe-wizard.js"></script>
+    <script src="macros.js"></script>
+    <script src="ai-assistant.js"></script>
+    <script src="gcode-simulator.js"></script>
+    <script src="job-recovery.js"></script>
+    <script src="settings-manager.js"></script>
+    <script src="trinamic-config.js"></script>
+    <script src="sd-card.js"></script>
+    <script src="conversational-gcode.js"></script>
+    <script src="feeds-speeds.js"></script>
+    <script src="chatter-detection.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

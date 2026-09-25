@@ -1,0 +1,2361 @@
+{
+  "schemaVersion": 1,
+  "title": "Follow one MR1 cable",
+  "status": "Planned routes · physical checks open",
+  "physicalMotionPermitted": false,
+  "intro": "Pick a cable. Match its label at both ends, then compare the named functions. Work deenergized; these routes do not approve energizing or machining.",
+  "closedLoop": "The encoder returns to its own CL57T drive. The PC receives commanded position, not independent table position; a loose coupler can still escape encoder detection.",
+  "axisNote": "Four motors, three logical axes. Y-left and Y-right share logical Y; Y-right is not a rotary fourth axis.",
+  "labelNote": "Source cable IDs come from the corrected cable schedule. Functional-route labels describe additional views and are not new approved harness IDs. Interface labels are planned functions, not proven terminal markings.",
+  "viewNote": "Functional endpoints only. No drawing order, wire color or GPIO name identifies a physical cavity. The actual mating view and continuity remain to be recorded.",
+  "sources": [
+    {
+      "id": "readiness",
+      "title": "Wiring readiness",
+      "path": "docs/wiring/MR1-wiring-readiness.md",
+      "sections": [
+        "Motor command assignments",
+        "Drive-side worksheet",
+        "Inputs and fault behavior",
+        "Power, grounding and spindle holds"
+      ]
+    },
+    {
+      "id": "second-pass",
+      "title": "Second wiring audit",
+      "path": "docs/wiring/MR1-wiring-second-pass.md",
+      "sections": [
+        "What changed",
+        "Remaining evidence, in order"
+      ]
+    },
+    {
+      "id": "pin-map",
+      "title": "Production GPIO map",
+      "path": "docs/wiring/source/boards/btt_octopus_pro_mr1_map.h",
+      "sections": [
+        "MOTOR0–3",
+        "Motor fault inputs",
+        "AUXINPUT6 / PB1"
+      ]
+    },
+    {
+      "id": "interface",
+      "title": "Planned interface requirements",
+      "path": "docs/wiring/mr1/INTERFACE_BOARD.md",
+      "sections": [
+        "A. Motion Outputs",
+        "A2. Home-Channel Conditioner",
+        "External-Drive Alarm Inputs",
+        "Bench Acceptance"
+      ]
+    },
+    {
+      "id": "pigtails",
+      "title": "Connector and harness schedule",
+      "path": "docs/wiring/mr1/PIGTAIL_SCHEDULE.md",
+      "sections": [
+        "Octopus Driver-Socket Adapters",
+        "CL57T-Side Schedule",
+        "Moulded cable conflict"
+      ]
+    },
+    {
+      "id": "cable-schedule",
+      "title": "Corrected cable schedule",
+      "path": "docs/wiring/mr1/cable-schedule.csv",
+      "sections": [
+        "CMD / MOT / ENC / ALM / PWR-36 / FAULT-AGG"
+      ]
+    },
+    {
+      "id": "drive-guide",
+      "title": "CL57T V4.1 project guide",
+      "path": "docs/wiring/mr1/CL57T_QUICK_WIRING.md",
+      "sections": [
+        "Control signals — P1",
+        "Alarm output — ALM / COMO",
+        "Motor and encoder — P3 and P2",
+        "Power — P4"
+      ]
+    },
+    {
+      "id": "drive-manual",
+      "title": "CL57T V4.1 manufacturer manual",
+      "path": "https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf",
+      "sections": [
+        "3.1–3.4 connectors",
+        "4.1 power sharing",
+        "6.2 fault output"
+      ],
+      "sha256": "3EEC9304C770FF68A5CCBD68F105789EDFB35F5C91A9977531A30756A918D7DA"
+    },
+    {
+      "id": "btt-schematic",
+      "title": "Archived BTT schematic",
+      "path": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/tree/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware",
+      "sections": [
+        "Sheet 1 driver sockets",
+        "Sheet 2 STOP / EXP2"
+      ],
+      "caveat": "Filename says V1.1; title blocks say Rev V1.0. Verify the actual board revision and mating view."
+    }
+  ],
+  "holds": [
+    {
+      "id": "socket-fit",
+      "label": "Socket view unverified",
+      "reason": "The actual v1.1 board socket view, cable attachment and STEP/DIR/GND continuity have not been recorded. The 18-contact socket must be identified by function; GPIO names do not give physical cavity positions. No installed adapter is assumed."
+    },
+    {
+      "id": "header-view",
+      "label": "Header view unverified",
+      "reason": "Record the actual STOP or EXP2 mating view, key direction and signal/GND continuity. Do not count cavities from a generic picture."
+    },
+    {
+      "id": "drive-terminals",
+      "label": "Drive terminals unverified",
+      "reason": "Confirm all four drive labels say CL57T V4.1. Record the actual P1–P4 terminal face, keying and mating view before inserting contacts."
+    },
+    {
+      "id": "command-interface",
+      "label": "Command interface unfinished",
+      "reason": "The planned interface terminals and protected 5 V supply are not physically qualified. Record S3=5V and prove loaded PUL/DIR current, timing and power-up/down behavior. ENA stays unconnected."
+    },
+    {
+      "id": "alarm-conditioner",
+      "label": "Alarm circuit unfinished",
+      "reason": "Each ALM/COMO pair needs its own isolated, current-limited conditioner. Actual polarity and healthy/alarm/open-cable/power-loss behavior are unknown. Healthy-open outputs need added supervision; inversion alone is insufficient."
+    },
+    {
+      "id": "module-circuit",
+      "label": "Module circuit unknown",
+      "reason": "A TLP281 or HW-399 label does not prove terminals, supplies or isolation. Trace any chosen module, including shared pullups; leaving output VCC floating is not an approved recipe."
+    },
+    {
+      "id": "logic-return",
+      "label": "Return path unverified",
+      "reason": "Record the controller-side return, control-0V/PE reference and any USB/earthed-PC path. Never remove protective earth to force an open reading."
+    },
+    {
+      "id": "motor-harness",
+      "label": "Motor harness untraced",
+      "reason": "Match this motor to its drive and trace the supplied cable while deenergized. Phase identities, connector cavities, route length, fit and shielding are not yet recorded; colors are not proof."
+    },
+    {
+      "id": "encoder-harness",
+      "label": "Encoder harness untraced",
+      "reason": "Match this encoder to the same motor and drive. Verify the kit cable and all six functions while deenergized. No replacement cavity map or internal galvanic-isolation claim is established."
+    },
+    {
+      "id": "motion-supply",
+      "label": "Motion supply unqualified",
+      "reason": "The recorded supply is 36 V / 10 A. Four-drive load, regeneration, ripple, branch protection, wire ratings and distribution terminals remain unqualified. No fuse value is selected here."
+    },
+    {
+      "id": "hardware-safety",
+      "label": "Hardware stop not proved",
+      "reason": "Protective bonding, independent hardware stopping and gravity-loaded Z support remain unproved. ENA is unused; a stopped command stream does not remove torque or prevent movement."
+    }
+  ],
+  "axes": [
+    {
+      "id": "X",
+      "label": "X",
+      "logicalAxis": "X",
+      "socket": "MOTOR0",
+      "step": "PF13",
+      "direction": "PF12",
+      "reservedEnable": "PF14",
+      "commandConnector": "JX",
+      "alarmConnector": "JFX",
+      "diagnosticHeader": "STOP4",
+      "diagnosticPin": "PG12"
+    },
+    {
+      "id": "YL",
+      "label": "Y-left",
+      "logicalAxis": "Y",
+      "socket": "MOTOR1",
+      "step": "PG0",
+      "direction": "PG1",
+      "reservedEnable": "PF15",
+      "commandConnector": "JYL",
+      "alarmConnector": "JFYL",
+      "diagnosticHeader": "STOP5",
+      "diagnosticPin": "PG13"
+    },
+    {
+      "id": "Z",
+      "label": "Z",
+      "logicalAxis": "Z",
+      "socket": "MOTOR2",
+      "step": "PF11",
+      "direction": "PG3",
+      "reservedEnable": "PG5",
+      "commandConnector": "JZ",
+      "alarmConnector": "JFZ",
+      "diagnosticHeader": "STOP6",
+      "diagnosticPin": "PG14"
+    },
+    {
+      "id": "YR",
+      "label": "Y-right",
+      "logicalAxis": "Y",
+      "socket": "MOTOR3",
+      "step": "PG4",
+      "direction": "PC1",
+      "reservedEnable": "PA2",
+      "commandConnector": "JYR",
+      "alarmConnector": "JFYR",
+      "diagnosticHeader": "STOP7",
+      "diagnosticPin": "PG15"
+    }
+  ],
+  "routes": [
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "command-X",
+      "cableLabel": "CMD-X",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "CMD-X"
+      ],
+      "category": "command",
+      "axisId": "X",
+      "title": "X: control cable to CL57T P1",
+      "from": {
+        "node": "interface",
+        "label": "Planned interface JX",
+        "terminals": [
+          "Protected +5 V / PUL+",
+          "STEP sink / PUL−",
+          "Protected +5 V / DIR+",
+          "DIR sink / DIR−"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-X",
+        "label": "X drive · P1",
+        "terminals": [
+          "PUL+",
+          "PUL−",
+          "DIR+",
+          "DIR−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "upstream": {
+        "label": "Octopus MOTOR0",
+        "step": "PF13",
+        "direction": "PF12",
+        "logicReturn": "GND",
+        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+      },
+      "connections": [
+        {
+          "from": "Protected +5 V / PUL+",
+          "to": "P1 PUL+"
+        },
+        {
+          "from": "STEP sink / PUL−",
+          "to": "P1 PUL−"
+        },
+        {
+          "from": "Protected +5 V / DIR+",
+          "to": "P1 DIR+"
+        },
+        {
+          "from": "DIR sink / DIR−",
+          "to": "P1 DIR−"
+        }
+      ],
+      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
+      "holdIds": [
+        "command-interface",
+        "drive-terminals",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "socket-X",
+        "motor-X",
+        "encoder-X"
+      ],
+      "endLabels": {
+        "from": "CMD-X",
+        "to": "CMD-X"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "socket-X",
+      "cableLabel": "X socket → interface",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "CMD-X"
+      ],
+      "category": "command",
+      "axisId": "X",
+      "title": "X: socket to interface",
+      "from": {
+        "node": "octopus",
+        "label": "Octopus MOTOR0",
+        "terminals": [
+          "STEP PF13",
+          "DIR PF12",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "interface",
+        "label": "Planned X command input",
+        "terminals": [
+          "STEP channel input",
+          "DIR channel input",
+          "Controller logic return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "STEP PF13",
+          "to": "STEP channel input"
+        },
+        {
+          "from": "DIR PF12",
+          "to": "DIR channel input"
+        },
+        {
+          "from": "Logic GND",
+          "to": "Controller logic return"
+        }
+      ],
+      "summary": "These signals come from the empty driver socket. The separate four-pin A1/A2/B1/B2 motor-output plug is unused for this external-drive control cable. The planned interface input names are functional labels until its actual terminals are confirmed.",
+      "check": "Identify STEP, DIR and logic return on the actual board. Confirm the cable attachment and interface terminal map before landing conductors. Leave reserved EN and unused socket contacts unconnected.",
+      "holdIds": [
+        "socket-fit",
+        "command-interface",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "pigtails",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "command-X"
+      ],
+      "endLabels": {
+        "from": "X socket → interface",
+        "to": "X socket → interface"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "motor-X",
+      "cableLabel": "MOT-X",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "MOT-X"
+      ],
+      "category": "motor",
+      "axisId": "X",
+      "title": "X: drive to motor",
+      "from": {
+        "node": "drive-X",
+        "label": "X drive · P3",
+        "terminals": [
+          "A+",
+          "A−",
+          "B+",
+          "B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "motor-X",
+        "label": "X matched motor lead",
+        "terminals": [
+          "Motor phase A+",
+          "Motor phase A−",
+          "Motor phase B+",
+          "Motor phase B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P3 A+",
+          "to": "Motor phase A+"
+        },
+        {
+          "from": "P3 A−",
+          "to": "Motor phase A−"
+        },
+        {
+          "from": "P3 B+",
+          "to": "Motor phase B+"
+        },
+        {
+          "from": "P3 B−",
+          "to": "Motor phase B−"
+        }
+      ],
+      "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
+      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "holdIds": [
+        "drive-terminals",
+        "motor-harness",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "encoder-X",
+        "power-X"
+      ],
+      "endLabels": {
+        "from": "MOT-X",
+        "to": "MOT-X"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "encoder-X",
+      "cableLabel": "ENC-X",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ENC-X"
+      ],
+      "category": "encoder",
+      "axisId": "X",
+      "title": "X: motor feedback to drive",
+      "from": {
+        "node": "motor-X",
+        "label": "X matched motor encoder",
+        "terminals": [
+          "Encoder A+",
+          "Encoder A−",
+          "Encoder B+",
+          "Encoder B−",
+          "Encoder supply",
+          "Encoder return"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-X",
+        "label": "X drive · P2",
+        "terminals": [
+          "EA+",
+          "EA−",
+          "EB+",
+          "EB−",
+          "VCC",
+          "EGND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Encoder A+",
+          "to": "P2 EA+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder A−",
+          "to": "P2 EA−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B+",
+          "to": "P2 EB+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B−",
+          "to": "P2 EB−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder supply",
+          "to": "P2 VCC",
+          "direction": "to-from"
+        },
+        {
+          "from": "Encoder return",
+          "to": "P2 EGND",
+          "direction": "return"
+        }
+      ],
+      "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
+      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "holdIds": [
+        "drive-terminals",
+        "encoder-harness"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual",
+        "drive-guide"
+      ],
+      "relatedRouteIds": [
+        "motor-X"
+      ],
+      "endLabels": {
+        "from": "ENC-X",
+        "to": "ENC-X"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "power-X",
+      "cableLabel": "PWR-36-X",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "PWR-36-X"
+      ],
+      "category": "power",
+      "axisId": "X",
+      "title": "X: polarized drive power",
+      "from": {
+        "node": "motion-power",
+        "label": "Planned X fused star branch",
+        "terminals": [
+          "Branch positive",
+          "Branch negative / return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-X",
+        "label": "X drive · P4",
+        "terminals": [
+          "+VDC",
+          "GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Branch positive",
+          "to": "P4 +VDC"
+        },
+        {
+          "from": "Branch negative / return",
+          "to": "P4 GND"
+        }
+      ],
+      "summary": "P4 is polarized DC power. Each drive gets its own protected pair from the distribution point; no drive-to-drive daisy chain.",
+      "check": "Confirm markings and trace positive to +VDC, negative to GND with all sources isolated. Supply and protection approval remain open.",
+      "holdIds": [
+        "drive-terminals",
+        "motion-supply",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "readiness",
+        "drive-manual",
+        "drive-guide",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "motor-X",
+        "encoder-X"
+      ],
+      "endLabels": {
+        "from": "PWR-36-X",
+        "to": "PWR-36-X"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "alarm-X",
+      "cableLabel": "ALM-X",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ALM-X"
+      ],
+      "category": "alarm",
+      "axisId": "X",
+      "title": "X: alarm to conditioner",
+      "from": {
+        "node": "drive-X",
+        "label": "X drive · P1 alarm",
+        "terminals": [
+          "ALM",
+          "COMO"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "alarm-X",
+        "label": "Planned JFX alarm conditioner",
+        "terminals": [
+          "Field ALM input",
+          "Field COMO input"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P1 ALM",
+          "to": "Field ALM input"
+        },
+        {
+          "from": "P1 COMO",
+          "to": "Field COMO input"
+        }
+      ],
+      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
+      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "holdIds": [
+        "drive-terminals",
+        "alarm-conditioner",
+        "module-circuit"
+      ],
+      "sourceIds": [
+        "second-pass",
+        "interface",
+        "drive-manual",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "diagnostic-X",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "ALM-X",
+        "to": "ALM-X"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "diagnostic-X",
+      "cableLabel": "X conditioned fault indication",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "ALM-X"
+      ],
+      "category": "alarm",
+      "axisId": "X",
+      "title": "X: separate fault indication",
+      "from": {
+        "node": "alarm-X",
+        "label": "Planned X diagnostic output",
+        "terminals": [
+          "Separate conditioned indication",
+          "Controller-side return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "octopus",
+        "label": "Octopus STOP4",
+        "terminals": [
+          "Signal PG12",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Separate conditioned indication",
+          "to": "STOP4 PG12"
+        },
+        {
+          "from": "Controller-side return",
+          "to": "STOP4 GND"
+        }
+      ],
+      "summary": "PG12 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "holdIds": [
+        "header-view",
+        "alarm-conditioner",
+        "module-circuit",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "readiness",
+        "pin-map",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "alarm-X",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "X conditioned fault indication",
+        "to": "X conditioned fault indication"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "command-YL",
+      "cableLabel": "CMD-YL",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "CMD-YL"
+      ],
+      "category": "command",
+      "axisId": "YL",
+      "title": "Y-left: control cable to CL57T P1",
+      "from": {
+        "node": "interface",
+        "label": "Planned interface JYL",
+        "terminals": [
+          "Protected +5 V / PUL+",
+          "STEP sink / PUL−",
+          "Protected +5 V / DIR+",
+          "DIR sink / DIR−"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-YL",
+        "label": "Y-left drive · P1",
+        "terminals": [
+          "PUL+",
+          "PUL−",
+          "DIR+",
+          "DIR−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "upstream": {
+        "label": "Octopus MOTOR1",
+        "step": "PG0",
+        "direction": "PG1",
+        "logicReturn": "GND",
+        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+      },
+      "connections": [
+        {
+          "from": "Protected +5 V / PUL+",
+          "to": "P1 PUL+"
+        },
+        {
+          "from": "STEP sink / PUL−",
+          "to": "P1 PUL−"
+        },
+        {
+          "from": "Protected +5 V / DIR+",
+          "to": "P1 DIR+"
+        },
+        {
+          "from": "DIR sink / DIR−",
+          "to": "P1 DIR−"
+        }
+      ],
+      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
+      "holdIds": [
+        "command-interface",
+        "drive-terminals",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "socket-YL",
+        "motor-YL",
+        "encoder-YL"
+      ],
+      "endLabels": {
+        "from": "CMD-YL",
+        "to": "CMD-YL"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "socket-YL",
+      "cableLabel": "Y-left socket → interface",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "CMD-YL"
+      ],
+      "category": "command",
+      "axisId": "YL",
+      "title": "Y-left: socket to interface",
+      "from": {
+        "node": "octopus",
+        "label": "Octopus MOTOR1",
+        "terminals": [
+          "STEP PG0",
+          "DIR PG1",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "interface",
+        "label": "Planned Y-left command input",
+        "terminals": [
+          "STEP channel input",
+          "DIR channel input",
+          "Controller logic return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "STEP PG0",
+          "to": "STEP channel input"
+        },
+        {
+          "from": "DIR PG1",
+          "to": "DIR channel input"
+        },
+        {
+          "from": "Logic GND",
+          "to": "Controller logic return"
+        }
+      ],
+      "summary": "These signals come from the empty driver socket. The separate four-pin A1/A2/B1/B2 motor-output plug is unused for this external-drive control cable. The planned interface input names are functional labels until its actual terminals are confirmed.",
+      "check": "Identify STEP, DIR and logic return on the actual board. Confirm the cable attachment and interface terminal map before landing conductors. Leave reserved EN and unused socket contacts unconnected.",
+      "holdIds": [
+        "socket-fit",
+        "command-interface",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "pigtails",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "command-YL"
+      ],
+      "endLabels": {
+        "from": "Y-left socket → interface",
+        "to": "Y-left socket → interface"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "motor-YL",
+      "cableLabel": "MOT-YL",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "MOT-YL"
+      ],
+      "category": "motor",
+      "axisId": "YL",
+      "title": "Y-left: drive to motor",
+      "from": {
+        "node": "drive-YL",
+        "label": "Y-left drive · P3",
+        "terminals": [
+          "A+",
+          "A−",
+          "B+",
+          "B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "motor-YL",
+        "label": "Y-left matched motor lead",
+        "terminals": [
+          "Motor phase A+",
+          "Motor phase A−",
+          "Motor phase B+",
+          "Motor phase B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P3 A+",
+          "to": "Motor phase A+"
+        },
+        {
+          "from": "P3 A−",
+          "to": "Motor phase A−"
+        },
+        {
+          "from": "P3 B+",
+          "to": "Motor phase B+"
+        },
+        {
+          "from": "P3 B−",
+          "to": "Motor phase B−"
+        }
+      ],
+      "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
+      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "holdIds": [
+        "drive-terminals",
+        "motor-harness",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "encoder-YL",
+        "power-YL"
+      ],
+      "endLabels": {
+        "from": "MOT-YL",
+        "to": "MOT-YL"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "encoder-YL",
+      "cableLabel": "ENC-YL",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ENC-YL"
+      ],
+      "category": "encoder",
+      "axisId": "YL",
+      "title": "Y-left: motor feedback to drive",
+      "from": {
+        "node": "motor-YL",
+        "label": "Y-left matched motor encoder",
+        "terminals": [
+          "Encoder A+",
+          "Encoder A−",
+          "Encoder B+",
+          "Encoder B−",
+          "Encoder supply",
+          "Encoder return"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-YL",
+        "label": "Y-left drive · P2",
+        "terminals": [
+          "EA+",
+          "EA−",
+          "EB+",
+          "EB−",
+          "VCC",
+          "EGND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Encoder A+",
+          "to": "P2 EA+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder A−",
+          "to": "P2 EA−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B+",
+          "to": "P2 EB+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B−",
+          "to": "P2 EB−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder supply",
+          "to": "P2 VCC",
+          "direction": "to-from"
+        },
+        {
+          "from": "Encoder return",
+          "to": "P2 EGND",
+          "direction": "return"
+        }
+      ],
+      "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
+      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "holdIds": [
+        "drive-terminals",
+        "encoder-harness"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual",
+        "drive-guide"
+      ],
+      "relatedRouteIds": [
+        "motor-YL"
+      ],
+      "endLabels": {
+        "from": "ENC-YL",
+        "to": "ENC-YL"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "power-YL",
+      "cableLabel": "PWR-36-YL",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "PWR-36-YL"
+      ],
+      "category": "power",
+      "axisId": "YL",
+      "title": "Y-left: polarized drive power",
+      "from": {
+        "node": "motion-power",
+        "label": "Planned Y-left fused star branch",
+        "terminals": [
+          "Branch positive",
+          "Branch negative / return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-YL",
+        "label": "Y-left drive · P4",
+        "terminals": [
+          "+VDC",
+          "GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Branch positive",
+          "to": "P4 +VDC"
+        },
+        {
+          "from": "Branch negative / return",
+          "to": "P4 GND"
+        }
+      ],
+      "summary": "P4 is polarized DC power. Each drive gets its own protected pair from the distribution point; no drive-to-drive daisy chain.",
+      "check": "Confirm markings and trace positive to +VDC, negative to GND with all sources isolated. Supply and protection approval remain open.",
+      "holdIds": [
+        "drive-terminals",
+        "motion-supply",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "readiness",
+        "drive-manual",
+        "drive-guide",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "motor-YL",
+        "encoder-YL"
+      ],
+      "endLabels": {
+        "from": "PWR-36-YL",
+        "to": "PWR-36-YL"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "alarm-YL",
+      "cableLabel": "ALM-YL",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ALM-YL"
+      ],
+      "category": "alarm",
+      "axisId": "YL",
+      "title": "Y-left: alarm to conditioner",
+      "from": {
+        "node": "drive-YL",
+        "label": "Y-left drive · P1 alarm",
+        "terminals": [
+          "ALM",
+          "COMO"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "alarm-YL",
+        "label": "Planned JFYL alarm conditioner",
+        "terminals": [
+          "Field ALM input",
+          "Field COMO input"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P1 ALM",
+          "to": "Field ALM input"
+        },
+        {
+          "from": "P1 COMO",
+          "to": "Field COMO input"
+        }
+      ],
+      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
+      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "holdIds": [
+        "drive-terminals",
+        "alarm-conditioner",
+        "module-circuit"
+      ],
+      "sourceIds": [
+        "second-pass",
+        "interface",
+        "drive-manual",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "diagnostic-YL",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "ALM-YL",
+        "to": "ALM-YL"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "diagnostic-YL",
+      "cableLabel": "Y-left conditioned fault indication",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "ALM-YL"
+      ],
+      "category": "alarm",
+      "axisId": "YL",
+      "title": "Y-left: separate fault indication",
+      "from": {
+        "node": "alarm-YL",
+        "label": "Planned Y-left diagnostic output",
+        "terminals": [
+          "Separate conditioned indication",
+          "Controller-side return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "octopus",
+        "label": "Octopus STOP5",
+        "terminals": [
+          "Signal PG13",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Separate conditioned indication",
+          "to": "STOP5 PG13"
+        },
+        {
+          "from": "Controller-side return",
+          "to": "STOP5 GND"
+        }
+      ],
+      "summary": "PG13 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "holdIds": [
+        "header-view",
+        "alarm-conditioner",
+        "module-circuit",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "readiness",
+        "pin-map",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "alarm-YL",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "Y-left conditioned fault indication",
+        "to": "Y-left conditioned fault indication"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "command-Z",
+      "cableLabel": "CMD-Z",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "CMD-Z"
+      ],
+      "category": "command",
+      "axisId": "Z",
+      "title": "Z: control cable to CL57T P1",
+      "from": {
+        "node": "interface",
+        "label": "Planned interface JZ",
+        "terminals": [
+          "Protected +5 V / PUL+",
+          "STEP sink / PUL−",
+          "Protected +5 V / DIR+",
+          "DIR sink / DIR−"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-Z",
+        "label": "Z drive · P1",
+        "terminals": [
+          "PUL+",
+          "PUL−",
+          "DIR+",
+          "DIR−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "upstream": {
+        "label": "Octopus MOTOR2",
+        "step": "PF11",
+        "direction": "PG3",
+        "logicReturn": "GND",
+        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+      },
+      "connections": [
+        {
+          "from": "Protected +5 V / PUL+",
+          "to": "P1 PUL+"
+        },
+        {
+          "from": "STEP sink / PUL−",
+          "to": "P1 PUL−"
+        },
+        {
+          "from": "Protected +5 V / DIR+",
+          "to": "P1 DIR+"
+        },
+        {
+          "from": "DIR sink / DIR−",
+          "to": "P1 DIR−"
+        }
+      ],
+      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
+      "holdIds": [
+        "command-interface",
+        "drive-terminals",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "socket-Z",
+        "motor-Z",
+        "encoder-Z"
+      ],
+      "endLabels": {
+        "from": "CMD-Z",
+        "to": "CMD-Z"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "socket-Z",
+      "cableLabel": "Z socket → interface",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "CMD-Z"
+      ],
+      "category": "command",
+      "axisId": "Z",
+      "title": "Z: socket to interface",
+      "from": {
+        "node": "octopus",
+        "label": "Octopus MOTOR2",
+        "terminals": [
+          "STEP PF11",
+          "DIR PG3",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "interface",
+        "label": "Planned Z command input",
+        "terminals": [
+          "STEP channel input",
+          "DIR channel input",
+          "Controller logic return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "STEP PF11",
+          "to": "STEP channel input"
+        },
+        {
+          "from": "DIR PG3",
+          "to": "DIR channel input"
+        },
+        {
+          "from": "Logic GND",
+          "to": "Controller logic return"
+        }
+      ],
+      "summary": "These signals come from the empty driver socket. The separate four-pin A1/A2/B1/B2 motor-output plug is unused for this external-drive control cable. The planned interface input names are functional labels until its actual terminals are confirmed.",
+      "check": "Identify STEP, DIR and logic return on the actual board. Confirm the cable attachment and interface terminal map before landing conductors. Leave reserved EN and unused socket contacts unconnected.",
+      "holdIds": [
+        "socket-fit",
+        "command-interface",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "pigtails",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "command-Z"
+      ],
+      "endLabels": {
+        "from": "Z socket → interface",
+        "to": "Z socket → interface"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "motor-Z",
+      "cableLabel": "MOT-Z",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "MOT-Z"
+      ],
+      "category": "motor",
+      "axisId": "Z",
+      "title": "Z: drive to motor",
+      "from": {
+        "node": "drive-Z",
+        "label": "Z drive · P3",
+        "terminals": [
+          "A+",
+          "A−",
+          "B+",
+          "B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "motor-Z",
+        "label": "Z matched motor lead",
+        "terminals": [
+          "Motor phase A+",
+          "Motor phase A−",
+          "Motor phase B+",
+          "Motor phase B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P3 A+",
+          "to": "Motor phase A+"
+        },
+        {
+          "from": "P3 A−",
+          "to": "Motor phase A−"
+        },
+        {
+          "from": "P3 B+",
+          "to": "Motor phase B+"
+        },
+        {
+          "from": "P3 B−",
+          "to": "Motor phase B−"
+        }
+      ],
+      "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
+      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "holdIds": [
+        "drive-terminals",
+        "motor-harness",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "encoder-Z",
+        "power-Z"
+      ],
+      "endLabels": {
+        "from": "MOT-Z",
+        "to": "MOT-Z"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "encoder-Z",
+      "cableLabel": "ENC-Z",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ENC-Z"
+      ],
+      "category": "encoder",
+      "axisId": "Z",
+      "title": "Z: motor feedback to drive",
+      "from": {
+        "node": "motor-Z",
+        "label": "Z matched motor encoder",
+        "terminals": [
+          "Encoder A+",
+          "Encoder A−",
+          "Encoder B+",
+          "Encoder B−",
+          "Encoder supply",
+          "Encoder return"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-Z",
+        "label": "Z drive · P2",
+        "terminals": [
+          "EA+",
+          "EA−",
+          "EB+",
+          "EB−",
+          "VCC",
+          "EGND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Encoder A+",
+          "to": "P2 EA+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder A−",
+          "to": "P2 EA−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B+",
+          "to": "P2 EB+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B−",
+          "to": "P2 EB−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder supply",
+          "to": "P2 VCC",
+          "direction": "to-from"
+        },
+        {
+          "from": "Encoder return",
+          "to": "P2 EGND",
+          "direction": "return"
+        }
+      ],
+      "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
+      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "holdIds": [
+        "drive-terminals",
+        "encoder-harness"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual",
+        "drive-guide"
+      ],
+      "relatedRouteIds": [
+        "motor-Z"
+      ],
+      "endLabels": {
+        "from": "ENC-Z",
+        "to": "ENC-Z"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "power-Z",
+      "cableLabel": "PWR-36-Z",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "PWR-36-Z"
+      ],
+      "category": "power",
+      "axisId": "Z",
+      "title": "Z: polarized drive power",
+      "from": {
+        "node": "motion-power",
+        "label": "Planned Z fused star branch",
+        "terminals": [
+          "Branch positive",
+          "Branch negative / return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-Z",
+        "label": "Z drive · P4",
+        "terminals": [
+          "+VDC",
+          "GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Branch positive",
+          "to": "P4 +VDC"
+        },
+        {
+          "from": "Branch negative / return",
+          "to": "P4 GND"
+        }
+      ],
+      "summary": "P4 is polarized DC power. Each drive gets its own protected pair from the distribution point; no drive-to-drive daisy chain.",
+      "check": "Confirm markings and trace positive to +VDC, negative to GND with all sources isolated. Supply and protection approval remain open.",
+      "holdIds": [
+        "drive-terminals",
+        "motion-supply",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "readiness",
+        "drive-manual",
+        "drive-guide",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "motor-Z",
+        "encoder-Z"
+      ],
+      "endLabels": {
+        "from": "PWR-36-Z",
+        "to": "PWR-36-Z"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "alarm-Z",
+      "cableLabel": "ALM-Z",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ALM-Z"
+      ],
+      "category": "alarm",
+      "axisId": "Z",
+      "title": "Z: alarm to conditioner",
+      "from": {
+        "node": "drive-Z",
+        "label": "Z drive · P1 alarm",
+        "terminals": [
+          "ALM",
+          "COMO"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "alarm-Z",
+        "label": "Planned JFZ alarm conditioner",
+        "terminals": [
+          "Field ALM input",
+          "Field COMO input"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P1 ALM",
+          "to": "Field ALM input"
+        },
+        {
+          "from": "P1 COMO",
+          "to": "Field COMO input"
+        }
+      ],
+      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
+      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "holdIds": [
+        "drive-terminals",
+        "alarm-conditioner",
+        "module-circuit"
+      ],
+      "sourceIds": [
+        "second-pass",
+        "interface",
+        "drive-manual",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "diagnostic-Z",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "ALM-Z",
+        "to": "ALM-Z"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "diagnostic-Z",
+      "cableLabel": "Z conditioned fault indication",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "ALM-Z"
+      ],
+      "category": "alarm",
+      "axisId": "Z",
+      "title": "Z: separate fault indication",
+      "from": {
+        "node": "alarm-Z",
+        "label": "Planned Z diagnostic output",
+        "terminals": [
+          "Separate conditioned indication",
+          "Controller-side return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "octopus",
+        "label": "Octopus STOP6",
+        "terminals": [
+          "Signal PG14",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Separate conditioned indication",
+          "to": "STOP6 PG14"
+        },
+        {
+          "from": "Controller-side return",
+          "to": "STOP6 GND"
+        }
+      ],
+      "summary": "PG14 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "holdIds": [
+        "header-view",
+        "alarm-conditioner",
+        "module-circuit",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "readiness",
+        "pin-map",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "alarm-Z",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "Z conditioned fault indication",
+        "to": "Z conditioned fault indication"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "command-YR",
+      "cableLabel": "CMD-YR",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "CMD-YR"
+      ],
+      "category": "command",
+      "axisId": "YR",
+      "title": "Y-right: control cable to CL57T P1",
+      "from": {
+        "node": "interface",
+        "label": "Planned interface JYR",
+        "terminals": [
+          "Protected +5 V / PUL+",
+          "STEP sink / PUL−",
+          "Protected +5 V / DIR+",
+          "DIR sink / DIR−"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-YR",
+        "label": "Y-right drive · P1",
+        "terminals": [
+          "PUL+",
+          "PUL−",
+          "DIR+",
+          "DIR−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "upstream": {
+        "label": "Octopus MOTOR3",
+        "step": "PG4",
+        "direction": "PC1",
+        "logicReturn": "GND",
+        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+      },
+      "connections": [
+        {
+          "from": "Protected +5 V / PUL+",
+          "to": "P1 PUL+"
+        },
+        {
+          "from": "STEP sink / PUL−",
+          "to": "P1 PUL−"
+        },
+        {
+          "from": "Protected +5 V / DIR+",
+          "to": "P1 DIR+"
+        },
+        {
+          "from": "DIR sink / DIR−",
+          "to": "P1 DIR−"
+        }
+      ],
+      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
+      "holdIds": [
+        "command-interface",
+        "drive-terminals",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "interface",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "socket-YR",
+        "motor-YR",
+        "encoder-YR"
+      ],
+      "endLabels": {
+        "from": "CMD-YR",
+        "to": "CMD-YR"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "socket-YR",
+      "cableLabel": "Y-right socket → interface",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "CMD-YR"
+      ],
+      "category": "command",
+      "axisId": "YR",
+      "title": "Y-right: socket to interface",
+      "from": {
+        "node": "octopus",
+        "label": "Octopus MOTOR3",
+        "terminals": [
+          "STEP PG4",
+          "DIR PC1",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "interface",
+        "label": "Planned Y-right command input",
+        "terminals": [
+          "STEP channel input",
+          "DIR channel input",
+          "Controller logic return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "STEP PG4",
+          "to": "STEP channel input"
+        },
+        {
+          "from": "DIR PC1",
+          "to": "DIR channel input"
+        },
+        {
+          "from": "Logic GND",
+          "to": "Controller logic return"
+        }
+      ],
+      "summary": "These signals come from the empty driver socket. The separate four-pin A1/A2/B1/B2 motor-output plug is unused for this external-drive control cable. The planned interface input names are functional labels until its actual terminals are confirmed.",
+      "check": "Identify STEP, DIR and logic return on the actual board. Confirm the cable attachment and interface terminal map before landing conductors. Leave reserved EN and unused socket contacts unconnected.",
+      "holdIds": [
+        "socket-fit",
+        "command-interface",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "pin-map",
+        "pigtails",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "command-YR"
+      ],
+      "endLabels": {
+        "from": "Y-right socket → interface",
+        "to": "Y-right socket → interface"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "motor-YR",
+      "cableLabel": "MOT-YR",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "MOT-YR"
+      ],
+      "category": "motor",
+      "axisId": "YR",
+      "title": "Y-right: drive to motor",
+      "from": {
+        "node": "drive-YR",
+        "label": "Y-right drive · P3",
+        "terminals": [
+          "A+",
+          "A−",
+          "B+",
+          "B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "motor-YR",
+        "label": "Y-right matched motor lead",
+        "terminals": [
+          "Motor phase A+",
+          "Motor phase A−",
+          "Motor phase B+",
+          "Motor phase B−"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P3 A+",
+          "to": "Motor phase A+"
+        },
+        {
+          "from": "P3 A−",
+          "to": "Motor phase A−"
+        },
+        {
+          "from": "P3 B+",
+          "to": "Motor phase B+"
+        },
+        {
+          "from": "P3 B−",
+          "to": "Motor phase B−"
+        }
+      ],
+      "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
+      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "holdIds": [
+        "drive-terminals",
+        "motor-harness",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual"
+      ],
+      "relatedRouteIds": [
+        "encoder-YR",
+        "power-YR"
+      ],
+      "endLabels": {
+        "from": "MOT-YR",
+        "to": "MOT-YR"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "encoder-YR",
+      "cableLabel": "ENC-YR",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ENC-YR"
+      ],
+      "category": "encoder",
+      "axisId": "YR",
+      "title": "Y-right: motor feedback to drive",
+      "from": {
+        "node": "motor-YR",
+        "label": "Y-right matched motor encoder",
+        "terminals": [
+          "Encoder A+",
+          "Encoder A−",
+          "Encoder B+",
+          "Encoder B−",
+          "Encoder supply",
+          "Encoder return"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-YR",
+        "label": "Y-right drive · P2",
+        "terminals": [
+          "EA+",
+          "EA−",
+          "EB+",
+          "EB−",
+          "VCC",
+          "EGND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Encoder A+",
+          "to": "P2 EA+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder A−",
+          "to": "P2 EA−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B+",
+          "to": "P2 EB+",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder B−",
+          "to": "P2 EB−",
+          "direction": "from-to"
+        },
+        {
+          "from": "Encoder supply",
+          "to": "P2 VCC",
+          "direction": "to-from"
+        },
+        {
+          "from": "Encoder return",
+          "to": "P2 EGND",
+          "direction": "return"
+        }
+      ],
+      "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
+      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "holdIds": [
+        "drive-terminals",
+        "encoder-harness"
+      ],
+      "sourceIds": [
+        "pigtails",
+        "cable-schedule",
+        "drive-manual",
+        "drive-guide"
+      ],
+      "relatedRouteIds": [
+        "motor-YR"
+      ],
+      "endLabels": {
+        "from": "ENC-YR",
+        "to": "ENC-YR"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "power-YR",
+      "cableLabel": "PWR-36-YR",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "PWR-36-YR"
+      ],
+      "category": "power",
+      "axisId": "YR",
+      "title": "Y-right: polarized drive power",
+      "from": {
+        "node": "motion-power",
+        "label": "Planned Y-right fused star branch",
+        "terminals": [
+          "Branch positive",
+          "Branch negative / return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "drive-YR",
+        "label": "Y-right drive · P4",
+        "terminals": [
+          "+VDC",
+          "GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Branch positive",
+          "to": "P4 +VDC"
+        },
+        {
+          "from": "Branch negative / return",
+          "to": "P4 GND"
+        }
+      ],
+      "summary": "P4 is polarized DC power. Each drive gets its own protected pair from the distribution point; no drive-to-drive daisy chain.",
+      "check": "Confirm markings and trace positive to +VDC, negative to GND with all sources isolated. Supply and protection approval remain open.",
+      "holdIds": [
+        "drive-terminals",
+        "motion-supply",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "readiness",
+        "drive-manual",
+        "drive-guide",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "motor-YR",
+        "encoder-YR"
+      ],
+      "endLabels": {
+        "from": "PWR-36-YR",
+        "to": "PWR-36-YR"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "alarm-YR",
+      "cableLabel": "ALM-YR",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "ALM-YR"
+      ],
+      "category": "alarm",
+      "axisId": "YR",
+      "title": "Y-right: alarm to conditioner",
+      "from": {
+        "node": "drive-YR",
+        "label": "Y-right drive · P1 alarm",
+        "terminals": [
+          "ALM",
+          "COMO"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "alarm-YR",
+        "label": "Planned JFYR alarm conditioner",
+        "terminals": [
+          "Field ALM input",
+          "Field COMO input"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "P1 ALM",
+          "to": "Field ALM input"
+        },
+        {
+          "from": "P1 COMO",
+          "to": "Field COMO input"
+        }
+      ],
+      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
+      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "holdIds": [
+        "drive-terminals",
+        "alarm-conditioner",
+        "module-circuit"
+      ],
+      "sourceIds": [
+        "second-pass",
+        "interface",
+        "drive-manual",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "diagnostic-YR",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "ALM-YR",
+        "to": "ALM-YR"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "diagnostic-YR",
+      "cableLabel": "Y-right conditioned fault indication",
+      "labelKind": "functional-route",
+      "matchCableIds": [
+        "ALM-YR"
+      ],
+      "category": "alarm",
+      "axisId": "YR",
+      "title": "Y-right: separate fault indication",
+      "from": {
+        "node": "alarm-YR",
+        "label": "Planned Y-right diagnostic output",
+        "terminals": [
+          "Separate conditioned indication",
+          "Controller-side return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "octopus",
+        "label": "Octopus STOP7",
+        "terminals": [
+          "Signal PG15",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Separate conditioned indication",
+          "to": "STOP7 PG15"
+        },
+        {
+          "from": "Controller-side return",
+          "to": "STOP7 GND"
+        }
+      ],
+      "summary": "PG15 identifies this drive for diagnostics. It does not provide the aggregate motor-fault stop; PB1 is a separate route.",
+      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "holdIds": [
+        "header-view",
+        "alarm-conditioner",
+        "module-circuit",
+        "logic-return"
+      ],
+      "sourceIds": [
+        "readiness",
+        "pin-map",
+        "interface",
+        "second-pass"
+      ],
+      "relatedRouteIds": [
+        "alarm-YR",
+        "fault-aggregate"
+      ],
+      "endLabels": {
+        "from": "Y-right conditioned fault indication",
+        "to": "Y-right conditioned fault indication"
+      }
+    },
+    {
+      "state": "HOLD",
+      "physicalCheckComplete": false,
+      "id": "fault-aggregate",
+      "cableLabel": "FAULT-AGG",
+      "labelKind": "source-cable-id",
+      "matchCableIds": [
+        "FAULT-AGG"
+      ],
+      "category": "alarm",
+      "axisId": null,
+      "title": "All drives: aggregate fault to PB1",
+      "from": {
+        "node": "fault-aggregate",
+        "label": "Planned supervised fault aggregate",
+        "terminals": [
+          "Combined conditioned healthy output",
+          "Controller-side return"
+        ],
+        "planned": true,
+        "physicalCavityMapKnown": false
+      },
+      "to": {
+        "node": "octopus",
+        "label": "Octopus EXP2",
+        "terminals": [
+          "PB1",
+          "Logic GND"
+        ],
+        "planned": false,
+        "physicalCavityMapKnown": false
+      },
+      "connections": [
+        {
+          "from": "Combined conditioned healthy output",
+          "to": "EXP2 PB1"
+        },
+        {
+          "from": "Controller-side return",
+          "to": "EXP2 GND"
+        }
+      ],
+      "contributors": [
+        {
+          "node": "alarm-X",
+          "label": "X conditioned healthy channel",
+          "routeId": "alarm-X"
+        },
+        {
+          "node": "alarm-YL",
+          "label": "Y-left conditioned healthy channel",
+          "routeId": "alarm-YL"
+        },
+        {
+          "node": "alarm-Z",
+          "label": "Z conditioned healthy channel",
+          "routeId": "alarm-Z"
+        },
+        {
+          "node": "alarm-YR",
+          "label": "Y-right conditioned healthy channel",
+          "routeId": "alarm-YR"
+        }
+      ],
+      "summary": "The four drive healthy channels join all required cabinet/spindle fault sources. All required contributors healthy = PB1 low; fault, open cable or lost power must make it high. The combining circuit is still unreleased.",
+      "check": "Prove every contributor independently using the approved test setup. PB1 is a controller fault input; the independent hardware stop is still required.",
+      "holdIds": [
+        "header-view",
+        "alarm-conditioner",
+        "module-circuit",
+        "logic-return",
+        "hardware-safety"
+      ],
+      "sourceIds": [
+        "readiness",
+        "second-pass",
+        "pin-map",
+        "interface",
+        "cable-schedule"
+      ],
+      "relatedRouteIds": [
+        "alarm-X",
+        "alarm-YL",
+        "alarm-Z",
+        "alarm-YR"
+      ],
+      "endLabels": {
+        "from": "FAULT-AGG",
+        "to": "FAULT-AGG"
+      },
+      "otherContributors": "Required cabinet/spindle fault sources and their conditioning remain to be established by the reviewed complete circuit."
+    }
+  ]
+}
