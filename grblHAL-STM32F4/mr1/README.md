@@ -13,7 +13,7 @@ Active hardware plan: **Octopus Pro v1.1 / STM32F429ZGT6**, four external **CL57
 - [Windows operator guide](OPERATOR.md), [staged commissioning reference](COMMISSIONING.md)
 - [Source build and licensing](../README.md), [historical build evidence](BUILD_REPORT.md)
 
-The release-level corrected wiring reference and current visual guide are the primary presentation. Older generic maps and root diagnostic scripts are historical and can describe other machines. DM860T documents concern the preserved rollback set only.
+The release-level corrected wiring reference and current visual guide are the primary presentation. Older generic maps are historical and can describe other machines. The former root diagnostic scripts now live in `legacy/grblhal-diagnostics-2025/` and must not be run on the MR1. DM860T documents concern the preserved rollback set only.
 
 ## Physical hold points
 
