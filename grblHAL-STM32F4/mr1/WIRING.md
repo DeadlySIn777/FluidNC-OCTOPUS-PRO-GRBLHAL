@@ -695,7 +695,7 @@ and configured drive parameters before termination.
 | --- | --- | --- |
 | Analog command return | 10 | Isolated converter `OUT-` |
 | 0-5 V speed command | 26 | Isolated converter `OUT+` |
-| Servo enable, reported active-low | 16 | Isolated dry relay contact to verified enable return |
+| Servo enable (`SON`), reported active-low | 16 | Isolated dry relay contact switching `SON` to the 24 V I/O-supply 0 V (sinking input, `COM+` at +24 V); pending drive-manual and harness verification |
 | I/O supply +24 V | 31 | Existing stock 24 V field supply |
 | I/O supply return | 23 | Existing stock 24 V return |
 | Possible servo alarm | 5 | Isolated conditioner to aggregate fault only after verification |
@@ -706,7 +706,10 @@ and configured drive parameters before termination.
 Langmuir reportedly configures the analog command as 0-5 V even though the
 generic T3 drive can support a different analog range. Do not alter servo
 parameters to make an unverified converter work. First measure the stock command
-at several requested speeds or reproduce the confirmed factory scaling.
+at several requested speeds or reproduce the confirmed factory scaling. Any
+later parameter change (for example analog gain scaling, `SPINDLE_SUPERVISION.md`
+option 1) is a documented, reviewed commissioning step taken only after the
+converter is verified, with the original parameter archive saved first.
 
 Octopus outputs:
 

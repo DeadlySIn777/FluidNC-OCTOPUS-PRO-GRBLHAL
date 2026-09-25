@@ -213,7 +213,7 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
     if cable_id == "SP-ENABLE":
         return (
             "Identify the proposed dry-contact route and preserve the stock servo harness; leave community pin 16/return unassigned pending the actual map.",
-            ["Installed servo enable function, exact return and DB44 continuity/orientation.",
+            ["Installed servo enable function and input topology (sinking SON with COM+ at +24 V, contact to I/O-supply 0 V, is pending the drive manual), exact 0 V terminal and DB44 continuity/orientation.",
              "Qualified contact interface and hardwired spindle-permit design.",
              "Verified startup, loss-of-power, stop and restart behavior; no software-only permit."],
         )

@@ -318,8 +318,9 @@ drive's pin functions, not proof of what the stock cable actually lands on.
 ## BLOCKER: the analog command range does not match the interface design
 
 **The drive's analog input is `0~10V` or `-10V~+10V` full scale.** This project
-specifies an **isolated 0-5 V** command (`Inc/mr1_octopus_config.h:143`,
-`BOM.md`, `WIRING.md`).
+specifies an **isolated 0-5 V** command (`Inc/mr1_octopus_config.h`, the "Stock
+MR-1 servo" spindle block and the "PWM is converted by an isolated 0-5 V module"
+spindle defaults; `BOM.md`; `WIRING.md`).
 
 A 0-5 V command into a 0-10 V input reaches **half scale**. With
 `DEFAULT_SPINDLE_RPM_MAX 8000.0f`, commanding 8000 RPM would deliver roughly
@@ -329,8 +330,11 @@ alarm and no error.
 Three ways out, to be decided before the analog stage is built:
 
 1. **Scale the drive.** T3A/T3L-class drives expose an analog gain parameter
-   (RPM per volt). Setting full scale to 5 V makes the existing 0-5 V design
-   correct. Preferred, but the parameter must be found, recorded and archived.
+   (RPM per volt); setting full scale to 5 V would make the existing 0-5 V
+   design correct. This is not a first step: no servo parameter is changed
+   until the isolated converter is verified, and any later change is a
+   documented, reviewed commissioning step with the original parameter archive
+   saved first.
 2. **Build the interface for 0-10 V** instead, and revise the PWM-to-analog
    stage specification throughout.
 3. **Halve the configured maximum** to 4000 RPM and accept losing the top half
@@ -338,6 +342,12 @@ Three ways out, to be decided before the analog stage is built:
 
 Until one is chosen and verified against a measured spindle speed, no spindle
 speed claim in this project is trustworthy.
+
+Servo-parameter policy (same as `WIRING.md`, "Stock Spindle Interface"): do not
+alter servo parameters to make an unverified converter work. Measure the stock
+command first. A parameter change is allowed only after the converter is
+verified, as a documented and reviewed commissioning step with before/after
+parameter archives.
 
 ## Stock controller spindle interface - `J10`
 
@@ -353,7 +363,10 @@ The Langmuir board's spindle connector is silkscreened:
 
 This is the interface the Octopus replaces: an analog speed command, an enable,
 and a 24 V field pair. It maps onto the DB44 assignments above - `SSPD` to
-`AS+`/`AS-`, `SPEN` to `DI1 SON` with `COM+` as its return.
+`AS+`/`AS-`, `SPEN` to `DI1 SON`. `COM+` (31) is the +24 V input common, not the
+enable return: with the input wired sinking, the enable contact switches `SON`
+to the 24 V I/O-supply 0 V. That input topology and the 0 V terminal are pending
+verification against the installed drive's manual and the metered harness.
 
 **Meter the stock harness before reusing it.** The silkscreen names the board's
 intent; it does not prove which DB44 pin each conductor reaches.

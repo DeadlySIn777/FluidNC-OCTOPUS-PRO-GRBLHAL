@@ -145,6 +145,20 @@ named; none is closed by this worksheet.
 | STEP/DIR during MCU reset / bootloader | STEP/DIR are undefined while the MCU is in reset or the SD bootloader (always-enabled HCT buffers, no pulls) and ENA is unconnected, so the drives stay enabled. Scope STEP/DIR at the socket during reset, power-up and a bootloader pass with drive power off. Using the reserved ENA channel, or interlocking motion power to controller health, is a **design decision pending review**. | Energizing a drive with the controller connected, unless drive power is off during every controller reset, reboot or flash. |
 | PB1 aggregate drive-fault chain | PB1 is the only drive-fault stop; PG12–PG15 are not read by the current firmware. For every drive, an alarm, drive-power loss and an open alarm cable must each stop motion through PB1 (`Pn:F`, alarm 17). | Any coupled dual-Y motion (commissioning Stage 6 onward). |
 
+### Unscheduled Octopus-side harnesses (open gaps)
+
+These runs have no cable ID in `mr1/cable-schedule.csv`. No conductor, connector
+or length is assigned here; define each only after its endpoints are proved.
+
+| Run | Why it is open |
+| --- | --- |
+| MOTOR0–3 socket adapter → interface (STEP, DIR, logic GND per axis) | `CMD-*` cables start at the interface; adapter and interface terminals are unproved |
+| Probe conditioner → T1/PF5 | `PROBE-01` ends at the interface field side |
+| Tool-setter conditioner → PB7 | `TOOL-01` ends at the interface field side; PB7 also needs its interface-board pull-up/RC |
+| FAN4/PD14 → spindle-enable relay input | `SP-ENABLE` is only the relay-contact-to-servo segment; FAN4 rail and relay are HOLD |
+
+The visual guide lists the same gaps under "Open gaps".
+
 ## Evidence to collect, in order
 
 | Stage | Required record | Status |

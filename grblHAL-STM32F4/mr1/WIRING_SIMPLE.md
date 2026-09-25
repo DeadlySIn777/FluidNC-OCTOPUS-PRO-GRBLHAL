@@ -161,6 +161,7 @@ view. Establish actual orientation and continuity before fitting an adapter:
 
 | Count | Meaning |
 | --- | --- |
+| 6 | **expected case** (`WIRING.md`, "Home and Limit Inputs"): shared 5 V supply + shared return + four independent signals. This is a powered circuit, not bare dry contacts - HOLD for the isolated conditioner until every conductor is traced |
 | 5 | candidate four signals plus common; trace every conductor to prove it |
 | 4 | cannot provide four independent dry-contact signals plus common; trace sharing before planning squaring |
 

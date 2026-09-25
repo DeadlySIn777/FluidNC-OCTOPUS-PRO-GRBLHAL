@@ -8,13 +8,13 @@
   "source": {
     "csv": {
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "bytes": 16499,
-      "sha256": "303c71c2055979845e14a36ffa2d1bce748d9cee532693999b751ec927d048e2"
+      "bytes": 16563,
+      "sha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12"
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 24380,
-      "sha256": "363adf4209bb4c0181ea52910442672944b8e2a433e0e317df914b6188481106"
+      "bytes": 25189,
+      "sha256": "b8ee9b8612db5639e63049ccf35e453e5c5bb6829cc940a905532b45dabdb13c"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
@@ -23,8 +23,8 @@
     },
     "spindle_supervision": {
       "path": "docs/wiring/mr1/SPINDLE_SUPERVISION.md",
-      "bytes": 18459,
-      "sha256": "dcbbf1314d89ebea0abab6a4aaa868fde6e9098343839b36b61ca0f456468038"
+      "bytes": 19310,
+      "sha256": "86f651eb3955328812700526d7f5b9543eaf6f284b195adb1d105a2c780862d5"
     }
   },
   "source_fields": [
@@ -1632,7 +1632,7 @@
       "from_device": "MR1 interface",
       "from_terminal": "dry relay contact",
       "to_device": "MR-1 servo DB44",
-      "to_terminal": "community pin 16 and verified return",
+      "to_terminal": "community pin 16 SON; contact to I/O-supply 0 V (COM+ 31 is the +24 V common) - pending verification",
       "cable_class": "shielded pair",
       "shield_termination": "none",
       "state": "HOLD",
@@ -1656,7 +1656,7 @@
       ],
       "trace_task": "Identify the proposed dry-contact route and preserve the stock servo harness; leave community pin 16/return unassigned pending the actual map.",
       "missing_evidence": [
-        "Installed servo enable function, exact return and DB44 continuity/orientation.",
+        "Installed servo enable function and input topology (sinking SON with COM+ at +24 V, contact to I/O-supply 0 V, is pending the drive manual), exact 0 V terminal and DB44 continuity/orientation.",
         "Qualified contact interface and hardwired spindle-permit design.",
         "Verified startup, loss-of-power, stop and restart behavior; no software-only permit."
       ],

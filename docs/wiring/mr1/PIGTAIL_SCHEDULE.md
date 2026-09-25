@@ -168,7 +168,7 @@ rollback requires the separate DM860T document and a fresh review.
 
 | Qty | Status | Harness | Required proof before an adapter exists |
 | ---: | --- | --- | --- |
-| 4 channels | HOLD | Home/limit system | Connector key and **conductor count first** (five may be four signals plus common; fewer conductors require tracing and do not identify which signals share), ohmmeter across each switch both polarities, common-to-all-four continuity, then healthy, triggered, unplugged, and lost-power voltages |
+| 4 channels | HOLD | Home/limit system | Connector key and **conductor count first** (six is the expected case - shared 5 V supply, shared return and four independent signals, a powered circuit for the isolated conditioner; five may be four signals plus common; fewer conductors require tracing and do not identify which signals share), ohmmeter across each switch both polarities, common-to-all-four continuity, then healthy, triggered, unplugged, and lost-power voltages |
 | 2 | HOLD | Touch probe and tool setter | Mating key, **actual pin order (no numbered field terminal approved)**, idle/trigger voltage on a bench supply (expected open-collector, low when triggered), exposed-metal potential (expected 5 V), probe-0 V-to-frame and stylus-to-body continuity, DB44-11/12 continuity |
 | 1 | HOLD | Spindle DB44 | Exact servo model, parameter archive, end-to-end continuity, analog common, enable, alarm, and command range |
 | 1 | HOLD | Temperature sensor | Part number, voltage, interface, pinout, and cable colors |
