@@ -29,6 +29,9 @@ port 8787.
   Board identity must be an exact structured report. Partial numeric values and
   conflicting settings within a capture cannot pass; string and vector settings
   also participate in the configuration fingerprint.
+  grblHAL prints its welcome banner 200 ms after the port opens (DTR edge); one
+  banner is consumed before the handshake starts. Any later startup line is a
+  controller restart.
 - Preflight requests grblHAL's complete status report (realtime byte `0x87`).
   Missing or malformed required position, feed, spindle, homing, accessory and
   selected-probe fields cannot establish authority. Rejected initial read-only
@@ -36,11 +39,27 @@ port 8787.
   execute stored startup commands. Explicit stop/reset remains a separate action.
 - One browser owner with a four-second renewable lease. Lease loss, stale
   controller status, reset, alarm or drive fault invalidates the session.
+  Hold, stop, disarm and jog cancel need only a same-origin request, not the
+  lease, so a failed read or lost session never delays them. The heartbeat runs
+  in a dedicated worker because hidden or occluded windows throttle page timers;
+  closing the tab still ends it.
 - A single acknowledged line in flight, bounded line size, no retransmission
-  after timeout, and durable logging before a line is sent. Stop/hold commands
-  bypass the disk-write gate. Late acknowledgements cannot resume a cancelled job.
+  after timeout, and durable logging before a line is sent. A journal write that
+  cannot be confirmed faults the controller and blocks the line. Stop/hold
+  commands bypass the disk-write gate. Late acknowledgements cannot resume a
+  cancelled job. Each journaled line is fsynced, which bounds streaming
+  throughput by the disk's sync rate.
+- Closing a service console window, Ctrl+C, Ctrl+Break, a termination signal or
+  a service crash first sends hold and reset to an armed controller, then exits
+  within five seconds.
 - Homing, bounded incremental jog, G54–G59 zeroing, forward spindle and coolant
-  commands, hold/resume and reset/stop.
+  commands, hold/resume and reset/stop. With `$10` report-while-homing off,
+  grblHAL reports nothing during a homing cycle: after its forced Home report
+  the stale-status watchdog waits for the `$H` acknowledgement (at most 120 s),
+  then requires a fresh report. Jog cancel sends realtime `0x85` and escalates to
+  hold and reset if Idle is not reported within one second.
+- Large programs are validated in a worker thread, so loading one cannot delay
+  status handling or a stop.
 - Server-side NC validation, SHA-256 binding to the reviewed source, manual M0
   tool-change pauses, and final fresh Idle confirmation. Every rerun requires a
   fresh load. A changed preview cannot silently run the previously loaded file.
@@ -90,6 +109,10 @@ port 8787.
 - Probe and offset/parser readback collection begins at the actual serial-send
   boundary after persistence, so older unsolicited reports cannot satisfy a new
   measurement or write-verification transaction.
+- The optional Fission optimizer runs inside this service. Only its
+  `src/optimizer.js` and `src/gcode-parser.js` are hash-pinned; both are
+  re-verified immediately before every use. Any other file they require is not
+  pinned, so keep that installation folder write-protected.
 
 ## Wiring preparation and observation
 
