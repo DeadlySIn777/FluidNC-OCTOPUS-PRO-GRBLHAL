@@ -65,7 +65,10 @@ qualified interface; do not infer a cable pinout from the motor-plug lettering.
 
 The previous F446/TMC2209, Python bridge, Linux setup, motion diagnostics and UI
 are retained under [legacy/fluidcnc-2025](legacy/fluidcnc-2025/README-LEGACY.md).
-They are historical material, outside the current MR1 installation path.
+The old firmware-tree bench scripts are in
+[legacy/grblhal-diagnostics-2025](legacy/grblhal-diagnostics-2025/README.md).
+They are historical material, outside the current MR1 installation path; the
+scripts can write settings, disable limits and move motors and must not be run.
 
 ## License and release scope
 

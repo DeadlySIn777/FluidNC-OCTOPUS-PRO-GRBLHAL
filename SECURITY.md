@@ -11,6 +11,8 @@ otherwise open an issue containing only a request for a private contact channel.
 
 Software feed hold, reset and unlock are not an electrical E-stop. Machine energy
 isolation, drive alarms, wiring and physical acceptance remain separate work.
-`legacy/` contains obsolete diagnostics that can write settings or move motors;
-they must not be executed as current tests or installation steps.
+`legacy/` (including the former firmware-root scripts in
+`legacy/grblhal-diagnostics-2025/`) contains obsolete diagnostics that can write
+settings, disable limits or move motors; they must not be executed as current
+tests or installation steps.
 
