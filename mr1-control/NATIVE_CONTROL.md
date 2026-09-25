@@ -102,7 +102,8 @@ The native panel's **Read-only wiring diagnostics** shows fresh logical inputs
 only after confirming metric reporting and the full status mask. Missing,
 disconnected or stale reports remain UNKNOWN. INACTIVE does not prove electrical
 health. The stream combines the Y limit indication, reports only the selected
-probe, and does not expose individual PG12–PG15 drive diagnostics.
+probe, and has no individual PG12–PG15 drive states because the current firmware
+does not read those pins.
 
 While disarmed and stationary, the operator can label and export displayed
 reports. The panel issues no controller commands. Its observations are logical
@@ -159,7 +160,9 @@ terminals are unconnected. Reserved enable circuitry needs separate verification
 
 The drive closes its motor encoder loop locally. Controller-reported coordinates
 are not independently measured motor or table position. PB1 is the aggregate
-motor-fault stop input; PG12–PG15 provide individual axis diagnostics. The app
+motor-fault stop input and the only drive-fault stop. PG12–PG15 are wired for a
+future firmware candidate only: the current firmware does not read them, so there
+is no per-axis fault indication. The app
 does not invent encoder telemetry or infer a healthy axis from a preview.
 
 Vendor reference: https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf

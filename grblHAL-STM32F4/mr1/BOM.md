@@ -86,7 +86,7 @@ allowance is:
 | 8 active + 4 reserved | 2N7002 or characterized N-MOSFET with guaranteed performance at 4.5-5 V gate | Eight candidate PUL/DIR sinks from 5 V HCT-buffered sockets; four ENA channels reserved and unpopulated |
 | 8 active + 4 reserved | 100 ohm gate resistors | Limit edge current/ringing |
 | 8 active + 4 reserved | 100 kohm gate-source resistors | Defined gate state |
-| HOLD - count after circuit design | Input isolation and logic | Four home + four alarm + two sensor field functions planned. On-hand modules are unqualified. Alarm design must provide a supervised PB1 aggregate plus independent PG12-PG15 indications; this may require extra isolated outputs/logic. Do not equate ten field functions with a fixed ten-component BOM |
+| HOLD - count after circuit design | Input isolation and logic | Four home + four alarm + two sensor field functions planned. On-hand modules are unqualified. Alarm design must provide a supervised PB1 aggregate (the only drive-fault stop); optional per-axis PG12-PG15 outputs are not read by the current firmware and may require extra isolated outputs/logic. Do not equate ten field functions with a fixed ten-component BOM |
 | 2 | Schmitt/logic conditioners | Clean probe/tool-setter controller outputs if optocoupler edges require them |
 | 1 set | Polarity/configuration jumpers | Match characterized active CL57T; any DM860T rollback requires separate review |
 | 1 set | TVS, resettable fuses, reverse-polarity protection | Field-port protection |

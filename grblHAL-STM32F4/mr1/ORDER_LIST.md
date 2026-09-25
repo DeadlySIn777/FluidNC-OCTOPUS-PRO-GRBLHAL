@@ -38,7 +38,7 @@ pigtail only at the board end.
 | Octopus connector | Positions | Qty | Use |
 | --- | ---: | ---: | --- |
 | `STOP0`–`STOP3` | 3 | 4 | Home switches, from a qualified conditioner (on-hand module on HOLD). **5 V cavity stays empty** |
-| `STOP4`–`STOP7` | 3 | 4 | Drive-fault indication, PG12–PG15 |
+| `STOP4`–`STOP7` | 3 | 4 | Optional per-axis drive-fault wiring, PG12–PG15 (not read by the current firmware; PB1 is the only drive-fault stop) |
 | `PWR-DET` | 3 | 1 | Safety door (PC0) |
 | `TB` | 2 | 1 | E-stop / safety-relay monitor (PF3) |
 | `T0` | 2 | 1 | Feed hold (PF4) |
@@ -240,7 +240,7 @@ position count first. Order after that, not before.
 **Additional optocouplers.** Quantity remains on HOLD. The on-hand home and
 sensor modules are unqualified. Plan four home, four alarm and two sensor field
 functions, then count the actual components needed for the approved circuitry.
-The alarms require a supervised PB1 aggregate and separate PG12-PG15 indications;
+The alarms require a supervised PB1 aggregate; optional PG12-PG15 per-axis outputs are not read by the current firmware;
 raw ALM/COMO terminals are not series contacts and may need additional logic.
 Do not reduce the order to six or assume one optocoupler per function without
 the reviewed circuit and confirmed on-hand parts.
