@@ -243,7 +243,7 @@ Octopus GND-to-PE may then be connected by design.
 | Protective earth | Facility PE | Cabinet, DIN rail, MR-1 frame, spindle chassis, metal connector shells | Permanent bonding; never use PE as a signal return |
 | 36 V motion | `S-360-36`, 36 V 10 A | CL57T `P4` power inputs only | **18-50 VDC absolute, 50 V is a hard ceiling.** Four separately fused star branches; never daisy-chain drives. `P4` is POLARIZED `+VDC`/`GND` |
 | 24 V control | Separate regulated supply | Octopus `MAIN POWER`, relay coils, field interface | Octopus main input is limited to 28 V maximum; never apply 36 V |
-| 5 V motion logic | Protected interface supply | CL57T `P1` PUL/DIR/ENA optocouplers | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
+| 5 V motion logic | Protected interface supply | CL57T `P1` PUL/DIR optocouplers (ENA reserved, not connected) | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
 | Isolated 5 V home field | Isolated, current-limited DC/DC | Stock limit bus through four-channel conditioner | Separate from Octopus GPIO and probe field; omit only if each switch is proved to be a bare dry contact |
 | Isolated 5 V sensor | Isolated, current-limited DC/DC | Stock probe and tool setter only | Floating field side; crosses into Octopus through two optocouplers |
 | CL57T encoder | **Drive-supplied**: `P2 VCC`/`EGND` from each CL57T | That drive's motor encoder only | Never feed `VCC` from the field 5 V or 24 V rail; it is an output of the drive. Do not bond to another drive or controller logic; the manual does not prove internal galvanic isolation of this output. Route away from motor phases and bus cable |
@@ -682,7 +682,7 @@ in its commanded state.
 - Follow the encoder cable manufacturer's shield termination; never use a shield as encoder return.
 - Keep motor phase, 36 V bus, servo output, spindle mains, and pump conductors away from USB, probe, encoder, limit, and step/direction cable.
 - Cross unavoidable power and signal routes at approximately 90 degrees.
-- Use twisted pairs for PUL+/PUL-, DIR+/DIR-, and ENA+/ENA-; use separate shielded cable for each drive alarm.
+- Use twisted pairs for PUL+/PUL- and DIR+/DIR-; ENA+/ENA- stay unconnected while reserved. Use separate shielded cable for each drive alarm.
 - Keep probe and tool-setter cables separate from spindle power and motor phases.
 - Bond cable glands/connectors to the enclosure before signals enter the interface area.
 - Add strain relief and drip loops anywhere coolant can follow a cable.

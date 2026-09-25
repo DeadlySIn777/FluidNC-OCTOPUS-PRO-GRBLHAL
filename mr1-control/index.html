@@ -2504,7 +2504,7 @@
             <section class="wiring-section">
               <h3>AXIS SOCKETS</h3>
               <div class="axis-wire-table" role="table" aria-label="Octopus motor command pins">
-                <div class="wire-table-head" role="row"><span>AXIS</span><span>SOCKET</span><span>STEP</span><span>DIR</span><span>ENA</span></div>
+                <div class="wire-table-head" role="row"><span>AXIS</span><span>SOCKET</span><span>STEP</span><span>DIR</span><span>EN / RESERVED</span></div>
                 <div role="row"><strong>X</strong><span>MOTOR0</span><code>PF13</code><code>PF12</code><code>PF14</code></div>
                 <div role="row"><strong>YL</strong><span>MOTOR1</span><code>PG0</code><code>PG1</code><code>PF15</code></div>
                 <div role="row"><strong>Z</strong><span>MOTOR2</span><code>PF11</code><code>PG3</code><code>PG5</code></div>
@@ -2525,7 +2525,7 @@
                 <div><code>B+ / B-</code><span>THE OTHER MOTOR COIL</span></div>
                 <div><code>+VDC / GND</code><span>OWN FUSED 36V STAR BRANCH</span></div>
               </div>
-              <p class="wiring-callout">The v1.1 schematic shows 5V MC74HCT125A buffers between the MCU and the driver-socket STEP/DIR/EN pins. Still use the 12-channel MOSFET interface: the CL57T input may draw 16mA and direct HCT-to-drive loading has not been qualified. Never use motor-wire colors as phase data or hot-plug a terminal.</p>
+              <p class="wiring-callout">The v1.1 schematic shows 5V MC74HCT125A buffers between the MCU and the driver-socket STEP/DIR/EN pins. Still use the MOSFET open-drain interface with eight active PUL/DIR channels; the four ENA channels are reserved and unpopulated, and socket EN is not connected. The CL57T input may draw 16mA and direct HCT-to-drive loading has not been qualified. Never use motor-wire colors as phase data or hot-plug a terminal.</p>
             </section>
           </section>
 
@@ -2557,11 +2557,11 @@
             <section class="wiring-section visual-wiring-section">
               <div class="visual-wiring-title">
                 <span>1</span>
-                <div><h3>MOTOR SOCKET ADAPTER / FOUR POPULATED CONTACTS</h3><p>THE OCTOPUS FOOTPRINT HAS 18 POSITIONS; ONLY EN, STEP, DIR, AND GND LEAVE THE BOARD</p></div>
+                <div><h3>MOTOR SOCKET ADAPTER / THREE POPULATED CONTACTS</h3><p>THE OCTOPUS FOOTPRINT HAS 18 POSITIONS; ONLY STEP, DIR, AND GND LEAVE THE BOARD. EN IS RESERVED AND NOT CONNECTED</p></div>
               </div>
               <div class="axis-wire-table driver-socket-wire-table" role="table" aria-label="Octopus driver socket adapter pin disposition">
                 <div class="wire-table-head" role="row"><span>PIN</span><span>SIGNAL</span><span>USE</span><span>PIN</span><span>SIGNAL</span><span>USE</span></div>
-                <div role="row"><code>1</code><strong>EN</strong><span>ROUTE</span><code>10</code><strong>VCC_IO</strong><span>NC</span></div>
+                <div role="row"><code>1</code><strong>EN</strong><span>RESERVED</span><code>10</code><strong>VCC_IO</strong><span>NC</span></div>
                 <div role="row"><code>2</code><strong>SDI / MS0</strong><span>NC</span><code>11</code><strong>A1</strong><span>NC</span></div>
                 <div role="row"><code>3</code><strong>SCK / MS1</strong><span>NC</span><code>12</code><strong>A2</strong><span>NC</span></div>
                 <div role="row"><code>4</code><strong>CS / MS2</strong><span>NC</span><code>13</code><strong>B2</strong><span>NC</span></div>
@@ -2571,7 +2571,7 @@
                 <div role="row"><code>8</code><strong>DIR</strong><span>ROUTE</span><code>17</code><strong>NC</strong><span>NC</span></div>
                 <div role="row"><code>9</code><strong>GND</strong><span>ROUTE</span><code>18</code><strong>DIAG</strong><span>NC</span></div>
               </div>
-              <p class="wiring-callout alarm">These are schematic contact numbers, not a mating-face cavity drawing. Prove the actual v1.1 board's pin-1 feature, viewing direction, keying and de-energized continuity before populating the adapter. A 2x8 StepStick blank may occupy pins 1-16 only after alignment and retention are proved. Never let a one-row offset place it on pins 3-18; the other 14 socket positions remain unconnected.</p>
+              <p class="wiring-callout alarm">These are schematic contact numbers, not a mating-face cavity drawing. Prove the actual v1.1 board's pin-1 feature, viewing direction, keying and de-energized continuity before populating the adapter. A 2x8 adapter candidate remains on HOLD until its complete contact map, orientation, clearance, keying and retention are proved on the actual 18-contact socket; schematic numbers do not give a physical row offset. Populate only STEP, DIR and GND; EN (reserved) and the other 14 socket positions remain unconnected.</p>
             </section>
 
             <section class="wiring-section visual-wiring-section">

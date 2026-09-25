@@ -91,7 +91,7 @@ allowance is:
 | 1 set | Polarity/configuration jumpers | Match characterized active CL57T; any DM860T rollback requires separate review |
 | 1 set | TVS, resettable fuses, reverse-polarity protection | Field-port protection |
 | 1 set | Pluggable terminal blocks | Keyed motion, alarms, probes, spindle, controls |
-| 1 set | Test points | 24 V, 5 V, isolated 5 V, every PUL/DIR/ENA, alarm, probe, analog command |
+| 1 set | Test points | 24 V, 5 V, isolated 5 V, every active PUL/DIR (ENA reserved), alarm, probe, analog command |
 | 4 | 18-position `2x9` driver-socket adapters | Active contacts 7/8/9; 1 EN reserved. Actual fit/orientation/continuity required; 2x8 candidate on HOLD until mechanically and electrically proved |
 | 1 | Board support hardware | Standoffs/bracket so socket pins carry no cable load |
 

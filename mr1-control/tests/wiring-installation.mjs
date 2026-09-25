@@ -186,22 +186,37 @@ test("source ledger separates exact wiring authorities from the MR-1 community c
   assert.match(html, /DO NOT COPY FROM THE MESA BUILD/);
 });
 
-test("driver socket adapter routes only the four approved 18-position contacts", () => {
+test("driver socket adapter routes only STEP, DIR and GND; EN stays reserved and unconnected", () => {
   assert.equal(OCTOPUS_DRIVER_SOCKET_PINOUT.length, 18);
   assert.deepEqual(
     OCTOPUS_DRIVER_SOCKET_PINOUT.filter((contact) => contact.disposition === "ROUTE")
       .map(({ pin, signal }) => [pin, signal]),
-    [[1, "EN"], [7, "STEP"], [8, "DIR"], [9, "GND"]],
+    [[7, "STEP"], [8, "DIR"], [9, "GND"]],
   );
+  assert.deepEqual(
+    OCTOPUS_DRIVER_SOCKET_PINOUT.filter((contact) => contact.disposition === "RESERVED")
+      .map(({ pin, signal }) => [pin, signal]),
+    [[1, "EN"]],
+  );
+  assert.ok(OCTOPUS_DRIVER_SOCKET_PINOUT.every((contact) => ["ROUTE", "RESERVED", "NC"].includes(contact.disposition)));
   assert.equal(new Set(OCTOPUS_DRIVER_SOCKET_PINOUT.map((contact) => contact.pin)).size, 18);
   assert.equal(manifest.motion.octopus_driver_socket.positions, 18);
   assert.deepEqual(manifest.motion.octopus_driver_socket.routed_contacts, {
-    enable: 1,
     step: 7,
     direction: 8,
     logic_ground: 9,
   });
+  assert.deepEqual(manifest.motion.octopus_driver_socket.reserved_contacts, { enable: 1 });
   assert.match(WIRING_AUDIT.commandInterface, /5V-BUFFERED SOCKET/);
+  assert.match(WIRING_AUDIT.commandInterface, /8 ACTIVE \+ 4 RESERVED/);
+  assert.doesNotMatch(WIRING_AUDIT.commandInterface, /12-CHANNEL/);
+
+  const html = readFileSync(appHtmlUrl, "utf8");
+  const harness = html.slice(html.indexOf('<section id="harness-panel"'), html.indexOf('<section id="probes-panel"'));
+  assert.match(harness, /<code>1<\/code><strong>EN<\/strong><span>RESERVED<\/span>/);
+  assert.match(harness, /ONLY STEP, DIR, AND GND LEAVE THE BOARD/);
+  assert.match(harness, /2x8 adapter candidate remains on HOLD/);
+  assert.doesNotMatch(html, /12-channel MOSFET|ONLY EN, STEP, DIR, AND GND|pins 1-16|pins 3-18/);
 });
 
 test("pigtail schedule separates build, fit-check, and held stock connectors", () => {
@@ -210,7 +225,10 @@ test("pigtail schedule separates build, fit-check, and held stock connectors", (
   assert.ok(WIRING_PIGTAIL_SCHEDULE.every((item) => ["exact", "meter", "hold"].includes(item.state)));
   const byId = Object.fromEntries(WIRING_PIGTAIL_SCHEDULE.map((item) => [item.id, item]));
   assert.equal(byId.motor_socket_adapters.quantity, 4);
-  assert.match(byId.motor_socket_adapters.populate, /PIN 1 EN \/ 7 STEP \/ 8 DIR \/ 9 GND/);
+  assert.match(byId.motor_socket_adapters.populate, /7 STEP \/ 8 DIR \/ 9 GND ONLY/);
+  assert.match(byId.motor_socket_adapters.populate, /PIN 1 EN RESERVED, NOT CONNECTED/);
+  assert.match(byId.motor_socket_adapters.detail, /2x8 adapter candidate remains on HOLD/);
+  assert.doesNotMatch(byId.motor_socket_adapters.detail, /pins 1-16/);
   assert.equal(byId.stop_housings.quantity, 8);
   assert.match(byId.stop_housings.detail, /5 V cavity empty/);
   assert.equal(byId.pb7_tool_setter_housing.quantity, 1);

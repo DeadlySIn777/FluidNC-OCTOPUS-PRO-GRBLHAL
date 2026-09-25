@@ -40,7 +40,9 @@
       "positions": 18,
       "layout": "2x9",
       "signal_buffer": "5 V MC74HCT125A on Octopus Pro v1.1 schematic",
-      "routed_contacts": {"enable": 1, "step": 7, "direction": 8, "logic_ground": 9},
+      "routed_contacts": {"step": 7, "direction": 8, "logic_ground": 9},
+      "reserved_contacts": {"enable": 1},
+      "reserved_contacts_note": "EN (schematic contact 1) is reserved and not connected in the active CL57T build; any future ENA use is a separately reviewed design change",
       "no_connect_contacts": [2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18]
     },
     "dm860t_v3": {

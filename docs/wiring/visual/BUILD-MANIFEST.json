@@ -13,7 +13,7 @@
     "route-content.json": "d961baa2c430b66c63484886c8a0f6e61736d82e02394d008e2eb737c7d22e25",
     "asset-layout.json": "99054e6c798796dda03fb2b26feb3a057b4a5e364bf638035f742e2ae1ec0cec",
     "coverage.json": "cb859c5205176a28fa39e9a3f3a154cc793cc3834214fc4f8b98b5f860ca86ea",
-    "board-content.json": "99cbe4ccb1044ab5f2453c3b29b5dfec6477f58c7bed6e07843d4aee343537c5",
+    "board-content.json": "2be915812f91202cf011c8c0eacebd15f6326acf465047df808a4cb84bbf2193",
     "board-regions.json": "cf3bfdf9d33daccdf429c01ffca9a526675c664a25f35a8d297b6fb8c9ee6511"
   },
   "sourceScheduleSha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b",
@@ -40,8 +40,8 @@
   "files": [
     {
       "path": "index.html",
-      "bytes": 745102,
-      "sha256": "a09e6619ed4b1117f569f421fff2b8782bd864559984e55a863ede5b6f189ec1"
+      "bytes": 745626,
+      "sha256": "c1f510e2962a931451323797556a5756cfc05cfcfb2f4e3232dfbcf69cbc2201"
     }
   ],
   "physicalMotionPermitted": false,

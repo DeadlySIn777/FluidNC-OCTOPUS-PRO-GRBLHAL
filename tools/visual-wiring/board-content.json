@@ -202,7 +202,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-X labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],
@@ -250,7 +250,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-YL labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],
@@ -298,7 +298,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-Z labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],
@@ -346,7 +346,7 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9, EN 1. They do not establish physical row order, pin-1 orientation or connector-face view.",
+        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
         "CMD-YR labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
         "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
       ],

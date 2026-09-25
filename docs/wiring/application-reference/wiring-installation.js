@@ -6,7 +6,7 @@ export const WIRING_AUDIT = Object.freeze({
   reviewedOn: "2026-09-24",
   controller: "BIGTREETECH OCTOPUS PRO V1.1 / STM32F429",
   motion: "4 X CL57T V4.1 / 23HS45-4204D-E1000 / CLOSED LOOP",
-  commandInterface: "5V-BUFFERED SOCKET / 12-CHANNEL MOSFET OPEN-DRAIN / 5V COMMON-ANODE",
+  commandInterface: "5V-BUFFERED SOCKET / 8 ACTIVE + 4 RESERVED MOSFET OPEN-DRAIN / 5V COMMON-ANODE",
   firmwareMapParity: "31 OF 31",
   boardRevisionGate: "V1.1 / F429 / 8MHZ",
   upstreamTargetState: "UNTESTED / QUALIFICATION REQUIRED",
@@ -279,7 +279,7 @@ export const WIRING_INSTALL_STEPS = Object.freeze([
 ]);
 
 export const OCTOPUS_DRIVER_SOCKET_PINOUT = Object.freeze([
-  Object.freeze({ pin: 1, signal: "EN", disposition: "ROUTE" }),
+  Object.freeze({ pin: 1, signal: "EN", disposition: "RESERVED" }),
   Object.freeze({ pin: 2, signal: "SDI / MS0", disposition: "NC" }),
   Object.freeze({ pin: 3, signal: "SCK / MS1", disposition: "NC" }),
   Object.freeze({ pin: 4, signal: "CS / MS2", disposition: "NC" }),
@@ -306,8 +306,8 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     state: "meter",
     item: "18-POSITION (2x9) DRIVER-SOCKET ADAPTER",
     boardEnd: "MOTOR0 / MOTOR1 / MOTOR2 / MOTOR3",
-    populate: "PIN 1 EN / 7 STEP / 8 DIR / 9 GND",
-    detail: "These are schematic contact numbers, not a mating-face cavity map. Prove physical pin 1, viewing direction, keying and de-energized continuity. A 2x8 StepStick blank is acceptable only when it is keyed to pins 1-16 and mechanically retained. Leave VCC_IO, VM, phases, mode, and DIAG unconnected.",
+    populate: "7 STEP / 8 DIR / 9 GND ONLY / PIN 1 EN RESERVED, NOT CONNECTED",
+    detail: "These are schematic contact numbers, not a mating-face cavity map. Prove physical pin 1, viewing direction, keying and de-energized continuity. A 2x8 adapter candidate remains on HOLD until its complete contact map, orientation, clearance, keying and retention are proved on the actual 18-contact socket; numbering alone does not establish fit or a row offset. Leave EN (reserved), VCC_IO, VM, phases, mode, and DIAG unconnected.",
   }),
   Object.freeze({
     id: "stop_housings",
