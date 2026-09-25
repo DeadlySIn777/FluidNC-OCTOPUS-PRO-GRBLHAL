@@ -1,3 +1,15 @@
+> [!WARNING]
+> **Archived pre-MR1 project - not the current installation path.** This folder
+> preserves the historical FluidCNC project (STM32F446 Octopus Pro with TMC2209
+> drivers, ESP32 H100 VFD controller, Raspberry Pi / Le Potato bridge) as it was
+> at commit `9b4b746`. Its setup, firmware and hardware advice is superseded and
+> must not be applied to the current MR1 machine. In particular, the E-stop
+> advice in [docs/HARDWARE_SETUP.md](docs/HARDWARE_SETUP.md) to use
+> normally-open contacts is wrong: an E-stop circuit must be normally-closed and
+> fail-safe, so that a broken wire or loose terminal stops the machine.
+> See [README-LEGACY.md](README-LEGACY.md) for what is archived here and the
+> [repository README](../../README.md) for the current project.
+
 # FluidCNC - Professional grblHAL Web Interface
 
 [![CI](https://github.com/deadlysin777/fluidcnc/actions/workflows/ci.yml/badge.svg)](https://github.com/deadlysin777/fluidcnc/actions/workflows/ci.yml)
