@@ -19,13 +19,19 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.jpg': 'image/jpeg', '.bin': 'application/octet-stream' };
 function json(res, code, body) { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(JSON.stringify(body)); }
 async function body(req) {
-  let text = '';
+  // Decode once: a multibyte character may be split across chunks.
+  const chunks = []; let size = 0;
   for await (const chunk of req) {
-    text += chunk.toString();
-    if (Buffer.byteLength(text) > 6 * 1024 * 1024) throw new Error('Request body exceeds 6 MB.');
+    size += chunk.length;
+    if (size > 6 * 1024 * 1024) throw new Error('Request body exceeds 6 MB.');
+    chunks.push(chunk);
   }
-  return JSON.parse(text || '{}');
+  return JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
 }
+// Removing energy never needs the browser lease: a lost or stale session must
+// not delay a stop. None of these can start motion or grant authority.
+const ENERGY_REMOVING = ['hold', 'stop', 'cancelJog', 'disarm'];
+const rejectedSession = message => Object.assign(new Error(message), { sessionRejected: true });
 export async function createNativeServer(options = {}) {
   const webRoot = resolve(options.webRoot ?? resolve(ROOT, 'dist'));
   const firmwareArtifact = await verifyNativeFirmware(webRoot);
@@ -71,8 +77,11 @@ export async function createNativeServer(options = {}) {
   const audit = async (kind, payload) => {
     requestScope.getStore()?.check();
     let record;
-    try { record = await journal.append(kind, payload, { sync: true }); }
-    catch (error) { journalReady = false; controller.faulted(`Journal write failed: ${error.message}`); throw error; }
+    try {
+      record = await journal.append(kind, payload, { sync: true });
+      // The event journal reports a failed durable write as a null record.
+      if (record === null || journal.status?.().state === 'ERROR') throw new Error(journal.status?.().error ?? 'record was not written');
+    } catch (error) { journalReady = false; controller.faulted(`Journal write failed: ${error.message}`); throw error; }
     // Durable I/O can outlive its browser lease or the connection it reviewed.
     // The stale request may be recorded, but it must not dispatch or commit.
     requestScope.getStore()?.check();
@@ -94,8 +103,8 @@ export async function createNativeServer(options = {}) {
   const owner = req => {
     const value = req.headers['x-mr1-session'];
     if (!token || typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)
-      || !timingSafeEqual(Buffer.from(value), Buffer.from(token))) throw new Error('This browser does not own the controller session.');
-    if (Date.now() - ownerSeen > leaseMs) throw new Error('Controller session expired. Reclaim it before continuing.');
+      || !timingSafeEqual(Buffer.from(value), Buffer.from(token))) throw rejectedSession('This browser does not own the controller session.');
+    if (Date.now() - ownerSeen > leaseMs) throw rejectedSession('Controller session expired. Reclaim it before continuing.');
     ownerSeen = Date.now();
   };
   const cancelAuthority = reason => {
@@ -103,7 +112,7 @@ export async function createNativeServer(options = {}) {
     if (mutation) mutation.cancelled = reason;
   };
   const scopedMutation = async (req, url, input, operation) => {
-    const safety = url.pathname === '/api/command' && ['hold', 'stop', 'cancelJog', 'disarm'].includes(input.action);
+    const safety = url.pathname === '/api/command' && ENERGY_REMOVING.includes(input.action);
     const disconnect = url.pathname === '/api/disconnect';
     const endCommissioning = url.pathname === '/api/commissioning/end';
     const priority = safety || disconnect || endCommissioning;
@@ -121,7 +130,7 @@ export async function createNativeServer(options = {}) {
       check() {
         if (closing) throw new Error('The local controller service is shutting down.');
         if (this.cancelled || this.epoch !== authorityEpoch) throw new Error(this.cancelled ?? 'Controller request was cancelled.');
-        if (this.token !== token || expiredToken === this.token || Date.now() - ownerSeen > leaseMs) throw new Error('Controller session expired or changed before the request completed.');
+        if (!safety && (this.token !== token || expiredToken === this.token || Date.now() - ownerSeen > leaseMs)) throw rejectedSession('Controller session expired or changed before the request completed.');
         if (this.generation !== null && this.generation !== controller.generation) throw new Error('Controller connection changed before the request completed.');
       },
       dispatch(fn) { this.check(); this.dispatched = true; return fn(); },
@@ -147,8 +156,9 @@ export async function createNativeServer(options = {}) {
             serverSentEpochMs: Date.now(), serverReceivedAt: new Date(requestReceivedEpochMs).toISOString(), serverSentAt: new Date().toISOString(),
             serviceUptimeMs: Date.now() - Date.parse(startedAt), telemetrySequence: controller.sequence, bridgeMode: 'serial', connected: controller.connected });
           if (url.pathname === '/journal/export') {
+            const text = await journal.exportText();
             res.writeHead(200, { 'Content-Type': 'application/x-ndjson', 'Content-Disposition': 'attachment; filename="mr1-native-journal.jsonl"', 'Cache-Control': 'no-store' });
-            res.end(await journal.exportText()); return;
+            res.end(text); return;
           }
           if (url.pathname === '/events') {
             res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive' });
@@ -182,7 +192,9 @@ export async function createNativeServer(options = {}) {
           commissioning.revoke('Operator session changed.');
           token = randomBytes(32).toString('hex'); expiredToken = null; ownerSeen = Date.now(); return json(res, 200, { token });
         }
-        owner(req);
+        let leaseHeld = true;
+        try { owner(req); }
+        catch (error) { if (url.pathname !== '/api/command' || !ENERGY_REMOVING.includes(input.action)) throw error; leaseHeld = false; }
         if (url.pathname === '/api/heartbeat') return json(res, 200, { ok: true });
         return await scopedMutation(req, url, input, async scope => {
         const respond = async operation => {
@@ -257,10 +269,10 @@ export async function createNativeServer(options = {}) {
           cancelJog: () => controller.cancelJog(), stop: () => controller.stop(), run: () => controller.runProgram(input.sha256),
         };
         if (!Object.hasOwn(actions, input.action)) throw new Error('Unknown typed controller command.');
-        if (['hold', 'stop', 'cancelJog', 'disarm'].includes(input.action)) {
+        if (ENERGY_REMOVING.includes(input.action)) {
           // A failed disk must never prevent a stop from reaching the machine.
-          scope.dispatch(actions[input.action]);
-          await audit('native.request', { action: input.action });
+          void scope.dispatch(actions[input.action]);
+          await audit('native.request', { action: input.action, leaseHeld });
           return json(res, 200, controller.snapshot());
         }
         await audit('native.request', { action: input.action });
@@ -284,8 +296,12 @@ export async function createNativeServer(options = {}) {
       res.writeHead(200, { 'Content-Type': MIME[extname(file)] ?? 'application/octet-stream', 'Content-Length': info.size,
         'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'X-Frame-Options': 'DENY',
         'Content-Security-Policy': "frame-ancestors 'none'" });
-      if (req.method === 'HEAD') res.end(); else createReadStream(file).pipe(res);
-    } catch (error) { if (!res.headersSent) json(res, 400, { error: error.message }); else res.end(); }
+      // An unhandled read error would crash the process without stopping the machine.
+      if (req.method === 'HEAD') res.end(); else createReadStream(file).on('error', () => res.destroy()).pipe(res);
+    } catch (error) {
+      if (!res.headersSent) json(res, 400, { error: error.message, ...(error.sessionRejected ? { sessionRejected: true } : {}) });
+      else res.end();
+    }
   });
   const watchdog = setInterval(() => {
     commissioning.watchdog();
@@ -324,9 +340,26 @@ export async function createNativeServer(options = {}) {
   };
   return service;
 }
+// A closed console window (SIGHUP), Ctrl+Break (SIGBREAK) and crashes take the
+// same safe stop as Ctrl+C: hold/reset an armed controller, then close. Windows
+// kills a closed console about 10 s after SIGHUP, and a wedged driver or disk
+// must not keep the process alive, so the stop is bounded.
+export function superviseProcess(service, { exit = code => process.exit(code), log = message => console.error(message), graceMs = 5000 } = {}) {
+  let stopping = false;
+  const shutdown = (code, error) => {
+    if (error !== undefined) log(`MR1 native controller failed: ${error?.stack ?? error}`);
+    if (stopping) return;
+    stopping = true;
+    const deadline = setTimeout(() => exit(code || 1), graceMs);
+    Promise.resolve().then(() => service.stop()).then(() => { clearTimeout(deadline); exit(code); },
+      stopError => { clearTimeout(deadline); log(`MR1 native controller stop failed: ${stopError?.message ?? stopError}`); exit(code || 1); });
+  };
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) process.on(signal, () => shutdown(0));
+  process.on('uncaughtException', error => shutdown(1, error));
+  process.on('unhandledRejection', error => shutdown(1, error));
+}
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const service = await createNativeServer();
+  superviseProcess(service);
   console.log(`MR1 native controller: ${await service.start()} — hardware commissioning pending.`);
-  process.once('SIGINT', () => void service.stop());
-  process.once('SIGTERM', () => void service.stop());
 }

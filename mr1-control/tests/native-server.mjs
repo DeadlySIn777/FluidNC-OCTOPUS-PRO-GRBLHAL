@@ -2,9 +2,12 @@ import test, { mock } from 'node:test';
 import { existsSync } from 'node:fs';
 import { verifyNativeFirmware as verifyRealFirmware } from '../service/native-firmware.mjs';
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 // HTTP authority/race contracts use synthetic transport and synthetic artifact identity.
 // tests/native-firmware.mjs independently exercises the real, fail-closed verifier.
 const firmwareManifest = JSON.parse(await readFile(new URL('../public/firmware/octopus-pro-v1.1-f429-mr1/firmware-manifest.json', import.meta.url), 'utf8'));
@@ -358,4 +361,120 @@ test('shutdown rejects retained handles and latches before a pipelined connect c
   assert.match(response, /503 Service Unavailable/);
   assert.equal(connects, 0);
   assert.deepEqual(port.writes, []);
+});
+
+const realtime = (port, byte) => port.writes.filter(bytes => Array.isArray(bytes) && bytes[0] === byte).length;
+
+test('a failed durable journal write blocks the command and faults the controller', async t => {
+  const { request, claim, port, service } = await setup(t);
+  const { directory } = (await request('/health')).body.journal;
+  await claim(); await request('/api/connect', { port: 'COM7' });
+  assert.equal((await request('/api/command', { action: 'arm', confirmed: true })).status, 200);
+  // The real journal reports this EISDIR failure as a null record, never a rejection.
+  await rm(resolve(directory, 'mr1-events.jsonl'));
+  await mkdir(resolve(directory, 'mr1-events.jsonl'));
+  const jog = await request('/api/command', { action: 'jog', axis: 'x', distance: -1, feed: 50 });
+  assert.equal(jog.status, 400); assert.match(jog.body.error, /EISDIR|directory/);
+  assert.equal(port.writes.some(x => typeof x === 'string' && x.startsWith('$J=')), false);
+  assert.equal(service.controller.armed, false); assert.match(service.controller.fault, /Journal write failed/);
+  assert.ok(realtime(port, REALTIME.reset) > 0);
+  assert.equal((await request('/api/state')).body.journalReady, false);
+  const configuration = await request('/journal/configuration', {
+    protocol: 'mr1-browser-configuration-event-v1', eventId: 'cfg-test-native-002', storageKey: 'mr1-control.wiring-installation.v1', category: 'wiring-evidence',
+    action: 'create', beforeSha256: null, afterSha256: 'A'.repeat(64), changedPaths: ['hardwareProfile'], changedPathsTruncated: false, occurredAt: new Date().toISOString(),
+  });
+  assert.equal(configuration.status, 400); assert.match(configuration.body.error, /EISDIR|directory/);
+});
+
+test('a journal export failure is reported instead of an empty download', async t => {
+  const journal = { reconcile: async () => ({ requiresReview: false }), append: async () => ({ digest: 'A'.repeat(64) }), close: async () => {},
+    exportText: async () => { throw new Error('journal unreadable'); } };
+  const { request } = await setup(t, { journal });
+  const response = await request('/journal/export');
+  assert.equal(response.status, 400); assert.match(response.body.error, /unreadable/);
+});
+
+test('energy-removing commands reach the controller without the browser lease; nothing else does', async t => {
+  const { request, claim, port, service, origin } = await setup(t, { leaseMs: 1500 });
+  const { body: { token } } = await claim();
+  await request('/api/connect', { port: 'COM7' });
+  await request('/api/command', { action: 'arm', confirmed: true });
+  const stranger = { 'X-MR1-Session': '' };
+  for (const action of ['arm', 'resume', 'run', 'home']) {
+    const denied = await request('/api/command', { action, confirmed: true }, stranger);
+    assert.equal(denied.status, 400, action); assert.equal(denied.body.sessionRejected, true, action);
+  }
+  assert.equal((await request('/api/command', { action: 'hold' }, stranger)).status, 200);
+  assert.equal(service.controller.armed, true, 'hold is resumable');
+  assert.equal((await request('/api/command', { action: 'stop' }, { Origin: 'https://untrusted.example' })).status, 403);
+  assert.equal(realtime(port, REALTIME.reset), 0);
+  assert.equal((await request('/api/command', { action: 'stop' }, stranger)).status, 200);
+  assert.equal(service.controller.armed, false); assert.equal(realtime(port, REALTIME.reset), 1);
+  // The owner's lease is untouched: another browser cannot claim it yet, and
+  // the owner may still stop after the lease expired.
+  assert.equal((await request('/api/session', {}, { 'X-MR1-Session': '' })).status, 423);
+  await delay(1700);
+  assert.equal((await request('/api/command', { action: 'disarm' }, { 'X-MR1-Session': token })).status, 200);
+  const records = (await (await fetch(`${origin}/journal/export`)).text()).trim().split('\n').map(line => JSON.parse(line));
+  assert.deepEqual(records.filter(record => record.kind === 'native.request' && ['stop', 'disarm'].includes(record.payload.action)).map(record => record.payload.leaseHeld), [false, false]);
+});
+
+test('request bodies decode multibyte characters split across TCP chunks', async t => {
+  const { claim, service, origin } = await setup(t);
+  const { body: { token } } = await claim();
+  const content = Buffer.from(JSON.stringify({ source: sampleProgram, name: 'Müller-ö.nc' }));
+  const split = content.indexOf(Buffer.from('ü')) + 1;
+  const endpoint = new URL(origin);
+  const socket = createConnection({ host: endpoint.hostname, port: Number(endpoint.port) });
+  t.after(() => socket.destroy());
+  let response = '';
+  socket.on('data', chunk => { response += chunk; });
+  const ended = new Promise(resolve => socket.once('end', resolve));
+  await new Promise((resolve, reject) => { socket.once('connect', resolve); socket.once('error', reject); });
+  socket.write(`POST /api/program HTTP/1.1\r\nHost: ${endpoint.host}\r\nOrigin: ${origin}\r\nContent-Type: application/json\r\nX-MR1-Session: ${token}\r\nContent-Length: ${content.length}\r\nConnection: close\r\n\r\n`);
+  socket.write(content.subarray(0, split)); await delay(50); socket.write(content.subarray(split));
+  await ended;
+  assert.match(response, /^HTTP\/1\.1 200/);
+  assert.equal(service.controller.program.name, 'Müller-ö.nc');
+});
+
+test('a static file read error cannot crash the controller service', { skip: process.platform !== 'linux' && 'Uses /proc/self/mem as a file that stats but cannot be read.' }, async t => {
+  const prefix = resolve(tmpdir(), 'mr1-native-web-');
+  const webRoot = await mkdtemp(prefix);
+  t.after(() => rm(webRoot, { recursive: true, force: true }));
+  await writeFile(resolve(webRoot, 'index.html'), '<!doctype html>');
+  await symlink('/proc/self/mem', resolve(webRoot, 'broken.bin'));
+  const { request, claim, service, origin } = await setup(t, { webRoot });
+  await claim(); await request('/api/connect', { port: 'COM7' });
+  await request('/api/command', { action: 'arm', confirmed: true });
+  await fetch(`${origin}/broken.bin`).then(response => response.arrayBuffer()).catch(() => {});
+  await delay(50);
+  assert.equal((await request('/api/state')).status, 200);
+  assert.equal(service.controller.armed, true);
+});
+
+test('console close and crashes stop an armed controller before the process exits', async t => {
+  const script = fileURLToPath(new URL('./fixtures/native-supervised-child.mjs', import.meta.url));
+  for (const trigger of ['SIGHUP', 'crash', 'reject']) {
+    if (trigger === 'SIGHUP' && process.platform === 'win32') continue; // Windows raises SIGHUP only for its own console.
+    const directory = await mkdtemp(resolve(tmpdir(), 'mr1-native-supervised-'));
+    t.after(() => rm(directory, { recursive: true, force: true }));
+    const log = resolve(directory, 'realtime.log');
+    const child = spawn(process.execPath, ['--experimental-test-module-mocks', script, log, directory], { stdio: ['pipe', 'pipe', 'pipe'] });
+    let stderr = '';
+    child.stderr.on('data', chunk => { stderr += chunk; });
+    const exited = new Promise(resolve => child.once('exit', code => resolve(code)));
+    await new Promise((resolve, reject) => {
+      child.stdout.on('data', chunk => { if (String(chunk).includes('READY')) resolve(); });
+      child.once('exit', () => reject(new Error(`Supervised child exited early: ${stderr}`)));
+    });
+    if (trigger === 'SIGHUP') child.kill('SIGHUP'); else child.stdin.write(`${trigger}\n`);
+    let timer;
+    const code = await Promise.race([exited, new Promise((_, reject) => { timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error(`${trigger}: supervised stop did not exit`)); }, 8000); })]);
+    clearTimeout(timer);
+    const after = (await readFile(log, 'utf8')).split('READY\n')[1].trim().split('\n');
+    assert.deepEqual(after, ['0x82', '0x18'], trigger);
+    assert.equal(code, trigger === 'SIGHUP' ? 0 : 1, `${trigger}: ${stderr}`);
+    if (trigger !== 'SIGHUP') assert.match(stderr, /synthetic (crash|rejection)/);
+  }
 });

@@ -90,11 +90,15 @@ export class NativeController extends EventEmitter {
   publish() { this.emit('state', this.snapshot()); }
   realtime(byte) {
     const port = this.port, generation = this.generation;
-    if (!port?.isOpen) return;
-    const failed = error => {
-      if (error && this.port === port && this.generation === generation) this.faulted(error.message, false);
-    };
-    try { port.write(Buffer.from([byte]), failed); } catch (error) { failed(error); }
+    if (!port?.isOpen) return Promise.resolve();
+    // Resolves (never rejects) once the driver finished this byte.
+    return new Promise(resolve => {
+      const failed = error => {
+        if (error && this.port === port && this.generation === generation) this.faulted(error.message, false);
+        resolve();
+      };
+      try { port.write(Buffer.from([byte]), failed); } catch (error) { failed(error); }
+    });
   }
   rejectPending(error) {
     if (!this.pending) return;
@@ -284,7 +288,7 @@ export class NativeController extends EventEmitter {
   }
   async closeConnection() {
     clearInterval(this.timer);
-    if (this.armed || (this.busy && this.preflight)) { this.realtime(REALTIME.hold); this.realtime(REALTIME.reset); }
+    const stopped = this.armed || (this.busy && this.preflight) ? [this.realtime(REALTIME.hold), this.realtime(REALTIME.reset)] : [];
     this.generation++; this.armed = false; this.connected = false; this.preflight = null;
     if (['running', 'paused', 'draining'].includes(this.job.state)) this.job.state = 'stopped';
     this.rejectPending(new Error('Disconnected.'));
@@ -293,6 +297,12 @@ export class NativeController extends EventEmitter {
     const listeners = this.portListeners; this.portListeners = null;
     this.status = null; this.publish();
     try {
+      // Closing the port cancels in-flight writes; let hold/reset reach the driver first.
+      if (stopped.length) {
+        let timer;
+        await Promise.race([Promise.all(stopped), new Promise(resolve => { timer = setTimeout(resolve, Math.min(this.portTimeout, 1000)); })]);
+        clearTimeout(timer);
+      }
       if (port?.isOpen) await this.portTransition(port, 'close', () => this.closingPort === port);
       if (port && listeners) for (const [event, listener] of Object.entries(listeners)) port.off(event, listener);
     } catch (error) {
