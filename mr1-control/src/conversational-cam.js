@@ -71,8 +71,8 @@ function commonSetup(params, caps = MILL_CAPS) {
 }
 
 // Lathe cycles share these controls. Feeds are mm/min (G94) and stay under
-// the provisional EMCO lathe contract; diameters in the UI, radii in the
-// emitted X words. "Tool diameter" is repurposed as the insert/tool width
+// the provisional EMCO lathe contract; diameters in the UI and, under G7, in
+// the emitted X words. "Tool diameter" is repurposed as the insert/tool width
 // where a cycle needs it.
 const LATHE_COMMON_PARAMS = [
   { key: "tool", label: "Tool number", unit: "T", value: 1, min: 1, max: 999, step: 1 },
@@ -1185,11 +1185,11 @@ export const CONVERSATIONAL_CYCLES = [
     title: "Face (lathe)",
     group: "Turning",
     machine: "lathe",
-    description: "Faces the end of round stock toward center in Z steps. X words are radii; Z0 is the finished face.",
+    description: "Faces the end of round stock toward center in Z steps. Touch off Z0 on the raw, unfaced stock face: passes cut to Z-depth, which becomes the finished face. X words are diameters (G7).",
     params: [
       ...LATHE_COMMON_PARAMS,
       { key: "stockDiameter", label: "Stock diameter", unit: "mm", value: 30, min: 0.5, max: 300, step: 0.5 },
-      { key: "depth", label: "Total face depth", unit: "mm", value: 0.6, min: 0.02, max: 20, step: 0.1 },
+      { key: "depth", label: "Face depth below raw face (Z0)", unit: "mm", value: 0.6, min: 0.02, max: 20, step: 0.1 },
       { key: "stepDown", label: "Depth per pass", unit: "mm", value: 0.2, min: 0.02, max: 3, step: 0.05 },
     ],
     generate(params) {
@@ -1199,6 +1199,9 @@ export const CONVERSATIONAL_CYCLES = [
       const stepDown = requireNumber(params, "stepDown", "Depth per pass", { min: 0.02, max: 3 });
       const outsideX = stockDiameter / 2 + setup.clearX;
       const builder = new ProgramBuilder(this.title, setup, LATHE_BUILDER_OPTIONS);
+      builder.comment(`Z0 = RAW STOCK FACE, FINISHED FACE AT Z${fmt(-depth)}, X = DIAMETER`);
+      // Z approaches outside the stock diameter, so no clearance/depth
+      // combination can rapid into the stock.
       builder.latheApproach(outsideX);
       for (const z of depthPasses(depth, stepDown)) {
         builder.latheCutZ(z);

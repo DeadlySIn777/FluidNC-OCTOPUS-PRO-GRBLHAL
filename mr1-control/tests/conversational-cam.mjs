@@ -108,6 +108,50 @@ test("the lathe contract enforces the machine's diameter mode and safe park", ()
   assert.ok(onMill.blockers.some((blocker) => blocker.code === "LATHE_MODE_ON_MILL"));
 });
 
+test("lathe facing states its real datum and never rapids into the stock", () => {
+  const cycle = getConversationalCycle("lathe-face");
+  // The code cuts from the raw face (Z0) down to Z-depth and emits G7
+  // diameters; the operator text must say exactly that.
+  assert.match(cycle.description, /Z0 on the raw, unfaced stock face/);
+  assert.match(cycle.description, /diameters \(G7\)/);
+  assert.doesNotMatch(cycle.description, /radii|Z0 is the finished face/);
+  for (const overrides of [{}, { depth: 3, stepDown: 1, clearZ: 2 }, { depth: 20, stepDown: 3, clearZ: 0.5 }, { depth: 0.3, stepDown: 0.2, clearZ: 5, stockDiameter: 120 }]) {
+    const params = { ...defaultCycleParams(cycle), ...overrides };
+    const { gcode } = generateConversationalProgram("lathe-face", params);
+    assert.ok(gcode.includes(`(Z0 = RAW STOCK FACE, FINISHED FACE AT Z-${params.depth.toFixed(3)}, X = DIAMETER)`));
+    // Check against the stated datum (raw face at Z0) and against an operator
+    // who touched off the finished face instead (raw face at Z+depth).
+    for (const rawFace of [0, params.depth]) {
+      let face = rawFace;
+      let x = null;
+      let z = 1000; // machine park, far from the chuck
+      for (const line of gcode.split("\n")) {
+        if (line.startsWith("G53 ")) {
+          z = 1000;
+          continue;
+        }
+        if (!/^G[01] /.test(line)) continue;
+        const toX = Number(line.match(/X(-?\d+\.\d+)/)?.[1] ?? x);
+        const toZ = Number(line.match(/Z(-?\d+\.\d+)/)?.[1] ?? z);
+        if (line.startsWith("G0 ")) {
+          assert.ok(x !== null || toZ === z, `rapid in Z before X is known: ${line}`);
+          for (let step = 0; step <= 100; step += 1) {
+            const px = (x ?? toX) + ((toX - (x ?? toX)) * step) / 100;
+            const pz = z + ((toZ - z) * step) / 100;
+            assert.ok(!(px < params.stockDiameter - 1e-9 && pz < face - 1e-9),
+              `rapid into stock (raw face Z${rawFace}, current face Z${face}): ${line} at X${px} Z${pz}`);
+          }
+        } else if (toX === 0) {
+          face = Math.min(face, toZ);
+        }
+        x = toX;
+        z = toZ;
+      }
+      assert.ok(Math.abs(face + params.depth) < 1e-9, `finished face must be Z-${params.depth}, got ${face}`);
+    }
+  }
+});
+
 test("lathe cycles reject impossible geometry", () => {
   const turn = getConversationalCycle("lathe-turn");
   assert.throws(() => turn.generate({ ...defaultCycleParams(turn), targetDiameter: 40, stockDiameter: 30 }), CycleParameterError);
