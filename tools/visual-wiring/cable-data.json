@@ -13,8 +13,8 @@
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 25373,
-      "sha256": "bd7261f292464012e38455a1fa33b1176c2deb946e9e6e8c1b206358a135c8ca"
+      "bytes": 25456,
+      "sha256": "8e0f7877b928140fbd90c54e32ebdd391f60383569232a060cb6de226cb2607d"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
