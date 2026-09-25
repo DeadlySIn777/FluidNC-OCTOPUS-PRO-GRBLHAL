@@ -8430,18 +8430,18 @@
     },
     {
       "path": "mr1/BOM.md",
-      "bytes": 14233,
-      "sha256": "588e0398833e63f82a243af3ef4e2f8013256474a429eb69ecf7993df568abd8"
+      "bytes": 14312,
+      "sha256": "c0bf47cac980ec77906817467980cdc3ac099a85ba1e65fef29a0751a31cce00"
     },
     {
       "path": "mr1/BUILD_REPORT.md",
-      "bytes": 7821,
-      "sha256": "4163ca98f3fb1a890db7169aa3918c8cdce31b78f881ccd0bec6898a6493bfa7"
+      "bytes": 8043,
+      "sha256": "ca3e5ef9fea6550707622f534e425896594d781e9ecdec510f6670aa0ebe15a8"
     },
     {
       "path": "mr1/cable-schedule.csv",
-      "bytes": 15266,
-      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+      "bytes": 16563,
+      "sha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12"
     },
     {
       "path": "mr1/CL57T_ARRIVAL_CAPTURE.md",
@@ -8450,18 +8450,18 @@
     },
     {
       "path": "mr1/CL57T_QUICK_WIRING.md",
-      "bytes": 17587,
-      "sha256": "9176f9b01a90c217191771eb7f4fabddd5ca3e0d11199081a0b24308828ca456"
+      "bytes": 18425,
+      "sha256": "c07af5e37010dbdbcc03c929f46eb89b9ba03ae8f7fe72f5414d1132b7e6d7cc"
     },
     {
       "path": "mr1/COMMISSIONING.md",
-      "bytes": 32052,
-      "sha256": "b0df2412c5b647c9eae4b5e04bd4284205bfad7bd324f205371b0b07a32ed719"
+      "bytes": 35993,
+      "sha256": "bd24df90b1fbda549d5a57e4fb2b2b44ad7a9574f3483df3204af9c15b873032"
     },
     {
       "path": "mr1/DM860T_QUICK_WIRING.md",
-      "bytes": 8072,
-      "sha256": "0f8b09b101ec1a3fad5185d3754f5e235165c244e36998dc5f0c627906a16cd3"
+      "bytes": 8329,
+      "sha256": "2f4a9cc6ebe4a724a2b939a0e46c1cbe873bbe26f1b5d0e64d9515e786ecfecf"
     },
     {
       "path": "mr1/expected-settings.json",
@@ -8470,13 +8470,13 @@
     },
     {
       "path": "mr1/INTERFACE_BOARD.md",
-      "bytes": 20332,
-      "sha256": "15431a15717901b895a487dbc048cd0a0c15290fcb5f5cdd6e3eef64dd748e09"
+      "bytes": 25506,
+      "sha256": "8039985429e9e9143d72a05ba3a176673b0feedcec38d2f9bd5229a62b2e01f0"
     },
     {
       "path": "mr1/io-manifest.json",
-      "bytes": 12431,
-      "sha256": "5ff586c6a720151987b5612a30d96c6c6afb800194db1cd5e5d80b3b826a36f4"
+      "bytes": 13342,
+      "sha256": "95d71acf8266852a0b592ec76cefc471ffb24c6fac0b59632e251d30b8d10094"
     },
     {
       "path": "mr1/macros/manifest.json",
@@ -8500,8 +8500,8 @@
     },
     {
       "path": "mr1/MR1_GITHUB_CROSSCHECK.md",
-      "bytes": 4962,
-      "sha256": "60f69c35f0918b97b534fef15861df03ca21a0fe392a413f9b0e2ed438f4d8cc"
+      "bytes": 5092,
+      "sha256": "7645f9785a6249d45a1f1254fff67ae3b9eb9b86ce1cd0fdd4cbd6083ce846ef"
     },
     {
       "path": "mr1/OCTOPUS_QUALIFICATION.md",
@@ -8515,23 +8515,23 @@
     },
     {
       "path": "mr1/ORDER_LIST.md",
-      "bytes": 13546,
-      "sha256": "77e0e7ca5cb5f952237b1c5181fc08bc609c03703c70cdebaf521f1607a9733c"
+      "bytes": 13861,
+      "sha256": "0256a3af4721af5df9bd56acd85775c50de6fcb448891d616c872ca2c02d7472"
     },
     {
       "path": "mr1/PIGTAIL_SCHEDULE.md",
-      "bytes": 13607,
-      "sha256": "f64eacc58ba6f0d11ca59e0a11ea92a30ae48da5a5fbadf8c8c945d6a8362329"
+      "bytes": 13993,
+      "sha256": "bcc7e4e1e7b56d8e8cf1c1d4191cfa1ecb8c506db07181ce853f2bff2d2dc833"
     },
     {
       "path": "mr1/README.md",
-      "bytes": 3602,
-      "sha256": "08129f25370d71ebaefdd8424c8ea3d37e3c8e93575e81e0c6b4201b0ea17846"
+      "bytes": 3797,
+      "sha256": "15abce1069e80f53f426175bd1c14396a366108b31c661e7f68e4f4dfb2580f9"
     },
     {
       "path": "mr1/RESEARCH.md",
-      "bytes": 21780,
-      "sha256": "ab3652d44b1db684ef5a40569b25ce978f2ec20ea5f146a5098030b9223894cf"
+      "bytes": 22078,
+      "sha256": "6396df1fb6cced1e8c46617fa5cfcffd1749e665de00f8f4f252eae35b0aef77"
     },
     {
       "path": "mr1/RIGID_TAPPING.md",
@@ -8550,8 +8550,8 @@
     },
     {
       "path": "mr1/SPINDLE_SUPERVISION.md",
-      "bytes": 18072,
-      "sha256": "19ac2cd5b12e4e1b7a438726514b673c97fd3b5374f5671b7ff47f0be3cace3d"
+      "bytes": 19351,
+      "sha256": "416b1bfc50f3019629de980bc43e0cb290ba53b63d68bfdd23ae66ff3a53835a"
     },
     {
       "path": "mr1/UI_STYLE.md",
@@ -8560,13 +8560,13 @@
     },
     {
       "path": "mr1/WIRING.md",
-      "bytes": 41264,
-      "sha256": "5d4069ca27c33cdb2273b6d5abf54ceac2bde3c37481f092d5389af49de6ba18"
+      "bytes": 46923,
+      "sha256": "8d057aba6a847256ca69783b4048a0188982e9cd87bc0584e4601364ac15b97d"
     },
     {
       "path": "mr1/WIRING_SIMPLE.md",
-      "bytes": 11266,
-      "sha256": "d32238ccb945aaa2bd0e777ea98a72055febf2726a736b70913aa27a380d0cee"
+      "bytes": 12190,
+      "sha256": "283bd6cdbad3a197cb5a99c271eb10d6532ba015d45b83a2b4d29e33bd632fc3"
     },
     {
       "path": "platformio.ini",
@@ -9063,10 +9063,23 @@
     "FIRMWARE-KNOWN-ISSUES.md",
     "Inc/my_machine.h",
     "mr1/_vendor_docs/README.md",
+    "mr1/BOM.md",
     "mr1/BUILD_REPORT.md",
+    "mr1/cable-schedule.csv",
+    "mr1/CL57T_QUICK_WIRING.md",
     "mr1/COMMISSIONING.md",
+    "mr1/DM860T_QUICK_WIRING.md",
+    "mr1/INTERFACE_BOARD.md",
+    "mr1/io-manifest.json",
+    "mr1/MR1_GITHUB_CROSSCHECK.md",
     "mr1/OPERATOR.md",
+    "mr1/ORDER_LIST.md",
+    "mr1/PIGTAIL_SCHEDULE.md",
     "mr1/README.md",
+    "mr1/RESEARCH.md",
+    "mr1/SPINDLE_SUPERVISION.md",
+    "mr1/WIRING.md",
+    "mr1/WIRING_SIMPLE.md",
     "platformio.ini",
     "README.md",
     "SOURCE-PROVENANCE.md",
