@@ -8,13 +8,13 @@
   "source": {
     "csv": {
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "bytes": 16079,
-      "sha256": "1797cbc4effe7c3c39deb955575315f3d8ac6cf7544b0a3f4e4bae4e554b0caf"
+      "bytes": 16303,
+      "sha256": "3d69dc1a9159a9983b5d40a3a9a43d8e7f078adaaa93ee997a6b3f5142288d8e"
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 23198,
-      "sha256": "4db98233fd81b84945004f9b49fcab8cd2920afd5eaffd8efbc89c245d185619"
+      "bytes": 23615,
+      "sha256": "8715d8f3669b174b715d22e02426f3a05cd9257ac283712fdba86857d593fa84"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
@@ -1492,7 +1492,7 @@
       "cable_class": "twisted pair",
       "shield_termination": "none",
       "state": "TBD",
-      "notes": "Only NO operator input",
+      "notes": "Only NO operator input. PB2 has no board pull-up or RC and shares net BTN_EN1 with onboard SW2 (BOOT1) - guard or remove SW2; interface board adds series R + TVS + 3.3 V pull-up + RC",
       "source_record": 40,
       "axis": "shared",
       "family": "controls",
@@ -1512,7 +1512,8 @@
       "missing_evidence": [
         "Actual guarded cycle-start NO contact and button continuity.",
         "Verified EXP2 PB2/GND mating view and independent return path.",
-        "Documented prevention of unintended starts and manual restart after faults."
+        "Documented prevention of unintended starts and manual restart after faults.",
+        "Onboard SW2 (BOOT1, shares PB2 net BTN_EN1) guarded or removed; interface-board series resistor, TVS, 3.3 V pull-up and RC fitted because the board has none."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1526,7 +1527,7 @@
       "cable_class": "shielded pair",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PG12-PG15 are not read by the current firmware. Qualify PB1 before any coupled dual-Y motion.",
+      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PB1 has no board pull-up or RC - the interface board adds them. PG12-PG15 are not read by the current firmware. Qualify PB1 before any coupled dual-Y motion.",
       "source_record": 41,
       "axis": "shared",
       "family": "fault",

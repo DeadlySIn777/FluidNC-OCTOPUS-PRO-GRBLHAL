@@ -675,7 +675,8 @@
       "notes": [
         "No BLTouch device or plugin is used. This header carries the fixed setter input in the production map.",
         "Prove the PB7/GND pair from actual markings and continuity; do not count cavities from the end of a loose plug.",
-        "TOOL-01 ends at the sensor interface; the separate interface-to-PB7 harness has no scheduled ID yet."
+        "TOOL-01 ends at the sensor interface; the separate interface-to-PB7 harness has no scheduled ID yet.",
+        "PB7 has no board pull-up or RC filter; the interface board supplies them."
       ],
       "sourceIds": [
         "pin-map",
@@ -725,7 +726,9 @@
         "PB1 is the configured controller motor-fault input: all required contributors healthy = low; fault/open cable/lost power must make it high.",
         "Every raw CL57T ALM/COMO pair first goes to its own isolated, current-limited and supervised conditioner. No raw transistor series chain or raw alarm GPIO connection.",
         "Include required spindle/cabinet fault contributors. PB1 remains separate from the independent hardwired safety chain.",
-        "Use a verified keyed breakout and recorded return paths, not generic IDC pin numbering."
+        "Use a verified keyed breakout and recorded return paths, not generic IDC pin numbering.",
+        "PB1 and PB2 have no board pull-up or RC filter (BTT v1.1 schematic). The interface board supplies series resistor, TVS, 3.3 V pull-up and RC.",
+        "PB2 is net BTN_EN1, shared with the onboard SW2 (BOOT1) button to GND; pressing SW2 is a cycle start and can resume a feed hold. Guard or remove SW2 before commissioning. EXP2 pin 8 is the MCU reset line (RST) beside these contacts."
       ],
       "sourceIds": [
         "pin-map",

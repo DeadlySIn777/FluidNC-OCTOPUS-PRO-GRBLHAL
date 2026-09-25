@@ -249,6 +249,8 @@ Run every one of these:
 - [ ] Motor and encoder connected on every drive
 - [ ] All four drives: `S1`=4, `S3`=`5V`, `SW6`/`SW7` **off**
 - [ ] Every `STOP` 5 V cavity empty
+- [ ] Onboard `SW2` ("BOOT1") guarded or removed - it shares PB2, so pressing it is a cycle start
+- [ ] PB1, PB2 and PB7 have their interface-board 3.3 V pull-up and RC filter; every field input has its series resistor and TVS
 - [ ] Exact conditioner circuitry qualified; no generic floating-VCC recipe
 - [ ] PUL/DIR waveforms/current and PB1 alarm supervision proved on the protected bench
 - [ ] Hardware stop, protective bonding and branch protection documented. **Blocking HOLD:** the reviewed stop design removes spindle-servo energy (mains contactor and/or certified STO, not just `SON`), removes 36 V motion power with a Z-drop analysis, puts coolant in the stop chain and has a terminal schedule (`WIRING.md`, "Scope and Safety Boundary")

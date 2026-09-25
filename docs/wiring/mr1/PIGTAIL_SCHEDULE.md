@@ -52,7 +52,7 @@ prove continuity; loose Dupont leads are not a production adapter.
 | 3 | FIT CHECK | TB, T0, T1 two-position 2.54 mm headers | Named signal and GND | Safety monitor, feed hold, Qualified sensor conditioner OUT1; module on HOLD |
 | 1 | FIT CHECK | PB7 tool-setter five-position 2.54 mm header (board silk: `BLTouch`) | PB7 and its adjacent GND only | Controller housing only; no BLTouch device or plugin; PB6 and 5 V remain empty |
 | 1 | FIT CHECK | PWR-DET three-position 2.54 mm header | PC0 and GND only | 3.3 V remains empty |
-| 1 | FIT CHECK | EXP2 `2x5` 2.54 mm header | PB1, PB2, GND only | Use keyed IDC breakout; short internal run; insulate unused wires |
+| 1 | FIT CHECK | EXP2 `2x5` 2.54 mm header | PB1, PB2, GND only | Use keyed IDC breakout; short internal run; insulate unused wires. EXP2 also carries `RST`. PB1/PB2 have no board pull-up/RC (interface board adds them); onboard `SW2` shares PB2 - guard or remove it |
 | 1 | FIT CHECK | I2C four-position 2.54 mm header | 3.3 V and GND only | Candidate logic-side supply only; module circuit on HOLD; PB8/PB9 remain empty |
 | 1 | USE / BUILD | Octopus MAIN POWER screw terminal | +24 V and 0 V, ferruled | No pigtail; MOTOR POWER and BED POWER remain empty |
 | 2 | HOLD | FAN0 and FAN4 two-position headers | None during motion commissioning | Spindle PWM/enable wait for servo and DB44 proof |

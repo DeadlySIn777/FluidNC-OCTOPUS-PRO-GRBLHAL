@@ -93,7 +93,7 @@ No motor wire colors, GX16 cavity assignments or extension pin numbers are appro
 | E-stop monitor | TB / PF3 | Safety-relay contact closed to GND while the relay is energized, open on E-stop/trip/broken wire (not an NC auxiliary; relay/terminal HOLD); never invert `$14` to suit a wrong contact; does not replace energy removal | ____ |
 | Door monitor | PWR-DET / PC0 | NC monitor; adjacent power cavity unused | ____ |
 | Feed hold | T0 / PF4 | NC contact | ____ |
-| Cycle start | EXP2 / PB2 | Guarded NO contact | ____ |
+| Cycle start | EXP2 / PB2 | Guarded NO contact. No board pull-up/RC: interface board adds series R, TVS, 3.3 V pull-up and RC. Onboard `SW2` shares this net - guard or remove it | ____ |
 | Touch probe | T1 / PF5 | Isolated output low on trigger; `$6=3` | ____ |
 | Tool setter | BLTouch-labelled header / PB7 | Independent isolated low-on-trigger input; BLTouch plugin disabled | ____ |
 
@@ -141,6 +141,7 @@ named; none is closed by this worksheet.
 | --- | --- | --- |
 | E-stop / hazardous-energy design | The stop circuit is specified only as principles. A qualified person must produce and review a design that removes 240 VAC spindle-servo energy on E-stop (rated mains contactor on the servo supply and/or certified safe-torque-off; `SON` dropout is not the E-stop function), removes 36 V motion power with a Z-drop analysis for the de-energized state, puts the flood pump and mist/air solenoid supplies in the hardwired stop chain, sets stop category and restart prevention from a risk assessment, and gives a complete terminal schedule (E-stop station, safety relay, contactors, PF3 monitor contact). See `mr1/WIRING.md`, "Scope and Safety Boundary". | Energizing the cabinet with any drive, spindle or coolant load connected. The USB-only flash is not affected. |
 | E-stop monitor contact | The PF3 contact is closed while the relay is energized and open on E-stop/trip/broken wire. Pressing E-stop and unplugging the monitor wire must each read `Pn:E`; releasing/resetting clears it. | Any motion test. |
+| Onboard `SW2` / PB2 | PB2 (cycle start) is net `BTN_EN1`, shared with the onboard `SW2` ("BOOT1") button to GND; pressing it during a feed hold resumes motion. Guard or remove `SW2`, and fit the interface-board pull-up/RC on PB1, PB2 and PB7 (none on the board). | Any motion test. |
 | PB1 aggregate drive-fault chain | PB1 is the only drive-fault stop; PG12–PG15 are not read by the current firmware. For every drive, an alarm, drive-power loss and an open alarm cable must each stop motion through PB1 (`Pn:F`, alarm 17). | Any coupled dual-Y motion (commissioning Stage 6 onward). |
 
 ## Evidence to collect, in order

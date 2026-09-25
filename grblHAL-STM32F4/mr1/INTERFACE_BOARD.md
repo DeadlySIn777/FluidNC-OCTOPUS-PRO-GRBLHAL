@@ -265,6 +265,8 @@ CTRL_0V ------- opto emitter
 Choose `RLED` for the measured signal sink current and optocoupler CTR at the
 panel's maximum temperature. A Schmitt buffer or a high-CTR logic optocoupler is
 preferred. The controller side must pull PF5/PB7 low on sensor actuation.
+PF5 (T1) has an onboard pull-up/RC; PB7 has neither, so the interface board
+supplies PB7's 3.3 V pull-up and RC filter (section E).
 
 Per-channel provisions:
 
@@ -277,10 +279,32 @@ Per-channel provisions:
 
 ### E. Operator Inputs
 
-P1 may route the simple dry contacts directly to their Octopus signal/GND
-headers through keyed connectors. Add external RC or optocouplers only after
-checking that they do not conflict with the BTT onboard pullups and 0.1 uF
-filters.
+Do not run operator, door or monitor contacts straight from the field connector
+to the Octopus headers. Every field input gets the same connector protection
+the probe channels require (see "Layout and EMC Rules"): a series resistor and a
+TVS at the field connector, before the trace enters the board.
+
+Onboard conditioning differs by input on the BTT v1.1 schematic:
+
+| Octopus input | Onboard pull-up / RC | Required on the interface board |
+| --- | --- | --- |
+| PC0 (PWR-DET), PF3 (TB), PF4 (T0) | Present | Series resistor + TVS; positions for pull-up/RC, sized together with the onboard network |
+| PB1, PB2 (EXP2) | **None** | Series resistor + TVS + external pull-up to Octopus 3.3 V + RC filter |
+| PB7 (tool-setter header) | **None** | Same as PB1/PB2 (a pull-up proved in the conditioner output stage may replace the separate one) |
+
+Component values are HOLD until the bench design. Pull-ups go to the Octopus
+3.3 V logic rail only, never 5 V. The MCU's weak internal pull-up is not an
+adequate termination for a cabinet cable.
+
+**PB2 shares its net with the onboard `SW2` button.** On the BTT v1.1 schematic
+PB2 is net `BTN_EN1`, which also runs to the onboard `SW2` ("BOOT1") pushbutton
+to GND, with no board pull-up or filter. The firmware debounces only the door
+and reset inputs. Pressing `SW2` is therefore a cycle start: during a feed hold
+it resumes motion. Before commissioning, physically guard or disable `SW2`
+(fixed cover, or remove the switch) and fit the external pull-up and RC on PB2.
+EXP2 also carries the MCU reset line (`RST`/NRST, EXP2 pin 8) beside PB1/PB2:
+keep the breakout keyed, insulate unused conductors and never probe EXP2 with
+power applied.
 
 | Port | Octopus destination | Contact |
 | --- | --- | --- |

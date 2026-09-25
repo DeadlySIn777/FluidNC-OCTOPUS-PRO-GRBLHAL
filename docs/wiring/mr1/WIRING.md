@@ -516,7 +516,9 @@ conditioner test fixture. Do not hot-unplug a motor to manufacture a fault.
 
 PB1 on EXP2 is the aggregate fault input, and per the box at the top of this
 section it is **the only one that stops motion**. Use an isolated,
-normally-healthy low signal. It must carry the series chain of all four CL57T
+normally-healthy low signal. PB1 has no board pull-up or RC filter (BTT v1.1
+schematic); the interface board supplies the 3.3 V pull-up, RC filter, series
+resistor and TVS (`INTERFACE_BOARD.md` E). It must carry the series chain of all four CL57T
 drive-healthy channels, and may additionally combine spindle alarm,
 safety-relay diagnostics, and cabinet overtemperature in the same series loop.
 
@@ -540,7 +542,8 @@ The touch probe and fixed tool setter do not share an input:
 No BLTouch sensor is installed. PB7 is only a generic isolated tool-setter
 input; `BLTouch` is the locator printed beside the five-pin board header.
 Populate only PB7 and its adjacent GND. Leave PB6 and 5 V empty, and keep the
-BLTouch firmware plugin disabled.
+BLTouch firmware plugin disabled. PB7 has no board pull-up or RC filter; the
+interface board supplies them (`INTERFACE_BOARD.md` E).
 
 The dedicated Octopus `PROBE` port on PC5 is intentionally unused. The official
 v1.1 schematic shows `PROBE -> R46 1K -> U16 EL357C LED`, with that LED returning
@@ -628,6 +631,18 @@ the command service and guarded motion sequence are commissioned.
 The PWR-DET header also contains 3.3 V. Use only PC0 and GND for the dry
 contact. TB and T0 are two-pin signal/GND headers. Build keyed harnesses and
 continuity-test them off the board; never identify header pins from cable color.
+
+No field contact goes straight to an MCU header. Each passes the interface
+board's series resistor and TVS. PC0, PF3 and PF4 have onboard pull-ups and RC
+filters; PB1, PB2 and PB7 have none, so the interface board adds a 3.3 V pull-up
+and RC filter for them (`INTERFACE_BOARD.md` E).
+
+**Onboard `SW2` shares PB2 (cycle start).** PB2 is net `BTN_EN1`, also wired
+to the Octopus `SW2` ("BOOT1") pushbutton to GND, and only door/reset inputs are
+debounced. Pressing `SW2` during a feed hold resumes motion. Physically guard or
+disable `SW2` (or remove it) before commissioning. EXP2 pin 8 is the MCU reset
+line (`RST`/NRST), next to PB1/PB2: keep the breakout keyed and never probe it
+live.
 
 Cycle start is deliberately the only normally-open operator input. The firmware
 inverts that bit while leaving E-stop, door, and feed hold fail-safe high on an

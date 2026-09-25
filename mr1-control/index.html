@@ -2969,6 +2969,7 @@
                 <div data-contact="conditioned"><span>ISO</span><strong>AGG. FAULT</strong><small>EXP2 / PB1</small><em>HEALTHY LOW</em></div>
               </div>
               <p class="wiring-callout">PWR-DET also has a 3.3V pin. Identify PC0 and GND from the board drawing and a continuity check; never use cable color to find them.</p>
+              <p class="wiring-callout alarm">No contact goes straight to an MCU header: each passes the interface board's series resistor and TVS. PB1, PB2 and PB7 have no board pull-up or RC, so the interface board adds a 3.3V pull-up and RC filter. Onboard SW2 (BOOT1) shares PB2: pressing it is a cycle start and can resume a feed hold. Guard or remove SW2 before commissioning. EXP2 also carries the MCU reset line.</p>
               <p class="wiring-callout alarm">PF3 high means E-stop. Use a safety-relay contact that is closed while the relay is energized and opens on E-stop, trip or a broken wire, such as a spare NO safety output or NO auxiliary. An NC auxiliary is open while the relay is energized and would invert the reading. Never invert $14 to suit a wrong contact. Commission it: pressing E-stop and unplugging the monitor wire must each show Pn:E; releasing and resetting the chain clears it.</p>
             </section>
 

@@ -334,7 +334,7 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     item: "5-POSITION 2.54 MM KEYED HOUSING",
     boardEnd: "PB7 TOOL-SETTER HEADER / BOARD SILK: BLTOUCH",
     populate: "PB7 + ITS ADJACENT GND ONLY",
-    detail: "This is only a controller housing, not a BLTouch device. PB6 and 5 V remain empty; the firmware plugin is forced off.",
+    detail: "This is only a controller housing, not a BLTouch device. PB6 and 5 V remain empty; the firmware plugin is forced off. PB7 has no board pull-up or RC; the interface board supplies them.",
   }),
   Object.freeze({
     id: "power_detect_housing",
@@ -352,7 +352,7 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     item: "2x5 2.54 MM KEYED IDC BREAKOUT",
     boardEnd: "EXP2",
     populate: "PB1 / PB2 / GND ONLY",
-    detail: "Keep this cable short inside the cabinet. Verify ribbon orientation and insulate every unused conductor.",
+    detail: "Keep this cable short inside the cabinet. Verify ribbon orientation and insulate every unused conductor; EXP2 also carries the MCU reset line. PB1/PB2 have no board pull-up or RC: fit them, a series resistor and a TVS on the interface board. Guard or remove onboard SW2, which shares PB2 (cycle start).",
   }),
   Object.freeze({
     id: "hw399_logic_power",

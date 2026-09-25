@@ -415,6 +415,17 @@ test('E-stop monitor uses a contact closed while the safety relay is energized, 
   assert.doesNotMatch(inputs, /E-STOP AUX|SAFETY RELAY AUX/);
 });
 
+test('EXP2 and PB7 inputs require interface-board pull-up/RC and the onboard SW2 is guarded', () => {
+  const byId = Object.fromEntries(WIRING_PIGTAIL_SCHEDULE.map(item => [item.id, item]));
+  assert.match(byId.exp2_breakout.detail, /PB1\/PB2 have no board pull-up or RC/);
+  assert.match(byId.exp2_breakout.detail, /Guard or remove onboard SW2, which shares PB2/);
+  assert.match(byId.pb7_tool_setter_housing.detail, /PB7 has no board pull-up or RC/);
+  const html = readFileSync(appHtmlUrl, 'utf8');
+  const inputs = html.slice(html.indexOf('<section id="inputs-panel"'), html.indexOf('<section id="power-panel"'));
+  assert.match(inputs, /No contact goes straight to an MCU header/);
+  assert.match(inputs, /Guard or remove SW2 before commissioning/);
+});
+
 test('isolation checks distinguish the bare assembly from mounted PE references and unqualified module topology', () => {
   const gates = Object.fromEntries(WIRING_EVIDENCE_GATES.map(item => [item.id, item]));
   assert.match(gates.sensor_isolation.detail, /de-energized isolated assembly/);

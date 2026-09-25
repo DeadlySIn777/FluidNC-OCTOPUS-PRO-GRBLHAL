@@ -125,6 +125,11 @@ Verify against `WIRING.md` and `cable-schedule.csv`:
   that is closed while the relay is energized and open on E-stop/trip (a spare
   NO safety output or NO auxiliary), not an NC auxiliary.
 - Probe isolated return has no continuity to controller ground, frame, spindle, or PE.
+- The Octopus onboard `SW2` ("BOOT1") button is physically guarded or removed.
+  It shares PB2 (net `BTN_EN1`), so pressing it is a cycle start.
+- Every field input passes the interface board's series resistor and TVS; PB1,
+  PB2 and PB7, which have no board pull-up or RC, have the interface-board
+  3.3 V pull-up and RC filter fitted.
 - Analog spindle return has no continuity to controller ground unless the final verified interface intentionally requires it.
 - Shields and PE terminate as designed; no shield is used as a current return.
 - Every terminal and cable has its permanent ID.
@@ -255,6 +260,12 @@ unlock only after confirming the reported axis.
 
 Open is inactive; pressing the guarded NO button is active. It is the only
 operator input with this truth table.
+
+PB2 is shared with the onboard `SW2` ("BOOT1") button and has no board pull-up
+or filter. Confirm `SW2` is guarded or removed before any motion stage: with a
+feed hold active, `SW2` must not be reachable to resume motion. Also confirm the
+interface-board pull-up and RC are fitted: no spurious cycle start while relays,
+coolant or USB traffic switch.
 
 ### Probe Inputs Without Motion
 
