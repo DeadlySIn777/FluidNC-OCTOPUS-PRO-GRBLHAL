@@ -167,6 +167,45 @@ test("every cycle's program keeps the manual tool-change and shutdown contract",
   }
 });
 
+// Walks a mill program (absolute XYZ, incremental IJ, F in mm/min) and
+// returns every feed move that changes Z, with its true swept angle, radius
+// and the Z component of its feed.
+function zMoves(gcode) {
+  const moves = [];
+  let at = { x: null, y: null, z: null };
+  let feed = null;
+  for (const raw of gcode.split("\n")) {
+    const words = {};
+    for (const [, letter, value] of raw.replace(/\(.*?\)/g, "").matchAll(/([A-Z])(-?\d+(?:\.\d+)?)/g)) words[letter] = Number(value);
+    if (words.G === 53) {
+      at = { ...at, z: null };
+      continue;
+    }
+    if (words.F !== undefined) feed = words.F;
+    if (![0, 1, 2, 3].includes(words.G)) continue;
+    const to = { x: words.X ?? at.x, y: words.Y ?? at.y, z: words.Z ?? at.z };
+    if (words.G !== 0 && to.z !== at.z) {
+      assert.ok(at.x !== null && at.y !== null && at.z !== null, `feed move from an unknown position: ${raw}`);
+      const dz = to.z - at.z;
+      let length = Math.hypot(to.x - at.x, to.y - at.y, dz);
+      let sweep = 0;
+      let radius = 0;
+      if (words.G !== 1) {
+        const i = words.I ?? 0;
+        const j = words.J ?? 0;
+        radius = Math.hypot(i, j);
+        sweep = Math.atan2(to.y - (at.y + j), to.x - (at.x + i)) - Math.atan2(-j, -i);
+        if (words.G === 3 && sweep <= 1e-9) sweep += 2 * Math.PI;
+        if (words.G === 2 && sweep >= -1e-9) sweep -= 2 * Math.PI;
+        length = Math.hypot(radius * sweep, dz);
+      }
+      moves.push({ line: raw, g: words.G, dz, sweep, radius, rate: (feed * Math.abs(dz)) / length });
+    }
+    at = to;
+  }
+  return moves;
+}
+
 test("pure-Z plunges never exceed the Z feed ceiling", () => {
   for (const cycle of CONVERSATIONAL_CYCLES) {
     const params = defaultCycleParams(cycle);
@@ -177,6 +216,43 @@ test("pure-Z plunges never exceed the Z feed ceiling", () => {
         assert.ok(Number(match[1]) <= MR1_NC_CONTRACT.maximumZFeedMmPerMinute, `${cycle.id}: ${line}`);
       }
     }
+  }
+  // Helical and ramped moves carry a Z component too. With the XY feed at
+  // the machine ceiling it must stay within the Z ceiling, and a helix must
+  // never descend faster than the programmed plunge feed.
+  for (const cycle of CONVERSATIONAL_CYCLES.filter((candidate) => (candidate.machine ?? "mill") === "mill")) {
+    for (const zFeed of [MR1_NC_CONTRACT.maximumZFeedMmPerMinute, 40]) {
+      const params = { ...defaultCycleParams(cycle), xyFeed: MR1_NC_CONTRACT.maximumLinearFeedMmPerMinute, zFeed };
+      const { gcode } = generateConversationalProgram(cycle.id, params);
+      for (const move of zMoves(gcode)) {
+        assert.ok(move.rate <= MR1_NC_CONTRACT.maximumZFeedMmPerMinute + 0.01, `${cycle.id}: ${move.line} moves Z at ${move.rate}`);
+        if (move.g !== 1) assert.ok(move.rate <= zFeed + 0.01, `${cycle.id}: helix ${move.line} moves Z at ${move.rate} over the ${zFeed} plunge feed`);
+      }
+    }
+  }
+});
+
+test("helical entries respect the plunge feed and reject degenerate helixes", () => {
+  const bore = getConversationalCycle("circ-bore");
+  // A 0.1 mm orbit of a 6 mm tool is a plunge in disguise.
+  assert.throws(() => bore.generate({ ...defaultCycleParams(bore), diameter: 6.2, toolDiameter: 6, helixPitch: 5 }), /at least 0\.600 mm/);
+  assert.throws(() => bore.generate({ ...defaultCycleParams(bore), diameter: 7, toolDiameter: 6, helixPitch: 5 }), /Helix pitch may be at most 0\.553 mm/);
+  const pocket = getConversationalCycle("circ-pocket");
+  assert.throws(() => pocket.generate({ ...defaultCycleParams(pocket), diameter: 6.2, toolDiameter: 6 }), CycleParameterError);
+  for (const [id, overrides, depth] of [
+    ["circ-bore", { diameter: 7, toolDiameter: 6, helixPitch: 0.5, depth: 8, xyFeed: 1000, zFeed: 150 }, 8],
+    ["circ-pocket", { diameter: 40, toolDiameter: 6, stepOverPercent: 5, stepDown: 10, depth: 10, xyFeed: 1000, zFeed: 150 }, 10],
+  ]) {
+    const { gcode } = generateConversationalProgram(id, { ...defaultCycleParams(getConversationalCycle(id)), ...overrides });
+    const helixes = zMoves(gcode).filter((move) => move.g !== 1);
+    assert.ok(helixes.length > 0, `${id}: no helix`);
+    for (const arc of helixes) {
+      assert.ok(arc.rate <= overrides.zFeed + 0.01, `${id}: ${arc.line} descends at ${arc.rate}`);
+      const rampDegrees = (Math.atan2(Math.abs(arc.dz), arc.radius * Math.abs(arc.sweep)) * 180) / Math.PI;
+      assert.ok(rampDegrees <= 10.05, `${id}: ${arc.line} ramps at ${rampDegrees} degrees`);
+    }
+    assert.ok(Math.abs(helixes.reduce((sum, arc) => sum + arc.dz, 0) + depth) < 1e-6, `${id}: helix must reach full depth`);
+    assert.equal(validateMr1Nc(gcode).ok, true);
   }
 });
 
@@ -276,6 +352,75 @@ test("external thread milling descends clockwise for a right-hand thread", () =>
   assert.ok(!gcode.includes("G3 "), "external cycle must not mix in counterclockwise arcs");
 });
 
+test("external thread milling cuts to the ISO root, internal to the nominal major diameter", () => {
+  // M12 x 1.75, 6 mm single-point tool: d3 = 12 - 1.22687 * 1.75 = 9.853,
+  // so the tool centre must run at (d3 + 6) / 2 = 7.9265, not (12 + 6) / 2.
+  const external = generateConversationalProgram("thread-mill-external", {
+    ...defaultCycleParams(getConversationalCycle("thread-mill-external")),
+    centerX: 0,
+    centerY: 0,
+    majorDiameter: 12,
+    pitch: 1.75,
+    toolDiameter: 6,
+  }).gcode;
+  const expected = (12 - 1.22687 * 1.75 + 6) / 2;
+  const externalArcs = zMoves(external).filter((move) => move.g === 2);
+  assert.ok(externalArcs.length > 0);
+  for (const arc of externalArcs) assert.ok(Math.abs(arc.radius - expected) < 0.0015, `${arc.line}: radius ${arc.radius}`);
+  assert.ok(external.includes("G1 X7.926 Y0.000"), "lead-in must reach the root radius");
+  assert.match(external, /\(ISO 60 DEG METRIC PROFILE, SINGLE-POINT TOOTH/);
+  assert.match(external, /\(EXTERNAL: TOOTH TIP TO ROOT D3 9\.853 /);
+  const internal = generateConversationalProgram("thread-mill-internal", {
+    ...defaultCycleParams(getConversationalCycle("thread-mill-internal")),
+    majorDiameter: 10,
+    pitch: 1.5,
+    toolDiameter: 6,
+  }).gcode;
+  for (const arc of zMoves(internal).filter((move) => move.g === 3)) assert.ok(Math.abs(arc.radius - 2) < 0.0015, arc.line);
+  assert.match(internal, /\(INTERNAL: TOOTH TIP TO MAJOR D 10\.000, PITCH 1\.500\)/);
+  const cycle = getConversationalCycle("thread-mill-external");
+  assert.throws(() => cycle.generate({ ...defaultCycleParams(cycle), majorDiameter: 2, pitch: 6 }), CycleParameterError);
+});
+
+test("thread helixes keep the pitch constant through a partial final turn", () => {
+  for (const [id, overrides, depth, pitch] of [
+    ["thread-mill-internal", { threadDepth: 10, pitch: 1.5, majorDiameter: 10, toolDiameter: 6 }, 10, 1.5],
+    ["thread-mill-external", {}, 10, 1.75],
+  ]) {
+    const params = { ...defaultCycleParams(getConversationalCycle(id)), ...overrides };
+    assert.equal(params.threadDepth, depth);
+    assert.equal(params.pitch, pitch);
+    const arcs = zMoves(generateConversationalProgram(id, params).gcode).filter((move) => move.g !== 1);
+    let travel = 0;
+    let turns = 0;
+    for (const arc of arcs) {
+      const expected = (pitch * Math.abs(arc.sweep)) / (2 * Math.PI);
+      assert.ok(Math.abs(Math.abs(arc.dz) - expected) < 0.002, `${id}: ${arc.line} advances ${arc.dz} for ${expected}`);
+      travel += arc.dz;
+      turns += Math.abs(arc.sweep) / (2 * Math.PI);
+    }
+    assert.ok(Math.abs(Math.abs(travel) - depth) < 1e-6, `${id}: helix covers ${travel}`);
+    assert.ok(Math.abs(turns - depth / pitch) < 0.001, `${id}: ${turns} turns for ${depth / pitch}`);
+  }
+});
+
+test("internal thread milling feeds down the hole centre instead of rapiding to depth", () => {
+  const { gcode } = generateConversationalProgram("thread-mill-internal", {
+    ...defaultCycleParams(getConversationalCycle("thread-mill-internal")),
+    threadDepth: 10,
+    clearZ: 5,
+    zFeed: 150,
+  });
+  const lines = gcode.split("\n");
+  for (const line of lines.filter((candidate) => candidate.startsWith("G0 "))) {
+    const z = line.match(/Z(-?\d+\.\d+)/);
+    if (z) assert.ok(Number(z[1]) >= 0, `rapid below the hole top: ${line}`);
+  }
+  const plunge = lines.indexOf("G1 Z-10.000 F150.000");
+  assert.ok(plunge > 0, "expected a plunge-feed descent to thread depth");
+  assert.deepEqual(lines.slice(plunge - 3, plunge), ["G0 X0.000 Y0.000", "G0 Z5.000", "G0 Z1.000"]);
+});
+
 test("internal thread milling rejects a cutter that cannot enter the minor bore", () => {
   const cycle = getConversationalCycle("thread-mill-internal");
   const params = defaultCycleParams(cycle);
@@ -362,6 +507,13 @@ test("the runtime estimator is sane for a known program", () => {
     const estimate = estimateProgramSeconds(gcode);
     assert.ok(Number.isFinite(estimate) && estimate > 0 && estimate < 4 * 60 * 60, `${cycle.id}: ${estimate}`);
   }
+});
+
+test("the runtime estimator measures partial arcs by their true sweep", () => {
+  // Quarter circle of radius 10 (15.708 mm) plus a 2 mm helical rise at 600 mm/min.
+  const program = "G21 G90 G94 G17\nG0 X10.000 Y0.000\nG3 X0.000 Y10.000 Z2.000 I-10.000 J0.000 F600.000\n";
+  const expected = (Math.hypot((Math.PI / 2) * 10, 2) / 600) * 60 + (10 / 4000) * 60;
+  assert.ok(Math.abs(estimateProgramSeconds(program) - expected) < 0.01, `${estimateProgramSeconds(program)} vs ${expected}`);
 });
 
 function operation(id, overrides = {}) {

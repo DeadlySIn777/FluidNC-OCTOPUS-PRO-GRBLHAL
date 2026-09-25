@@ -100,17 +100,95 @@ function latheSetup(params) {
   return setup;
 }
 
+// Helical entries: an orbit under 5% of the tool diameter, or a ramp steeper
+// than 10 degrees, is a plunge in disguise.
+const MIN_HELIX_RADIUS_FRACTION = 0.05;
+const MAX_HELIX_RAMP_DEGREES = 10;
+
+function minimumHelixRadius(setup) {
+  return Math.max(0.05, setup.toolDiameter * MIN_HELIX_RADIUS_FRACTION);
+}
+
+function maximumHelixPitch(radius) {
+  return 2 * Math.PI * radius * Math.tan((MAX_HELIX_RAMP_DEGREES * Math.PI) / 180);
+}
+
+function rounded(value) {
+  return Number(fmt(value));
+}
+
+// Feed for helical arcs, capped so the Z component of every arc as emitted
+// (after 0.001 mm rounding) stays within the plunge feed. Each arc is
+// { start, end, center, clockwise } in exact coordinates.
+function helixFeed(setup, arcs) {
+  let feed = setup.xyFeed;
+  for (const { start, end, center, clockwise } of arcs) {
+    const i = rounded(center.x - start.x);
+    const j = rounded(center.y - start.y);
+    const centerX = rounded(start.x) + i;
+    const centerY = rounded(start.y) + j;
+    let sweep = Math.atan2(rounded(end.y) - centerY, rounded(end.x) - centerX) - Math.atan2(-j, -i);
+    if (!clockwise && sweep <= 1e-9) sweep += 2 * Math.PI;
+    if (clockwise && sweep >= -1e-9) sweep -= 2 * Math.PI;
+    const dz = Math.abs(rounded(end.z) - rounded(start.z));
+    if (dz < 1e-9) continue;
+    const capped = (setup.zFeed * Math.hypot(Math.hypot(i, j) * sweep, dz)) / dz;
+    feed = Math.min(feed, Math.floor(capped * 0.999 * 1000) / 1000);
+  }
+  return feed;
+}
+
+function emitHelix(builder, arcs) {
+  const feed = helixFeed(builder.setup, arcs);
+  for (const { start, end, center, clockwise } of arcs) {
+    builder.arc(clockwise, end.x, end.y, center.x - start.x, center.y - start.y, end.z, feed);
+  }
+}
+
 // Helical descent as paired half arcs. The tool must already sit at
 // (centerX + radius, centerY) at fromZ; it ends at the same XY at toZ.
 function helixDescend(builder, centerX, centerY, radius, fromZ, toZ, pitchPerRev) {
+  const center = { x: centerX, y: centerY };
+  const east = (z) => ({ x: centerX + radius, y: centerY, z });
+  const west = (z) => ({ x: centerX - radius, y: centerY, z });
   let z = fromZ;
   while (z > toZ + 1e-9) {
     const next = Math.max(toZ, z - pitchPerRev);
-    builder.arc(false, centerX - radius, centerY, -radius, 0, z + (next - z) / 2);
-    builder.arc(false, centerX + radius, centerY, radius, 0, next);
+    const middle = z + (next - z) / 2;
+    emitHelix(builder, [
+      { start: east(z), end: west(middle), center, clockwise: false },
+      { start: west(middle), end: east(next), center, clockwise: false },
+    ]);
     z = next;
   }
 }
+
+// Constant-lead thread helix from the +X point at fromZ to toZ. The sweep is
+// split into equal arcs of at most 180 degrees, so every arc advances Z by
+// exactly lead x sweep / 360 degrees and no degenerate sliver arc (which
+// grblHAL could read as a full circle) is ever emitted. Returns the end
+// angle in radians.
+function threadHelix(builder, clockwise, centerX, centerY, radius, fromZ, toZ, lead) {
+  const totalSweep = (Math.abs(toZ - fromZ) / lead) * 2 * Math.PI;
+  const count = Math.max(1, Math.ceil(totalSweep / Math.PI - 1e-9));
+  const step = (clockwise ? -totalSweep : totalSweep) / count;
+  const center = { x: centerX, y: centerY };
+  const at = (index) => ({
+    x: centerX + radius * Math.cos(step * index),
+    y: centerY + radius * Math.sin(step * index),
+    z: fromZ + ((toZ - fromZ) * index) / count,
+  });
+  const arcs = [];
+  for (let index = 1; index <= count; index += 1) arcs.push({ start: at(index - 1), end: at(index), center, clockwise });
+  emitHelix(builder, arcs);
+  return step * count;
+}
+
+// ISO 68-1 metric 60-degree profile (H = 0.866025 P): internal minor D1 =
+// D - 1.082532 P; external root d3 = d - 1.226869 P.
+const ISO_INTERNAL_MINOR_FACTOR = 1.082532;
+const ISO_EXTERNAL_ROOT_FACTOR = 1.226869;
+const THREAD_TOOL_NOTE = "ISO 60 DEG METRIC PROFILE, SINGLE-POINT TOOTH - TOOL DIAMETER IS THE TOOTH TIP DIAMETER";
 
 // 45-degree pointed chamfer tool with its tip at Z = -tipOffset: the cone
 // radius at the part's top surface is tipOffset, so the produced chamfer
@@ -577,6 +655,15 @@ export const CONVERSATIONAL_CYCLES = [
       const stepOver = (setup.toolDiameter * stepOverPercent) / 100;
       const wallRadius = (diameter - setup.toolDiameter) / 2;
       const entryRadius = Math.min(wallRadius, stepOver);
+      const minimumRadius = minimumHelixRadius(setup);
+      if (entryRadius < minimumRadius - 1e-9) {
+        throw new CycleParameterError(
+          `Helical entry radius ${fmt(entryRadius)} mm is below the ${fmt(minimumRadius)} mm minimum (5% of the tool diameter); enlarge the pocket or the stepover.`,
+          entryRadius === wallRadius ? "diameter" : "stepOverPercent",
+        );
+      }
+      // Descend each level in as many turns as the ramp-angle limit needs.
+      const helixPitch = Math.min(stepDown, maximumHelixPitch(entryRadius));
       const builder = new ProgramBuilder(this.title, setup);
       builder.approach(centerX + entryRadius, centerY);
       builder.rapidZ(0.5);
@@ -584,7 +671,7 @@ export const CONVERSATIONAL_CYCLES = [
       let previousLevel = 0;
       for (const z of depthPasses(depth, stepDown)) {
         // Helical entry at a small radius instead of a straight plunge.
-        helixDescend(builder, centerX, centerY, entryRadius, previousLevel, z, stepDown);
+        helixDescend(builder, centerX, centerY, entryRadius, previousLevel, z, helixPitch);
         builder.fullCircle(false, centerX, centerY, entryRadius);
         const radii = [];
         for (let radius = entryRadius + stepOver; radius < wallRadius; radius += stepOver) radii.push(radius);
@@ -625,17 +712,25 @@ export const CONVERSATIONAL_CYCLES = [
         throw new CycleParameterError("Tool diameter must be smaller than the hole diameter.", "toolDiameter");
       }
       const radius = (diameter - setup.toolDiameter) / 2;
+      const minimumRadius = minimumHelixRadius(setup);
+      if (radius < minimumRadius - 1e-9) {
+        throw new CycleParameterError(
+          `Hole diameter must exceed the tool diameter by at least ${fmt(2 * minimumRadius)} mm for a helical entry (5% of the tool diameter per side).`,
+          "diameter",
+        );
+      }
+      const maximumPitch = maximumHelixPitch(radius);
+      if (helixPitch > maximumPitch + 1e-9) {
+        throw new CycleParameterError(
+          `Helix pitch may be at most ${fmt(Math.floor(maximumPitch * 1000) / 1000)} mm on a ${fmt(radius)} mm helix radius (${MAX_HELIX_RAMP_DEGREES} degree ramp).`,
+          "helixPitch",
+        );
+      }
       const builder = new ProgramBuilder(this.title, setup);
       builder.approach(centerX + radius, centerY);
       builder.rapidZ(1);
       builder.plunge(0);
-      let z = 0;
-      while (z > -depth + 1e-9) {
-        const next = Math.max(-depth, z - helixPitch);
-        builder.arc(false, centerX - radius, centerY, -radius, 0, (z + next) / 2);
-        builder.arc(false, centerX + radius, centerY, radius, 0, next);
-        z = next;
-      }
+      helixDescend(builder, centerX, centerY, radius, 0, -depth, helixPitch);
       builder.comment("FINISH PASS AT FULL DEPTH");
       builder.fullCircle(false, centerX, centerY, radius);
       // Whenever the wall radius exceeds the tool radius the peripheral
@@ -854,29 +949,28 @@ export const CONVERSATIONAL_CYCLES = [
       const majorDiameter = requireNumber(params, "majorDiameter", "Major diameter", { min: 1, max: 500 });
       const pitch = requireNumber(params, "pitch", "Thread pitch", { min: 0.2, max: 6 });
       const threadDepth = requireNumber(params, "threadDepth", "Thread length", { min: 0.5, max: 100 });
-      // ISO metric minor diameter is roughly major - 1.0825 * pitch; the
-      // cutter descends the pre-drilled hole at center, so it must clear
-      // the minor bore with margin.
-      const minorDiameter = majorDiameter - 1.0825 * pitch;
+      // The cutter descends the pre-drilled minor bore (D1) at center, so it
+      // must clear it with margin.
+      const minorDiameter = majorDiameter - ISO_INTERNAL_MINOR_FACTOR * pitch;
       if (setup.toolDiameter >= minorDiameter - 0.2) {
         throw new CycleParameterError(
           "Thread mill must fit the pre-drilled minor bore (tool diameter must be at least 0.2 mm under the thread minor diameter).",
           "toolDiameter",
         );
       }
+      // An internal thread's root is its major diameter D (the nominal size):
+      // the tooth tip tracks D.
       const radius = (majorDiameter - setup.toolDiameter) / 2;
       const builder = new ProgramBuilder(this.title, setup);
+      builder.comment(THREAD_TOOL_NOTE);
+      builder.comment(`INTERNAL: TOOTH TIP TO MAJOR D ${fmt(majorDiameter)}, PITCH ${fmt(pitch)}`);
       builder.approach(centerX, centerY);
-      builder.rapidZ(-threadDepth + 0.0);
+      // Rapid only to just above the hole, then feed down its center.
+      builder.rapidZ(Math.min(setup.clearZ, 1));
+      builder.plunge(-threadDepth);
       builder.comment("BOTTOM-UP CLIMB THREAD MILL");
       builder.cut(centerX + radius, centerY, null);
-      let z = -threadDepth;
-      while (z < -1e-9) {
-        const next = Math.min(0, z + pitch);
-        builder.arc(false, centerX - radius, centerY, -radius, 0, z + (next - z) / 2);
-        builder.arc(false, centerX + radius, centerY, radius, 0, next);
-        z = next;
-      }
+      threadHelix(builder, false, centerX, centerY, radius, -threadDepth, 0, pitch);
       builder.cut(centerX, centerY);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
@@ -902,9 +996,18 @@ export const CONVERSATIONAL_CYCLES = [
       const majorDiameter = requireNumber(params, "majorDiameter", "Major diameter", { min: 1, max: 500 });
       const pitch = requireNumber(params, "pitch", "Thread pitch", { min: 0.2, max: 6 });
       const threadDepth = requireNumber(params, "threadDepth", "Thread length", { min: 0.5, max: 100 });
-      const radius = (majorDiameter + setup.toolDiameter) / 2;
-      const approachRadius = radius + setup.toolDiameter;
+      // An external thread's root is its minor diameter d3, not the major
+      // diameter: the tooth tip must reach d3 or no thread is cut.
+      const rootDiameter = majorDiameter - ISO_EXTERNAL_ROOT_FACTOR * pitch;
+      if (rootDiameter < 0.2) {
+        throw new CycleParameterError("Thread pitch is too coarse for this major diameter.", "pitch");
+      }
+      const radius = (rootDiameter + setup.toolDiameter) / 2;
+      // Lead in and out one tool diameter clear of the major diameter.
+      const approachRadius = (majorDiameter + setup.toolDiameter) / 2 + setup.toolDiameter;
       const builder = new ProgramBuilder(this.title, setup);
+      builder.comment(THREAD_TOOL_NOTE);
+      builder.comment(`EXTERNAL: TOOTH TIP TO ROOT D3 ${fmt(rootDiameter)} = D - ${ISO_EXTERNAL_ROOT_FACTOR} P, PITCH ${fmt(pitch)}`);
       builder.approach(centerX + approachRadius, centerY);
       builder.rapidZ(0);
       // A right-hand external thread needs a clockwise helix that DESCENDS:
@@ -912,14 +1015,10 @@ export const CONVERSATIONAL_CYCLES = [
       // climb milling for an external feature with an M3 spindle.
       builder.comment("TOP-DOWN CLIMB THREAD MILL - EXTERNAL RIGHT-HAND");
       builder.cut(centerX + radius, centerY, null);
-      let z = 0;
-      while (z > -threadDepth + 1e-9) {
-        const next = Math.max(-threadDepth, z - pitch);
-        builder.arc(true, centerX - radius, centerY, -radius, 0, z + (next - z) / 2);
-        builder.arc(true, centerX + radius, centerY, radius, 0, next);
-        z = next;
-      }
-      builder.cut(centerX + approachRadius, centerY);
+      const endAngle = threadHelix(builder, true, centerX, centerY, radius, 0, -threadDepth, pitch);
+      // Leave radially at the end angle; a chord back to the start could
+      // cross the boss.
+      builder.cut(centerX + approachRadius * Math.cos(endAngle), centerY + approachRadius * Math.sin(endAngle));
       builder.rapidZ(setup.clearZ);
       return builder.finish();
     },
@@ -1554,9 +1653,13 @@ export function estimateProgramSeconds(gcode) {
     const targetZ = Number.isFinite(words.Z) ? words.Z : z;
     let distance;
     if (motion === 2 || motion === 3) {
+      const centerX = x + (words.I ?? 0);
+      const centerY = y + (words.J ?? 0);
       const radius = Math.hypot(words.I ?? 0, words.J ?? 0);
-      // The generators only emit half or full-circle arc spans.
-      distance = Math.PI * radius + Math.abs(targetZ - z);
+      let sweep = Math.atan2(targetY - centerY, targetX - centerX) - Math.atan2(y - centerY, x - centerX);
+      if (motion === 3 && sweep <= 1e-9) sweep += 2 * Math.PI;
+      if (motion === 2 && sweep >= -1e-9) sweep -= 2 * Math.PI;
+      distance = Math.hypot(radius * sweep, targetZ - z);
     } else {
       distance = Math.hypot(targetX - x, targetY - y, targetZ - z);
     }
