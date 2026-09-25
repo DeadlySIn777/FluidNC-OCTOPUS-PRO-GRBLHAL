@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { createHash } from 'node:crypto';
+import { Worker } from 'node:worker_threads';
 import { parseControllerLine } from '../src/telemetry/grbl-status.js';
 import { MR1_CONFIG } from '../src/machine-config.js';
 import { validateMr1Nc } from '../src/nc-safety-validator.js';
@@ -41,6 +42,43 @@ function nativeStatusContract(raw) {
   const full = fields.get('FW') === 'grblHAL';
   if (full && !['WCO', 'H', 'A', 'P'].every(key => fields.has(key))) return { valid: false };
   return { valid: true, full };
+}
+
+export function prepareProgram(source, name = 'program.nc', { airRun = false } = {}) {
+  if (typeof source !== 'string' || Buffer.byteLength(source) > 5 * 1024 * 1024) fail('Program exceeds 5 MB.');
+  // Embedded realtime characters execute immediately even inside comments.
+  if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-￿!?~]/.test(source)) fail('Program contains prohibited control characters.');
+  if (typeof airRun !== 'boolean') fail('Choose an explicit program mode.');
+  const validation = validateMr1Nc(source, { name, allowSpindleOffMotion: airRun });
+  if (!validation.ok) fail(validation.blockers.map(b => `Line ${b.line}: ${b.message}`).join('\n'));
+  // grblHAL discards control characters, so a TAB is only a separator there and
+  // in the validator. Stream it as a space; the hash still covers the source.
+  const lines = source.replace(/\r\n?/g, '\n').split('\n').map(s => parseLine(s, { lineMode: 'stripped' }).line.replace(/\t/g, ' ').trim()).filter(Boolean);
+  if (!lines.length || lines.some(s => Buffer.byteLength(s) > 120 || s.includes('$') || !/^[\x20-\x7e]+$/.test(s))) fail('Program has an invalid or oversized controller line.');
+  for (const line of lines) {
+    const words = parseLine(line).words;
+    if (words.some(([letter, value]) => letter === 'G' && value === 4)) {
+      const dwell = words.find(([letter]) => letter === 'P')?.[1];
+      if (!Number.isFinite(dwell) || dwell < 0 || dwell > 3600) fail('Dwell requires P seconds between 0 and 3600.');
+    }
+  }
+  return { name: String(name).slice(0, 160), source, lines, airRun, validation, sha256: createHash('sha256').update(source).digest('hex') };
+}
+
+// Validating a 5 MB program takes seconds. Off the event loop it cannot delay
+// status ingestion, the stale-status watchdog or an operator stop.
+export function prepareProgramOffThread(source, name, options) {
+  if (typeof source !== 'string' || Buffer.byteLength(source) > 5 * 1024 * 1024) return Promise.reject(new Error('Program exceeds 5 MB.'));
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('./native-program-worker.mjs', import.meta.url), { workerData: { source, name, options } });
+    worker.once('message', ({ program, error }) => {
+      if (error !== undefined) return reject(new Error(error));
+      if (program.sha256 !== createHash('sha256').update(source).digest('hex')) return reject(new Error('Program preparation did not match its source.'));
+      resolve({ ...program, source });
+    });
+    worker.once('error', reject);
+    worker.once('exit', code => reject(new Error(`Program preparation stopped (${code}).`)));
+  });
 }
 
 // Exactly one owner and one outstanding acknowledged line. Never replay a line
@@ -679,25 +717,14 @@ export class NativeController extends EventEmitter {
       }
     });
   }
-  loadProgram(source, name = 'program.nc', { airRun = false } = {}) {
+  loadProgram(source, name = 'program.nc', options = {}) {
     if (this.busy) fail('Stop the active operation before loading another program.');
-    if (typeof source !== 'string' || Buffer.byteLength(source) > 5 * 1024 * 1024) fail('Program exceeds 5 MB.');
-    // Embedded realtime characters execute immediately even inside comments.
-    if (/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\uffff!?~]/.test(source)) fail('Program contains prohibited control characters.');
-    if (typeof airRun !== 'boolean') fail('Choose an explicit program mode.');
-    const validation = validateMr1Nc(source, { name, allowSpindleOffMotion: airRun });
-    if (!validation.ok) fail(validation.blockers.map(b => `Line ${b.line}: ${b.message}`).join('\n'));
-    const lines = source.replace(/\r\n?/g, '\n').split('\n').map(s => parseLine(s, { lineMode: 'stripped' }).line.trim()).filter(Boolean);
-    if (!lines.length || lines.some(s => Buffer.byteLength(s) > 120 || s.includes('$'))) fail('Program has an invalid or oversized controller line.');
-    for (const line of lines) {
-      const words = parseLine(line).words;
-      if (words.some(([letter, value]) => letter === 'G' && value === 4)) {
-        const dwell = words.find(([letter]) => letter === 'P')?.[1];
-        if (!Number.isFinite(dwell) || dwell < 0 || dwell > 3600) fail('Dwell requires P seconds between 0 and 3600.');
-      }
-    }
-    this.program = { name: String(name).slice(0, 160), source, lines, airRun, validation, sha256: createHash('sha256').update(source).digest('hex') };
-    this.job = { state: 'loaded', sent: 0, acknowledged: 0, total: lines.length }; this.publish();
+    return this.commitProgram(prepareProgram(source, name, options));
+  }
+  commitProgram(program) {
+    if (this.busy) fail('Stop the active operation before loading another program.');
+    this.program = program;
+    this.job = { state: 'loaded', sent: 0, acknowledged: 0, total: program.lines.length }; this.publish();
     return this.snapshot().program;
   }
   programReady(sha256) {

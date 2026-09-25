@@ -904,6 +904,19 @@ test('an unconfirmed jog cancel escalates to hold and reset', async t => {
   assert.deepEqual(energy(port).slice(-2).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset]);
 });
 
+test('a TAB separator is streamed as a space so a loaded program cannot fault mid-job', async t => {
+  const { controller, port } = await setup(t);
+  const source = program.replace('G1 Z0 F100', 'G1\tZ0\tF100');
+  const loaded = controller.loadProgram(source, 'tab.nc'); controller.arm();
+  assert.ok(controller.program.lines.includes('G1 Z0 F100'));
+  assert.equal(controller.program.source, source);
+  const run = controller.runProgram(loaded.sha256);
+  for (let i = 0; i < 100 && controller.job.state !== 'paused'; i++) await delay(5);
+  port.send(port.status()); controller.resume(); await run;
+  assert.equal(controller.job.state, 'complete');
+  assert.ok(port.writes.includes('G1 Z0 F100'));
+});
+
 test('an Idle report before a planned move starts does not complete that move', async t => {
   class LateCyclePort extends WireController {
     write(data, cb) {

@@ -5,7 +5,7 @@ import { resolve, dirname, extname, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { NativeController } from './native-controller.mjs';
+import { NativeController, prepareProgramOffThread } from './native-controller.mjs';
 import { createEventJournal, defaultJournalDirectory } from './event-journal.mjs';
 import { summarizeControllerPreflight, pendingControllerPreflight } from './controller-preflight.mjs';
 import { createFissionProcessor } from './fission-processor.mjs';
@@ -258,7 +258,10 @@ export async function createNativeServer(options = {}) {
         }
         if (url.pathname === '/api/connect') return respond(() => controller.connect(input.port));
         if (url.pathname === '/api/disconnect') return respond(async () => { await controller.disconnect(); return controller.snapshot(); });
-        if (url.pathname === '/api/program') return respond(() => controller.loadProgram(input.source, input.name, { airRun: input.airRun ?? false }));
+        if (url.pathname === '/api/program') return respond(async () => {
+          if (controller.busy) throw new Error('Stop the active operation before loading another program.');
+          return controller.commitProgram(await prepareProgramOffThread(input.source, input.name, { airRun: input.airRun ?? false }));
+        });
         if (url.pathname !== '/api/command') return json(res, 404, { error: 'Endpoint not found.' });
         const actions = {
           arm: () => { if (!journalReady) throw new Error('Previous session requires investigation before hardware operation.'); if (input.confirmed !== true) throw new Error('Confirm the clear machine envelope and physical E-stop.'); return controller.arm(); },

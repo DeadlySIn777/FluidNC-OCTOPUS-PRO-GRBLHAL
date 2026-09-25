@@ -419,6 +419,26 @@ test('energy-removing commands reach the controller without the browser lease; n
   assert.deepEqual(records.filter(record => record.kind === 'native.request' && ['stop', 'disarm'].includes(record.payload.action)).map(record => record.payload.leaseHeld), [false, false]);
 });
 
+test('a large program loads while armed without starving status or stop handling', async t => {
+  const { request, claim, service } = await setup(t);
+  await claim(); await request('/api/connect', { port: 'COM7' });
+  assert.equal((await request('/api/command', { action: 'arm', confirmed: true })).status, 200);
+  const body = [];
+  for (let i = 0, size = 0; size < 4.5 * 1024 * 1024; i++) { const line = `G1 X${(i % 100) / 10} Y${(i % 37) / 10} F1000`; body.push(line); size += line.length + 1; }
+  const source = sampleProgram.replace('G1 Z0 F100\n', `G1 Z0 F100\n${body.join('\n')}\n`);
+  let last = performance.now(), worst = 0;
+  const lag = setInterval(() => { const now = performance.now(); worst = Math.max(worst, now - last); last = now; }, 20);
+  let loaded;
+  try { loaded = await request('/api/program', { source, name: 'large.nc' }); } finally { clearInterval(lag); }
+  assert.equal(loaded.status, 200); assert.equal(loaded.body.sha256, createHash('sha256').update(source).digest('hex'));
+  assert.equal(service.controller.program.lines.length, source.split('\n').length);
+  assert.equal(service.controller.armed, true); assert.equal(service.controller.fault, null);
+  assert.ok(worst < 1000, `event loop stalled for ${Math.round(worst)} ms`);
+  const rejected = await request('/api/program', { source: `${source}\t\u0018`, name: 'bad.nc' });
+  assert.equal(rejected.status, 400); assert.match(rejected.body.error, /control characters/);
+  assert.equal(service.controller.program.sha256, loaded.body.sha256);
+});
+
 test('request bodies decode multibyte characters split across TCP chunks', async t => {
   const { claim, service, origin } = await setup(t);
   const { body: { token } } = await claim();
