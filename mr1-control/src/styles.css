@@ -962,12 +962,13 @@ input:focus-visible {
   width: min(410px, calc(100vw - 20px));
   border-left: 1px solid var(--hairline);
   background: var(--shell);
-  box-shadow: -18px 0 36px rgba(0, 0, 0, 0.34);
   transform: translateX(102%);
   transition: transform 180ms ease;
 }
 
+/* Closed drawers sit just off-screen; only an open one may shade the view. */
 .probing-panel.open {
+  box-shadow: -18px 0 36px rgba(0, 0, 0, 0.34);
   transform: translateX(0);
   transition-duration: 0ms;
 }
