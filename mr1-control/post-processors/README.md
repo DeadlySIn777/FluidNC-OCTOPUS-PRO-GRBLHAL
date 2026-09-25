@@ -27,6 +27,10 @@ spindle, tool-setter, probe, and sender commissioning gates still apply.
 - Flood coolant only: `M8`/`M9`. `M7` is blocked.
 - Cutting feed ceiling: 2540 mm/min. Pure-Z feed ceiling: 1016 mm/min.
 - Fixed safe retract: `G90 G53 G0 Z-2.000` mm or `Z-0.0787` inch. No machine X/Y moves.
+- No work motion before the first qualified `G53` retract.
+- After every `G53` retract and every `G54`-`G59` change the work Z is unknown:
+  the next moves must place X and Y at the retract height (`G0 X.. Y..`) before
+  any Z word. A combined `G0 X.. Y.. Z..` approach is blocked.
 - Manual change only: `G49`, `Tn`, `M0`; no `M6`.
 - Cutter compensation must be calculated in CAM. Posted NC remains `G40`; `G41`/`G42` are blocked.
 - Rigid tapping, CAM probing, rotary motion, transforms, macros, pass-through NC, and subprograms are blocked.
@@ -96,7 +100,7 @@ post these acceptance jobs:
 | Job | Required result |
 | --- | --- |
 | Face with one tool | Posts; validator passes |
-| Two tools | Each tool gets safe G53 Z, G49, Tn, M0 |
+| Two tools | Each tool gets safe G53 Z, G49, Tn, M0; the first move after each is XY-only |
 | Deep/peck drilling | Explicit G0/G1 moves; no G81-G89 |
 | Internal thread mill | Helical G2/G3; validator passes |
 | Right-hand tapping | Post refuses with `MR1 POST BLOCKED` |

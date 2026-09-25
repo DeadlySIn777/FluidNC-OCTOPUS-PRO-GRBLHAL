@@ -4,7 +4,7 @@ import { REALTIME } from '../../service/native-controller.mjs';
 import { createSimulatedPreflightTranscript } from '../../service/controller-preflight.mjs';
 
 export const profile = JSON.parse(readFileSync(new URL('../../../grblHAL-STM32F4/mr1/expected-settings.json', import.meta.url)));
-export const sampleProgram = 'G90 G94\nG17\nG21\nG40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0 Z5\nG1 Z0 F100\nM5\nM9\nG53 G0 Z-2\nM30';
+export const sampleProgram = 'G90 G94\nG17\nG21\nG40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0\nG0 Z5\nG1 Z0 F100\nM5\nM9\nG53 G0 Z-2\nM30';
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 // Byte-level test double. Never exposed by the production serial factory.
 export class WireController extends EventEmitter {

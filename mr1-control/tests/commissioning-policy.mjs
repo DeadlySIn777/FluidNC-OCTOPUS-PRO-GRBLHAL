@@ -12,8 +12,8 @@ const CONTEXT = Object.freeze({ machineId: 'MR1-POLICY-TEST-12345678', controlle
   firmwareSha256: 'B'.repeat(64), controllerSimulated: false, connectionId: 'test-connection-1' });
 const stageById = id => COMMISSIONING_ACCESS_STAGES.find(value => value.id === id);
 const hash = source => createHash('sha256').update(source).digest('hex');
-const AIR = 'G90 G94 G17 G21 G40 G49 G80\nM5 M9\nG53 G0 Z-2\nG54\nG0 X0 Y0 Z5\nG1 X1 Y1 F100\nG53 G0 Z-2\nM30';
-const CUT = 'G90 G94 G17 G21 G40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0 Z5\nG1 Z0 F100\nM5 M9\nG53 G0 Z-2\nM30';
+const AIR = 'G90 G94 G17 G21 G40 G49 G80\nM5 M9\nG53 G0 Z-2\nG54\nG0 X0 Y0\nG0 Z5\nG1 X1 Y1 F100\nG53 G0 Z-2\nM30';
+const CUT = 'G90 G94 G17 G21 G40 G49 G80\nG53 G0 Z-2\nT1\nM0\nS5000 M3\nG54\nG0 X0 Y0\nG0 Z5\nG1 Z0 F100\nM5 M9\nG53 G0 Z-2\nM30';
 
 function recordFor(stageId) {
   return { hardwareProfile: COMMISSIONING_HARDWARE_PROFILE, machineId: CONTEXT.machineId,

@@ -142,6 +142,8 @@ export function validateMr1Nc(source, options = {}) {
     ? [...INITIAL_MODAL_KEYS, LATHE_MODAL_KEY]
     : INITIAL_MODAL_KEYS;
   const forbiddenAxis = new Set(contract.forbiddenAxisWords ?? []);
+  const lateralAxes = ["x", "y"].filter((axis) => !forbiddenAxis.has(axis.toUpperCase()));
+  const lateralLabel = lateralAxes.map((axis) => axis.toUpperCase()).join("/");
   const lines = String(source ?? "").replace(/\r\n?/g, "\n").split("\n");
   const blockers = [];
   const warnings = [];
@@ -164,6 +166,10 @@ export function validateMr1Nc(source, options = {}) {
     seenM30: false,
     seenExecutable: false,
     seenWorkMotion: false,
+    machineRetractSeen: false,
+    // Set by a G53 retract or work-offset change: the in-plane position must
+    // be re-established at the retract height before any Z motion.
+    approachPending: false,
     lastWorkMotionLine: 0,
     lastMachineRetractLine: 0,
     lastExecutableLine: 0,
@@ -234,6 +240,7 @@ export function validateMr1Nc(source, options = {}) {
     const gCodes = valuesFor(words, "G");
     const mCodes = valuesFor(words, "M");
     const axisWords = words.filter(([letter]) => AXIS_WORDS.has(letter));
+    const hasZWord = axisWords.some(([letter]) => letter === "Z");
     const rotaryWords = words.filter(([letter]) => ROTARY_WORDS.has(letter));
     const unsupportedWords = words.filter(([letter]) => !SAFE_NON_AXIS_WORDS.has(letter) && !ROTARY_WORDS.has(letter));
     if (nativeMr1) {
@@ -346,7 +353,10 @@ export function validateMr1Nc(source, options = {}) {
     for (const code of gCodes) {
       if (MOTION_CODES.has(code) || code === 33) state.motion = `G${code}`;
       if (WORK_OFFSETS.has(code)) {
-        if (nativeMr1 && state.workOffset !== `G${code}`) state.position = { x: null, y: null, z: null };
+        if (state.workOffset !== `G${code}`) {
+          if (nativeMr1) state.position = { x: null, y: null, z: null };
+          state.approachPending = true;
+        }
         state.workOffset = `G${code}`;
       }
     }
@@ -481,10 +491,20 @@ export function validateMr1Nc(source, options = {}) {
         block(lineNumber, "ACTIVE_ACCESSORIES_AT_RETRACT", "Stop spindle and coolant before a machine-coordinate retract.", lineSource);
       }
       state.lastMachineRetractLine = lineNumber;
+      state.machineRetractSeen = true;
+      state.approachPending = true;
     } else if (isMotionBlock) {
       state.seenWorkMotion = true;
       state.lastWorkMotionLine = lineNumber;
       workMotionBlocks += 1;
+      if (!state.machineRetractSeen) {
+        block(lineNumber, "MOTION_BEFORE_RETRACT", `Work motion before the first qualified G53 G0 Z${contract.safeMachineZMm.toFixed(3)} retract; every program must begin with the machine-Z retract.`, lineSource);
+      }
+      // The work Z after a machine retract or frame change is unknown, so a Z
+      // move could descend onto the part at an unknown XY.
+      if (state.approachPending && hasZWord) {
+        block(lineNumber, "APPROACH_Z_BEFORE_XY", `After a G53 retract or work-offset change, position ${lateralLabel} at the retract height before any Z motion.`, lineSource);
+      }
       const missing = requiredModalKeys.filter((key) => !state.modalReady[key]);
       if (missing.length > 0) {
         block(lineNumber, "STARTUP_MODAL_MISSING", `Work motion began before startup modes were established: ${missing.join(", ")}.`, lineSource);
@@ -523,6 +543,8 @@ export function validateMr1Nc(source, options = {}) {
                 block(lineNumber, "Z_FEED_RANGE", `The Z component of this move (${Math.round(zRate)} mm/min) exceeds ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
               }
             }
+          } else if (hasZWord && state.feedMmPerMinute > contract.maximumZFeedMmPerMinute + 0.01) {
+            block(lineNumber, "Z_FEED_UNVERIFIED", `The Z component of this move cannot be checked from an unknown start position; establish the position or feed at most ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
           }
         }
       }
@@ -584,6 +606,9 @@ export function validateMr1Nc(source, options = {}) {
               if (zRate > contract.maximumZFeedMmPerMinute + 0.01) {
                 block(lineNumber, "Z_FEED_RANGE", `The Z component of this helix (${Math.round(zRate)} mm/min) exceeds ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
               }
+            } else if (nativeMr1 && plane === "G17" && hasZWord && state.position.z === null
+              && state.feedMmPerMinute > contract.maximumZFeedMmPerMinute + 0.01) {
+              block(lineNumber, "Z_FEED_UNVERIFIED", `The Z component of this helix cannot be checked from an unknown start Z; establish Z or feed at most ${contract.maximumZFeedMmPerMinute} mm/min.`, lineSource);
             }
           }
         }
@@ -601,6 +626,7 @@ export function validateMr1Nc(source, options = {}) {
       state.position.z = null;
     } else if (isMotionBlock) {
       state.position = motionTarget(state.position, words, unitScale(state.units));
+      if (lateralAxes.every((axis) => state.position[axis] !== null)) state.approachPending = false;
     }
 
     if (hasCode(words, "M", 30)) {

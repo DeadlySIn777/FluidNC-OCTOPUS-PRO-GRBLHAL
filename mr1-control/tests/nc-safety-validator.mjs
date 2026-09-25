@@ -21,7 +21,8 @@ M0
 S5000 M3
 G54
 M8
-G0 X0 Y0 Z5
+G0 X0 Y0
+G0 Z5
 G1 Z0 F500
 G3 X10 Y0 I5 J0 F800
 M9
@@ -116,8 +117,8 @@ test('manual stops cannot conceal same-block motion or spindle starts, and tool 
 });
 
 test('duplicate value words and contradictory modal groups are rejected before firmware errors', () => {
-  for (const changed of ['G0 X0 X1 Y0 Z5', 'G0 X0 Y0 Z5 F100 F200']) {
-    assert.ok(blockerCodes(validMetricProgram.replace('G0 X0 Y0 Z5', changed)).includes('DUPLICATE_WORD'), changed);
+  for (const [original, changed] of [['G0 X0 Y0', 'G0 X0 X1 Y0'], ['G0 Z5', 'G0 Z5 F100 F200']]) {
+    assert.ok(blockerCodes(validMetricProgram.replace(original, changed)).includes('DUPLICATE_WORD'), changed);
   }
   for (const changed of ['G20 G21', 'G17 G18', 'M3 M5', 'G54 G55']) {
     assert.ok(blockerCodes(validMetricProgram.replace('G54', changed + '\nG54')).includes('MODAL_GROUP_CONFLICT'), changed);
@@ -135,7 +136,7 @@ test('MR1 rejects executable checksums including valid XOR and zero values', () 
 test('G80 cancels modal motion and an arc requires a known start in its current work frame', () => {
   assert.ok(blockerCodes(validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'G80\nX10')).includes('AXIS_WITHOUT_MOTION'));
   assert.ok(blockerCodes(validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'G55\nG3 X10 Y0 I5 J0 F800')).includes('ARC_START_UNKNOWN'));
-  const established = validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'G55\nG0 X0 Y0 Z0\nG3 X10 Y0 I5 J0 F800');
+  const established = validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'G55\nG0 X0 Y0\nG0 Z0\nG3 X10 Y0 I5 J0 F800');
   assert.equal(validateMr1Nc(established).ok, true);
 });
 
@@ -156,7 +157,8 @@ T1
 M0
 G54
 S800 M3
-G0 X20.000 Z2.000
+G0 X20.000
+G0 Z2.000
 G0 X18.000
 G33 Z-15.000 K1.500
 G0 X20.000
@@ -263,4 +265,83 @@ test("post failure markers can never receive a passing verdict", () => {
 test("rejects human error text and malformed comments as NC input", () => {
   assert.ok(blockerCodes(`!Error: Failed to post data.\n${validMetricProgram}`).includes("MALFORMED_BLOCK"));
   assert.ok(blockerCodes(validMetricProgram.replace("(MR-1 VALIDATOR ACCEPTANCE)", "(UNFINISHED COMMENT")).includes("MALFORMED_COMMENT"));
+});
+
+test("blocks every work move before the first qualified machine-Z retract", () => {
+  const early = `G90 G94 G17 G21 G40 G49 G80
+G54
+G0 X-150 Y80 Z-3
+G53 G0 Z-2.000
+T1
+M0
+S5000 M3
+G0 X0 Y0
+G0 Z5
+G1 Z-1 F100
+G1 X10 F500
+M5
+G53 G0 Z-2.000
+M30
+`;
+  const result = validateMr1Nc(early);
+  assert.equal(result.ok, false);
+  assert.deepEqual(result.blockers.filter(({ code }) => code === "MOTION_BEFORE_RETRACT").map(({ line }) => line), [3]);
+  for (const move of ["G0 X10 Y10", "G1 X10 F100", "G0 Z5"]) {
+    const source = validMetricProgram.replace("G53 G0 Z-2.000\nT1", `G54\n${move}\nG53 G0 Z-2.000\nT1`);
+    assert.ok(blockerCodes(source).includes("MOTION_BEFORE_RETRACT"), move);
+  }
+  const lathe = validateMr1Nc(validThreadingProgram.replace("G53 G0 Z171.500\nT1", "G54\nG0 X30.000\nG53 G0 Z171.500\nT1"),
+    { contract: EMCO_LATHE_SYNC_NC_CONTRACT });
+  assert.ok(lathe.blockers.some(({ code }) => code === "MOTION_BEFORE_RETRACT"));
+});
+
+test("after a machine retract or work-offset change XY must be placed before any Z move", () => {
+  const codes = (source) => blockerCodes(source);
+  // Z first, or Z blended into the XY move, at the start of the program.
+  assert.ok(codes(validMetricProgram.replace("G0 X0 Y0\nG0 Z5", "G0 Z5\nG0 X0 Y0")).includes("APPROACH_Z_BEFORE_XY"));
+  assert.ok(codes(validMetricProgram.replace("G0 X0 Y0\nG0 Z5", "G0 X0 Y0 Z5")).includes("APPROACH_Z_BEFORE_XY"));
+  // Mid-program tool change: the first move after the retract is Z at the old XY.
+  const toolChange = validMetricProgram.replace("M9\nM5\nG53 G0 Z-2.000\nM30",
+    "M9\nM5\nG53 G0 Z-2.000\nG49\nT2\nM0\nS5000 M3\nG0 Z5\nG1 Z0 F500\nM5\nG53 G0 Z-2.000\nM30");
+  assert.ok(codes(toolChange).includes("APPROACH_Z_BEFORE_XY"));
+  assert.equal(validateMr1Nc(toolChange.replace("S5000 M3\nG0 Z5", "S5000 M3\nG0 X10 Y0\nG0 Z5")).ok, true);
+  // Work-offset change: both X and Y must be re-established in the new frame.
+  const frame = (moves) => validMetricProgram.replace("G3 X10 Y0 I5 J0 F800", `G3 X10 Y0 I5 J0 F800\nG0 Z5\nG55\n${moves}\nG1 Z-1 F100`);
+  assert.ok(codes(frame("G0 Z5")).includes("APPROACH_Z_BEFORE_XY"));
+  assert.ok(codes(frame("G0 X0\nG0 Z5")).includes("APPROACH_Z_BEFORE_XY"), "Y is still unknown in G55");
+  assert.ok(codes(frame("G0 X0 Y0 Z5")).includes("APPROACH_Z_BEFORE_XY"));
+  assert.equal(validateMr1Nc(frame("G0 X0\nG0 Y0\nG0 Z5")).ok, true);
+  assert.equal(validateMr1Nc(frame("G0 X0 Y0\nG0 Z5")).ok, true);
+  // The lathe approaches in X at the park height before Z.
+  const latheCodes = (source) => validateMr1Nc(source, { contract: EMCO_LATHE_SYNC_NC_CONTRACT }).blockers.map(({ code }) => code);
+  assert.ok(latheCodes(validThreadingProgram.replace("G0 X20.000\nG0 Z2.000", "G0 X20.000 Z2.000")).includes("APPROACH_Z_BEFORE_XY"));
+  assert.ok(latheCodes(validThreadingProgram.replace("G0 X20.000\nG0 Z2.000", "G0 Z2.000\nG0 X20.000")).includes("APPROACH_Z_BEFORE_XY"));
+});
+
+test("a Z feed component that cannot be verified from an unknown start is blocked", () => {
+  const helix = `G90 G94 G17 G21 G40 G49 G80
+G53 G0 Z-2.000
+T1
+M0
+S5000 M3
+G54
+G0 X0 Y0
+M5
+G53 G0 Z-2.000
+S5000 M3
+G1 X5 Y0 F2500
+G2 X-5 Y0 Z-60 I-5 J0
+M5
+G53 G0 Z-2.000
+M30
+`;
+  assert.ok(blockerCodes(helix).includes("Z_FEED_UNVERIFIED"));
+  assert.ok(blockerCodes(helix.replace("G2 X-5 Y0 Z-60 I-5 J0", "G1 X0.001 Z-80")).includes("Z_FEED_UNVERIFIED"));
+  // At or below the Z ceiling the component can never exceed it.
+  const slow = helix.replace("F2500", "F1000");
+  assert.equal(validateMr1Nc(slow).ok, true, JSON.stringify(validateMr1Nc(slow).blockers));
+  // Once Z is established the ordinary Z-component check applies.
+  const known = helix.replace("G1 X5 Y0 F2500", "G1 X5 Y0 F2500\nG0 Z0");
+  assert.ok(blockerCodes(known).includes("Z_FEED_RANGE"));
+  assert.ok(!blockerCodes(known).includes("Z_FEED_UNVERIFIED"));
 });
