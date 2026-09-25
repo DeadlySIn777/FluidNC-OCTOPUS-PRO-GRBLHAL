@@ -4,19 +4,19 @@
   "stage": "Unpowered cable preparation; physical connection/electrical acceptance pending",
   "sourceFiles": {
     "build.py": "d45e48b88a349f195a56b3cd203f5491710869558aa72c2d8140743a9d37c92f",
-    "cable-data.py": "c2997207a5dc75fd0ccd060d46ee2dfbe85c0803ebac5e6190195a60b4b7c792",
+    "cable-data.py": "6d72b742eeab30abaaacd3d45bb1987e2502e119fe87484bcfe0f7fd35fb73ee",
     "app.js": "1a6382a03243e01cfe852a508b6cd1fca75a8ed70075fae13fd678fe4525d5d1",
     "model.mjs": "ccb723151b05c9a7e1b7994731d4276e44b97af58b416dfdf16b9eaae399f8ca",
     "style.css": "f9d92c44892cd49b07bceace5dbe9bd2370557308bd3098eb4e3cb324e2c513b",
     "index.template.html": "1710e44644a4e3782d5685ce072df407be93a618a62b0d5cb557d5d67403f8b8",
-    "cable-data.json": "88eb97272bdf716834d5c05740f424c5f28e4bbfa10221c29785b89b61bac6ec",
-    "route-content.json": "b47f4e270df620f26302832fa71a0e36bb191bccd410bddb9c1a26c507daf4d8",
+    "cable-data.json": "49098cffd9d04f4b021a7d9b29f1e39444f92f078b596852cb911a5cc53b2d19",
+    "route-content.json": "f0d569f92d5ad36a9b8c1e55ce713689b65e819e9b199a5dcdf084abf984f896",
     "asset-layout.json": "99054e6c798796dda03fb2b26feb3a057b4a5e364bf638035f742e2ae1ec0cec",
     "coverage.json": "681e2841d5d6d8b8dd2a7474d6ba9594dd4a2964407fa35c8f33420382c77c65",
     "board-content.json": "4a7df78caef42be77eeb5ea9211194ea7d51ce3b741876324dba364a39b203db",
     "board-regions.json": "cf3bfdf9d33daccdf429c01ffca9a526675c664a25f35a8d297b6fb8c9ee6511"
   },
-  "sourceScheduleSha256": "3d69dc1a9159a9983b5d40a3a9a43d8e7f078adaaa93ee997a6b3f5142288d8e",
+  "sourceScheduleSha256": "303c71c2055979845e14a36ffa2d1bce748d9cee532693999b751ec927d048e2",
   "cables": 56,
   "defaultVisibleCables": 44,
   "functionalViews": 29,
@@ -40,8 +40,8 @@
   "files": [
     {
       "path": "index.html",
-      "bytes": 749377,
-      "sha256": "238dc212b9de066f7c9dc968b1baec2d592f199678f77cfdf1fb44072ed83be6"
+      "bytes": 750353,
+      "sha256": "a7530f3a3d972d2f171c1c9ea9d8b4b47948e9b25d0c4e9895c5344fef65c4c2"
     }
   ],
   "physicalMotionPermitted": false,

@@ -8,13 +8,13 @@
   "source": {
     "csv": {
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "bytes": 16303,
-      "sha256": "3d69dc1a9159a9983b5d40a3a9a43d8e7f078adaaa93ee997a6b3f5142288d8e"
+      "bytes": 16499,
+      "sha256": "303c71c2055979845e14a36ffa2d1bce748d9cee532693999b751ec927d048e2"
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 23615,
-      "sha256": "8715d8f3669b174b715d22e02426f3a05cd9257ac283712fdba86857d593fa84"
+      "bytes": 24380,
+      "sha256": "363adf4209bb4c0181ea52910442672944b8e2a433e0e317df914b6188481106"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
@@ -1316,7 +1316,7 @@
       "cable_class": "flexible shielded 3-core",
       "shield_termination": "shield to cabinet only",
       "state": "HOLD",
-      "notes": "Meter actual sensor before power; controller PF5",
+      "notes": "Meter actual sensor before power; controller PF5. Not fail-safe: a dead circuit reads untriggered - trigger test (Pn:P) before every probing cycle",
       "source_record": 35,
       "axis": "shared",
       "family": "probe",
@@ -1339,6 +1339,7 @@
         "Actual sensor label, voltage/type, connector orientation and conductor continuity.",
         "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
         "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+        "Recorded limitation that the circuit is not fail-safe (lost field power or a broken wire reads untriggered) and a trigger test showing Pn:P before every probing cycle.",
         "Verified destination signal/return at T1 PF5; no field voltage on the GPIO."
       ],
       "evidence_status": "unverified",
@@ -1353,7 +1354,7 @@
       "cable_class": "flexible shielded 3-core",
       "shield_termination": "shield to cabinet only",
       "state": "HOLD",
-      "notes": "Meter actual sensor before power; controller PB7",
+      "notes": "Meter actual sensor before power; controller PB7. Not fail-safe: a dead circuit reads untriggered - trigger test (Pn:P) before every probing cycle",
       "source_record": 36,
       "axis": "shared",
       "family": "probe",
@@ -1376,6 +1377,7 @@
         "Actual sensor label, voltage/type, connector orientation and conductor continuity.",
         "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
         "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+        "Recorded limitation that the circuit is not fail-safe (lost field power or a broken wire reads untriggered) and a trigger test showing Pn:P before every probing cycle.",
         "Verified destination signal/return: PB7 uses adjacent proved GND, with PB6 and 5V unpopulated."
       ],
       "evidence_status": "unverified",

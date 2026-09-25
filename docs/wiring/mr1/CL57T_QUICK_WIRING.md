@@ -338,6 +338,9 @@ No spindle or coupled-axis commissioning is authorized by this source guide.
 5. Use only the qualified PUL/DIR interface, with its input commands held in the
    documented inactive state. ENA remains unconnected. The ALM/COMO test circuit
    must be separately current-limited and characterized; no raw GPIO connection.
+   STEP/DIR are undefined while the MCU is in reset or the SD bootloader, and
+   with ENA unconnected the drive stays enabled: keep drive power off whenever
+   the controller is reset, rebooted or flashed (`INTERFACE_BOARD.md` A).
 6. Only after the preceding gates pass, energize the one secured test drive with
    a reachable verified hardware stop. Green steady/red off is the expected
    healthy indication, not proof that motion or machine wiring is safe.

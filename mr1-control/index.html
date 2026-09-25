@@ -2526,6 +2526,7 @@
                 <div><code>+VDC / GND</code><span>OWN FUSED 36V STAR BRANCH</span></div>
               </div>
               <p class="wiring-callout">The v1.1 schematic shows 5V MC74HCT125A buffers between the MCU and the driver-socket STEP/DIR/EN pins. Still use the MOSFET open-drain interface with eight active PUL/DIR channels; the four ENA channels are reserved and unpopulated, and socket EN is not connected. The CL57T input may draw 16mA and direct HCT-to-drive loading has not been qualified. Never use motor-wire colors as phase data or hot-plug a terminal.</p>
+              <p class="wiring-callout alarm">STEP/DIR are undefined while the MCU is in reset or the SD bootloader: the HCT buffers are always enabled and nothing pulls them, and with ENA unconnected the drives stay enabled. Scope STEP/DIR with drive power off during reset, power-up and a bootloader pass. Using ENA or interlocking motion power to controller health is a design decision pending review; until then keep drive power off whenever the controller resets or is flashed.</p>
             </section>
           </section>
 
@@ -2848,6 +2849,7 @@
                 <div role="row"><strong>TOOL SETTER</strong><span>HW-399 CH2 / OUT2</span><span>PB7 TOOL SETTER</span><code>PB7</code><code>Q1</code></div>
               </div>
               <p class="wiring-callout alarm">The Octopus has an EL357C on PC5, but BTT's schematic shows a shared board ground and an active-high output with a pull-down. This firmware deliberately uses the HW-399 outputs on PF5 and PB7 instead.</p>
+              <p class="wiring-callout alarm">NOT FAIL-SAFE: the optocoupler conducts only on trigger, so lost isolated 5V, a broken wire or an unplugged sensor reads untriggered and a probing move continues into the part. Before every probing cycle, select the sensor, deflect the stylus or press the setter with motion stopped, and confirm Pn:P appears and clears. The protected probing workflow rejects an already-triggered input and a search without contact, but it does not run this trigger test.</p>
             </section>
 
             <section class="wiring-section">

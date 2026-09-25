@@ -134,7 +134,7 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "cl57t_interface_scope",
     group: "BENCH",
     title: "COMMAND INTERFACE SCOPE TEST PASSED",
-    detail: "PUL/DIR pass 5 V level, polarity, pulse-width, setup/hold and power-transition tests into CL57T inputs. ENA remains unconnected by default; qualification is required before using the reserved enable interface.",
+    detail: "PUL/DIR pass 5 V level, polarity, pulse-width, setup/hold and power-transition tests into CL57T inputs. With drive power off, STEP/DIR are scoped during MCU reset, power-up and an SD-bootloader pass: they are undefined then and, with ENA unconnected, the drives stay enabled. Using the reserved ENA channel or a controller-health motion-power interlock is a design decision pending review; until then drive power is off whenever the controller resets or is flashed.",
   }),
   Object.freeze({
     id: "cl57t_alarm_truth",
@@ -164,7 +164,7 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "probe_truth",
     group: "BENCH",
     title: "PROBE AND SETTER TRUTH TABLE PASSED",
-    detail: "Idle, triggered, unplugged, field-power-loss, repeat, and cable-flex states were recorded for both sensors.",
+    detail: "Idle, triggered, unplugged, field-power-loss, repeat, and cable-flex states were recorded for both sensors. The circuit is not fail-safe: unplugged or lost field power reads untriggered. Before every probing cycle, deflect the stylus or press the setter and confirm Pn:P appears and clears; the protected workflow rejects an already-triggered input but does not run this test.",
   }),
   Object.freeze({
     id: "safety_chain",

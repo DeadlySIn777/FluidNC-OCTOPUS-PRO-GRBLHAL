@@ -357,6 +357,14 @@ separately prove polarity, startup/shutdown, power-loss behavior and the
 200 ms ENA-to-DIR requirement at the actual drive. The configured 250 ms delay
 is not physical proof and does not implement a hardware safety function.
 
+**STEP/DIR are undefined while the MCU is in reset or the SD bootloader.** The
+`MC74HCT125` buffers are always enabled and nothing pulls STEP/DIR, and with ENA
+unconnected the drives stay enabled. Scope STEP/DIR at the socket during reset,
+power-up and a bootloader pass with drive power off. Whether to use the
+reserved ENA channel or to interlock motion power to controller health is a
+**design decision pending review** (`INTERFACE_BOARD.md` A). Until then, keep
+drive power off whenever the controller is reset, rebooted or flashed.
+
 ### CL57T V4.1 Starting Switches
 
 Power must be off before changing switches. All settings are read at power-up.
@@ -599,9 +607,14 @@ spindle, frame, Octopus ground, USB shield, cable shield, or PE.
 Before connecting either GPIO, prove an open circuit (no low-voltage
 continuity) between `GND` and `HGND`, power each side separately, and verify that OUT never exceeds
 3.3 V. Then record idle/trigger voltage for both channels, perform at least 20
-triggers, flex the cable, remove field power, and confirm the controller enters
-the intended safe state. A broken sensor signal may still look idle, so the
-operating checks must include cable and connector inspection.
+triggers, flex the cable, remove field power, and record the resulting state.
+With this active-low circuit, lost field power and a broken sensor signal both
+read as idle (not triggered), so the operating checks must include cable and
+connector inspection and a trigger test before every probing cycle: select the
+sensor, deflect the stylus or press the setter with motion stopped, and confirm
+`Pn:P` appears and clears. The app's probing workflow rejects an input that is
+already triggered but does not perform this test. See `INTERFACE_BOARD.md` D,
+"Not fail-safe", for the limitation and a future NC / idle-lit option.
 
 ### Input-Path Calibration
 

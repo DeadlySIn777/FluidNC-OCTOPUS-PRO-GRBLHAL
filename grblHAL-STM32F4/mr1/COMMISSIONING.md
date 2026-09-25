@@ -278,10 +278,13 @@ G65P5Q0
 ```
 
 For each selection, verify released, triggered, cable-disconnected, and cable-
-flex behavior. A disconnected stock sensor is expected to remain untriggered
-with this active-low scheme, so probe continuity is an operational preflight
-check rather than a fail-safe E-stop. The interface must never indicate a
-trigger on the other sensor.
+flex behavior. A disconnected stock sensor, lost isolated field power or a
+failed optocoupler is expected to read untriggered with this active-low scheme:
+the circuit is not fail-safe (`INTERFACE_BOARD.md` D). A trigger test is
+therefore required before **every** probing cycle, not only here: with motion
+stopped, select the sensor, deflect the stylus or press the setter, and confirm
+`Pn:P` appears and clears. The interface must never indicate a trigger on the
+other sensor.
 
 Repeat at least 50 manual actuations per sensor. Reject intermittent or sticky
 behavior before any `G38` move.
@@ -309,14 +312,24 @@ No stock spindle, coolant load, or motor may be connected.
 ### Motion Signals
 
 Attach the real DM860T input optocouplers or equivalent loads, with DM860T motor
-power still off. Scope every PUL, DIR, and ENA pair.
+power still off. Scope every active PUL and DIR pair; ENA is reserved and
+unconnected.
 
 - The Octopus socket side switches between logic low and its buffered 5 V high; it is not treated as raw 3.3 V GPIO.
 - Pulse width is at least 5 us.
 - Direction changes precede the first pulse by at least 6 us.
 - Low input voltage while sinking is below 0.5 V.
-- PUL/DIR/ENA current remains within the DM860T V3 7-16 mA specification.
+- PUL/DIR current remains within the drive's 7-16 mA input specification.
 - Idle channels do not chatter during USB traffic, relay switching, or reset.
+- **Reset and bootloader float check.** With drive (36 V) power off, scope STEP
+  and DIR at the socket and at each interface output while holding the MCU in
+  reset, during power-up, and through an SD-bootloader pass. The
+  `MC74HCT125` buffers are always enabled and nothing pulls STEP/DIR, so the
+  level is undefined while the MCU is not driving it; with ENA unconnected the
+  drives would act on it. Record every pulse or level change. Using the reserved
+  ENA channel or interlocking motion power to controller health is a design
+  decision pending review (`INTERFACE_BOARD.md` A); until it is made, keep drive
+  power off whenever the controller is reset, rebooted or flashed.
 - Controller/safety power loss forces the panel's hardware `FORCE_DISABLE` or removes motion power.
 
 ### Spindle Analog Dummy Load
@@ -512,6 +525,11 @@ total travel from a verified approach point, never permitted penetration past
 the expected setter surface.
 
 ### Primary Probe
+
+Before every probing cycle, including each test below, run the trigger test:
+with motion stopped, select the sensor, deflect it, and confirm `Pn:P` appears
+and clears. A dead probe reads untriggered. The app's protected workflow rejects
+an already-triggered input but does not perform this test.
 
 Put a large compliant test target immediately below the probe, use a very short
 travel, and keep the feed low:

@@ -68,6 +68,28 @@ signal and its driver-socket EN/STEP/DIR contact. Required channel behavior:
 | Low | Off | Pulled toward +5 V internally/through input | Off |
 | High | On | Near 0 V | On |
 | Octopus unpowered | Intended off by gate pulldown; verify rail decay/backfeed | Intended inactive; measure | Not yet qualified |
+| Octopus powered, MCU in reset or SD bootloader | **Undefined** - see below | Undefined | Not qualified; may see spurious pulses or direction changes |
+
+**STEP/DIR float during MCU reset and the bootloader.** On the v1.1 schematic
+the `MC74HCT125` buffers have OE tied low (always driving) and nothing pulls
+STEP or DIR while the MCU pins are high-impedance, so the buffered socket level
+is undefined. The 100 kohm gate pulldown cannot override a driven buffer
+output. Only the socket EN lines have 10 kohm pull-ups, and EN is not connected
+here, so the CL57T drives stay enabled through a controller reset, reboot,
+brown-out or SD-bootloader pass.
+
+- **Commissioning check:** with drive (36 V) power off and the interface
+  loaded, scope STEP and DIR at the socket and at each interface output while
+  the MCU is held in reset, during power-up, and through an SD-bootloader pass.
+  Record every pulse or level change.
+- **DESIGN DECISION - pending review.** Options: (a) use the reserved ENA
+  channel so a drive is disabled whenever the controller is not actively
+  enabling it - this needs its own polarity analysis (including the socket EN
+  pull-ups during reset), the 200 ms ENA-to-DIR timing and power-loss tests; or
+  (b) interlock motion power to a controller-health signal so the drives are
+  unpowered while the controller is in reset or the bootloader. Until one is
+  reviewed and qualified, EN stays reserved and drive power is off whenever the
+  controller is reset, rebooted or flashed.
 
 Candidate circuit; the table is required behavior, not measured performance:
 
@@ -267,6 +289,28 @@ panel's maximum temperature. A Schmitt buffer or a high-CTR logic optocoupler is
 preferred. The controller side must pull PF5/PB7 low on sensor actuation.
 PF5 (T1) has an onboard pull-up/RC; PB7 has neither, so the interface board
 supplies PB7's 3.3 V pull-up and RC filter (section E).
+
+**Not fail-safe.** The optocoupler conducts only on trigger. A lost isolated
+5 V supply, a broken sensor wire, an unplugged connector or a failed
+optocoupler all read "not triggered", so a dead probe looks healthy and a probing
+move continues into the part. The pinned production firmware and its
+66-setting profile fix this polarity (active-low with pull-up, `$6=3`); it
+cannot change now.
+
+- **Required before every probing cycle** (touch probe and tool setter): with
+  motion stopped, select the sensor (`G65P5Q0` or `G65P5Q1`), deflect the stylus
+  or press the setter, and confirm the status report shows `Pn:P`; confirm it
+  clears on release. No `P`, no probing.
+- The Windows app's protected probing workflow
+  (`mr1-control/service/native-workflows.mjs`) refuses to start or continue
+  when the selected probe already reports triggered outside an expected contact
+  (a stuck or shorted input). It also fails a search that ends without contact.
+  It does **not** perform this trigger test and cannot detect an open (dead)
+  probe circuit before the move.
+- Future option for the next firmware candidate: an NC / idle-lit circuit whose
+  optocoupler conducts while the sensor is idle and healthy, so trigger, broken
+  wire and lost field power all read the same state. It needs the opposite
+  probe polarity in firmware and its own qualification.
 
 Per-channel provisions:
 

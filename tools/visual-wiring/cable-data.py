@@ -177,6 +177,7 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
             ["Actual sensor label, voltage/type, connector orientation and conductor continuity.",
              "Actual interface-module circuit/terminal map and separate field/controller supply domains.",
              "Independent trigger/open-cable/power-loss truth table and isolation evidence.",
+             "Recorded limitation that the circuit is not fail-safe (lost field power or a broken wire reads untriggered) and a trigger test showing Pn:P before every probing cycle.",
              "Verified destination signal/return: PB7 uses adjacent proved GND, with PB6 and 5V unpopulated." if cable_id == "TOOL-01" else "Verified destination signal/return at T1 PF5; no field voltage on the GPIO."],
         )
     control_evidence = {

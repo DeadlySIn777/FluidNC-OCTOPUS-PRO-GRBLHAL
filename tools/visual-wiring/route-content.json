@@ -120,7 +120,7 @@
     {
       "id": "command-interface",
       "label": "Command interface unfinished",
-      "reason": "The planned interface terminals and protected 5 V supply are not physically qualified. Record S3=5V and prove loaded PUL/DIR current, timing and power-up/down behavior. ENA stays unconnected."
+      "reason": "The planned interface terminals and protected 5 V supply are not physically qualified. Record S3=5V and prove loaded PUL/DIR current, timing and power-up/down behavior. ENA stays unconnected, so the drives stay enabled while STEP/DIR are undefined during MCU reset or the SD bootloader: scope them with drive power off. Using ENA or a controller-health motion-power interlock is a design decision pending review."
     },
     {
       "id": "alarm-conditioner",
@@ -155,7 +155,7 @@
     {
       "id": "hardware-safety",
       "label": "Hardware stop not proved",
-      "reason": "Protective bonding, independent hardware stopping and gravity-loaded Z support remain unproved. ENA is unused; a stopped command stream does not remove torque or prevent movement."
+      "reason": "Protective bonding, independent hardware stopping and gravity-loaded Z support remain unproved. The E-stop design is principles only and is a blocking hold before energizing: spindle-servo mains contactor and/or certified STO, 36 V removal with a Z-drop analysis, coolant in the stop chain and a terminal schedule. ENA is unused; a stopped command stream does not remove torque or prevent movement."
     }
   ],
   "axes": [

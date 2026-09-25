@@ -426,6 +426,17 @@ test('EXP2 and PB7 inputs require interface-board pull-up/RC and the onboard SW2
   assert.match(inputs, /Guard or remove SW2 before commissioning/);
 });
 
+test('reset/bootloader STEP-DIR float and the non-fail-safe probe circuit stay visible hold points', () => {
+  const gates = Object.fromEntries(WIRING_EVIDENCE_GATES.map(item => [item.id, item]));
+  assert.match(gates.cl57t_interface_scope.detail, /STEP\/DIR are scoped during MCU reset, power-up and an SD-bootloader pass/);
+  assert.match(gates.cl57t_interface_scope.detail, /design decision pending review/);
+  assert.match(gates.probe_truth.detail, /not fail-safe/);
+  assert.match(gates.probe_truth.detail, /Before every probing cycle/);
+  const html = readFileSync(appHtmlUrl, 'utf8');
+  assert.match(html, /STEP\/DIR are undefined while the MCU is in reset or the SD bootloader/);
+  assert.match(html, /NOT FAIL-SAFE: the optocoupler conducts only on trigger/);
+});
+
 test('isolation checks distinguish the bare assembly from mounted PE references and unqualified module topology', () => {
   const gates = Object.fromEntries(WIRING_EVIDENCE_GATES.map(item => [item.id, item]));
   assert.match(gates.sensor_isolation.detail, /de-energized isolated assembly/);
