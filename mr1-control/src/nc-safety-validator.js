@@ -379,6 +379,11 @@ export function validateMr1Nc(source, options = {}) {
       if (MOTION_CODES.has(code) || code === 33) state.motion = `G${code}`;
       if (WORK_OFFSETS.has(code)) {
         if (state.workOffset !== `G${code}`) {
+          // The new frame's first XY move happens at the current machine
+          // height, so that height must be the qualified retract.
+          if (state.workOffset && state.lastWorkMotionLine > state.lastMachineRetractLine) {
+            block(lineNumber, "OFFSET_CHANGE_WITHOUT_RETRACT", "A qualified G53 Z retract is required after work motion and before changing the work offset.", lineSource);
+          }
           if (nativeMr1) state.position = { x: null, y: null, z: null };
           state.approachPending = true;
         }

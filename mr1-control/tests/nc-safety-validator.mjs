@@ -136,7 +136,7 @@ test('MR1 rejects executable checksums including valid XOR and zero values', () 
 test('G80 cancels modal motion and an arc requires a known start in its current work frame', () => {
   assert.ok(blockerCodes(validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'G80\nX10')).includes('AXIS_WITHOUT_MOTION'));
   assert.ok(blockerCodes(validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'G55\nG3 X10 Y0 I5 J0 F800')).includes('ARC_START_UNKNOWN'));
-  const established = validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'G55\nG0 X0 Y0\nG0 Z0\nG3 X10 Y0 I5 J0 F800');
+  const established = validMetricProgram.replace('G3 X10 Y0 I5 J0 F800', 'M9\nM5\nG53 G0 Z-2.000\nG55\nS5000 M3\nM8\nG0 X0 Y0\nG0 Z0\nG3 X10 Y0 I5 J0 F800');
   assert.equal(validateMr1Nc(established).ok, true);
 });
 
@@ -305,8 +305,12 @@ test("after a machine retract or work-offset change XY must be placed before any
     "M9\nM5\nG53 G0 Z-2.000\nG49\nT2\nM0\nS5000 M3\nG0 Z5\nG1 Z0 F500\nM5\nG53 G0 Z-2.000\nM30");
   assert.ok(codes(toolChange).includes("APPROACH_Z_BEFORE_XY"));
   assert.equal(validateMr1Nc(toolChange.replace("S5000 M3\nG0 Z5", "S5000 M3\nG0 X10 Y0\nG0 Z5")).ok, true);
-  // Work-offset change: both X and Y must be re-established in the new frame.
-  const frame = (moves) => validMetricProgram.replace("G3 X10 Y0 I5 J0 F800", `G3 X10 Y0 I5 J0 F800\nG0 Z5\nG55\n${moves}\nG1 Z-1 F100`);
+  // Work-offset change: only from the retract height, and both X and Y must
+  // be re-established in the new frame before Z moves.
+  assert.ok(codes(validMetricProgram.replace("G3 X10 Y0 I5 J0 F800", "G3 X10 Y0 I5 J0 F800\nG0 Z5\nG55\nG0 X0 Y0\nG0 Z5"))
+    .includes("OFFSET_CHANGE_WITHOUT_RETRACT"));
+  const frame = (moves) => validMetricProgram.replace("G3 X10 Y0 I5 J0 F800",
+    `G3 X10 Y0 I5 J0 F800\nG0 Z5\nM9\nM5\nG53 G0 Z-2.000\nG55\nS5000 M3\n${moves}\nG1 Z-1 F100`);
   assert.ok(codes(frame("G0 Z5")).includes("APPROACH_Z_BEFORE_XY"));
   assert.ok(codes(frame("G0 X0\nG0 Z5")).includes("APPROACH_Z_BEFORE_XY"), "Y is still unknown in G55");
   assert.ok(codes(frame("G0 X0 Y0 Z5")).includes("APPROACH_Z_BEFORE_XY"));

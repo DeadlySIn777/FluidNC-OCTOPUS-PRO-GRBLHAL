@@ -30,7 +30,8 @@ spindle, tool-setter, probe, and sender commissioning gates still apply.
 - No work motion before the first qualified `G53` retract.
 - After every `G53` retract and every `G54`-`G59` change the work Z is unknown:
   the next moves must place X and Y at the retract height (`G0 X.. Y..`) before
-  any Z word. A combined `G0 X.. Y.. Z..` approach is blocked.
+  any Z word. A combined `G0 X.. Y.. Z..` approach is blocked, and a
+  `G54`-`G59` change after work motion needs the qualified retract first.
 - Comments close on their own line and never nest: grblHAL ends a comment at
   its first `)`, so a `(` inside a comment is blocked.
 - Plain ASCII only. `!`, `?`, `~`, control bytes and non-ASCII characters are
