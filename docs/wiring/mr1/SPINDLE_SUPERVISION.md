@@ -138,6 +138,12 @@ normal `M5` should request controlled deceleration and confirm stopped state;
 an E-stop follows the validated stop category and circuit design for the real
 machine.
 
+That circuit is not designed yet. The 240 VAC servo stays powered when `SON`
+drops, so `SON` dropout is not the E-stop function. A reviewed stop design
+(rated mains contactor on the servo supply and/or a certified safe-torque-off,
+stop category, restart prevention and terminal schedule) is a blocking HOLD
+before the cabinet is energized; see `WIRING.md`, "Scope and Safety Boundary".
+
 ## Locked Drive Profile
 
 `servo-profile.pending.json` is intentionally unusable for control:

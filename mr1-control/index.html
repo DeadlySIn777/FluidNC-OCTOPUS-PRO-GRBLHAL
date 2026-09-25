@@ -2952,7 +2952,8 @@
                 <i data-lucide="arrow-right" aria-hidden="true"></i>
                 <div data-stage="stop"><span>3</span><strong>CONTACTORS / PERMIT</strong><small>MOTION + SPINDLE OFF</small></div>
               </div>
-              <div class="monitor-tap"><span>SAFETY RELAY AUX</span><i data-lucide="arrow-right" aria-hidden="true"></i><strong>TB SIGNAL / PF3</strong><small>MONITOR ONLY</small></div>
+              <div class="monitor-tap"><span>SAFETY RELAY MONITOR</span><i data-lucide="arrow-right" aria-hidden="true"></i><strong>TB SIGNAL / PF3</strong><small>CLOSED WHILE ENERGIZED / MONITOR ONLY</small></div>
+              <p class="wiring-callout alarm">HOLD before energizing: this stop circuit is principles only. A reviewed design must remove spindle-servo energy on E-stop (mains contactor and/or certified STO; SON dropout is not a stop), remove 36V motion power with a Z-drop analysis, put the flood pump and mist/air supplies in the hardwired stop chain, and give a complete terminal schedule.</p>
             </section>
 
             <section class="wiring-section visual-wiring-section">
@@ -2962,12 +2963,13 @@
               </div>
               <div class="contact-card-grid" aria-label="Operator and safety monitor contact map">
                 <div data-contact="nc"><span>NC</span><strong>DOOR</strong><small>PWR-DET / PC0</small><em>HEALTHY CLOSED</em></div>
-                <div data-contact="nc"><span>NC</span><strong>E-STOP AUX</strong><small>TB / PF3</small><em>HEALTHY CLOSED</em></div>
+                <div data-contact="nc"><span>MON</span><strong>E-STOP MONITOR</strong><small>TB / PF3</small><em>CLOSED WHILE RELAY ENERGIZED</em></div>
                 <div data-contact="nc"><span>NC</span><strong>FEED HOLD</strong><small>T0 / PF4</small><em>HEALTHY CLOSED</em></div>
                 <div data-contact="no"><span>NO</span><strong>CYCLE START</strong><small>EXP2 / PB2</small><em>PRESS TO CLOSE</em></div>
                 <div data-contact="conditioned"><span>ISO</span><strong>AGG. FAULT</strong><small>EXP2 / PB1</small><em>HEALTHY LOW</em></div>
               </div>
               <p class="wiring-callout">PWR-DET also has a 3.3V pin. Identify PC0 and GND from the board drawing and a continuity check; never use cable color to find them.</p>
+              <p class="wiring-callout alarm">PF3 high means E-stop. Use a safety-relay contact that is closed while the relay is energized and opens on E-stop, trip or a broken wire, such as a spare NO safety output or NO auxiliary. An NC auxiliary is open while the relay is energized and would invert the reading. Never invert $14 to suit a wrong contact. Commission it: pressing E-stop and unplugging the monitor wire must each show Pn:E; releasing and resetting the chain clears it.</p>
             </section>
 
             <section class="wiring-section">
@@ -2999,7 +3001,7 @@
               <div class="wiring-flow safety-flow" role="img" aria-label="Hardwired emergency stop safety path">
                 <div><span>E-STOP + INTERLOCKS</span><i data-lucide="arrow-right" aria-hidden="true"></i><strong>SAFETY RELAY</strong><i data-lucide="arrow-right" aria-hidden="true"></i><code>MOTION + SPINDLE PERMIT</code></div>
               </div>
-              <p class="wiring-callout alarm">The Octopus only monitors the safety relay auxiliary contact. It is not safety-rated and must never be responsible for removing hazardous motion or spindle power.</p>
+              <p class="wiring-callout alarm">The Octopus only monitors one safety-relay contact, closed while the relay is energized. It is not safety-rated and must never be responsible for removing hazardous motion or spindle power.</p>
             </section>
 
             <section class="wiring-section">
@@ -3007,7 +3009,7 @@
               <div class="axis-wire-table operator-wire-table" role="table" aria-label="Operator and safety monitor inputs">
                 <div class="wire-table-head" role="row"><span>FUNCTION</span><span>CONNECTOR</span><span>GPIO</span><span>CONTACT</span></div>
                 <div role="row"><strong>DOOR</strong><span>PWR-DET</span><code>PC0</code><span>NC</span></div>
-                <div role="row"><strong>E-STOP AUX</strong><span>TB</span><code>PF3</code><span>NC</span></div>
+                <div role="row"><strong>E-STOP MONITOR</strong><span>TB</span><code>PF3</code><span>CLOSED WHEN ENERGIZED</span></div>
                 <div role="row"><strong>FEED HOLD</strong><span>T0</span><code>PF4</code><span>NC</span></div>
                 <div role="row"><strong>CYCLE START</strong><span>EXP2</span><code>PB2</code><span>NO</span></div>
                 <div role="row"><strong>AGG. FAULT</strong><span>EXP2</span><code>PB1</code><span>HEALTHY LOW</span></div>

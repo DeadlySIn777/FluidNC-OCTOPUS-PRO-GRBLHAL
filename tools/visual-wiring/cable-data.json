@@ -8,13 +8,13 @@
   "source": {
     "csv": {
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "bytes": 15266,
-      "sha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b"
+      "bytes": 15704,
+      "sha256": "16ad6ff5170a50417766b1bae84dce604f5cd86902d4869d1f277202fa5aea4c"
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
-      "bytes": 21217,
-      "sha256": "2b2c0db82a3ac1749219dd345a8bd9b60f20882a2df17ecdf966d1cac7aa3a3f"
+      "bytes": 22672,
+      "sha256": "dff731760932838deba69c0138dc241f3869daa0e3ddee9535bc7c4d7600d9d2"
     },
     "second_pass": {
       "path": "docs/wiring/MR1-wiring-second-pass.md",
@@ -23,8 +23,8 @@
     },
     "spindle_supervision": {
       "path": "docs/wiring/mr1/SPINDLE_SUPERVISION.md",
-      "bytes": 18072,
-      "sha256": "19ac2cd5b12e4e1b7a438726514b673c97fd3b5374f5671b7ff47f0be3cace3d"
+      "bytes": 18459,
+      "sha256": "dcbbf1314d89ebea0abab6a4aaa868fde6e9098343839b36b61ca0f456468038"
     }
   },
   "source_fields": [
@@ -1384,13 +1384,13 @@
     {
       "cable_id": "SAFE-MON",
       "from_device": "Safety relay",
-      "from_terminal": "NC auxiliary contact",
+      "from_terminal": "contact CLOSED while energized (NO output/aux; NOT an NC aux) - terminal UNSELECTED",
       "to_device": "Octopus Pro",
       "to_terminal": "TB PF3/GND",
       "cable_class": "twisted pair",
       "shield_termination": "none",
       "state": "TBD",
-      "notes": "Monitor only; never route safety channels through Octopus",
+      "notes": "Monitor only; never route safety channels through Octopus. PF3 high = E-stop, so the contact must be closed to GND while the relay is energized and open on E-stop, trip or broken wire. Never invert $14 to fix a wrong contact. Commissioning: E-stop pressed and monitor wire unplugged both read Pn:E",
       "source_record": 37,
       "axis": "shared",
       "family": "controls",
@@ -1402,14 +1402,14 @@
         "to": "SAFE-MON"
       },
       "endpoint_status": {
-        "from": "reference-only",
+        "from": "unresolved",
         "to": "reference-only"
       },
       "planned_interface_names": [],
       "trace_task": "Trace the isolated Safety relay contact pair to the intended TB PF3/GND reference; verify contact identity before termination.",
       "missing_evidence": [
-        "Actual safety-relay auxiliary-contact identity and isolated NC continuity.",
-        "Verified TB PF3/GND orientation and monitor-only separation from safety channels.",
+        "Selected safety-relay contact that is closed while the relay is energized and open on E-stop/trip (a spare NO safety output or NO auxiliary, not an NC auxiliary); relay and terminal still unselected.",
+        "Verified TB PF3/GND orientation and monitor-only separation from safety channels; E-stop pressed and monitor wire unplugged each read E-stop (Pn:E), and $14 is never inverted to suit a wrong contact.",
         "Independent reviewed energy-removal/restart-prevention design; monitor continuity is not a safety-system test."
       ],
       "evidence_status": "unverified",
@@ -1633,7 +1633,7 @@
       "cable_class": "shielded pair",
       "shield_termination": "none",
       "state": "HOLD",
-      "notes": "Series with hardwired spindle permit",
+      "notes": "Series with hardwired spindle permit. SON dropout is not the E-stop: removing servo energy (mains contactor and/or certified STO) is part of the HOLD cabinet stop design",
       "source_record": 44,
       "axis": "shared",
       "family": "spindle",

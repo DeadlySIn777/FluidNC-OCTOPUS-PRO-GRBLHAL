@@ -251,7 +251,7 @@ Run every one of these:
 - [ ] Every `STOP` 5 V cavity empty
 - [ ] Exact conditioner circuitry qualified; no generic floating-VCC recipe
 - [ ] PUL/DIR waveforms/current and PB1 alarm supervision proved on the protected bench
-- [ ] Hardware stop, protective bonding and branch protection documented
+- [ ] Hardware stop, protective bonding and branch protection documented. **Blocking HOLD:** the reviewed stop design removes spindle-servo energy (mains contactor and/or certified STO, not just `SON`), removes 36 V motion power with a Z-drop analysis, puts coolant in the stop chain and has a terminal schedule (`WIRING.md`, "Scope and Safety Boundary")
 - [ ] Z mechanically supported; test motor uncoupled, rigidly secured and shaft guarded
 
 If any item lacks evidence, stop at deenergized preparation. Once those gates

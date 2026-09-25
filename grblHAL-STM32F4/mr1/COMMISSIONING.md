@@ -29,10 +29,20 @@ mains, floating analog, or DC-bus node. Review the instrument connection first.
 4. Photograph the Octopus top, bottom, MCU marking, crystal, and v1.1 silkscreen.
 5. Measure all four motor mounts, screw shafts, stock couplers, and available connector bend radius.
 6. Verify frame, spindle chassis, cabinet, and incoming PE continuity.
-7. Draw the actual E-stop chain and have its safety design reviewed.
+7. Draw the actual E-stop chain and have its safety design reviewed. This is a
+   blocking HOLD before the cabinet is energized with any drive, spindle or
+   coolant load connected. The reviewed design must remove 240 VAC
+   spindle-servo energy on E-stop (rated mains contactor on the servo supply
+   and/or certified safe-torque-off; `SON` dropout is not the E-stop function),
+   remove 36 V motion power with a Z-drop analysis for the de-energized state,
+   put the flood pump and mist/air solenoid supplies in the hardwired stop
+   chain, set stop category and restart prevention from the risk assessment,
+   and include a complete terminal schedule. See `WIRING.md`, "Scope and Safety
+   Boundary".
 
 **Hold point:** no conversion wire is cut until the stock system can be restored
-from the labels and photos.
+from the labels and photos. No cabinet supply is energized with a load connected
+until the reviewed stop design in item 7 exists.
 
 ## Stage 0A: Bare-Board USB-Only Firmware Flash
 
@@ -111,7 +121,9 @@ Verify against `WIRING.md` and `cable-schedule.csv`:
 - No plug-in motor drivers or mode/voltage jumpers occupy MOTOR0-MOTOR3.
 - One driver-socket adapter and each low-voltage housing have passed pitch, key, latch, pin-1, insertion, and pull tests on the actual v1.1 board.
 - Safety contacts physically interrupt motion energy and spindle permit.
-- The safety-relay monitor, not an E-stop channel, goes to PF3.
+- The safety-relay monitor, not an E-stop channel, goes to PF3. It is a contact
+  that is closed while the relay is energized and open on E-stop/trip (a spare
+  NO safety output or NO auxiliary), not an NC auxiliary.
 - Probe isolated return has no continuity to controller ground, frame, spindle, or PE.
 - Analog spindle return has no continuity to controller ground unless the final verified interface intentionally requires it.
 - Shields and PE terminate as designed; no shield is used as a current return.
@@ -223,6 +235,18 @@ For door, E-stop monitor, and feed hold:
 2. Contact actuated/open: only the expected input becomes active.
 3. Cable unplugged: same active state as actuation.
 4. Adjacent cable movement: no flicker.
+
+E-stop monitor (PF3) specifically, with the safety relay wired and energized:
+
+- Relay energized and chain healthy: `Pn:` must not contain `E`.
+- Press each E-stop device: PF3 must read E-stop (`Pn:` includes `E`).
+- Release and reset the safety chain: `E` clears from `Pn:`; the alarm still
+  requires an explicit `$X` (`$484=1`).
+- Unplug the monitor wire at PF3: must read E-stop.
+
+If a healthy relay reads E-stop, or a pressed E-stop reads healthy, the wrong
+contact is wired (typically an NC auxiliary). Fix the wiring. **Never invert
+`$14` to "fix" it**; that makes a broken monitor wire read healthy.
 
 Hard-limit tests will create an alarm. Clear the physical condition, reset, and
 unlock only after confirming the reported axis.

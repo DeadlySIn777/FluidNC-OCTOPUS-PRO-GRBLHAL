@@ -170,7 +170,7 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "safety_chain",
     group: "SAFETY",
     title: "HARDWIRED SAFETY CHAIN TESTED",
-    detail: "Dual-channel E-stop and safety relay remove motion power and spindle permission without software.",
+    detail: "Dual-channel E-stop and safety relay remove motion power and spindle-servo energy without software, per a reviewed design: mains contactor and/or certified STO for the spindle servo (SON dropout is not a stop), Z-drop analysis and coolant in the stop chain. The PF3 monitor contact is closed while the relay is energized (not an NC auxiliary); pressing E-stop and unplugging the monitor wire each read Pn:E. Never invert $14 to suit a wrong contact.",
   }),
   Object.freeze({
     id: "protective_earth",
@@ -217,7 +217,7 @@ export const WIRING_INSTALL_STEPS = Object.freeze([
     number: "03",
     state: "exact",
     title: "BUILD SAFETY AND PE",
-    detail: "A qualified person completes mains protection, protective earth, dual-channel E-stop, safety relay, and contactors.",
+    detail: "A qualified person designs and reviews mains protection, protective earth, dual-channel E-stop, safety relay and contactors. Blocking HOLD before energizing: the reviewed stop design must remove spindle-servo energy (mains contactor and/or certified STO; SON dropout is not a stop), remove 36 V motion power with a Z-drop analysis, put coolant in the stop chain and include a terminal schedule.",
     action: "SOFTWARE IS MONITOR ONLY",
   }),
   Object.freeze({

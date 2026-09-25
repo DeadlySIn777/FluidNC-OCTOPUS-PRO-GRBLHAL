@@ -90,7 +90,7 @@ No motor wire colors, GX16 cavity assignments or extension pin numbers are appro
 | Y-right home | STOP3 / PG11 | Same, independently sensed | ____ |
 | X / YL / Z / YR diagnostic fault | STOP4–7 / PG12–15 | Conditioned indication only; cannot be credited as stop protection | ____ |
 | Aggregate fault | EXP2 / **PB1** | Combined conditioned healthy output low; any fault/open/power loss high | ____ |
-| E-stop monitor | TB / PF3 | NC safety-relay auxiliary; does not replace energy removal | ____ |
+| E-stop monitor | TB / PF3 | Safety-relay contact closed to GND while the relay is energized, open on E-stop/trip/broken wire (not an NC auxiliary; relay/terminal HOLD); never invert `$14` to suit a wrong contact; does not replace energy removal | ____ |
 | Door monitor | PWR-DET / PC0 | NC monitor; adjacent power cavity unused | ____ |
 | Feed hold | T0 / PF4 | NC contact | ____ |
 | Cycle start | EXP2 / PB2 | Guarded NO contact | ____ |
@@ -132,12 +132,22 @@ Spindle/coolant GPIOs are FAN0 PA8 (PWM), FAN4 PD14 (enable), HE0 PA0 (flood), H
 
 The candidate T3A/T3L manual identifies DB44 functions, but installed model and cable continuity are still missing. The repository also records a **0–5 V planned command versus generic 0–10 V servo full scale** conflict. A reported factory scaling practice does not close it. Obtain the exact gain parameter archive and measure actual RPM; do not treat a commanded 8000 as measured 8000. RS485, reverse, orientation, rigid tapping and spindle encoder inputs remain unapproved. No DB44 terminal wiring is authorized by this worksheet. [D3]
 
+## Blocking holds before energizing
+
+These items are prerequisites, not later refinements. Each one blocks the stage
+named; none is closed by this worksheet.
+
+| Hold | What is required | Blocks |
+| --- | --- | --- |
+| E-stop / hazardous-energy design | The stop circuit is specified only as principles. A qualified person must produce and review a design that removes 240 VAC spindle-servo energy on E-stop (rated mains contactor on the servo supply and/or certified safe-torque-off; `SON` dropout is not the E-stop function), removes 36 V motion power with a Z-drop analysis for the de-energized state, puts the flood pump and mist/air solenoid supplies in the hardwired stop chain, sets stop category and restart prevention from a risk assessment, and gives a complete terminal schedule (E-stop station, safety relay, contactors, PF3 monitor contact). See `mr1/WIRING.md`, "Scope and Safety Boundary". | Energizing the cabinet with any drive, spindle or coolant load connected. The USB-only flash is not affected. |
+| E-stop monitor contact | The PF3 contact is closed while the relay is energized and open on E-stop/trip/broken wire. Pressing E-stop and unplugging the monitor wire must each read `Pn:E`; releasing/resetting clears it. | Any motion test. |
+
 ## Evidence to collect, in order
 
 | Stage | Required record | Status |
 | --- | --- | --- |
 | 1. Identity and de-energized fit | Board revision/MCU; all drive/motor labels; terminal faces; connector keys; measured motor/coupler fit; routed cable lengths | NOT DONE |
-| 2. Cabinet/interface construction | Released circuit, fuse/wire ratings, PE/return topology, safety-relay/contactor design, terminal-to-terminal continuity | NOT DONE |
+| 2. Cabinet/interface construction | Released circuit, fuse/wire ratings, PE/return topology, **reviewed E-stop/hazardous-energy design (blocking hold above)**, terminal-to-terminal continuity | NOT DONE |
 | 3. Isolated electrical qualification | Supply polarity/ripple, loaded PUL/DIR scope captures, all input truth tables, independent hardwired stop proof | NOT DONE |
 | 4. Controller read-only connection | Actual `$I+`, `$$`, `$G`, `$#`, `$N`, status and image/configuration identity; both startup slots present/empty and no active unexpected inputs | NOT DONE |
 | 5. Limited uncoupled commissioning | Measured direction/scale per motor, no unexpected start, fault/lease/USB interruption behavior | NOT DONE |

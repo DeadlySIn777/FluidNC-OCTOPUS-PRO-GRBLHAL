@@ -98,6 +98,29 @@ the E-stop chain opens. Keep the 24 V Octopus supply alive so the controller can
 report the stop. The exact stop category requires a machine risk assessment;
 neither the DM860T nor the CL57T V4.1 has a certified safe-torque-off input.
 
+> **HOLD - blocking prerequisite before energizing.** The stop circuit in this
+> manual is a set of principles, not a design. The 240 VAC spindle servo stays
+> powered when its `SON` input drops, the drives have no certified
+> safe-torque-off, and the flood/mist loads are switched only by firmware
+> outputs. Do not energize the cabinet with any drive, spindle or coolant load
+> connected until a qualified person has produced and reviewed a stop design
+> that, at minimum:
+>
+> 1. removes spindle-servo energy on E-stop with a rated mains contactor on the
+>    servo supply and/or a certified safe-torque-off function. `SON` dropout
+>    through the spindle-enable relay is not the E-stop function;
+> 2. removes 36 V motion power, with a Z-drop analysis for the de-energized
+>    state (removing power also removes holding torque from the gravity-loaded
+>    Z axis): brake, counterbalance or mechanical support;
+> 3. puts the flood pump and mist/air solenoid supplies in the hardwired stop
+>    chain;
+> 4. sets the stop category and restart prevention from the risk assessment;
+> 5. gives a complete terminal schedule for the E-stop station, safety relay,
+>    contactors and the PF3 monitor contact.
+>
+> The USB-only firmware flash in `COMMISSIONING.md` Stage 0A needs no cabinet
+> power and is not affected by this hold.
+
 ## System Architecture
 
 ```text
@@ -105,8 +128,10 @@ neither the DM860T nor the CL57T V4.1 has a certified safe-torque-off input.
   dual-channel E-stop / required interlocks
                 -> safety relay
                 -> motion-power contactor(s) -> 36 VDC -> four CL57T drives
-                -> spindle-enable contactor/contact -> stock servo drive
-                -> monitored auxiliary contact -> Octopus PF3
+                -> spindle servo energy removal: mains contactor and/or
+                   certified STO (HOLD - design review; SON dropout is not it)
+                -> coolant pump / air solenoid supply (HOLD - in the stop chain)
+                -> monitor contact, closed while energized -> Octopus PF3
 
                     CONTROL PATH
   Windows mini PC -- USB --> Octopus Pro v1.1 F429
@@ -589,7 +614,7 @@ the command service and guarded motion sequence are commissioned.
 | Function | Connector | GPIO | Field contact |
 | --- | --- | --- | --- |
 | Enclosure door monitor | PWR-DET signal/GND | PC0 | NC, healthy closed |
-| E-stop safety-relay auxiliary monitor | TB signal/GND | PF3 | NC, healthy closed |
+| E-stop safety-relay monitor | TB signal/GND | PF3 | Closed to GND while the relay is energized; opens on E-stop/trip. Not an NC auxiliary - see below |
 | Feed hold | T0 signal/GND | PF4 | NC, healthy closed |
 | Guarded cycle start | EXP2 PB2/GND | PB2 | NO, pressed closes |
 | Aggregate fault | EXP2 PB1/GND | PB1 | Conditioned healthy-low |
@@ -601,6 +626,21 @@ continuity-test them off the board; never identify header pins from cable color.
 Cycle start is deliberately the only normally-open operator input. The firmware
 inverts that bit while leaving E-stop, door, and feed hold fail-safe high on an
 open wire.
+
+**E-stop monitor contact (PF3).** The firmware reads PF3 high as E-stop
+(`ESTOP_ENABLE`; the `$14` default does not invert it, and PF3 has a board
+pull-up). The monitor contact must therefore be **closed to GND while the safety
+relay is energized (healthy)** and **open on E-stop, relay trip or a broken
+wire** - for example a spare NO safety output or an NO auxiliary contact. Do not
+use an NC auxiliary: on typical safety relays it is open while the relay is
+energized and closes on trip, which inverts the reading. The relay model and
+its terminal are HOLD until the relay is selected. **Never invert `$14` to
+"fix" a wrong contact**; that would make a broken monitor wire read healthy.
+
+Commissioning check: pressing the E-stop must make PF3 read E-stop (`Pn:`
+includes `E`); releasing it and resetting the chain clears `E` (the alarm then
+still needs an explicit unlock, `$484=1`); unplugging the monitor wire must also
+read E-stop.
 
 ## Stock Spindle Interface
 

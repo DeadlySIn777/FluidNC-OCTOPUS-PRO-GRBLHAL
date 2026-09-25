@@ -145,7 +145,7 @@
     {"macro": "SAFETY_DOOR", "gpio": "PC0", "connector": "PWR-DET", "role": "NC enclosure interlock monitor", "direction": "input", "interrupt": true},
     {"macro": "PROBE", "gpio": "PF5", "connector": "T1", "role": "HW-399 OUT1 isolated touch-probe signal", "direction": "input", "interrupt": true},
     {"macro": "TOOLSETTER", "gpio": "PB7", "connector": "PB7 tool-setter input (five-pin header silked BLTouch)", "role": "HW-399 OUT2 isolated fixed tool-setter signal; no BLTouch hardware or plugin", "direction": "input", "interrupt": true},
-    {"macro": "RESET", "gpio": "PF3", "connector": "TB", "role": "NC E-stop safety relay auxiliary contact", "direction": "input", "interrupt": true},
+    {"macro": "RESET", "gpio": "PF3", "connector": "TB", "role": "E-stop safety-relay monitor contact: closed to GND while the relay is energized, open on E-stop/trip/broken wire (not an NC auxiliary); relay terminal HOLD", "direction": "input", "interrupt": true},
     {"macro": "FEED_HOLD", "gpio": "PF4", "connector": "T0", "role": "NC feed-hold pushbutton", "direction": "input", "interrupt": true},
     {"macro": "CYCLE_START", "gpio": "PB2", "connector": "EXP2 PB2", "role": "NO guarded cycle-start pushbutton", "direction": "input", "interrupt": true},
     {"macro": "MOTOR_FAULT", "gpio": "PB1", "connector": "EXP2 PB1", "role": "conditioned aggregate drive/spindle/safety/cabinet fault", "direction": "input", "interrupt": true, "stopsMotion": true},

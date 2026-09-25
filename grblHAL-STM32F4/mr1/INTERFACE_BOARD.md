@@ -283,13 +283,15 @@ filters.
 | Port | Octopus destination | Contact |
 | --- | --- | --- |
 | DOOR | PC0 PWR-DET/GND | NC |
-| ESTOP_MON | PF3 TB/GND | NC safety-relay auxiliary |
+| ESTOP_MON | PF3 TB/GND | Safety-relay contact closed while energized, open on E-stop/trip (not an NC auxiliary); terminal HOLD |
 | HOLD | PF4 T0/GND | NC |
 | START | PB2 EXP2/GND | NO guarded |
 | CAB_FAULT | PB1 EXP2/GND | Conditioned healthy-low |
 
 Do not route the safety relay's two E-stop channels through this PCB. Only its
-isolated auxiliary monitor contact belongs here.
+isolated monitor contact belongs here: closed while the relay is energized and
+open on E-stop, trip or a broken wire (`WIRING.md`, "Operator and
+Safety-Monitor Inputs"). Never invert `$14` to suit a different contact.
 
 ### F. Spindle Interface
 
@@ -325,7 +327,11 @@ Analog requirements:
 - No shared return between `ANALOG_COM` and Octopus logic.
 
 The spindle-enable contact must be in series with the hardwired safety permit.
-Neither contact alone may defeat the other.
+Neither contact alone may defeat the other. This contact only drops `SON`; it
+is not the E-stop function for the 240 VAC servo. Removing servo energy (mains
+contactor and/or certified safe-torque-off) belongs to the reviewed cabinet stop
+design, which is a blocking HOLD before energizing - see `WIRING.md`, "Scope
+and Safety Boundary".
 
 ### F2. Final Digital Servo Interposer - Locked
 

@@ -595,7 +595,7 @@
       "rows": [
         {
           "terminal": "TB signal / PF3",
-          "destination": "Isolated NC safety-relay auxiliary monitor contact.",
+          "destination": "Isolated safety-relay monitor contact that is closed while the relay is energized and opens on E-stop/trip (not an NC auxiliary); relay terminal HOLD.",
           "cableIds": [
             "SAFE-MON"
           ]
@@ -637,7 +637,7 @@
         }
       ],
       "notes": [
-        "SAFE-MON reports the safety relay; it does not replace the independent hardware stop. Feed hold is not energy isolation.",
+        "SAFE-MON reports the safety relay; it does not replace the independent hardware stop. PF3 high means E-stop, so a wrong (NC auxiliary) contact inverts the reading; never invert $14 to compensate. Feed hold is not energy isolation.",
         "PROBE-01 is the sensor-to-interface cable. The separate interface-to-T1 output harness still needs its own ID and terminal map.",
         "No probe field supply or raw sensor output goes directly to PF5. T2 and T3 are unused."
       ],

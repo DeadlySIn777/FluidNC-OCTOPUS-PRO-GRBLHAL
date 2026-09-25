@@ -391,6 +391,21 @@ test('alarm instructions require individual conditioning, supervised healthy sta
   assert.match(alarms, /Arrange cable-open tests de-energized/);
 });
 
+test('E-stop monitor uses a contact closed while the safety relay is energized, and the stop design stays a blocking hold', () => {
+  const gate = WIRING_EVIDENCE_GATES.find(item => item.id === 'safety_chain');
+  assert.match(gate.detail, /closed while the relay is energized \(not an NC auxiliary\)/);
+  assert.match(gate.detail, /Never invert \$14/);
+  assert.match(gate.detail, /SON dropout is not a stop/);
+  const reset = signalByMacro('RESET');
+  assert.match(reset.role, /closed to GND while the relay is energized/);
+  assert.doesNotMatch(reset.role, /^NC /);
+  const html = readFileSync(appHtmlUrl, 'utf8');
+  const inputs = html.slice(html.indexOf('<section id="inputs-panel"'), html.indexOf('<section id="power-panel"'));
+  assert.match(inputs, /Never invert \$14 to suit a wrong contact/);
+  assert.match(inputs, /HOLD before energizing/);
+  assert.doesNotMatch(inputs, /E-STOP AUX|SAFETY RELAY AUX/);
+});
+
 test('isolation checks distinguish the bare assembly from mounted PE references and unqualified module topology', () => {
   const gates = Object.fromEntries(WIRING_EVIDENCE_GATES.map(item => [item.id, item]));
   assert.match(gates.sensor_isolation.detail, /de-energized isolated assembly/);
