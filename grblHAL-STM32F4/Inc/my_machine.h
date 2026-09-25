@@ -121,9 +121,11 @@
 //#define EVENTOUT_ENABLE         1 // Enable binding events (triggers) to control auxiliary outputs.
 #define ESP_AT_ENABLE           1 // Enable support for Telnet communication via UART connected ESP32 running ESP-AT.
 
-// WiFi Station settings (connect to FluidCNC-Network)
-#define NETWORK_STA_SSID        "FluidCNC-Network"
-#define NETWORK_STA_PASSWORD    "fluidcnc123"
+// WiFi Station settings for a local ESP-AT build. Every PlatformIO environment here
+// (including the MR1 images) sets -D OVERRIDE_MY_MACHINE, so this file is not
+// compiled by them. Set real values locally; never commit network credentials.
+#define NETWORK_STA_SSID        "" // CHANGE_ME
+#define NETWORK_STA_PASSWORD    "" // CHANGE_ME
 #define NETWORK_STA_HOSTNAME    "grblHAL-CNC"
 // Use DHCP - the ESP32 VFD Controller (192.168.4.1) will assign an IP
 
