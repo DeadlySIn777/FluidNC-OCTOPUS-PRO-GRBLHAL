@@ -463,11 +463,12 @@ function rectanglePerimeter(centerX, centerY, width, height) {
   ];
 }
 
-function traceRectangle(builder, corners, z) {
-  builder.cut(corners[1].x, corners[1].y, z);
-  builder.cut(corners[2].x, corners[2].y);
-  builder.cut(corners[3].x, corners[3].y);
-  builder.cut(corners[0].x, corners[0].y);
+// Climb milling with an M3 spindle, like the circular cycles: counter-
+// clockwise inside pockets and windows, clockwise around an outside boss.
+function traceRectangle(builder, corners, z, outside = false) {
+  const order = outside ? [3, 2, 1, 0] : [1, 2, 3, 0];
+  builder.cut(corners[order[0]].x, corners[order[0]].y, z);
+  for (const index of order.slice(1)) builder.cut(corners[index].x, corners[index].y);
 }
 
 // --- Cycle definitions -----------------------------------------------------
@@ -895,7 +896,7 @@ export const CONVERSATIONAL_CYCLES = [
       const builder = new ProgramBuilder(this.title, setup);
       builder.approach(corners[0].x, corners[0].y);
       builder.plunge(-tipOffset);
-      traceRectangle(builder, corners, null);
+      traceRectangle(builder, corners, null, true);
       builder.rapidZ(setup.clearZ);
       return builder.finish();
     },
@@ -1599,7 +1600,7 @@ function generateRectContour(title, setup, params, side) {
       builder.rampEntry(centerX, centerY, centerX + rampHalf, centerY, previousLevel, z);
     }
     builder.cut(corners[0].x, corners[0].y);
-    traceRectangle(builder, corners, null);
+    traceRectangle(builder, corners, null, side === "outside");
     builder.cut(approach.x, approach.y);
     previousLevel = z;
   }

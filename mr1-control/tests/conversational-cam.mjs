@@ -525,6 +525,32 @@ test("pocket, slot, and inside-contour cycles ramp in instead of plunging into s
   }
 });
 
+test("outside and inside walls are both climb-milled with the M3 spindle", () => {
+  const program = (id) => generateConversationalProgram(id, defaultCycleParams(getConversationalCycle(id))).gcode;
+  // Shoelace sum over XY-only feed moves: negative = clockwise.
+  const signedArea = (gcode) => {
+    let at = null;
+    let area = 0;
+    for (const line of gcode.split("\n")) {
+      const x = line.match(/X(-?\d+\.\d+)/);
+      const y = line.match(/Y(-?\d+\.\d+)/);
+      if (!/^G[01] /.test(line) || !x || !y) continue;
+      const to = { x: Number(x[1]), y: Number(y[1]) };
+      if (at && line.startsWith("G1 ") && !/ Z-?\d/.test(line)) area += at.x * to.y - to.x * at.y;
+      at = to;
+    }
+    return area / 2;
+  };
+  for (const id of ["rect-contour-outside", "chamfer-rect"]) assert.ok(signedArea(program(id)) < 0, `${id} must run clockwise around the part`);
+  assert.ok(signedArea(program("rect-contour-inside")) > 0, "window walls must run counterclockwise");
+  for (const id of ["circ-contour", "chamfer-circle"]) {
+    assert.ok(program(id).includes("\nG2 ") && !program(id).includes("\nG3 "), `${id} must run clockwise`);
+  }
+  for (const id of ["circ-pocket", "circ-bore"]) {
+    assert.ok(program(id).includes("\nG3 ") && !program(id).includes("\nG2 "), `${id} must run counterclockwise`);
+  }
+});
+
 test("spiral facing finishes with a cut through the stock center", () => {
   const { gcode } = generateConversationalProgram("spiral-face", defaultCycleParams(getConversationalCycle("spiral-face")));
   const lines = gcode.split("\n");
