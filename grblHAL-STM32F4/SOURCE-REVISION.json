@@ -5335,8 +5335,8 @@
     },
     {
       "path": "boards/btt_octopus_pro_mr1_map.h",
-      "bytes": 9542,
-      "sha256": "7d759ac9f9a0f406f326296c03375658753390ed7a9e1ff306b40fe2362aeeb2"
+      "bytes": 9631,
+      "sha256": "21a8891653c4d424bbd0f393e696685292a04476425d9293aeb952ad4569bcd7"
     },
     {
       "path": "boards/btt_octopus_pro_slots345_map.h",
@@ -6340,8 +6340,8 @@
     },
     {
       "path": "FIRMWARE-KNOWN-ISSUES.md",
-      "bytes": 6105,
-      "sha256": "c160b9ba65229a02cad45c78b0cc5b2768528c679cb6717b1fbcc27e33efdfd1"
+      "bytes": 6998,
+      "sha256": "e85ab485d5fefd627944cd62bbfd81381d5d110bef6089d87743f94370a2d1a8"
     },
     {
       "path": "flexi_script.py",
@@ -7060,8 +7060,8 @@
     },
     {
       "path": "Inc/mr1_octopus_config.h",
-      "bytes": 8331,
-      "sha256": "7590728b4131f579e7247e9af53eaa96a6d53929a206583e42b46b9edf80627e"
+      "bytes": 8647,
+      "sha256": "21e3fac5391458eaf05d71d610bfbc826d518d38bb891b3d917d1a37fda47f51"
     },
     {
       "path": "Inc/mr1_servo_axis_lab_config.h",
@@ -8430,8 +8430,8 @@
     },
     {
       "path": "mr1/BOM.md",
-      "bytes": 15678,
-      "sha256": "f65d5d2ab7590773edd747f384739af66e328d3dd538158ea4d983c01ac83d8d"
+      "bytes": 17167,
+      "sha256": "5ea76c8966923a29b4e091eef7fe7814c0684bc1063d345e5cddac092f3acab8"
     },
     {
       "path": "mr1/BUILD_REPORT.md",
@@ -8440,8 +8440,8 @@
     },
     {
       "path": "mr1/cable-schedule.csv",
-      "bytes": 18775,
-      "sha256": "69c738abcc44fd351c9b2298005f6f4a59c1594a2926a12dc51246165f9d5228"
+      "bytes": 19175,
+      "sha256": "6a3c44d772fcb101f139cb0dc2e2bbc1f4dcf8adf75f06b5d801b9c87be92901"
     },
     {
       "path": "mr1/CL57T_ARRIVAL_CAPTURE.md",
@@ -8450,8 +8450,8 @@
     },
     {
       "path": "mr1/CL57T_QUICK_WIRING.md",
-      "bytes": 20451,
-      "sha256": "f5f3a322078344c295db436a49967f573d6fbe68742a775224b4177f524e5b8b"
+      "bytes": 21574,
+      "sha256": "2e1cc649d7cbd3d25a0c255ffabed5bc399531074f20a199caaab3526cb0e947"
     },
     {
       "path": "mr1/COMMISSIONING.md",
@@ -8470,13 +8470,13 @@
     },
     {
       "path": "mr1/INTERFACE_BOARD.md",
-      "bytes": 26266,
-      "sha256": "fb29e1882190cdea367af7d12c30a1b818a40d6087848dfe9cf004b3fa754c83"
+      "bytes": 27668,
+      "sha256": "dc5ac75c9b1169cd8b4a4caf2ca4549e71ab74d89c9973ba80c4c022902e25ba"
     },
     {
       "path": "mr1/io-manifest.json",
-      "bytes": 13619,
-      "sha256": "e67b0d3ac06e38767339f9476a1a6a5317f6dec9d193416268381fd1ec25557a"
+      "bytes": 14481,
+      "sha256": "7ab002e4b2b50230135b229504774b517c2431dc0a8f6f3b008aee17c7cbbbae"
     },
     {
       "path": "mr1/macros/manifest.json",
@@ -8515,18 +8515,18 @@
     },
     {
       "path": "mr1/ORDER_LIST.md",
-      "bytes": 12201,
-      "sha256": "a4ae6f711f5b74cef0a6b8f92630667dd567ad37f099d7eab9bdc2c31608fc0d"
+      "bytes": 12675,
+      "sha256": "30bdf8effcb468f0cddf57adf3815bbfe8db58c36135013dc6a5aa5811067a17"
     },
     {
       "path": "mr1/PIGTAIL_SCHEDULE.md",
-      "bytes": 14355,
-      "sha256": "e5eb7e0037cfa2080f4eea3f39da041193b728b2f168b22d52480db434c80532"
+      "bytes": 15088,
+      "sha256": "05d75aea72f73852b44d7dad3bae9388017051bba542514ddc1f054fbbab57ae"
     },
     {
       "path": "mr1/README.md",
-      "bytes": 3797,
-      "sha256": "15abce1069e80f53f426175bd1c14396a366108b31c661e7f68e4f4dfb2580f9"
+      "bytes": 4223,
+      "sha256": "a4fc1b5e71ab1b9c3f5d0cc7ef88eaa3c6f9cf5b5146fd1df14dcb2e83285f36"
     },
     {
       "path": "mr1/RESEARCH.md",
@@ -8560,13 +8560,13 @@
     },
     {
       "path": "mr1/WIRING.md",
-      "bytes": 48531,
-      "sha256": "53e7dd43bd860315ba47949047354f0b3ff6401592ad2390c7ffff4731b20f34"
+      "bytes": 48492,
+      "sha256": "28521179c31549572f53d7c6670a443abb579d8f62f0db46d3c670d954f102b3"
     },
     {
       "path": "mr1/WIRING_SIMPLE.md",
-      "bytes": 13806,
-      "sha256": "819c90e5b8bc0e190a1e0eaa8540e9889d949d54389e7b378e7b1da76c494fb3"
+      "bytes": 15259,
+      "sha256": "4de6ad30d8bf93f1c7e3a4d4acca57175c7f99e05b54474a924943d50b0f4e4b"
     },
     {
       "path": "platformio.ini",
@@ -8580,13 +8580,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 4180,
-      "sha256": "ae3eadf4d88c05f78cffb48ef2ffb092c2d38dbefa64c3a23addf1dd0c5639d6"
+      "bytes": 4558,
+      "sha256": "48912a343d10235c54e9a747c5a7d1b97b66fd810f2b728d27635565ef63c6d6"
     },
     {
       "path": "SOURCE-PROVENANCE.md",
-      "bytes": 7983,
-      "sha256": "2d18c0e4ea8b79fae658ae3c6a9c6a405892e0058836eeacbd4ffd007a880b16"
+      "bytes": 8959,
+      "sha256": "b15b8ccf1111dca1fd3dbba6741e807cd0cd3f92094ae4a2de9e826322417a9d"
     },
     {
       "path": "spindle/.gitattributes",
@@ -8705,8 +8705,8 @@
     },
     {
       "path": "Src/driver.c",
-      "bytes": 125598,
-      "sha256": "0b2835a78947af1997a6310b0287e187ab07eb4166e32ec1c7e5f216f8a5ba6e"
+      "bytes": 125762,
+      "sha256": "869b3b74402d4d39829a9ad25244eadecfdd8c7bb9e8ebc81987f1d06c077cb6"
     },
     {
       "path": "Src/driver_spindles.c",
@@ -8985,8 +8985,8 @@
     },
     {
       "path": "tools/validate_mr1_profile.py",
-      "bytes": 46314,
-      "sha256": "79ac08272db6ec3cc002fe294eac8d49eefff2f8d4da3b0aa68906d701033b6d"
+      "bytes": 46312,
+      "sha256": "2814781946cd6830fccf29777e2b32dd70682573ad1adea27ee30693639bfee2"
     },
     {
       "path": "tools/verify_source_export.py",
@@ -9057,6 +9057,41 @@
       "path": "WIRING_GUIDE.md",
       "bytes": 13740,
       "sha256": "e17f678c5e8dd96d2c6fad90a9dbf3c7da9898e8313b08fcdccb05b848d07136"
+    },
+    {
+      "path": "Src/mr1_alarm.c",
+      "bytes": 3039,
+      "sha256": "30e33760d79816dfb7f14b3a3ee8a34437ec3851de8e90b9d38687fb00cece7d"
+    },
+    {
+      "path": "mr1/ALARM_INTERFACE.md",
+      "bytes": 13091,
+      "sha256": "ffd4da394c725ad43826b3f06bda6ce3d186b5bdc403696bcf76240b9c96253e"
+    },
+    {
+      "path": "mr1/COMMAND_SUPPLY.md",
+      "bytes": 7212,
+      "sha256": "2f0b4c52079755e906cd9e81013a6bea6569856e78e13c69dec0a4019ffeac7d"
+    },
+    {
+      "path": "mr1/alarm-interface-wires.csv",
+      "bytes": 6764,
+      "sha256": "022b66e8eb27a59deb342cabd213a845297b9c2fc5e2b145b0283d62f155521d"
+    },
+    {
+      "path": "tools/test_mr1_alarm.py",
+      "bytes": 1658,
+      "sha256": "96a31de4907157a68c9e220edec8b3454d9b41dd4531d4efacc2b0a321e6d2f7"
+    },
+    {
+      "path": "tools/tests/mr1_alarm/driver.h",
+      "bytes": 1693,
+      "sha256": "2609e1e510c588c79f572c1c1133170670b46589ece32935f80dc890f27f1fbd"
+    },
+    {
+      "path": "tools/tests/mr1_alarm/test_mr1_alarm.c",
+      "bytes": 3268,
+      "sha256": "571734fa57f3790d51f47e81c09a791dd90a8cc9d309e357eaa47aa21c0ecd12"
     }
   ],
   "releaseOverlayFiles": [
@@ -9095,17 +9130,21 @@
     "profile": "PASS: 66 settings, 31 GPIOs",
     "macros": "PASS: 3 phase-zero macros",
     "workflowTests": "6/6 PASS",
-    "compiledImage": "Not included; binary-vector checks deferred",
+    "compiledImage": "Local candidate built and vector-audited; not included in source export and not substituted for pinned deployment image.",
     "physicalAcceptance": false,
-    "sourceLogicIntegrity": "626 C/C++/assembly source and header files byte-identical to pinned revisions; except Inc/my_machine.h (credential placeholders, compiled by no environment)",
-    "canonicalProfiles": "Four canonical JSON files byte-identical to corrected reference bundle",
-    "documentationOverlay": "connector-home-upstream-merge-2026-09-26"
+    "sourceLogicIntegrity": "Original upstream records retained; local MR1 alarm diagnostic module, compile gate and driver hook are declared in local alarm update below.",
+    "canonicalProfiles": "io-manifest.json now declares MR1F:1 reporting; installed support remains unknown.",
+    "documentationOverlay": "alarm-and-command-supply-2026-09-27"
   },
-  "validatedAt": "2026-09-27T03:40:12.817983+00:00",
+  "validatedAt": "2026-09-27T05:57:30.428623+00:00",
   "postExportChanges": {
-    "reason": "Post-audit corrections (2026-09-25): documentation, validator messages, credential placeholders and relocation of unsafe bench scripts. Production firmware C/C++ sources and the pinned image are unchanged.",
+    "reason": "Historical audit corrections are retained. Local 2026-09-27 changes add sampled MR1F diagnostics, host tests and selected alarm/command-supply wiring; original upstream commit metadata is not a claim that local source remains identical.",
     "sourceExceptions": {
-      "Inc/my_machine.h": "network credential placeholders; -D OVERRIDE_MY_MACHINE excludes it from every environment"
+      "Inc/my_machine.h": "network credential placeholders; -D OVERRIDE_MY_MACHINE excludes it from every environment",
+      "Inc/mr1_octopus_config.h": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged",
+      "Src/driver.c": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged",
+      "Src/mr1_alarm.c": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged",
+      "boards/btt_octopus_pro_mr1_map.h": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged"
     },
     "relocated": [
       "check_settings.py",
@@ -9331,5 +9370,165 @@
       "upstreamAuditCorrectionsPreserved": true,
       "physicalAcceptance": false
     }
-  ]
+  ],
+  "localAlarmUpdate": {
+    "id": "alarm-and-command-supply-2026-09-27",
+    "capturedUtc": "2026-09-27T05:57:30.428623+00:00",
+    "baseCommit": "0f6dbbbfa763d1a4f9a1adff6a10cf3e69cf034c",
+    "files": [
+      {
+        "path": "Inc/mr1_octopus_config.h",
+        "bytes": 8647,
+        "sha256": "21e3fac5391458eaf05d71d610bfbc826d518d38bb891b3d917d1a37fda47f51",
+        "previousSha256": "7590728b4131f579e7247e9af53eaa96a6d53929a206583e42b46b9edf80627e"
+      },
+      {
+        "path": "Src/driver.c",
+        "bytes": 125762,
+        "sha256": "869b3b74402d4d39829a9ad25244eadecfdd8c7bb9e8ebc81987f1d06c077cb6",
+        "previousSha256": "0b2835a78947af1997a6310b0287e187ab07eb4166e32ec1c7e5f216f8a5ba6e"
+      },
+      {
+        "path": "Src/mr1_alarm.c",
+        "bytes": 3039,
+        "sha256": "30e33760d79816dfb7f14b3a3ee8a34437ec3851de8e90b9d38687fb00cece7d",
+        "previousSha256": null
+      },
+      {
+        "path": "boards/btt_octopus_pro_mr1_map.h",
+        "bytes": 9631,
+        "sha256": "21a8891653c4d424bbd0f393e696685292a04476425d9293aeb952ad4569bcd7",
+        "previousSha256": "7d759ac9f9a0f406f326296c03375658753390ed7a9e1ff306b40fe2362aeeb2"
+      },
+      {
+        "path": "mr1/ALARM_INTERFACE.md",
+        "bytes": 13091,
+        "sha256": "ffd4da394c725ad43826b3f06bda6ce3d186b5bdc403696bcf76240b9c96253e",
+        "previousSha256": null
+      },
+      {
+        "path": "mr1/BOM.md",
+        "bytes": 17167,
+        "sha256": "5ea76c8966923a29b4e091eef7fe7814c0684bc1063d345e5cddac092f3acab8",
+        "previousSha256": "f65d5d2ab7590773edd747f384739af66e328d3dd538158ea4d983c01ac83d8d"
+      },
+      {
+        "path": "mr1/CL57T_QUICK_WIRING.md",
+        "bytes": 21574,
+        "sha256": "2e1cc649d7cbd3d25a0c255ffabed5bc399531074f20a199caaab3526cb0e947",
+        "previousSha256": "f5f3a322078344c295db436a49967f573d6fbe68742a775224b4177f524e5b8b"
+      },
+      {
+        "path": "mr1/COMMAND_SUPPLY.md",
+        "bytes": 7212,
+        "sha256": "2f0b4c52079755e906cd9e81013a6bea6569856e78e13c69dec0a4019ffeac7d",
+        "previousSha256": null
+      },
+      {
+        "path": "mr1/INTERFACE_BOARD.md",
+        "bytes": 27668,
+        "sha256": "dc5ac75c9b1169cd8b4a4caf2ca4549e71ab74d89c9973ba80c4c022902e25ba",
+        "previousSha256": "fb29e1882190cdea367af7d12c30a1b818a40d6087848dfe9cf004b3fa754c83"
+      },
+      {
+        "path": "mr1/ORDER_LIST.md",
+        "bytes": 12675,
+        "sha256": "30bdf8effcb468f0cddf57adf3815bbfe8db58c36135013dc6a5aa5811067a17",
+        "previousSha256": "a4ae6f711f5b74cef0a6b8f92630667dd567ad37f099d7eab9bdc2c31608fc0d"
+      },
+      {
+        "path": "mr1/PIGTAIL_SCHEDULE.md",
+        "bytes": 15088,
+        "sha256": "05d75aea72f73852b44d7dad3bae9388017051bba542514ddc1f054fbbab57ae",
+        "previousSha256": "e5eb7e0037cfa2080f4eea3f39da041193b728b2f168b22d52480db434c80532"
+      },
+      {
+        "path": "mr1/WIRING.md",
+        "bytes": 48492,
+        "sha256": "28521179c31549572f53d7c6670a443abb579d8f62f0db46d3c670d954f102b3",
+        "previousSha256": "53e7dd43bd860315ba47949047354f0b3ff6401592ad2390c7ffff4731b20f34"
+      },
+      {
+        "path": "mr1/WIRING_SIMPLE.md",
+        "bytes": 15259,
+        "sha256": "4de6ad30d8bf93f1c7e3a4d4acca57175c7f99e05b54474a924943d50b0f4e4b",
+        "previousSha256": "819c90e5b8bc0e190a1e0eaa8540e9889d949d54389e7b378e7b1da76c494fb3"
+      },
+      {
+        "path": "mr1/alarm-interface-wires.csv",
+        "bytes": 6764,
+        "sha256": "022b66e8eb27a59deb342cabd213a845297b9c2fc5e2b145b0283d62f155521d",
+        "previousSha256": null
+      },
+      {
+        "path": "mr1/cable-schedule.csv",
+        "bytes": 19175,
+        "sha256": "6a3c44d772fcb101f139cb0dc2e2bbc1f4dcf8adf75f06b5d801b9c87be92901",
+        "previousSha256": "69c738abcc44fd351c9b2298005f6f4a59c1594a2926a12dc51246165f9d5228"
+      },
+      {
+        "path": "mr1/io-manifest.json",
+        "bytes": 14481,
+        "sha256": "7ab002e4b2b50230135b229504774b517c2431dc0a8f6f3b008aee17c7cbbbae",
+        "previousSha256": "e67b0d3ac06e38767339f9476a1a6a5317f6dec9d193416268381fd1ec25557a"
+      },
+      {
+        "path": "tools/test_mr1_alarm.py",
+        "bytes": 1658,
+        "sha256": "96a31de4907157a68c9e220edec8b3454d9b41dd4531d4efacc2b0a321e6d2f7",
+        "previousSha256": null
+      },
+      {
+        "path": "tools/tests/mr1_alarm/driver.h",
+        "bytes": 1693,
+        "sha256": "2609e1e510c588c79f572c1c1133170670b46589ece32935f80dc890f27f1fbd",
+        "previousSha256": null
+      },
+      {
+        "path": "tools/tests/mr1_alarm/test_mr1_alarm.c",
+        "bytes": 3268,
+        "sha256": "571734fa57f3790d51f47e81c09a791dd90a8cc9d309e357eaa47aa21c0ecd12",
+        "previousSha256": null
+      },
+      {
+        "path": "tools/validate_mr1_profile.py",
+        "bytes": 46312,
+        "sha256": "2814781946cd6830fccf29777e2b32dd70682573ad1adea27ee30693639bfee2",
+        "previousSha256": "79ac08272db6ec3cc002fe294eac8d49eefff2f8d4da3b0aa68906d701033b6d"
+      },
+      {
+        "path": "mr1/README.md",
+        "bytes": 4223,
+        "sha256": "a4fc1b5e71ab1b9c3f5d0cc7ef88eaa3c6f9cf5b5146fd1df14dcb2e83285f36",
+        "previousSha256": "15abce1069e80f53f426175bd1c14396a366108b31c661e7f68e4f4dfb2580f9"
+      },
+      {
+        "path": "FIRMWARE-KNOWN-ISSUES.md",
+        "bytes": 6998,
+        "sha256": "e85ab485d5fefd627944cd62bbfd81381d5d110bef6089d87743f94370a2d1a8",
+        "previousSha256": "c160b9ba65229a02cad45c78b0cc5b2768528c679cb6717b1fbcc27e33efdfd1"
+      },
+      {
+        "path": "README.md",
+        "bytes": 4558,
+        "sha256": "48912a343d10235c54e9a747c5a7d1b97b66fd810f2b728d27635565ef63c6d6",
+        "previousSha256": "ae3eadf4d88c05f78cffb48ef2ffb092c2d38dbefa64c3a23addf1dd0c5639d6"
+      },
+      {
+        "path": "SOURCE-PROVENANCE.md",
+        "bytes": 8959,
+        "sha256": "b15b8ccf1111dca1fd3dbba6741e807cd0cd3f92094ae4a2de9e826322417a9d",
+        "previousSha256": "2d18c0e4ea8b79fae658ae3c6a9c6a405892e0058836eeacbd4ffd007a880b16"
+      }
+    ],
+    "tests": {
+      "actualCModule": "PASS: all16masks, callback chains, production/servo mappings, disabled build",
+      "productionArmBuild": "PASS",
+      "binaryVectors": "PASS: 0x08008000 load, 0x20030000 SP, 0x08032D25 reset"
+    },
+    "candidateSha256": "8e9318d9395fc43a7ee0674b55252d387327609f0ee7c4bb0101ad48af108d37",
+    "pinnedDeploymentImageChanged": false,
+    "hardwareFlashed": false,
+    "physicalAcceptance": false
+  }
 }

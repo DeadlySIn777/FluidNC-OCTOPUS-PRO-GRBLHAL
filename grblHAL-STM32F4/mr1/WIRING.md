@@ -270,7 +270,8 @@ Octopus GND-to-PE may then be connected by design.
 | Protective earth | Facility PE | Cabinet, DIN rail, MR-1 frame, spindle chassis, metal connector shells | Permanent bonding; never use PE as a signal return |
 | 36 V motion | `S-360-36`, 36 V 10 A | CL57T `P4` power inputs only | **18-50 VDC absolute, 50 V is a hard ceiling.** Four separately fused star branches; never daisy-chain drives. `P4` is POLARIZED `+VDC`/`GND` |
 | 24 V control | Separate regulated supply | Octopus `MAIN POWER`, relay coils, field interface | Octopus main input is limited to 28 V maximum; never apply 36 V |
-| 5 V motion logic | Protected interface supply | CL57T `P1` PUL/DIR optocouplers (ENA reserved, not connected) | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
+| 5 V motion logic | DRIVER0 VCC_IO through 0.5 A fast branch fuse; [COMMAND_SUPPLY.md](COMMAND_SUPPLY.md) | CL57T `P1` PUL/DIR optocouplers (ENA reserved, not connected) | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
+| Isolated alarm field | Mean Well DDR-15G-24, set and measured at 23.0 V | Four Weidmüller alarm relay coils and CL57T ALM/COM− | Floating output return; common 0.25 A fast output fuse; [ALARM_INTERFACE.md](ALARM_INTERFACE.md), hardware qualification pending |
 | Isolated 5 V home field | Isolated, current-limited DC/DC | Stock limit bus through four-channel conditioner | Separate from Octopus GPIO and probe field; omit only if each switch is proved to be a bare dry contact |
 | Isolated 5 V sensor | Isolated, current-limited DC/DC | Stock probe and tool setter only | Floating field side; crosses into Octopus through two optocouplers |
 | CL57T encoder | **Drive-supplied**: `P2 VCC`/`EGND` from each CL57T | That drive's motor encoder only | Never feed `VCC` from the field 5 V or 24 V rail; it is an output of the drive. Do not bond to another drive or controller logic; the manual does not prove internal galvanic isolation of this output. Route away from motor phases and bus cable |
@@ -322,8 +323,10 @@ not a fourth logical axis.
 
 BTT schematic sheet 1 identifies the driver contacts as 1 EN, 7 STEP, 8 DIR,
 9 GND. These are schematic identifiers, not physical row counts. The planned
-control cable uses STEP/DIR/GND; EN is reserved and unconnected. Other contacts,
-including VCC_IO, VM, motor phases and DIAG, must not reach the external drive.
+control cable uses STEP/DIR/GND; EN is reserved and unconnected. DRIVER0
+VCC_IO (contact 10) supplies the single fused +5_MOTION branch described in
+[COMMAND_SUPPLY.md](COMMAND_SUPPLY.md). Do not parallel VCC_IO takeoffs from
+other sockets. VM, motor phases and DIAG are not control connections.
 
 No plug-in driver or installed socket adapter is assumed. The planned cable
 connection to each empty socket must have a verified contact map, actual viewing
@@ -477,88 +480,77 @@ connector hold points.
 
 ## Drive Fault Inputs
 
-> ## Only PB1 stops the machine. PG12-PG15 do not.
->
-> Verified against the compiled source 2026-09-16:
->
-> - `Src/driver.c:1662` sets the control signal from **one** pin:
->   `signals.motor_fault = DIGITAL_IN(MOTOR_FAULT_PORT, MOTOR_FAULT_PIN)`.
-> - `boards/btt_octopus_pro_mr1_map.h:223-226` resolves `MOTOR_FAULT_PIN` to
->   `AUXINPUT6` = **PB1**.
-> - That signal is what raises `Alarm_MotorFault` (`grbl/protocol.c:130-133`,
->   `grbl/motion_control.c:1192-1193`) and what blocks motion
->   (`grbl/protocol.c:467`).
-> - The per-axis pins PG12-PG15 are in the driver's input table, so `$pins`
->   lists their assignment, and they are collected into `motor_fault_inputs`.
->   Nothing reads their state: `get_motor_fault_inputs()` has no caller in this
->   board build, they are never polled to raise an alarm, and no status report
->   or app screen shows them. `Src/driver.c:72-76` carries the unimplemented
->   note: *"TODO: add support for IRQ driven fault inputs?"*
->
-> **Therefore: combine all four isolated, conditioned drive-healthy outputs into PB1. Never series-chain raw ALM/COMO terminals into the GPIO.**
-> All four healthy = loop closed = PB1 reads healthy. Any drive alarm, any lost
-> drive power, any broken cable opens the loop and stops the machine.
->
-> PG12-PG15 may still be wired in parallel for a future firmware candidate, but
-> the current firmware does **not** read them: they give no stop, no status and
-> no indication of *which* axis faulted. Do not rely on them, and do not let
-> `$744`/`$745` create the impression that per-axis fault handling is active.
->
-> **Blocking prerequisite:** the PB1 aggregate chain is the only drive-fault
-> stop. Qualify it - every drive's alarm, drive-power loss and open alarm cable
-> each stop motion through PB1 - before any coupled dual-Y motion.
->
-> This mattered little with open-loop DM860Ts, which cannot report a meaningful
-> fault. With CL57T closed-loop drives the alarm is the entire point: a
-> following error is the drive telling you it has lost the position the
-> controller thinks it has.
+**PB1 remains the only drive-fault stop input.** The selected assembly is now
+specified in [ALARM_INTERFACE.md](ALARM_INTERFACE.md), with a complete
+[alarm wire list](alarm-interface-wires.csv). No hardware acceptance has passed.
 
-The four DIAG stop connectors are assigned to individual drive faults as wiring
-for a future firmware candidate. The current firmware does not read them.
+The board map assigns `MOTOR_FAULT_PIN` to PB1, and `driver.c` supplies that
+aggregate to the grblHAL motor-fault control signal. The new diagnostic
+firmware candidate additionally samples PG12–PG15 and emits **`MR1F:1,mask`**.
+Those readings are raw snapshots: they do not latch the first axis fault,
+raise per-axis stopping alarms or replace PB1. The older installed firmware
+remains unknown until identified; `$pins` alone proves neither reporting nor
+fault protection.
 
-| Drive | Octopus connector | GPIO |
+| Drive | Octopus signal | Selected relay diagnostic contact |
 | --- | --- | --- |
-| X | DIAG4 / X_MAX | PG12 |
-| Y-left | DIAG5 / Y_MAX | PG13 |
-| Z | DIAG6 / Z_MAX | PG14 |
-| Y-right | DIAG7 / E_MAX | PG15 |
+| X | STOP4 / PG12 | K-X 21–24 |
+| Y-left | STOP5 / PG13 | K-YL 21–24 |
+| Z | STOP6 / PG14 | K-Z 21–24 |
+| Y-right | STOP7 / PG15 | K-YR 21–24 |
 
-Do not wire ALM directly to the Octopus. Each channel must pass through an
-opto-isolated conditioner. The CL57T V4.1 provides `ALM` and `COMO` (manual
-S6.2): the output may be wired sinking or sourcing, and on over-voltage,
-over-current or following error the ALM/COMO impedance changes "from low to
-high or high to low depending on configuration". The manual does not state a
-default direction, so it must be characterized on the bench with a meter
-before any conditioner is built. Ratings: sinking or sourcing 100 mA at
-5-24 V, 30 V maximum.
+Select four **Weidmüller TRP 24VDC 2CO AU modules, 2618530000**, and a separate
+**Mean Well DDR-15G-24** converter for the alarm field supply. These are new
+required parts, not an assertion of inventory. Feed the converter from the
+24 V control supply and set its isolated output to a measured **23.0 V**;
+prove no-load and loaded output stays at or below 24.0 V. The output positive
+passes through a common **0.25 A fast DC-rated output fuse** to the four relay
+**A1** terminals. Each **A2** connects to that drive's **ALM**. Converter
+output return connects to the four **COM− / COMO** terminals. Keep this return
+floating from Octopus GND, command return, encoder EGND, PE and converter
+input return. Converter input protection is separately sized for wiring and
+inrush. Use the exact terminals and supply checks in ALARM_INTERFACE.md.
 
-Bench characterize the exact drive, then configure the interface so:
+Only dry contacts reach the Octopus:
 
 ```text
-drive ready + intact cable -> Octopus input pulled low
-drive alarm, lost drive power, or broken cable -> Octopus pullup reads high
+PB1 ─ K-X 11→14 ─ K-YL 11→14 ─ K-Z 11→14 ─ K-YR 11→14 ─ Octopus GND
+PG12 ─ K-X  21→24 ─ Octopus GND
+PG13 ─ K-YL 21→24 ─ Octopus GND
+PG14 ─ K-Z  21→24 ─ Octopus GND
+PG15 ─ K-YR 21→24 ─ Octopus GND
 ```
 
-The permanent board includes polarity/configuration jumpers so the physical
-ALM behavior can be converted to that fail-safe truth table. Verify each drive
-by unplugging its alarm cable, removing its branch power, and exercising the
-conditioner test fixture. Do not hot-unplug a motor to manufacture a fault.
+Each of the five input nodes gets **2.2 kΩ, 1%, 0.25 W to Octopus I2C 3.3 V**
+and **100 nF X7R, at least 25 V, to Octopus GND**. PB1 has no onboard pull-up
+or RC. Use only STOP4–STOP7 signal/GND contacts, leave their adjacent supply
+contacts empty, and remove DIAG jumpers. The selected modules include coil
+suppression. Leave their unused 12/22 contacts empty. **Never series-chain
+raw ALM/COM− outputs into a GPIO.**
 
-PB1 on EXP2 is the aggregate fault input, and per the box at the top of this
-section it is **the only one that stops motion**. Use an isolated,
-normally-healthy low signal. PB1 has no board pull-up or RC filter (BTT v1.1
-schematic); the interface board supplies the 3.3 V pull-up, RC filter, series
-resistor and TVS (`INTERFACE_BOARD.md` E). It must carry the series chain of all four CL57T
-drive-healthy channels, and may additionally combine spindle alarm,
-safety-relay diagnostics, and cabinet overtemperature in the same series loop.
+Required states: healthy drive and intact cable energize the relay and pull
+its signals low; drive alarm, drive-power loss or an opened field wire must
+drop the relay and release its signals high. Losing the alarm supply must
+release all four. The CL57T manual states ALM polarity is configurable but
+does not identify the parameter or guarantee the unpowered state. Establish
+and save the actual configuration; no guessed parameter or assumed power-loss
+behavior is acceptable. Do not use NC contacts as a workaround for a drive
+whose healthy output is open.
 
-Series, not parallel: the chain must be arranged so that every healthy
-contributor is required to keep the loop closed. Prove it by opening each
-contributor in turn - unplug each drive's alarm cable, remove each drive's
-branch power - and confirming the machine faults each time.
+Retain every additional required qualified cabinet/spindle healthy source
+in PB1's complete series chain. Verify opening each contributor causes the
+installed firmware to stop and latch recovery appropriately. The diagnostic
+PG inputs do not compensate for an omitted or bypassed aggregate contributor.
+Qualify this full chain before coupled dual-Y motion.
 
-Do not use PB1 in place of the hardwired safety chain. It is a controller
-input, not a safety function; power removal remains the safety relay's job.
+Shorting ALM-to-COM−, welding a contact, or shorting a signal to GND can mask a
+fault. These ordinary diagnostic relays are not force-guided and this is not
+a personnel-safety function. Preserve the independent hardwired emergency
+stop. Secure the Z/head before tests that remove motor holding torque; never
+hot-unplug motor or encoder connectors to manufacture a fault.
+
+The separate 5 V PUL/DIR source and eight sink stages are specified in
+[COMMAND_SUPPLY.md](COMMAND_SUPPLY.md); ENA remains unconnected and unqualified.
 
 ## Probe and Tool Setter
 

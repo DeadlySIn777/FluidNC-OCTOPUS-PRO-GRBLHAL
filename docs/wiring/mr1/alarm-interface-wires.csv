@@ -1,0 +1,58 @@
+wire_id,domain,from_device,from_terminal,to_device,to_terminal,net,notes,accepted
+AI-001,control_24V,Existing protected control feed,+24V,PS-ALM DDR-15G-24,4 +Vin,CONTROL_24V,"Input protection and conductor selection pending; account for converter inrush; do not use the output fuse value here",false
+AI-002,control_24V,Existing control supply,0V,PS-ALM DDR-15G-24,3 -Vin,CONTROL_0V,"Input return only; do not bridge to isolated output return",false
+AI-003,isolated_alarm_field,PS-ALM DDR-15G-24,1 +Vo,F-ALM,IN,ALM_PRE_FUSE,"Set measured 23.0V; verify no-load and loaded output at or below 24.0V",false
+AI-004,isolated_alarm_field,F-ALM,OUT,TB-A+,1,ALM_PLUS,"One common 0.25A fast DC-rated output fuse; exact fuse/holder and wire rating pending",false
+AI-005,isolated_alarm_field,PS-ALM DDR-15G-24,2 -Vo,TB-A0,1,ALM_RETURN,"Floating field return; no bond to Octopus GND/PE/input return/command return",false
+AI-006,isolated_alarm_field,TB-A+,2,K-X,A1,ALM_PLUS,"TB-A+ positions 1-5 form one linked distribution group; A1 is positive",false
+AI-007,isolated_alarm_field,TB-A+,3,K-YL,A1,ALM_PLUS,"Linked distribution group; A1 is positive",false
+AI-008,isolated_alarm_field,TB-A+,4,K-Z,A1,ALM_PLUS,"Linked distribution group; A1 is positive",false
+AI-009,isolated_alarm_field,TB-A+,5,K-YR,A1,ALM_PLUS,"Linked distribution group; A1 is positive",false
+AI-010,isolated_alarm_field,K-X,A2,CL57T X,P1 ALM,ALM_X,"Own drive only; integrated coil flyback diode; healthy-conducting behavior must be proven",false
+AI-011,isolated_alarm_field,K-YL,A2,CL57T Y-left,P1 ALM,ALM_YL,"Own drive only; healthy-conducting behavior must be proven",false
+AI-012,isolated_alarm_field,K-Z,A2,CL57T Z,P1 ALM,ALM_Z,"Own drive only; healthy-conducting behavior must be proven",false
+AI-013,isolated_alarm_field,K-YR,A2,CL57T Y-right,P1 ALM,ALM_YR,"Own drive only; healthy-conducting behavior must be proven",false
+AI-014,isolated_alarm_field,TB-A0,2,CL57T X,P1 COM- / COMO,ALM_RETURN,"TB-A0 positions 1-5 form one linked distribution group; COM- is alarm common",false
+AI-015,isolated_alarm_field,TB-A0,3,CL57T Y-left,P1 COM- / COMO,ALM_RETURN,"Linked field return distribution; not encoder EGND",false
+AI-016,isolated_alarm_field,TB-A0,4,CL57T Z,P1 COM- / COMO,ALM_RETURN,"Linked field return distribution; not command return",false
+AI-017,isolated_alarm_field,TB-A0,5,CL57T Y-right,P1 COM- / COMO,ALM_RETURN,"Linked field return distribution; not Octopus GND",false
+AI-018,controller_3V3,Octopus,I2C 3.3V,TB-C3,1,LOGIC_3V3,"Verify labeled 3.3V contact and board power budget; never substitute STOP supply pin",false
+AI-019,controller_3V3,Octopus,EXP2 GND,TB-C0,1,LOGIC_GND,"TB-C0 positions 1-12 form one linked logic-return distribution group; no field-return bond",false
+AI-020,controller_3V3,Octopus,EXP2 PB1,TB-S-AGG,1,FAULT_AGG,"TB-S-AGG positions 1-4 are one linked signal node; this is the stop input",false
+AI-021,controller_3V3,TB-S-AGG,2,K-X,11,FAULT_AGG,"First aggregate NO contact common; only dry contacts reach PB1",false
+AI-022,controller_3V3,K-X,14,K-YL,11,HEALTHY_CHAIN_1,"NO-to-next-common interrelay link",false
+AI-023,controller_3V3,K-YL,14,K-Z,11,HEALTHY_CHAIN_2,"NO-to-next-common interrelay link",false
+AI-024,controller_3V3,K-Z,14,K-YR,11,HEALTHY_CHAIN_3,"NO-to-next-common interrelay link",false
+AI-025,controller_3V3,K-YR,14,TB-C0,2,LOGIC_GND,"Drive-only chain end; retain any additional required qualified cabinet/spindle healthy contacts in the full PB1 chain",false
+AI-026,controller_3V3,Octopus,STOP4 PG12 signal,TB-S-X,1,FAULT_X,"TB-S-X positions 1-4 are one linked signal node; remove DIAG4 jumper",false
+AI-027,controller_3V3,TB-S-X,2,K-X,21,FAULT_X,"Second contact common; raw diagnostic input only",false
+AI-028,controller_3V3,K-X,24,TB-C0,3,LOGIC_GND,"Second NO contact; 22 remains empty",false
+AI-029,controller_3V3,Octopus,STOP5 PG13 signal,TB-S-YL,1,FAULT_YL,"TB-S-YL positions 1-4 are one linked signal node; remove DIAG5 jumper",false
+AI-030,controller_3V3,TB-S-YL,2,K-YL,21,FAULT_YL,"Second contact common; raw diagnostic input only",false
+AI-031,controller_3V3,K-YL,24,TB-C0,4,LOGIC_GND,"Second NO contact; 22 remains empty",false
+AI-032,controller_3V3,Octopus,STOP6 PG14 signal,TB-S-Z,1,FAULT_Z,"TB-S-Z positions 1-4 are one linked signal node; remove DIAG6 jumper",false
+AI-033,controller_3V3,TB-S-Z,2,K-Z,21,FAULT_Z,"Second contact common; raw diagnostic input only",false
+AI-034,controller_3V3,K-Z,24,TB-C0,5,LOGIC_GND,"Second NO contact; 22 remains empty",false
+AI-035,controller_3V3,Octopus,STOP7 PG15 signal,TB-S-YR,1,FAULT_YR,"TB-S-YR positions 1-4 are one linked signal node; remove DIAG7 jumper",false
+AI-036,controller_3V3,TB-S-YR,2,K-YR,21,FAULT_YR,"Second contact common; raw diagnostic input only",false
+AI-037,controller_3V3,K-YR,24,TB-C0,6,LOGIC_GND,"Second NO contact; 22 remains empty",false
+AI-038,controller_3V3,TB-C3,2,R-AGG,1,LOGIC_3V3,"TB-C3 positions 1-6 are one linked group; 2.2k ohm 1% 0.25W resistor",false
+AI-039,controller_3V3,R-AGG,2,TB-S-AGG,3,FAULT_AGG,"Required external PB1 pull-up",false
+AI-040,controller_3V3,TB-C3,3,R-X,1,LOGIC_3V3,"2.2k ohm 1% 0.25W resistor",false
+AI-041,controller_3V3,R-X,2,TB-S-X,3,FAULT_X,"External PG12 pull-up; verify installed board loading",false
+AI-042,controller_3V3,TB-C3,4,R-YL,1,LOGIC_3V3,"2.2k ohm 1% 0.25W resistor",false
+AI-043,controller_3V3,R-YL,2,TB-S-YL,3,FAULT_YL,"External PG13 pull-up; verify installed board loading",false
+AI-044,controller_3V3,TB-C3,5,R-Z,1,LOGIC_3V3,"2.2k ohm 1% 0.25W resistor",false
+AI-045,controller_3V3,R-Z,2,TB-S-Z,3,FAULT_Z,"External PG14 pull-up; verify installed board loading",false
+AI-046,controller_3V3,TB-C3,6,R-YR,1,LOGIC_3V3,"2.2k ohm 1% 0.25W resistor",false
+AI-047,controller_3V3,R-YR,2,TB-S-YR,3,FAULT_YR,"External PG15 pull-up; verify installed board loading",false
+AI-048,controller_3V3,TB-S-AGG,4,C-AGG,1,FAULT_AGG,"100nF X7R 25V or higher; nonpolar; mount near controller termination",false
+AI-049,controller_3V3,C-AGG,2,TB-C0,7,LOGIC_GND,"Required PB1 RC capacitor return; not field return",false
+AI-050,controller_3V3,TB-S-X,4,C-X,1,FAULT_X,"100nF X7R 25V or higher; nonpolar",false
+AI-051,controller_3V3,C-X,2,TB-C0,8,LOGIC_GND,"Controller-side capacitor return",false
+AI-052,controller_3V3,TB-S-YL,4,C-YL,1,FAULT_YL,"100nF X7R 25V or higher; nonpolar",false
+AI-053,controller_3V3,C-YL,2,TB-C0,9,LOGIC_GND,"Controller-side capacitor return",false
+AI-054,controller_3V3,TB-S-Z,4,C-Z,1,FAULT_Z,"100nF X7R 25V or higher; nonpolar",false
+AI-055,controller_3V3,C-Z,2,TB-C0,10,LOGIC_GND,"Controller-side capacitor return",false
+AI-056,controller_3V3,TB-S-YR,4,C-YR,1,FAULT_YR,"100nF X7R 25V or higher; nonpolar",false
+AI-057,controller_3V3,C-YR,2,TB-C0,11,LOGIC_GND,"Controller-side capacitor return; TB-C0 position12 spare",false

@@ -81,6 +81,49 @@ test('drive alarm inputs stop an armed session', async t => {
   assert.equal(controller.armed, false);
   assert.match(controller.fault, /safety input/);
 });
+
+test('MR1F diagnostics pass through native telemetry while PB1 independently stops streaming', async t => {
+  const port = new WireController();
+  const baseStatus = port.status.bind(port);
+  port.rawHighMask = 0;
+  port.status = full => baseStatus(full).replace('>', `|MR1F:1,${port.rawHighMask}>`);
+  const { controller } = await setup(t, { port, ackTimeout: 1000 });
+  assert.equal(controller.preflight.preflightPassed, true, 'full handshake accepts the diagnostic extension');
+  assert.equal(controller.status.driveFaultInputs.rawHighMask, 0);
+
+  const loaded = controller.loadProgram(program, 'alarm-path.nc');
+  controller.arm();
+  port.rawHighMask = 9; port.send(port.status());
+  assert.deepEqual(controller.status.driveFaultInputs.high, { x: true, yl: false, z: false, yr: true });
+  assert.equal(controller.status.pins.controls.motorFault, false);
+  assert.equal(controller.armed, true, 'raw diagnostic inputs are not a substitute stop path');
+  assert.equal(controller.fault, null);
+
+  // An older/omitted diagnostic report must clear the previous snapshot.
+  port.send(baseStatus());
+  assert.equal(controller.status.driveFaultInputs, null);
+  assert.equal(controller.armed, true);
+
+  // Stop the byte-level fixture before its first program acknowledgement.
+  // A clear named-input mask must never override the aggregate fault signal.
+  port.rawHighMask = 0; port.send(port.status());
+  port.ignore = 'G90 G94';
+  const run = controller.runProgram(loaded.sha256);
+  const rejected = assert.rejects(run, /safety input or alarm/);
+  await controller.waitFor(() => port.writes.includes('G90 G94'), 1000);
+  const writesBeforeFault = port.writes.length;
+  port.pins = 'F'; port.send(port.status());
+  await rejected;
+
+  assert.equal(controller.armed, false);
+  assert.equal(controller.preflight, null);
+  assert.equal(controller.job.state, 'fault');
+  assert.match(controller.fault, /safety input or alarm/);
+  const stopped = port.writes.slice(writesBeforeFault);
+  assert.ok(stopped.some(bytes => Array.isArray(bytes) && bytes[0] === REALTIME.hold));
+  assert.ok(stopped.some(bytes => Array.isArray(bytes) && bytes[0] === REALTIME.reset));
+  assert.equal(port.writes.includes('G17'), false, 'no later program line is transmitted after PB1 faults');
+});
 test('homing accepts an unhomed idle controller and waits for a fresh final report', async t => {
   const { controller, port } = await setup(t);
   port.homed = false; port.send(port.status()); controller.arm();

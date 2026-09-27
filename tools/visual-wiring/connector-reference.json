@@ -91,6 +91,13 @@
       "notes": [
         "X=PG6, Y-left=PG9, Z=PG10, Y-right=PG11. Four separately observable switch signals are required for this custom plan."
       ]
+    },
+    {
+      "id": "btt-v11-command-source",
+      "title": "BTT V1.1 driver socket and 5 V regulator schematic",
+      "url": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/blob/master/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-sch.pdf",
+      "accessedDate": "2026-09-27",
+      "authority": "Manufacturer schematic; selected supply branch is a project design, not installed acceptance"
     }
   ],
   "groups": [
@@ -315,28 +322,30 @@
       "rows": [
         {
           "terminal": "PUL+",
-          "destination": "Qualified protected +5V command-interface supply",
+          "destination": "+5_MOTION bus: DRIVER0 VCC_IO (+5 V) → 0.5 A fast branch fuse → this plus terminal (planned; not accepted)",
           "sourceIds": [
-            "cl57t-v41-manual"
+            "cl57t-v41-manual",
+            "btt-v11-command-source"
           ]
         },
         {
           "terminal": "PUL−",
-          "destination": "Qualified STEP sinking interface output",
+          "destination": "STEP MOSFET drain; source goes to CTRL_0V. Socket STEP drives its gate through 100 ohm. Selected circuit awaits loaded qualification.",
           "sourceIds": [
             "cl57t-v41-manual"
           ]
         },
         {
           "terminal": "DIR+",
-          "destination": "Qualified protected +5V command-interface supply",
+          "destination": "+5_MOTION bus: DRIVER0 VCC_IO (+5 V) → 0.5 A fast branch fuse → this plus terminal (planned; not accepted)",
           "sourceIds": [
-            "cl57t-v41-manual"
+            "cl57t-v41-manual",
+            "btt-v11-command-source"
           ]
         },
         {
           "terminal": "DIR−",
-          "destination": "Qualified DIR sinking interface output",
+          "destination": "DIR MOSFET drain; source goes to CTRL_0V. Socket DIR drives its gate through 100 ohm. Selected circuit awaits loaded qualification.",
           "sourceIds": [
             "cl57t-v41-manual"
           ]
@@ -349,8 +358,8 @@
           ]
         },
         {
-          "terminal": "ALM / COMO",
-          "destination": "Separate isolated alarm-conditioner field input for this drive",
+          "terminal": "ALM / COM− (COMO)",
+          "destination": "ALM → selected drive relay A2. COM− → isolated alarm supply −Vo / ALARM_0V. A1 → fused isolated +23 V. Relay contacts alone feed PB1 and the diagnostic input; see alarm circuit.",
           "sourceIds": [
             "cl57t-v41-manual"
           ]
@@ -364,14 +373,16 @@
         }
       ],
       "notes": [
-        "The planned common-anode interface is not electrically qualified. Its terminals and installed circuit remain unverified.",
+        "The command supply is now selected: one DRIVER0 VCC_IO (+5 V) takeoff through a 0.5 A fast fuse to +5_MOTION; DRIVER0 logic GND to CTRL_0V. J68 USB-power jumper stays removed in cabinet operation. The interface is not electrically qualified; construction and acceptance remain unfinished.",
+        "The fuse limits overcurrent; it is not overvoltage protection or isolation. +5_MOTION is not P2 encoder VCC, P4 motor power, or the separate alarm-side supply/COM− return. Do not bridge those domains.",
         "Raw STM32 GPIO is 3.3 V; the Octopus Pro v1.1 STEP/DIR driver-socket outputs use nominal 5 V buffers. These are different points. The planned drive interface still requires loaded voltage/current, polarity, timing and power-transition qualification; a nominal voltage alone does not approve direct drive wiring.",
         "S3 selects command-signal voltage. The +5V command plan requires verified S3=5V; S3 is unrelated to P4 motor-bus voltage.",
-        "ALM/COMO are not assumed dry contacts. Do not series-chain raw outputs into PB1 or connect them directly to Octopus GPIO. Alarm polarity and power/cable-loss supervision still require proof.",
+        "ALM/COM− are transistor outputs driving selected relay coils, not dry contacts. Do not series-chain raw outputs into PB1 or connect them directly to Octopus GPIO. Alarm polarity and power/cable-loss supervision still require proof.",
         "No ENA connection does not mean that an energized motor is mechanically safe."
       ],
       "sourceIds": [
-        "cl57t-v41-manual"
+        "cl57t-v41-manual",
+        "btt-v11-command-source"
       ]
     },
     {

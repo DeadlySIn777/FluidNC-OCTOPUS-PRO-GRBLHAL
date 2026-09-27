@@ -109,6 +109,16 @@
         "DB15 encoder pins and shield lead"
       ],
       "caveat": "Published cable reference; actual kit variant, connector view and continuity remain unverified."
+    },
+    {
+      "id": "alarm-plan",
+      "path": "docs/wiring/mr1/ALARM_INTERFACE.md",
+      "sections": [
+        "Selected relay circuit",
+        "Terminal schedule",
+        "Acceptance"
+      ],
+      "caveat": "Selected engineering circuit; parts not recorded installed and bench acceptance not completed."
     }
   ],
   "holds": [
@@ -130,12 +140,12 @@
     {
       "id": "command-interface",
       "label": "Command interface unfinished",
-      "reason": "The planned interface terminals and protected 5 V supply are not physically qualified. Record S3=5V and prove loaded PUL/DIR current, timing and power-up/down behavior. ENA stays unconnected, so the drives stay enabled while STEP/DIR are undefined during MCU reset or the SD bootloader: scope them with drive power off. Using ENA or a controller-health motion-power interlock is a design decision pending review."
+      "reason": "The selected command source is DRIVER0 VCC_IO (+5 V) through a 0.5 A fast branch fuse to +5_MOTION, with DRIVER0 logic GND to CTRL_0V. Its construction and loaded performance remain unqualified. Verify S3=5V, J68 USB-power jumper removed, supply margin, PUL/DIR current and timing, and power-up/down behavior. ENA stays unconnected, so drives stay enabled while STEP/DIR are undefined during MCU reset or the SD bootloader: scope with drive power off. The fuse is overcurrent protection, not voltage protection or isolation. The controller-health/enable interlock remains a separate unfinished requirement."
     },
     {
       "id": "alarm-conditioner",
-      "label": "Alarm circuit unfinished",
-      "reason": "Each ALM/COMO pair needs its own isolated, current-limited conditioner. Actual polarity and healthy/alarm/open-cable/power-loss behavior are unknown. Healthy-open outputs need added supervision; inversion alone is insufficient."
+      "label": "Selected alarm circuit: assembly and tests pending",
+      "reason": "Four Weidmüller TRP24VDC2COAU 2618530000 relays and one isolated DDR-15G-24 supply are selected in ALARM_INTERFACE.md. Prove ALM conducts healthy and opens on alarm, lost drive power and either wire open. The manufacturer does not identify the polarity parameter. Do not invert firmware to hide a failed test."
     },
     {
       "id": "module-circuit",
@@ -239,9 +249,9 @@
         "node": "interface",
         "label": "Planned interface JX",
         "terminals": [
-          "Protected +5 V / PUL+",
+          "+5_MOTION bus / PUL+",
           "STEP sink / PUL−",
-          "Protected +5 V / DIR+",
+          "+5_MOTION bus / DIR+",
           "DIR sink / DIR−"
         ],
         "planned": true,
@@ -264,11 +274,11 @@
         "step": "PF13",
         "direction": "PF12",
         "logicReturn": "GND",
-        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+        "note": "STEP/DIR from this empty socket; shared +5_MOTION comes only from DRIVER0 VCC_IO through the 0.5 A fast fuse. No plug-in motor driver. EN remains reserved."
       },
       "connections": [
         {
-          "from": "Protected +5 V / PUL+",
+          "from": "+5_MOTION bus / PUL+",
           "to": "P1 PUL+"
         },
         {
@@ -276,7 +286,7 @@
           "to": "P1 PUL−"
         },
         {
-          "from": "Protected +5 V / DIR+",
+          "from": "+5_MOTION bus / DIR+",
           "to": "P1 DIR+"
         },
         {
@@ -284,7 +294,7 @@
           "to": "P1 DIR−"
         }
       ],
-      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "summary": "PUL+ and DIR+ share +5_MOTION: DRIVER0 VCC_IO (+5 V) → 0.5 A fast fuse → interface distribution. Separate STEP/DIR MOSFET sinks connect PUL− and DIR− to CTRL_0V when commanded. Selected circuit; not physically accepted.",
       "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
       "holdIds": [
         "command-interface",
@@ -355,7 +365,7 @@
           "to": "Controller logic return"
         }
       ],
-      "summary": "These signals come from the empty driver socket. The separate four-pin A1/A2/B1/B2 motor-output plug is unused for this external-drive control cable. The planned interface input names are functional labels until its actual terminals are confirmed.",
+      "summary": "These signals come from the empty driver socket. The separate four-pin A1/A2/B1/B2 motor-output plug is unused for this external-drive control cable. The planned interface input names are functional labels until its actual terminals are confirmed. The separate shared command-supply branch uses DRIVER0 VCC_IO through a 0.5 A fast fuse; see Command supply. This branch is not an extra wire in the scheduled CMD-X cable.",
       "check": "Identify STEP, DIR and logic return on the actual board. Confirm the cable attachment and interface terminal map before landing conductors. Leave reserved EN and unused socket contacts unconnected.",
       "holdIds": [
         "socket-fit",
@@ -640,23 +650,23 @@
       ],
       "category": "alarm",
       "axisId": "X",
-      "title": "X: alarm to conditioner",
+      "title": "X: ALM and COM− to relay circuit",
       "from": {
         "node": "drive-X",
         "label": "X drive · P1 alarm",
         "terminals": [
           "ALM",
-          "COMO"
+          "COM− (COMO)"
         ],
         "planned": false,
         "physicalCavityMapKnown": false
       },
       "to": {
         "node": "alarm-X",
-        "label": "Planned JFX alarm conditioner",
+        "label": "Selected K-X + isolated alarm return",
         "terminals": [
-          "Field ALM input",
-          "Field COMO input"
+          "K-X A2",
+          "ALARM_0V"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -664,25 +674,25 @@
       "connections": [
         {
           "from": "P1 ALM",
-          "to": "Field ALM input"
+          "to": "K-X A2"
         },
         {
-          "from": "P1 COMO",
-          "to": "Field COMO input"
+          "from": "P1 COM− / COMO",
+          "to": "ALARM_0V (isolated supply −Vo)"
         }
       ],
-      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
-      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "summary": "K-X is Weidmüller 2618530000. Its A1 connects to the fused isolated +23 V alarm bus; ALM switches A2 and COM− returns to ALARM_0V. Both terminals stay off the Octopus GPIO and command ground. See the alarm circuit above for the supply and relay contacts.",
+      "check": "Assembly remains pending. Prove healthy energizes the relay and alarm, lost drive power, lost alarm supply and either field wire open release it. No guessed polarity setting and no live motor/encoder unplugging.",
       "holdIds": [
         "drive-terminals",
-        "alarm-conditioner",
-        "module-circuit"
+        "alarm-conditioner"
       ],
       "sourceIds": [
         "second-pass",
         "interface",
         "drive-manual",
-        "cable-schedule"
+        "cable-schedule",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "diagnostic-X",
@@ -704,13 +714,13 @@
       ],
       "category": "alarm",
       "axisId": "X",
-      "title": "X: per-axis fault wiring (not read)",
+      "title": "X: separate relay contact → STOP4",
       "from": {
         "node": "alarm-X",
-        "label": "Planned X diagnostic output",
+        "label": "K-X second NO contact",
         "terminals": [
-          "Separate conditioned indication",
-          "Controller-side return"
+          "21 (common)",
+          "24 (NO)"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -727,27 +737,27 @@
       },
       "connections": [
         {
-          "from": "Separate conditioned indication",
+          "from": "K-X 21",
           "to": "STOP4 PG12"
         },
         {
-          "from": "Controller-side return",
-          "to": "STOP4 GND"
+          "from": "K-X 24",
+          "to": "STOP4 logic GND"
         }
       ],
-      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG12, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
-      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "summary": "New MR1F version 1 firmware reports PG12–PG15 as sampled diagnostics. Older or missing reports remain UNKNOWN. PB1 remains the drive-fault stop; diagnostic samples can miss brief events. Add a 2.2 kΩ pull-up from the input to board 3.3 V and 100 nF from the input to logic GND; LOW only means the contact is closed, not proved machine health.",
+      "check": "Leave the STOP +5 V contact empty. Relay 21/24 must be isolated from coil A1/A2. Remove DIAG jumper caps. Preserve independent PB1 stopping.",
       "holdIds": [
         "header-view",
         "alarm-conditioner",
-        "module-circuit",
         "logic-return"
       ],
       "sourceIds": [
         "readiness",
         "pin-map",
         "interface",
-        "second-pass"
+        "second-pass",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "alarm-X",
@@ -774,9 +784,9 @@
         "node": "interface",
         "label": "Planned interface JYL",
         "terminals": [
-          "Protected +5 V / PUL+",
+          "+5_MOTION bus / PUL+",
           "STEP sink / PUL−",
-          "Protected +5 V / DIR+",
+          "+5_MOTION bus / DIR+",
           "DIR sink / DIR−"
         ],
         "planned": true,
@@ -799,11 +809,11 @@
         "step": "PG0",
         "direction": "PG1",
         "logicReturn": "GND",
-        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+        "note": "STEP/DIR from this empty socket; shared +5_MOTION comes only from DRIVER0 VCC_IO through the 0.5 A fast fuse. No plug-in motor driver. EN remains reserved."
       },
       "connections": [
         {
-          "from": "Protected +5 V / PUL+",
+          "from": "+5_MOTION bus / PUL+",
           "to": "P1 PUL+"
         },
         {
@@ -811,7 +821,7 @@
           "to": "P1 PUL−"
         },
         {
-          "from": "Protected +5 V / DIR+",
+          "from": "+5_MOTION bus / DIR+",
           "to": "P1 DIR+"
         },
         {
@@ -819,7 +829,7 @@
           "to": "P1 DIR−"
         }
       ],
-      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "summary": "PUL+ and DIR+ share +5_MOTION: DRIVER0 VCC_IO (+5 V) → 0.5 A fast fuse → interface distribution. Separate STEP/DIR MOSFET sinks connect PUL− and DIR− to CTRL_0V when commanded. Selected circuit; not physically accepted.",
       "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
       "holdIds": [
         "command-interface",
@@ -1175,23 +1185,23 @@
       ],
       "category": "alarm",
       "axisId": "YL",
-      "title": "Y-left: alarm to conditioner",
+      "title": "Y-left: ALM and COM− to relay circuit",
       "from": {
         "node": "drive-YL",
         "label": "Y-left drive · P1 alarm",
         "terminals": [
           "ALM",
-          "COMO"
+          "COM− (COMO)"
         ],
         "planned": false,
         "physicalCavityMapKnown": false
       },
       "to": {
         "node": "alarm-YL",
-        "label": "Planned JFYL alarm conditioner",
+        "label": "Selected K-YL + isolated alarm return",
         "terminals": [
-          "Field ALM input",
-          "Field COMO input"
+          "K-YL A2",
+          "ALARM_0V"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -1199,25 +1209,25 @@
       "connections": [
         {
           "from": "P1 ALM",
-          "to": "Field ALM input"
+          "to": "K-YL A2"
         },
         {
-          "from": "P1 COMO",
-          "to": "Field COMO input"
+          "from": "P1 COM− / COMO",
+          "to": "ALARM_0V (isolated supply −Vo)"
         }
       ],
-      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
-      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "summary": "K-YL is Weidmüller 2618530000. Its A1 connects to the fused isolated +23 V alarm bus; ALM switches A2 and COM− returns to ALARM_0V. Both terminals stay off the Octopus GPIO and command ground. See the alarm circuit above for the supply and relay contacts.",
+      "check": "Assembly remains pending. Prove healthy energizes the relay and alarm, lost drive power, lost alarm supply and either field wire open release it. No guessed polarity setting and no live motor/encoder unplugging.",
       "holdIds": [
         "drive-terminals",
-        "alarm-conditioner",
-        "module-circuit"
+        "alarm-conditioner"
       ],
       "sourceIds": [
         "second-pass",
         "interface",
         "drive-manual",
-        "cable-schedule"
+        "cable-schedule",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "diagnostic-YL",
@@ -1239,13 +1249,13 @@
       ],
       "category": "alarm",
       "axisId": "YL",
-      "title": "Y-left: per-axis fault wiring (not read)",
+      "title": "Y-left: separate relay contact → STOP5",
       "from": {
         "node": "alarm-YL",
-        "label": "Planned Y-left diagnostic output",
+        "label": "K-YL second NO contact",
         "terminals": [
-          "Separate conditioned indication",
-          "Controller-side return"
+          "21 (common)",
+          "24 (NO)"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -1262,27 +1272,27 @@
       },
       "connections": [
         {
-          "from": "Separate conditioned indication",
+          "from": "K-YL 21",
           "to": "STOP5 PG13"
         },
         {
-          "from": "Controller-side return",
-          "to": "STOP5 GND"
+          "from": "K-YL 24",
+          "to": "STOP5 logic GND"
         }
       ],
-      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG13, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
-      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "summary": "New MR1F version 1 firmware reports PG12–PG15 as sampled diagnostics. Older or missing reports remain UNKNOWN. PB1 remains the drive-fault stop; diagnostic samples can miss brief events. Add a 2.2 kΩ pull-up from the input to board 3.3 V and 100 nF from the input to logic GND; LOW only means the contact is closed, not proved machine health.",
+      "check": "Leave the STOP +5 V contact empty. Relay 21/24 must be isolated from coil A1/A2. Remove DIAG jumper caps. Preserve independent PB1 stopping.",
       "holdIds": [
         "header-view",
         "alarm-conditioner",
-        "module-circuit",
         "logic-return"
       ],
       "sourceIds": [
         "readiness",
         "pin-map",
         "interface",
-        "second-pass"
+        "second-pass",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "alarm-YL",
@@ -1309,9 +1319,9 @@
         "node": "interface",
         "label": "Planned interface JZ",
         "terminals": [
-          "Protected +5 V / PUL+",
+          "+5_MOTION bus / PUL+",
           "STEP sink / PUL−",
-          "Protected +5 V / DIR+",
+          "+5_MOTION bus / DIR+",
           "DIR sink / DIR−"
         ],
         "planned": true,
@@ -1334,11 +1344,11 @@
         "step": "PF11",
         "direction": "PG3",
         "logicReturn": "GND",
-        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+        "note": "STEP/DIR from this empty socket; shared +5_MOTION comes only from DRIVER0 VCC_IO through the 0.5 A fast fuse. No plug-in motor driver. EN remains reserved."
       },
       "connections": [
         {
-          "from": "Protected +5 V / PUL+",
+          "from": "+5_MOTION bus / PUL+",
           "to": "P1 PUL+"
         },
         {
@@ -1346,7 +1356,7 @@
           "to": "P1 PUL−"
         },
         {
-          "from": "Protected +5 V / DIR+",
+          "from": "+5_MOTION bus / DIR+",
           "to": "P1 DIR+"
         },
         {
@@ -1354,7 +1364,7 @@
           "to": "P1 DIR−"
         }
       ],
-      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "summary": "PUL+ and DIR+ share +5_MOTION: DRIVER0 VCC_IO (+5 V) → 0.5 A fast fuse → interface distribution. Separate STEP/DIR MOSFET sinks connect PUL− and DIR− to CTRL_0V when commanded. Selected circuit; not physically accepted.",
       "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
       "holdIds": [
         "command-interface",
@@ -1710,23 +1720,23 @@
       ],
       "category": "alarm",
       "axisId": "Z",
-      "title": "Z: alarm to conditioner",
+      "title": "Z: ALM and COM− to relay circuit",
       "from": {
         "node": "drive-Z",
         "label": "Z drive · P1 alarm",
         "terminals": [
           "ALM",
-          "COMO"
+          "COM− (COMO)"
         ],
         "planned": false,
         "physicalCavityMapKnown": false
       },
       "to": {
         "node": "alarm-Z",
-        "label": "Planned JFZ alarm conditioner",
+        "label": "Selected K-Z + isolated alarm return",
         "terminals": [
-          "Field ALM input",
-          "Field COMO input"
+          "K-Z A2",
+          "ALARM_0V"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -1734,25 +1744,25 @@
       "connections": [
         {
           "from": "P1 ALM",
-          "to": "Field ALM input"
+          "to": "K-Z A2"
         },
         {
-          "from": "P1 COMO",
-          "to": "Field COMO input"
+          "from": "P1 COM− / COMO",
+          "to": "ALARM_0V (isolated supply −Vo)"
         }
       ],
-      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
-      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "summary": "K-Z is Weidmüller 2618530000. Its A1 connects to the fused isolated +23 V alarm bus; ALM switches A2 and COM− returns to ALARM_0V. Both terminals stay off the Octopus GPIO and command ground. See the alarm circuit above for the supply and relay contacts.",
+      "check": "Assembly remains pending. Prove healthy energizes the relay and alarm, lost drive power, lost alarm supply and either field wire open release it. No guessed polarity setting and no live motor/encoder unplugging.",
       "holdIds": [
         "drive-terminals",
-        "alarm-conditioner",
-        "module-circuit"
+        "alarm-conditioner"
       ],
       "sourceIds": [
         "second-pass",
         "interface",
         "drive-manual",
-        "cable-schedule"
+        "cable-schedule",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "diagnostic-Z",
@@ -1774,13 +1784,13 @@
       ],
       "category": "alarm",
       "axisId": "Z",
-      "title": "Z: per-axis fault wiring (not read)",
+      "title": "Z: separate relay contact → STOP6",
       "from": {
         "node": "alarm-Z",
-        "label": "Planned Z diagnostic output",
+        "label": "K-Z second NO contact",
         "terminals": [
-          "Separate conditioned indication",
-          "Controller-side return"
+          "21 (common)",
+          "24 (NO)"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -1797,27 +1807,27 @@
       },
       "connections": [
         {
-          "from": "Separate conditioned indication",
+          "from": "K-Z 21",
           "to": "STOP6 PG14"
         },
         {
-          "from": "Controller-side return",
-          "to": "STOP6 GND"
+          "from": "K-Z 24",
+          "to": "STOP6 logic GND"
         }
       ],
-      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG14, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
-      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "summary": "New MR1F version 1 firmware reports PG12–PG15 as sampled diagnostics. Older or missing reports remain UNKNOWN. PB1 remains the drive-fault stop; diagnostic samples can miss brief events. Add a 2.2 kΩ pull-up from the input to board 3.3 V and 100 nF from the input to logic GND; LOW only means the contact is closed, not proved machine health.",
+      "check": "Leave the STOP +5 V contact empty. Relay 21/24 must be isolated from coil A1/A2. Remove DIAG jumper caps. Preserve independent PB1 stopping.",
       "holdIds": [
         "header-view",
         "alarm-conditioner",
-        "module-circuit",
         "logic-return"
       ],
       "sourceIds": [
         "readiness",
         "pin-map",
         "interface",
-        "second-pass"
+        "second-pass",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "alarm-Z",
@@ -1844,9 +1854,9 @@
         "node": "interface",
         "label": "Planned interface JYR",
         "terminals": [
-          "Protected +5 V / PUL+",
+          "+5_MOTION bus / PUL+",
           "STEP sink / PUL−",
-          "Protected +5 V / DIR+",
+          "+5_MOTION bus / DIR+",
           "DIR sink / DIR−"
         ],
         "planned": true,
@@ -1869,11 +1879,11 @@
         "step": "PG4",
         "direction": "PC1",
         "logicReturn": "GND",
-        "note": "Driver socket signals; no plug-in stepper driver. EN is reserved and unconnected."
+        "note": "STEP/DIR from this empty socket; shared +5_MOTION comes only from DRIVER0 VCC_IO through the 0.5 A fast fuse. No plug-in motor driver. EN remains reserved."
       },
       "connections": [
         {
-          "from": "Protected +5 V / PUL+",
+          "from": "+5_MOTION bus / PUL+",
           "to": "P1 PUL+"
         },
         {
@@ -1881,7 +1891,7 @@
           "to": "P1 PUL−"
         },
         {
-          "from": "Protected +5 V / DIR+",
+          "from": "+5_MOTION bus / DIR+",
           "to": "P1 DIR+"
         },
         {
@@ -1889,7 +1899,7 @@
           "to": "P1 DIR−"
         }
       ],
-      "summary": "Two signal pairs tell this drive when to step and which way. The planned interface sits between the Octopus socket and P1.",
+      "summary": "PUL+ and DIR+ share +5_MOTION: DRIVER0 VCC_IO (+5 V) → 0.5 A fast fuse → interface distribution. Separate STEP/DIR MOSFET sinks connect PUL− and DIR− to CTRL_0V when commanded. Selected circuit; not physically accepted.",
       "check": "Match the cable label at both ends. Verify PUL and DIR as separate pairs; leave ENA and BRK unconnected.",
       "holdIds": [
         "command-interface",
@@ -2245,23 +2255,23 @@
       ],
       "category": "alarm",
       "axisId": "YR",
-      "title": "Y-right: alarm to conditioner",
+      "title": "Y-right: ALM and COM− to relay circuit",
       "from": {
         "node": "drive-YR",
         "label": "Y-right drive · P1 alarm",
         "terminals": [
           "ALM",
-          "COMO"
+          "COM− (COMO)"
         ],
         "planned": false,
         "physicalCavityMapKnown": false
       },
       "to": {
         "node": "alarm-YR",
-        "label": "Planned JFYR alarm conditioner",
+        "label": "Selected K-YR + isolated alarm return",
         "terminals": [
-          "Field ALM input",
-          "Field COMO input"
+          "K-YR A2",
+          "ALARM_0V"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -2269,25 +2279,25 @@
       "connections": [
         {
           "from": "P1 ALM",
-          "to": "Field ALM input"
+          "to": "K-YR A2"
         },
         {
-          "from": "P1 COMO",
-          "to": "Field COMO input"
+          "from": "P1 COM− / COMO",
+          "to": "ALARM_0V (isolated supply −Vo)"
         }
       ],
-      "summary": "This raw alarm pair goes only to its own isolated, current-limited conditioner. Never chain raw drive alarm transistors into PB1.",
-      "check": "Record healthy, alarm, cable-open and lost-power behavior with the approved test setup. Never hot-unplug a motor or encoder to force an alarm.",
+      "summary": "K-YR is Weidmüller 2618530000. Its A1 connects to the fused isolated +23 V alarm bus; ALM switches A2 and COM− returns to ALARM_0V. Both terminals stay off the Octopus GPIO and command ground. See the alarm circuit above for the supply and relay contacts.",
+      "check": "Assembly remains pending. Prove healthy energizes the relay and alarm, lost drive power, lost alarm supply and either field wire open release it. No guessed polarity setting and no live motor/encoder unplugging.",
       "holdIds": [
         "drive-terminals",
-        "alarm-conditioner",
-        "module-circuit"
+        "alarm-conditioner"
       ],
       "sourceIds": [
         "second-pass",
         "interface",
         "drive-manual",
-        "cable-schedule"
+        "cable-schedule",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "diagnostic-YR",
@@ -2309,13 +2319,13 @@
       ],
       "category": "alarm",
       "axisId": "YR",
-      "title": "Y-right: per-axis fault wiring (not read)",
+      "title": "Y-right: separate relay contact → STOP7",
       "from": {
         "node": "alarm-YR",
-        "label": "Planned Y-right diagnostic output",
+        "label": "K-YR second NO contact",
         "terminals": [
-          "Separate conditioned indication",
-          "Controller-side return"
+          "21 (common)",
+          "24 (NO)"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -2332,27 +2342,27 @@
       },
       "connections": [
         {
-          "from": "Separate conditioned indication",
+          "from": "K-YR 21",
           "to": "STOP7 PG15"
         },
         {
-          "from": "Controller-side return",
-          "to": "STOP7 GND"
+          "from": "K-YR 24",
+          "to": "STOP7 logic GND"
         }
       ],
-      "summary": "Wiring for a future firmware candidate only. The current firmware never reads PG15, so it neither stops motion nor identifies this drive. PB1 is the only drive-fault stop.",
-      "check": "Use the separately qualified controller-side indication and return. Leave the STOP header’s 5 V cavity empty.",
+      "summary": "New MR1F version 1 firmware reports PG12–PG15 as sampled diagnostics. Older or missing reports remain UNKNOWN. PB1 remains the drive-fault stop; diagnostic samples can miss brief events. Add a 2.2 kΩ pull-up from the input to board 3.3 V and 100 nF from the input to logic GND; LOW only means the contact is closed, not proved machine health.",
+      "check": "Leave the STOP +5 V contact empty. Relay 21/24 must be isolated from coil A1/A2. Remove DIAG jumper caps. Preserve independent PB1 stopping.",
       "holdIds": [
         "header-view",
         "alarm-conditioner",
-        "module-circuit",
         "logic-return"
       ],
       "sourceIds": [
         "readiness",
         "pin-map",
         "interface",
-        "second-pass"
+        "second-pass",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "alarm-YR",
@@ -2377,10 +2387,10 @@
       "title": "All drives: aggregate fault to PB1",
       "from": {
         "node": "fault-aggregate",
-        "label": "Planned supervised fault aggregate",
+        "label": "Four relay NO contacts in series",
         "terminals": [
-          "Combined conditioned healthy output",
-          "Controller-side return"
+          "K-X 11 (chain start)",
+          "K-YR 14 (chain end)"
         ],
         "planned": true,
         "physicalCavityMapKnown": false
@@ -2397,12 +2407,12 @@
       },
       "connections": [
         {
-          "from": "Combined conditioned healthy output",
+          "from": "K-X 11",
           "to": "EXP2 PB1"
         },
         {
-          "from": "Controller-side return",
-          "to": "EXP2 GND"
+          "from": "K-YR 14 through other required healthy contacts",
+          "to": "EXP2 logic GND"
         }
       ],
       "contributors": [
@@ -2427,7 +2437,7 @@
           "routeId": "alarm-YR"
         }
       ],
-      "summary": "The four drive healthy channels join all required cabinet/spindle fault sources. All required contributors healthy = PB1 low; fault, open cable or lost power must make it high. The combining circuit is still unreleased.",
+      "summary": "PB1 → K-X 11/14 → K-YL 11/14 → K-Z 11/14 → K-YR 11/14 → any other required healthy contacts → logic GND. Add 2.2 kΩ to board 3.3 V and 100 nF to logic GND at PB1. One released relay opens the chain. Welded contacts or a short to GND can defeat this ordinary diagnostic circuit; keep the independent hardware E-stop.",
       "check": "Prove every contributor independently using the approved test setup before any coupled dual-Y motion; PB1 is the only drive-fault stop. PB1 is a controller fault input; the independent hardware stop is still required.",
       "holdIds": [
         "header-view",
@@ -2441,7 +2451,8 @@
         "second-pass",
         "pin-map",
         "interface",
-        "cable-schedule"
+        "cable-schedule",
+        "alarm-plan"
       ],
       "relatedRouteIds": [
         "alarm-X",

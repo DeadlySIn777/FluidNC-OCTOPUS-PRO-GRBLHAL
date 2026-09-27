@@ -9,6 +9,7 @@ Active hardware plan: **Octopus Pro v1.1 / STM32F429ZGT6**, four external **CL57
 - [Wiring plan](WIRING.md), [simple check card](WIRING_SIMPLE.md), [connector schedule](PIGTAIL_SCHEDULE.md)
 - [CL57T guide](CL57T_QUICK_WIRING.md), [arrival evidence](CL57T_ARRIVAL_CAPTURE.md)
 - [Planned interface](INTERFACE_BOARD.md), [BOM](BOM.md), [order list](ORDER_LIST.md)
+- [Selected command +5 V circuit](COMMAND_SUPPLY.md), [selected ALM/COM− relay circuit](ALARM_INTERFACE.md), [alarm terminal schedule](alarm-interface-wires.csv)
 - [Cable schedule](cable-schedule.csv), [GPIO manifest](io-manifest.json), [expected settings](expected-settings.json)
 - [Windows operator guide](OPERATOR.md), [staged commissioning reference](COMMISSIONING.md)
 - [Source build and licensing](../README.md), [historical build evidence](BUILD_REPORT.md)
@@ -19,11 +20,11 @@ The release-level corrected wiring reference and current visual guide are the pr
 
 Confirm actual board/MCU and all four drive revisions; photograph printed terminal names and switch settings; prove connector viewing sides and continuity. Qualify the actual command and sensor interfaces, independent homes, raw alarm conditioning and supervised aggregate, power domains/protection/earthing, independent E-stop, motor/encoder pairing and mechanical fit. Spindle/coolant load wiring, thermal sensor identity and oil/lubrication assignment remain unresolved. Secure test motors and support gravity-loaded Z before any separately permitted energization.
 
-Generic TLP281/HW-399 names do not qualify module circuits or terminal assignments. Raw ALM/COMO outputs must not be chained directly into PB1. STOP4–7 per-axis fault wiring is not read by the current firmware; the PB1 aggregate is the only drive-fault stop and must be qualified before coupled dual-Y motion. Neither the existing motor supply nor a proposed replacement is accepted for simultaneous four-drive loading/regeneration without evidence. The old unqualified 48 V capacitor/NTC/bleeder recipe is withdrawn.
+Generic TLP281/HW-399 names do not qualify module circuits or terminal assignments. The selected alarm design uses four Weidmüller 2618530000 relays and a separate isolated alarm supply; raw ALM/COM− outputs never reach PB1. New MR1F version 1 firmware samples STOP4–7 for diagnostics; older or missing reports remain UNKNOWN. PB1 remains the only drive-fault stop and requires physical qualification before coupled dual-Y motion. Neither the existing motor supply nor a proposed replacement is accepted for simultaneous four-drive loading/regeneration without evidence. The old unqualified 48 V capacitor/NTC/bleeder recipe is withdrawn.
 
 ## Software baseline
 
-Use only `btt_octopus_pro_f429_mr1` for the production candidate. Source build/check commands are in [the firmware README](../README.md). No binary is distributed in this source release. The pinned historical image identity remains a comparison value; no physical flash or independent rebuild is claimed.
+Use only `btt_octopus_pro_f429_mr1` for the production candidate. Source build/check commands are in [the firmware README](../README.md). No binary is distributed in this source release. The local 2026-09-27 alarm candidate passed its ARM build, binary-vector checks and host tests; its hash is recorded in SOURCE-REVISION.json. It remains separate from the pinned historical deployment image and has not been flashed or physically qualified.
 
 The current profile has **66 expected settings**, explicitly including millimeter status reporting with `$13=0`. Read-only preflight includes `$N`; both startup slots must be present and empty because successful homing may execute startup G-code. A compile does not overwrite stored settings. Resetting/restoring settings is a separate controlled commissioning action, not a build step.
 

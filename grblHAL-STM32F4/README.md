@@ -6,7 +6,7 @@ This is the audited grblHAL STM32F4 driver source for **BIGTREETECH Octopus Pro 
 
 Start with [the MR1 engineering overview](mr1/README.md), the corrected [wiring plan](mr1/WIRING.md), and the repository's current wiring guide. Firmware source and software tests do not qualify physical terminals, modules, power circuits or motion.
 
-Known defects of the pinned firmware that need a new, requalified firmware candidate (no status reports while homing, unread per-axis drive-fault inputs, unclaimed auxiliary outputs, probe wire-break behaviour, unpinned toolchain, legacy-target hazards) are listed in [FIRMWARE-KNOWN-ISSUES.md](FIRMWARE-KNOWN-ISSUES.md).
+Known defects of the pinned historical firmware (no status reports while homing, unread per-axis drive-fault inputs, unclaimed auxiliary outputs, probe wire-break behaviour, unpinned toolchain, legacy-target hazards) are listed in [FIRMWARE-KNOWN-ISSUES.md](FIRMWARE-KNOWN-ISSUES.md). The current candidate source implements raw PG12–PG15 snapshots as `MR1F:1,mask`; this diagnostic addition is unflashed and physically unqualified. It does not latch or stop on individual axis inputs, change the PB1 aggregate stop, or replace the application's historical firmware acceptance gate.
 
 ## Build and checks on Windows
 
@@ -27,7 +27,7 @@ The historical candidate was 221,304 bytes with SHA-256 `F4AB32BD2CB7D0985A07915
 
 ## Source layout
 
-`Src/`, `Inc/`, the local board definitions, linker scripts, startup code, HAL/USB support and build files come from the audited STM32F4 tree. `grbl/`, `spindle/` and `eeprom/` are flattened copies of its exact production dependency revisions. `SOURCE-REVISION.json` records commit IDs, original file hashes, deliberate exclusions and documentation overlays. `mr1/expected-settings.json` contains 66 expectations including `$13=0`; `$N0` and `$N1` must both be returned empty during the current application's read-only preflight.
+`Src/`, `Inc/`, the local board definitions, linker scripts, startup code, HAL/USB support and build files come from the audited STM32F4 tree, with the local diagnostic changes described in [SOURCE-PROVENANCE.md](SOURCE-PROVENANCE.md). `grbl/`, `spindle/` and `eeprom/` are flattened copies of its exact production dependency revisions. [SOURCE-REVISION.json](SOURCE-REVISION.json) records commit IDs, original file hashes, deliberate exclusions and current export changes. `mr1/expected-settings.json` contains 66 expectations including `$13=0`; `$N0` and `$N1` must both be returned empty during the current application's read-only preflight.
 
 The historical root diagnostic scripts (42 Python bench programs for the old TMC2209 board that hard-code `COM5`, write settings, disable limits and move motors) were moved to [`legacy/grblhal-diagnostics-2025/`](../legacy/grblhal-diagnostics-2025/README.md) and must not be run. The remaining root Python files (`extra_script.py`, `flexi_script.py`, `uf2conv.py`) are upstream PlatformIO build helpers for other boards. Generic wiring/configuration files such as `WIRING_GUIDE.md` are retained as source history only; they are not MR1 commissioning instructions. Use the current native application and reviewed procedure. The original interactive wiring-map, vendor PDFs/images, build output and capture journals are excluded.
 

@@ -38,7 +38,13 @@ The Octopus four-pin A1/A2/B1/B2 output is not a STEP/DIR cable connection.
 | 7 | STEP | Route to STEP MOSFET gate resistor |
 | 8 | DIR | Route to DIR MOSFET gate resistor |
 | 9 | GND | Controller logic return |
-| 2-6, 10-18 | Mode/reset/sleep/VCC_IO/phases/GND/VM/NC/DIAG | No connection |
+| 10 | VCC_IO / +5 V | DRIVER0 only: single takeoff through a 0.5 A fast branch fuse to +5_MOTION; leave contact 10 on every other socket unused |
+| 2-6, 11-18 | Mode/reset/sleep/phases/GND/VM/NC/DIAG | No connection |
+
+The DRIVER0 VCC_IO connection is the separate internal command-supply branch,
+not an extra conductor in the four-wire interface-to-drive CMD cables. See
+[COMMAND_SUPPLY.md](COMMAND_SUPPLY.md) for its physical lower-row reference,
+source protection, CTRL_0V return and still-pending electrical acceptance.
 
 Schematic numbers are electrical identities, not row-major positions. The
 actual cable termination, mating view, clearance, insulation, retention and
@@ -52,6 +58,7 @@ qualification in `INTERFACE_BOARD.md`.
 | Qty | Status | Board end | Populate | Shop/build note |
 | ---: | --- | --- | --- | --- |
 | 4 | FIT CHECK | MOTOR0-3 18-position driver footprints | STEP contact 7, DIR 8, GND 9; EN 1 reserved | Planned control cable; verify actual contact map, viewing orientation, retention and strain relief |
+| 1 | FIT CHECK | DRIVER0 VCC_IO contact 10, separate source branch | +5 V through 0.5 A fast fuse to +5_MOTION; return at logic GND 9 | One source only; all other socket VCC_IO contacts unused. See [COMMAND_SUPPLY.md](COMMAND_SUPPLY.md); connector, wire and fuse coordination pending |
 | 8 | FIT CHECK | STOP0-7 three-position 2.54 mm headers | SIG and GND only; 16 contacts total | Leave every adjacent 5 V cavity empty |
 | 3 | FIT CHECK | TB, T0, T1 two-position 2.54 mm headers | Named signal and GND | Safety monitor, feed hold, Qualified sensor conditioner OUT1; module on HOLD |
 | 1 | FIT CHECK | PB7 tool-setter five-position 2.54 mm header (board silk: `BLTouch`) | PB7 and its adjacent GND only | Controller housing only; no BLTouch device or plugin; PB6 and 5 V remain empty |

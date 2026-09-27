@@ -11,7 +11,7 @@ It is not a motor driver and it is not a safety controller. It performs:
 
 - Four socket-to-external-drive PUL/DIR interfaces; ENA is reserved and unconnected.
 - Four isolated stock-home input conditioners.
-- Four isolated, polarity-configurable external-drive alarm inputs.
+- Four isolated external-drive alarm relay channels, selected in [ALARM_INTERFACE.md](ALARM_INTERFACE.md).
 - Two isolated active-low sensor inputs for probe and tool setter.
 - Conditioned operator/safety monitor inputs where bare dry contacts are not used.
 - Spindle PWM-to-0-5 V isolation and spindle-enable relay interfacing.
@@ -61,6 +61,13 @@ pretend-ready PCB layout in this package.
 The active CL57T installation uses eight command channels: `X/YL/Z/YR` times
 `PUL/DIR`. Four ENA channels may be reserved, but remain unconnected until
 separately qualified. ENA is not the hardwired motion safety function.
+
+[COMMAND_SUPPLY.md](COMMAND_SUPPLY.md) defines the selected source: one
+DRIVER0 VCC_IO takeoff through a 0.5 A fast branch fuse to `+5_MOTION`, with
+DRIVER0 logic GND as `CTRL_0V`. The onboard regulator is powered from the
+separate 24 V control supply; J68 is removed for cabinet operation. The fuse
+provides neither overvoltage protection nor isolation. Source loading,
+retained socket connection and electrical behavior remain unaccepted.
 
 The official v1.1 schematic places a 5 V `MC74HCT125A` buffer between each MCU
 signal and its driver-socket EN/STEP/DIR contact. Required channel behavior:
@@ -138,7 +145,8 @@ prove each fitted contact by trace/continuity on the actual board:
 | 7 | STEP | Route to gate resistor |
 | 8 | DIR | Route to gate resistor |
 | 9 | GND | Controller logic return |
-| 2-6, 10-18 | Mode/reset/sleep/VCC_IO/phases/GND/VM/NC/DIAG | No connection |
+| 10 | VCC_IO | DRIVER0 only: fused +5_MOTION takeoff per COMMAND_SUPPLY.md; do not parallel socket supplies |
+| 2-6, 11-18 | Mode/reset/sleep/phases/GND/VM/NC/DIAG | No connection |
 
 ### A2. Home-Channel Conditioner - Unqualified On-Hand Module
 
@@ -187,47 +195,46 @@ to the four drive-alarm channels or their PB1 aggregate.
 
 ### B. External-Drive Alarm Inputs
 
-The active CL57T V4.1 provides `ALM` and `COMO` (manual S3.1/S6.2), rated
-sinking or sourcing 100 mA at 5-24 V, 30 V maximum, with the alarm impedance
-direction dependent on configuration and not stated as a default. The retained
-DM860T V3 rollback drives provide `ALM+` and `ALM-`. The board accepts the
-characterized sinking or sourcing arrangement only through an optocoupler and
-current-limiting network.
+Use [ALARM_INTERFACE.md](ALARM_INTERFACE.md) and its
+[terminal-to-terminal wire list](alarm-interface-wires.csv): four
+**Weidmüller TRP 24VDC 2CO AU, 2618530000** modules and one **Mean Well
+DDR-15G-24** isolated converter. These parts are selected, not confirmed owned
+or physically qualified. Existing TLP281 modules remain allocated to homes
+and sensors; they do not implement this selected alarm circuit.
 
-**Topology requirement.** Combine the four isolated, conditioned healthy
-outputs into the PB1 aggregate input. Do not series-chain raw ALM/COMO outputs
-into a GPIO. PB1 is the only input that raises
-`Alarm_MotorFault` in the compiled firmware - see the verification box in
-`WIRING.md` under "Drive Fault Inputs". Per-axis outputs to PG12-PG15 are
-wiring for a future firmware candidate: the current firmware does not read
-them (`$pins` lists only their assignment), so they carry no protective duty
-and give no per-axis indication. Budget the channel count accordingly: four
-field channels in, one series result to PB1, and four optional per-axis outputs
-to PG12-PG15. Qualify PB1 before any coupled dual-Y motion.
+Set and measure the converter output at **23.0 V**, remaining at or below
+24.0 V at no load and with all four relay loads. Route its positive output
+through the common **0.25 A fast DC-rated output fuse** to each relay **A1**;
+each **A2** goes to its drive's **ALM**. Its floating output return goes to the
+four **COM−** terminals, called **COMO** in the drive manual. Keep that return
+separate from Octopus GND, command return, encoder EGND, PE and converter
+input return. The selected relay contains flyback and reverse-polarity
+protection. Nominal coil load is 20.5 mA at 24 V, approximately 82 mA for four.
+Converter input protection must separately accommodate the manufacturer's
+input/inrush specification.
 
-Each channel requires:
+First NO contacts **11–14** connect in series from **PB1 to Octopus GND**.
+Second NO contacts **21–24** connect **PG12/X, PG13/YL, PG14/Z and PG15/YR**
+individually to logic GND. Leave 12/22 empty. Each of these five inputs gets a
+**2.2 kΩ 1% 0.25 W pull-up to Octopus 3.3 V** and **100 nF X7R capacitor rated
+at least 25 V to Octopus GND**. Only dry relay contacts reach the controller.
+Preserve additional required qualified cabinet/spindle healthy contacts in
+PB1's complete series chain. BRK remains empty; ENA remains unqualified.
 
-- Selectable sinking/sourcing field wiring.
-- Selectable logical inversion after the optocoupler.
-- Field current test pad or LED that does not alter the supervised current.
-- Controller output that is low only for `READY + CABLE INTACT`.
-- Open field connector, lost drive power, or alarm producing controller high.
-- 3.3 V-compatible open collector at the Octopus stop input.
+The drive must conduct ALM-to-COM− while healthy and open on alarm. The
+CL57T manual states that polarity depends on configuration, but gives neither
+the exact parameter nor guaranteed unpowered behavior. Do not guess either.
+Prove healthy, alarm, drive-power-loss, lost alarm supply and open-wire states
+for every axis. If the required behavior cannot be obtained, this assembly is
+not accepted; NC contacts or firmware inversion cannot resolve a healthy-open
+cable ambiguity. Shorts or welded contacts can mask faults: these ordinary
+relays do not replace the independent hardwired emergency stop.
 
-If the active drive cannot provide an energized-healthy output, a two-wire ALM
-circuit cannot distinguish a healthy open output from a broken cable. In that
-case P1 must add supervised end-of-line current or a separate drive-power/ready
-relay. Do not label an unsupervised alarm wire `fail-safe`.
-
-Field connector:
-
-```text
-1 ALM+ / ALM   2 ALM- / COMO   3 DRIVE_LOGIC_V (optional, protected)   4 shield
-```
-
-Optional per-axis destinations are PG12, PG13, PG14, and PG15 (not read by the
-current firmware). The separately qualified protective aggregate goes to PB1;
-none of these four connections substitutes for it.
+**PB1 remains the only drive-fault stop.** The new diagnostic firmware candidate
+reports PG12–PG15 as **`MR1F:1,mask` raw snapshots**; it does not latch the first
+axis fault or add per-axis stopping. The installed firmware is unknown until
+checked. Qualify the full PB1 stop and recovery behavior before coupled dual-Y
+motion. All physical checks remain pending.
 
 ### C. Stock Home Inputs
 
@@ -343,10 +350,13 @@ Onboard conditioning differs by input on the BTT v1.1 schematic:
 | Octopus input | Onboard pull-up / RC | Required on the interface board |
 | --- | --- | --- |
 | PC0 (PWR-DET), PF3 (TB), PF4 (T0) | Present | Series resistor + TVS; positions for pull-up/RC, sized together with the onboard network |
-| PB1, PB2 (EXP2) | **None** | Series resistor + TVS + external pull-up to Octopus 3.3 V + RC filter |
-| PB7 (tool-setter header) | **None** | Same as PB1/PB2 (a pull-up proved in the conditioner output stage may replace the separate one) |
+| PB1 (EXP2), short internal relay-contact circuit | **None** | Selected alarm assembly: 2.2 kΩ to Octopus 3.3 V and 100 nF to GND; ALARM_INTERFACE.md defines isolation and acceptance |
+| PB2 (EXP2) | **None** | Series resistor + TVS + external pull-up to Octopus 3.3 V + RC filter |
+| PB7 (tool-setter header) | **None** | Same as PB2 (a pull-up proved in the conditioner output stage may replace the separate one) |
 
-Component values are HOLD until the bench design. Pull-ups go to the Octopus
+Other operator-input component values remain HOLD until the bench design;
+the selected internal alarm-contact circuit has the values above. Its field
+wires terminate at isolated relays, not at PB1. Pull-ups go to the Octopus
 3.3 V logic rail only, never 5 V. The MCU's weak internal pull-up is not an
 adequate termination for a cabinet cable.
 

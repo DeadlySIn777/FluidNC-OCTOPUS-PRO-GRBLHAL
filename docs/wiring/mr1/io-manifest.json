@@ -43,7 +43,8 @@
       "routed_contacts": {"step": 7, "direction": 8, "logic_ground": 9},
       "reserved_contacts": {"enable": 1},
       "reserved_contacts_note": "EN (schematic contact 1) is reserved and not connected in the active CL57T build; any future ENA use is a separately reviewed design change",
-      "no_connect_contacts": [2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+      "no_connect_contacts": [2, 3, 4, 5, 6, 11, 12, 13, 14, 15, 16, 17, 18],
+      "command_supply_takeoff": {"socket": "DRIVER0", "contact": 10, "signal": "VCC_IO", "volts": 5, "branch_fuse_amps": 0.5, "bus": "+5_MOTION", "other_sockets_contact_10": "NC", "physicalAcceptance": false}
     },
     "dm860t_v3": {
       "status": "rollback-only; these switches and power terminals do not apply to CL57T",
@@ -73,7 +74,7 @@
       "ena": "unconnected by default; any reserved enable interface requires separate qualification",
       "power": "P4 +VDC/GND, polarized 36 V star branch; 18-50 V absolute bus range",
       "encoder": "P2 EA+/EA-/EB+/EB-/VCC/EGND; VCC is drive-supplied, never externally powered",
-      "fault": "ALM/COMO into individually isolated conditioners; combine proven healthy outputs into PB1, the only drive-fault stop, and qualify it before any coupled dual-Y motion. PG12-PG15 are wiring for a future firmware candidate; the current firmware never reads their state (no stop, no status, no per-axis indication)"
+      "fault": "ALM/COMO into individually isolated conditioners; combine proven healthy outputs into PB1, the only drive-fault stop, and qualify it before any coupled dual-Y motion. The new source candidate samples PG12-PG15 for MR1F:1 raw diagnostics only. Installed firmware support and physical interface qualification remain unknown; snapshots can miss brief faults and do not stop motion"
     }
   },
   "electrical_domains": [
@@ -91,7 +92,7 @@
     },
     {
       "name": "5v_motion_logic",
-      "rule": "A protected 5 V supply feeds CL57T P1 PUL/DIR optocoupler anodes through the qualified common-anode interface; its 0 V is controller logic return. S3=5V. ENA remains unconnected."
+      "rule": "DRIVER0 VCC_IO +5 V through a 0.5 A branch fuse feeds +5_MOTION and all CL57T P1 PUL+/DIR+ optocoupler anodes. DRIVER0 GND is CTRL_0V for the MOSFET sources. Other socket VCC_IO contacts remain unused. S3=5V; J68 removed for cabinet operation. Supply loading, circuit and reset behavior remain unqualified. ENA remains unconnected."
     },
     {
       "name": "drive_encoder_supply",
@@ -137,10 +138,10 @@
     {"macro": "Z_LIMIT", "gpio": "PG10", "connector": "DIAG2/STOP2", "role": "conditioned Z home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
     {"macro": "M3_LIMIT", "gpio": "PG11", "connector": "DIAG3/STOP3", "role": "conditioned Y-right home; healthy-low, stock 5 V field isolated", "direction": "input", "interrupt": true},
 
-    {"macro": "X_MOTOR_FAULT", "gpio": "PG12", "connector": "DIAG4/STOP4", "role": "X driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
-    {"macro": "Y_MOTOR_FAULT", "gpio": "PG13", "connector": "DIAG5/STOP5", "role": "Y-left driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
-    {"macro": "Z_MOTOR_FAULT", "gpio": "PG14", "connector": "DIAG6/STOP6", "role": "Z driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
-    {"macro": "M3_MOTOR_FAULT", "gpio": "PG15", "connector": "DIAG7/STOP7", "role": "Y-right driver ready/fault wiring for a future firmware candidate; not read by the current firmware", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": false},
+    {"macro": "X_MOTOR_FAULT", "gpio": "PG12", "connector": "DIAG4/STOP4", "role": "X raw high/low alarm snapshot in the new firmware candidate; installed support and interface qualification unknown", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": true, "reportingProtocol": "MR1F:1", "reportingBit": 0, "installedFirmwareSupport": "unknown"},
+    {"macro": "Y_MOTOR_FAULT", "gpio": "PG13", "connector": "DIAG5/STOP5", "role": "Y-left raw high/low alarm snapshot in the new firmware candidate; installed support and interface qualification unknown", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": true, "reportingProtocol": "MR1F:1", "reportingBit": 1, "installedFirmwareSupport": "unknown"},
+    {"macro": "Z_MOTOR_FAULT", "gpio": "PG14", "connector": "DIAG6/STOP6", "role": "Z raw high/low alarm snapshot in the new firmware candidate; installed support and interface qualification unknown", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": true, "reportingProtocol": "MR1F:1", "reportingBit": 2, "installedFirmwareSupport": "unknown"},
+    {"macro": "M3_MOTOR_FAULT", "gpio": "PG15", "connector": "DIAG7/STOP7", "role": "Y-right raw high/low alarm snapshot in the new firmware candidate; installed support and interface qualification unknown", "direction": "input", "interrupt": true, "interruptMeaning": "reserved EXTI allocation only", "runtimeInterruptEnabled": false, "stopsMotion": false, "firmwareReadsState": true, "reportingProtocol": "MR1F:1", "reportingBit": 3, "installedFirmwareSupport": "unknown"},
 
     {"macro": "SAFETY_DOOR", "gpio": "PC0", "connector": "PWR-DET", "role": "NC enclosure interlock monitor", "direction": "input", "interrupt": true},
     {"macro": "PROBE", "gpio": "PF5", "connector": "T1", "role": "HW-399 OUT1 isolated touch-probe signal", "direction": "input", "interrupt": true},

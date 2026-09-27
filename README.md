@@ -222,8 +222,9 @@ Tests use synthetic serial ports and temporary journals; they never open a real 
 - [ ] ENA wiring versus a motion-power interlock, and STEP/DIR behavior during controller reset
 - [ ] Qualify the PB1 aggregate fault chain before any coupled dual-Y motion
 
-**Next firmware candidate:** see [known issues](grblHAL-STM32F4/FIRMWARE-KNOWN-ISSUES.md)
-- [ ] Status reports during homing, reading the per-axis faults on PG12–PG15, lab-image output claims and a pinned toolchain
+**Firmware candidate:** see [known issues](grblHAL-STM32F4/FIRMWARE-KNOWN-ISSUES.md)
+- [x] Candidate source reports raw PG12–PG15 snapshots as `MR1F:1,mask`; it is unflashed and physically unqualified. It adds no per-axis fault latch or stop; PB1 remains the aggregate drive-fault stop.
+- [ ] Status reports during homing, lab-image output claims, a pinned toolchain and physical qualification of the candidate
 
 **Physical commissioning**
 - [ ] Every stage in [COMMISSIONING.md](grblHAL-STM32F4/mr1/COMMISSIONING.md): board identity, inputs, drives, homing, motion, probing, spindle, first cut

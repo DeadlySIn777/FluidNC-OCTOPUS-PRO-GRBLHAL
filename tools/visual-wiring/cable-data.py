@@ -151,10 +151,10 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
         )
     if cable_id.startswith("ALM-"):
         return (
-            f"Trace only the {name} ALM/COMO pair to its own planned isolated conditioner; identify {row['to_terminal']} as an interface name, not a proved pinout.",
+            f"Trace only the {name} ALM/COMO pair to its selected isolated relay circuit; identify {row['to_terminal']} as selected component terminal names; installed continuity remains unproved.",
             [f"Actual {name} alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
              "Released per-channel current-limited isolation circuit and real terminal map.",
-             "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."],
+             "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 requires MR1F version 1 firmware for sampled diagnostics only; no series chain of raw alarm terminals."],
         )
     if cable_id.startswith("HOME-FIELD-"):
         return (
@@ -194,7 +194,7 @@ def tasks_and_evidence(row: dict, axis: str) -> tuple[str, list[str]]:
             ["Released aggregate circuit and actual connector orientation/return continuity.",
              "All four independently conditioned drive healthy channels plus required cabinet/spindle fault sources.",
              "Measured healthy-low / fault-open-powerloss-high behavior; healthy-open outputs require added supervision.",
-             "Physical PB1 stopping proof for every drive before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware."],
+             "Physical PB1 stopping proof for every drive before any coupled dual-Y motion; PG12-PG15 requires MR1F version 1 firmware for sampled diagnostics only."],
         )
     if cable_id == "SP-PWM":
         return (

@@ -1,5 +1,3 @@
-// Historical documentation snapshot, refreshed for the connector-reference correction.
-// Canonical application source: mr1-control/src/wiring-installation.js. This file is not a runtime module.
 import { normalizeCommissioningRecord, COMMISSIONING_HARDWARE_PROFILE } from "./commissioning-record.js";
 
 export const WIRING_INSTALLATION_STORAGE_KEY = "mr1-control.wiring-installation.v1";
@@ -142,7 +140,7 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "cl57t_alarm_truth",
     group: "BENCH",
     title: "DRIVER ALARM TRUTH TABLE PASSED",
-    detail: "Each raw ALM/COMO pair has its own isolated, current-limited conditioner. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Ready, alarm, power loss and open cable pass on every drive, and PB1 stops motion before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware. Never series-chain raw alarm transistors or hot-unplug motor/encoder cables to create a fault.",
+    detail: "Each ALM/COM− pair uses its own isolated relay channel; use the selected circuit in ALARM_INTERFACE.md. Only the relay healthy contacts are chained into PB1. Prove healthy, alarm, power loss and open cable on every drive, and PB1 stopping before coupled dual-Y motion. PG12-PG15 require firmware reporting MR1F version 1 and are sampled diagnostics only; older firmware reports no per-drive state. Never series-chain raw alarm transistors or hot-unplug motor/encoder cables to create a fault.",
   }),
   Object.freeze({
     id: "hw399_identity",
@@ -290,7 +288,7 @@ export const OCTOPUS_DRIVER_SOCKET_PINOUT = Object.freeze([
   Object.freeze({ pin: 7, signal: "STEP", disposition: "ROUTE" }),
   Object.freeze({ pin: 8, signal: "DIR", disposition: "ROUTE" }),
   Object.freeze({ pin: 9, signal: "GND", disposition: "ROUTE" }),
-  Object.freeze({ pin: 10, signal: "VCC_IO", disposition: "NC" }),
+  Object.freeze({ pin: 10, signal: "VCC_IO", disposition: "DRIVER0 ONLY: FUSED +5 V" }),
   Object.freeze({ pin: 11, signal: "A1", disposition: "NC" }),
   Object.freeze({ pin: 12, signal: "A2", disposition: "NC" }),
   Object.freeze({ pin: 13, signal: "B2", disposition: "NC" }),
@@ -308,8 +306,8 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     state: "meter",
     item: "18-POSITION (2x9) DRIVER-SOCKET ADAPTER",
     boardEnd: "MOTOR0 / MOTOR1 / MOTOR2 / MOTOR3",
-    populate: "7 STEP / 8 DIR / 9 GND ONLY / PIN 1 EN RESERVED, NOT CONNECTED",
-    detail: "These are schematic contact numbers, not a mating-face cavity map. Prove physical pin 1, viewing direction, keying and de-energized continuity. A 2x8 adapter candidate remains on HOLD until its complete contact map, orientation, clearance, keying and retention are proved on the actual 18-contact socket; numbering alone does not establish fit or a row offset. Leave EN (reserved), VCC_IO, VM, phases, mode, and DIAG unconnected.",
+    populate: "7 STEP / 8 DIR / 9 GND; DRIVER0 ALSO 10 VCC_IO → 0.5 A FUSE / PIN 1 EN RESERVED, NOT CONNECTED",
+    detail: "These are schematic contact numbers, not a mating-face cavity map. Prove physical pin 1, viewing direction, keying and de-energized continuity. A 2x8 adapter candidate remains on HOLD until its complete contact map, orientation, clearance, keying and retention are proved on the actual 18-contact socket; numbering alone does not establish fit or a row offset. DRIVER0 alone supplies VCC_IO +5 V through a 0.5 A branch fuse to +5_MOTION for all four drives. Leave other sockets' VCC_IO, EN (reserved), VM, phases, mode, and DIAG unconnected. See the visual guide's command-supply section; source loading and reset behavior remain unqualified.",
   }),
   Object.freeze({
     id: "stop_housings",

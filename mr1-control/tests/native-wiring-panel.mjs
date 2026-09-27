@@ -14,8 +14,21 @@ test('wiring diagnostics preserve logical Y and aggregate fault without inventin
   assert.equal(view.valid, true); assert.equal(view.staticCaptureAllowed, true);
   assert.equal(view.inputs.find(i => i.label.startsWith('Y limit')).value, 'ACTIVE');
   assert.equal(view.inputs.find(i => i.label === 'Aggregate drive fault').value, 'ACTIVE');
-  assert.equal(view.inputs.filter(i => /PG1[2-5]/.test(i.connector)).length, 0);
+  const driveInputs = view.inputs.filter(i => /PG1[2-5]/.test(i.connector));
+  assert.equal(driveInputs.length, 4);
+  assert.ok(driveInputs.every(i => i.value === 'UNKNOWN'));
   assert.match(view.explanation, /does not prove/);
+});
+
+test('separate drive levels require a fresh versioned report and never replace the aggregate', () => {
+  const value = snapshot('<Alarm|MPos:0,0,0|FS:0,0|Pn:F|MR1F:1,10>');
+  const view = wiringDiagnostic(value, now);
+  const drives = view.inputs.filter(i => /PG1[2-5]/.test(i.connector));
+  assert.deepEqual(drives.map(i => i.value), ['LOW — contact closed', 'HIGH — fault / open', 'LOW — contact closed', 'HIGH — fault / open']);
+  assert.equal(view.inputs.find(i => i.label === 'Aggregate drive fault').value, 'ACTIVE');
+  assert.ok(wiringDiagnostic(value, now + 1500).inputs.every(i => i.value === 'UNKNOWN'));
+  value.status = parseGrblStatus('<Idle|MPos:0,0,0|FS:0,0>', value.status, {receivedAt: new Date(now).toISOString()});
+  assert.ok(wiringDiagnostic(value, now).inputs.filter(i => /PG1[2-5]/.test(i.connector)).every(i => i.value === 'UNKNOWN'));
 });
 test('disconnected, stale, future-dated and unverified reports remain unknown', () => {
   for (const candidate of [{...snapshot(),connected:false},{...snapshot(),preflight:null},

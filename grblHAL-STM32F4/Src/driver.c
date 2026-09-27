@@ -3422,6 +3422,11 @@ bool driver_init (void)
     board_init();
 #endif
 
+#if defined(BOARD_BTT_OCTOPUS_PRO_MR1) && MR1_ALARM_DIAGNOSTICS_ENABLE
+    extern void mr1_alarm_diagnostics_init (void);
+    mr1_alarm_diagnostics_init();
+#endif
+
 #if ETHERNET_ENABLE
     enet_init();
 #endif

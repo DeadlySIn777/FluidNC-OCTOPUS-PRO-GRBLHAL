@@ -10,7 +10,9 @@ The production dependency graph is flattened into normal source directories:
 | `spindle` | `https://github.com/grblHAL/Plugins_spindle` | `c9c8e6db16ef2955b00f2fd523d1f823e88c7392` |
 | `eeprom` | `https://github.com/grblHAL/Plugin_EEPROM` | `17f2a977087cd52afd9f7f416b53940fb32de65c` |
 
-These revisions had clean tracked source when exported. No nested Git repositories or build caches are required. The source manifest retains all original gitlinks, identifies unused plugins omitted from the production graph, and records original and final file hashes. Only documentation, release metadata and the active-drive comment in `platformio.ini` are changed; LF normalization follows the inherited `.gitattributes`. Firmware C/C++ and machine-profile behavior are unchanged.
+These revisions had clean tracked source when originally exported. No nested Git repositories or build caches are required. [SOURCE-REVISION.json](SOURCE-REVISION.json) retains original gitlinks and historical source hashes, identifies unused plugins omitted from the production graph, and records final export hashes and local changes. The current tree also contains the diagnostic firmware changes listed below; it is no longer a documentation-only export. LF normalization follows the inherited `.gitattributes`.
+
+The local 2026-09-27 candidate adds `Src/mr1_alarm.c`, its initialization in `Src/driver.c`, the `MR1_ALARM_DIAGNOSTICS_ENABLE` switch in `Inc/mr1_octopus_config.h`, a diagnostic-boundary comment in `boards/btt_octopus_pro_mr1_map.h`, and host tests in `tools/test_mr1_alarm.py` and `tools/tests/mr1_alarm/`. It reports raw PG12-PG15 snapshots as `MR1F:1,mask`, without adding per-axis fault latching or stopping or changing PB1's aggregate stop. This candidate is unflashed and physically unqualified; the historical firmware acceptance gate remains unchanged. Original upstream and export hashes are historical provenance, not a claim that these changed files still match them.
 
 ## Public upstream base and local delta
 
@@ -29,7 +31,7 @@ Upstream files changed in this tree, compared with `4343665`:
 | --- | --- |
 | `Inc/driver.h` | Board selectors for `BOARD_BTT_OCTOPUS_PRO_MR1`, `_F429` and `_SLOTS345`. |
 | `Inc/my_machine.h` | Legacy TMC2209 / ESP-AT / Wi-Fi station configuration (credentials replaced by empty placeholders). Not compiled by any PlatformIO environment here, which all set `-D OVERRIDE_MY_MACHINE`. |
-| `Src/driver.c` | Adds the raw `$TST` step-pulse test; `$TST`, `$DFU`/`$UF2` and their report hook are compiled out under `MR1_PRODUCTION_PROFILE`. |
+| `Src/driver.c` | Adds the raw `$TST` step-pulse test; `$TST`, `$DFU`/`$UF2` and their report hook are compiled out under `MR1_PRODUCTION_PROFILE`. The current candidate also initializes the MR1 raw alarm-input diagnostic module. |
 | `Src/main.c` | Switches SYSCLK to HSI before PLL reconfiguration for the Octopus F429/MR1 boards (the BTT bootloader leaves the PLL running). |
 | `Src/serial.c` | Inverted RS-485 direction pin with a transmit-complete busy-wait; not used by MR1 (Modbus disabled). |
 | `Src/tmc_uart.c` | TMC2209 soft-UART fixes and an Octopus `board_init()` for the legacy TMC targets. |
@@ -38,9 +40,9 @@ Upstream files changed in this tree, compared with `4343665`:
 | `.gitignore`, `README.md` | Local build/capture ignores; MR1 README. |
 | `STM32F401CCUX_BL16K_FLASH.ld` | Line endings only. |
 
-Omitted upstream files: `.gitmodules` (flattened) and `media/STM32F4xx_config.png`. Added files: `mr1/`, `tools/`, `Inc/mr1_octopus_config.h`, `Inc/mr1_servo_axis_lab_config.h`, `boards/btt_octopus_pro_mr1_map.h`, `boards/btt_octopus_pro_f429_rogerlz_map.h`, `boards/btt_octopus_pro_slots345_map.h`, `boards/genericSTM32F429ZG.json`, `boards/genericSTM32F429ZGT6.json`, `boards/genericSTM32F446ZE.json`, `STM32F429ZGTX_BL32K_I2C_FLASH.ld`, `library.json` files for the FatFs/USB/media library folders, `WIRING_GUIDE.md` (legacy) and the provenance/known-issues documents.
+Omitted upstream files: `.gitmodules` (flattened) and `media/STM32F4xx_config.png`. Added files: `mr1/`, `tools/` (including the alarm host tests), `Src/mr1_alarm.c`, `Inc/mr1_octopus_config.h`, `Inc/mr1_servo_axis_lab_config.h`, `boards/btt_octopus_pro_mr1_map.h`, `boards/btt_octopus_pro_f429_rogerlz_map.h`, `boards/btt_octopus_pro_slots345_map.h`, `boards/genericSTM32F429ZG.json`, `boards/genericSTM32F429ZGT6.json`, `boards/genericSTM32F446ZE.json`, `STM32F429ZGTX_BL32K_I2C_FLASH.ld`, `library.json` files for the FatFs/USB/media library folders, `WIRING_GUIDE.md` (legacy) and the provenance/known-issues documents.
 
-After the export, this repository moved the 42 historical root diagnostic scripts to `legacy/grblhal-diagnostics-2025/`, replaced the Wi-Fi credentials in `Inc/my_machine.h` with placeholders, corrected two message strings in `tools/validate_mr1_profile.py` and added `FIRMWARE-KNOWN-ISSUES.md`; no compiled MR1 source changed.
+After the initial export, this repository moved the 42 historical root diagnostic scripts to `legacy/grblhal-diagnostics-2025/`, replaced the Wi-Fi credentials in `Inc/my_machine.h` with placeholders, corrected two message strings in `tools/validate_mr1_profile.py` and added `FIRMWARE-KNOWN-ISSUES.md`. Those initial housekeeping changes did not alter compiled MR1 source. The later diagnostic candidate changes compiled source as explicitly listed above.
 
 ## Build provenance
 

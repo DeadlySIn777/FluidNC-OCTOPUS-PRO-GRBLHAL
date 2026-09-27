@@ -2558,11 +2558,11 @@
             <section class="wiring-section visual-wiring-section">
               <div class="visual-wiring-title">
                 <span>1</span>
-                <div><h3>MOTOR SOCKET ADAPTER / THREE POPULATED CONTACTS</h3><p>THE OCTOPUS FOOTPRINT HAS 18 POSITIONS; ONLY STEP, DIR, AND GND LEAVE THE BOARD. EN IS RESERVED AND NOT CONNECTED</p></div>
+                <div><h3>DRIVER SOCKET / STEP, DIR, GND AND ONE SHARED +5 V SOURCE</h3><p>STEP, DIR AND LOGIC GND CONNECT AT EACH SOCKET. DRIVER0 ALONE ALSO SUPPLIES VCC_IO +5 V THROUGH A 0.5 A BRANCH FUSE. EN IS RESERVED AND NOT CONNECTED.</p><p><a href="/wiring/visual/index.html#command-supply" target="_blank" rel="noopener">See the physical +5 V contact and command-supply circuit</a></p></div>
               </div>
               <div class="axis-wire-table driver-socket-wire-table" role="table" aria-label="Octopus driver socket adapter pin disposition">
                 <div class="wire-table-head" role="row"><span>PIN</span><span>SIGNAL</span><span>USE</span><span>PIN</span><span>SIGNAL</span><span>USE</span></div>
-                <div role="row"><code>1</code><strong>EN</strong><span>RESERVED</span><code>10</code><strong>VCC_IO</strong><span>NC</span></div>
+                <div role="row"><code>1</code><strong>EN</strong><span>RESERVED</span><code>10</code><strong>VCC_IO</strong><span>DRIVER0 ONLY: FUSED +5 V</span></div>
                 <div role="row"><code>2</code><strong>SDI / MS0</strong><span>NC</span><code>11</code><strong>A1</strong><span>NC</span></div>
                 <div role="row"><code>3</code><strong>SCK / MS1</strong><span>NC</span><code>12</code><strong>A2</strong><span>NC</span></div>
                 <div role="row"><code>4</code><strong>CS / MS2</strong><span>NC</span><code>13</code><strong>B2</strong><span>NC</span></div>
@@ -2940,7 +2940,7 @@
                 <div><span>DIAG6</span><strong>Z FAULT</strong><small>PG14</small></div>
                 <div><span>DIAG7</span><strong>Y-RIGHT FAULT</strong><small>PG15</small></div>
               </div>
-              <p class="wiring-callout alarm">Each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Never series-chain raw alarm transistors as dry contacts or land them directly on an Octopus input. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Prove healthy, alarm, drive-power loss and cable-open states for each drive. PG12-PG15 are wiring only: the current firmware does not read them, so they neither stop motion nor identify the faulted drive. PB1 is the only drive-fault stop; qualify it before any coupled dual-Y motion.</p>
+              <p class="wiring-callout alarm">Each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Never series-chain raw alarm transistors as dry contacts or land them directly on an Octopus input. Combine only conditioned healthy outputs into the PB1 aggregate stop path. Prove healthy, alarm, drive-power loss and cable-open states for each drive. PG12-PG15 provide sampled diagnostics with the new MR1F version 1 firmware. Older firmware or missing reports show UNKNOWN; these inputs do not stop motion. PB1 is the only drive-fault stop; qualify it before any coupled dual-Y motion.</p>
               <p class="wiring-callout alarm">If the drive is open when healthy, software inversion cannot distinguish it from a broken cable: use a qualified supervised circuit or a separate ready/power contact. Use an approved fault method; never hot-unplug motor or encoder cables and never use an ohmmeter on an energized output. Arrange cable-open tests de-energized before controlled bench power.</p>
             </section>
 
@@ -2998,7 +2998,7 @@
                 <div role="row"><strong>Z</strong><span>DIAG6</span><code>PG14</code><span>HEALTHY LOW</span></div>
                 <div role="row"><strong>Y-RIGHT</strong><span>DIAG7</span><code>PG15</code><span>HEALTHY LOW</span></div>
               </div>
-              <p class="wiring-callout alarm">CL57T ALM/COMO must pass through the isolated, polarity-configurable fault conditioner. Never land either alarm terminal directly on an Octopus input. These four per-axis inputs are not read by the current firmware; only the PB1 aggregate stops motion.</p>
+              <p class="wiring-callout alarm">CL57T ALM/COMO must pass through the isolated, polarity-configurable fault conditioner. Never land either alarm terminal directly on an Octopus input. These four per-axis inputs require MR1F version 1 firmware for sampled diagnostics; only the PB1 aggregate stops motion.</p>
             </section>
 
             <section class="wiring-section">

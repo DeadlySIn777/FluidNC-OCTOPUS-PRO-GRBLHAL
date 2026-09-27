@@ -48,6 +48,13 @@
 #define SAFETY_DOOR_ENABLE                    1
 #define MOTOR_FAULT_ENABLE                    1
 
+/* Read-only snapshots of STOP4..7 (X, Y-left, Z, Y-right). These do not
+ * replace the conditioned PB1 aggregate stop or enable unwired fault inputs.
+ * Override to 0 at compile time to omit this diagnostic extension. */
+#ifndef MR1_ALARM_DIAGNOSTICS_ENABLE
+#define MR1_ALARM_DIAGNOSTICS_ENABLE           1
+#endif
+
 /* Stock MR-1 servo: isolated enable relay plus isolated 0-5 V command. */
 #define SPINDLE0_ENABLE                       12 /* SPINDLE_PWM0_NODIR */
 #define N_SPINDLE                             1

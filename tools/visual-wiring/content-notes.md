@@ -6,7 +6,7 @@ Use `routes[].id` as the selector key. `matchCableIds` connects views to the cor
 
 Print `endLabels.from` and `endLabels.to` at the corresponding ends. They deliberately match. `connections` names electrical functions, not physical cavities. The P2 encoder supply row has `direction: to-from`: power comes from the drive even though encoder feedback travels toward it. Do not render all rows as one-way signals.
 
-| Physical motor | Socket | STEP | DIR | Reserved EN, unused | Per-axis fault wiring (not read) |
+| Physical motor | Socket | STEP | DIR | Reserved EN, unused | Per-axis diagnostic wiring (MR1F version 1) |
 | --- | --- | --- | --- | --- | --- |
 | X | MOTOR0 | PF13 | PF12 | PF14 | STOP4 / PG12 |
 | Y-left | MOTOR1 | PG0 | PG1 | PF15 | STOP5 / PG13 |
@@ -15,7 +15,7 @@ Print `endLabels.from` and `endLabels.to` at the corresponding ends. They delibe
 
 P3 is A±/B± motor power. P2 is EA±/EB± plus drive-supplied VCC/EGND for the matched encoder. P4 is polarized +VDC/GND on its own protected star branch. No motor colors, GX16 cavities, interface cavity order or fuse values are supplied.
 
-Each raw ALM/COMO pair terminates at its own planned isolated conditioner. Optional per-axis outputs go to PG12–15, but the current firmware never reads those pins; the supervised aggregate goes to PB1 and its controller-side return and is the only drive-fault stop. The aggregate must include all required fault contributors. Raw alarm transistors are never drawn as a series GPIO circuit. PG12–15 do not establish the motor-fault stopping path or verified per-drive live telemetry.
+Each ALM/COM− pair operates its own selected Weidmüller 2618530000 relay from the isolated alarm supply. Contacts 11/14 form the PB1 series aggregate and contacts 21/24 feed separate PG12–PG15 diagnostics. New MR1F version 1 firmware reports sampled raw levels; absent or older reports remain UNKNOWN. PB1 remains the only drive-fault stop and must include all required cabinet/spindle fault contributors. The separate 57-row alarm terminal schedule does not mark any physical acceptance complete. Raw alarm transistors never reach GPIOs. Command +5 V and alarm field return are distinct domains.
 
 The `holds` collection names the missing physical evidence: board/connector views, command interface and 5 V qualification, actual module circuit, alarm truth tables and supervision, return/PE topology, harness mapping, supply/protection and independent hardware stopping including Z support. Nothing in the content silently qualifies the recorded 36 V / 10 A supply or a TLP281/HW-399 module.
 

@@ -8,8 +8,8 @@
   "source": {
     "csv": {
       "path": "docs/wiring/mr1/cable-schedule.csv",
-      "bytes": 18775,
-      "sha256": "69c738abcc44fd351c9b2298005f6f4a59c1594a2926a12dc51246165f9d5228"
+      "bytes": 19175,
+      "sha256": "6a3c44d772fcb101f139cb0dc2e2bbc1f4dcf8adf75f06b5d801b9c87be92901"
     },
     "readiness": {
       "path": "docs/wiring/MR1-wiring-readiness.md",
@@ -894,13 +894,13 @@
     {
       "cable_id": "ALM-X",
       "from_device": "CL57T X",
-      "from_terminal": "P1 ALM/COMO",
-      "to_device": "MR1 interface",
-      "to_terminal": "JFX",
+      "from_terminal": "P1 ALM / COM− (COMO)",
+      "to_device": "Selected K-X relay circuit",
+      "to_terminal": "ALM → K-X A2; COM− → isolated ALARM_0V",
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG12 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "Selected Weidmüller 2618530000 relay: A1 fused isolated +23 V; A2 ALM; COM− isolated return. 11/14 healthy contacts feed PB1 series chain; 21/24 feed axis diagnostics. MR1F version 1 required for diagnostic snapshots; PB1 remains the stop. ALARM_INTERFACE.md and supplemental wire schedule define the assembly. Not installed or qualified; prove healthy/alarm/power loss/open cable. No raw GPIO or raw transistor series chain.",
       "source_record": 23,
       "axis": "X",
       "family": "fault",
@@ -913,16 +913,14 @@
       },
       "endpoint_status": {
         "from": "reference-only",
-        "to": "planned-interface"
+        "to": "reference-only"
       },
-      "planned_interface_names": [
-        "JFX"
-      ],
-      "trace_task": "Trace only the X ALM/COMO pair to its own planned isolated conditioner; identify JFX as an interface name, not a proved pinout.",
+      "planned_interface_names": [],
+      "trace_task": "Trace only the X ALM/COMO pair to its selected isolated relay circuit; identify ALM → K-X A2; COM− → isolated ALARM_0V as selected component terminal names; installed continuity remains unproved.",
       "missing_evidence": [
         "Actual X alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 requires MR1F version 1 firmware for sampled diagnostics only; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -930,13 +928,13 @@
     {
       "cable_id": "ALM-YL",
       "from_device": "CL57T Y-left",
-      "from_terminal": "P1 ALM/COMO",
-      "to_device": "MR1 interface",
-      "to_terminal": "JFYL",
+      "from_terminal": "P1 ALM / COM− (COMO)",
+      "to_device": "Selected K-YL relay circuit",
+      "to_terminal": "ALM → K-YL A2; COM− → isolated ALARM_0V",
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG13 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "Selected Weidmüller 2618530000 relay: A1 fused isolated +23 V; A2 ALM; COM− isolated return. 11/14 healthy contacts feed PB1 series chain; 21/24 feed axis diagnostics. MR1F version 1 required for diagnostic snapshots; PB1 remains the stop. ALARM_INTERFACE.md and supplemental wire schedule define the assembly. Not installed or qualified; prove healthy/alarm/power loss/open cable. No raw GPIO or raw transistor series chain.",
       "source_record": 24,
       "axis": "YL",
       "family": "fault",
@@ -949,16 +947,14 @@
       },
       "endpoint_status": {
         "from": "reference-only",
-        "to": "planned-interface"
+        "to": "reference-only"
       },
-      "planned_interface_names": [
-        "JFYL"
-      ],
-      "trace_task": "Trace only the Y-left ALM/COMO pair to its own planned isolated conditioner; identify JFYL as an interface name, not a proved pinout.",
+      "planned_interface_names": [],
+      "trace_task": "Trace only the Y-left ALM/COMO pair to its selected isolated relay circuit; identify ALM → K-YL A2; COM− → isolated ALARM_0V as selected component terminal names; installed continuity remains unproved.",
       "missing_evidence": [
         "Actual Y-left alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 requires MR1F version 1 firmware for sampled diagnostics only; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -966,13 +962,13 @@
     {
       "cable_id": "ALM-Z",
       "from_device": "CL57T Z",
-      "from_terminal": "P1 ALM/COMO",
-      "to_device": "MR1 interface",
-      "to_terminal": "JFZ",
+      "from_terminal": "P1 ALM / COM− (COMO)",
+      "to_device": "Selected K-Z relay circuit",
+      "to_terminal": "ALM → K-Z A2; COM− → isolated ALARM_0V",
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG14 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "Selected Weidmüller 2618530000 relay: A1 fused isolated +23 V; A2 ALM; COM− isolated return. 11/14 healthy contacts feed PB1 series chain; 21/24 feed axis diagnostics. MR1F version 1 required for diagnostic snapshots; PB1 remains the stop. ALARM_INTERFACE.md and supplemental wire schedule define the assembly. Not installed or qualified; prove healthy/alarm/power loss/open cable. No raw GPIO or raw transistor series chain.",
       "source_record": 25,
       "axis": "Z",
       "family": "fault",
@@ -985,16 +981,14 @@
       },
       "endpoint_status": {
         "from": "reference-only",
-        "to": "planned-interface"
+        "to": "reference-only"
       },
-      "planned_interface_names": [
-        "JFZ"
-      ],
-      "trace_task": "Trace only the Z ALM/COMO pair to its own planned isolated conditioner; identify JFZ as an interface name, not a proved pinout.",
+      "planned_interface_names": [],
+      "trace_task": "Trace only the Z ALM/COMO pair to its selected isolated relay circuit; identify ALM → K-Z A2; COM− → isolated ALARM_0V as selected component terminal names; installed continuity remains unproved.",
       "missing_evidence": [
         "Actual Z alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 requires MR1F version 1 firmware for sampled diagnostics only; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1002,13 +996,13 @@
     {
       "cable_id": "ALM-YR",
       "from_device": "CL57T Y-right",
-      "from_terminal": "P1 ALM/COMO",
-      "to_device": "MR1 interface",
-      "to_terminal": "JFYR",
+      "from_terminal": "P1 ALM / COM− (COMO)",
+      "to_device": "Selected K-YR relay circuit",
+      "to_terminal": "ALM → K-YR A2; COM− → isolated ALARM_0V",
       "cable_class": "shielded pair/field logic",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "ALM/COMO first enters its own current-limited isolated conditioner. NEVER series-chain raw terminals to PB1. Only qualified healthy outputs feed the supervised PB1 aggregate (the only drive-fault stop); PG15 wiring is for a future firmware candidate and is not read by the current firmware. Characterize healthy/alarm/power-loss/open-cable behavior; healthy-open requires extra supervision.",
+      "notes": "Selected Weidmüller 2618530000 relay: A1 fused isolated +23 V; A2 ALM; COM− isolated return. 11/14 healthy contacts feed PB1 series chain; 21/24 feed axis diagnostics. MR1F version 1 required for diagnostic snapshots; PB1 remains the stop. ALARM_INTERFACE.md and supplemental wire schedule define the assembly. Not installed or qualified; prove healthy/alarm/power loss/open cable. No raw GPIO or raw transistor series chain.",
       "source_record": 26,
       "axis": "YR",
       "family": "fault",
@@ -1021,16 +1015,14 @@
       },
       "endpoint_status": {
         "from": "reference-only",
-        "to": "planned-interface"
+        "to": "reference-only"
       },
-      "planned_interface_names": [
-        "JFYR"
-      ],
-      "trace_task": "Trace only the Y-right ALM/COMO pair to its own planned isolated conditioner; identify JFYR as an interface name, not a proved pinout.",
+      "planned_interface_names": [],
+      "trace_task": "Trace only the Y-right ALM/COMO pair to its selected isolated relay circuit; identify ALM → K-YR A2; COM− → isolated ALARM_0V as selected component terminal names; installed continuity remains unproved.",
       "missing_evidence": [
         "Actual Y-right alarm-output configuration and healthy/alarm/power-loss/open-cable truth table.",
         "Released per-channel current-limited isolation circuit and real terminal map.",
-        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 wiring is not read by the current firmware; no series chain of raw alarm terminals."
+        "Proved conditioned healthy-output supervision into PB1, the only drive-fault stop; PG12-PG15 requires MR1F version 1 firmware for sampled diagnostics only; no series chain of raw alarm terminals."
       ],
       "evidence_status": "unverified",
       "may_energize": false
@@ -1529,7 +1521,7 @@
       "cable_class": "shielded pair",
       "shield_termination": "one planned field termination",
       "state": "HOLD",
-      "notes": "Only a qualified supervised aggregate feeds PB1; include all four drive healthy outputs and required cabinet/spindle fault sources. Raw field outputs forbidden. PB1 has no board pull-up or RC - the interface board adds them. PG12-PG15 are not read by the current firmware. Qualify PB1 before any coupled dual-Y motion.",
+      "notes": "Selected relay NO chain and any required cabinet/spindle healthy contacts → PB1; 2.2 kΩ to3.3V plus100nF tologicGND. MR1F per-axis snapshots do not replace this stop. Assembly/healthy/alarm/power-loss/open-cable/stop tests pending. See ALARM_INTERFACE.md; independent hardware E-stop remains required.",
       "source_record": 41,
       "axis": "shared",
       "family": "fault",
@@ -1550,7 +1542,7 @@
         "Released aggregate circuit and actual connector orientation/return continuity.",
         "All four independently conditioned drive healthy channels plus required cabinet/spindle fault sources.",
         "Measured healthy-low / fault-open-powerloss-high behavior; healthy-open outputs require added supervision.",
-        "Physical PB1 stopping proof for every drive before any coupled dual-Y motion; PG12-PG15 are not read by the current firmware."
+        "Physical PB1 stopping proof for every drive before any coupled dual-Y motion; PG12-PG15 requires MR1F version 1 firmware for sampled diagnostics only."
       ],
       "evidence_status": "unverified",
       "may_energize": false

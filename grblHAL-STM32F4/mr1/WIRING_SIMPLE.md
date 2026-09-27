@@ -151,6 +151,7 @@ view. Establish actual orientation and continuity before terminating the cable:
 | 7 | `STEP` |
 | 8 | `DIR` |
 | 9 | `GND` |
+| 10 | DRIVER0 only: `VCC_IO` → 0.5 A fast branch fuse → `+5_MOTION` |
 
 | Octopus | Drive |
 | --- | --- |
@@ -159,7 +160,9 @@ view. Establish actual orientation and continuity before terminating the cable:
 | MOTOR2 | Z |
 | MOTOR3 | Y-right |
 
-`ENA` is optional and unconnected by default. Leave it.
+Use [COMMAND_SUPPLY.md](COMMAND_SUPPLY.md) for the physical +5 V takeoff,
+fuse and eight command sinks. One DRIVER0 supply takeoff feeds all four axes;
+its logic GND is the command return. ENA remains unconnected and unqualified.
 
 - [ ] **Check:** P1 PUL/DIR use only the qualified 5 V command domain; `S3` is `5V`. P1 ALM/COMO is a separate, current-limited field circuit through isolation, never a direct GPIO connection.
 
@@ -221,20 +224,44 @@ its actual supplies and terminal map. See `INTERFACE_BOARD.md` A2.
 
 ---
 
-## 8. Drive alarms - Qualified Aggregate into PB1
+## 8. Drive alarms — selected relay assembly, tests pending
 
-Each `ALM`/`COMO` pair first enters its own opto-isolated, current-limited conditioner. Combine the four **conditioned healthy outputs** into the PB1 aggregate: all healthy pulls PB1 low; any alarm, lost drive power, or open cable releases it high.
-
-**Do not series-chain raw ALM/COMO transistor outputs into PB1.** They are not verified dry contacts. Their polarity and power-loss behavior must be characterized. A healthy-open output needs additional supervision or a separate ready/power contact; inversion alone cannot distinguish it from a broken wire. See `INTERFACE_BOARD.md`, External-Drive Alarm Inputs.
+Use four **Weidmüller 2618530000** relay modules and one **Mean Well
+DDR-15G-24** isolated supply. They are selected new parts, not confirmed owned.
+Full instructions: [ALARM_INTERFACE.md](ALARM_INTERFACE.md),
+[one-wire-at-a-time list](alarm-interface-wires.csv).
 
 | From | To |
 | --- | --- |
-| conditioned, 3.3 V-compatible aggregate output plus logic return | `EXP2` **PB1/GND** |
+| Converter isolated output, measured 23.0 V | Common 0.25 A fast DC-rated output fuse, then every relay **A1** |
+| Each relay **A2** | Its own CL57T **ALM** |
+| Converter isolated **−Vo** | Every CL57T **COM− / COMO** |
+| **PB1** | Four relay **11–14 NO contacts in series**, then Octopus **GND** |
+| **PG12 / PG13 / PG14 / PG15** | X / YL / Z / YR relay **21–24 NO contact**, each to Octopus **GND** |
 
-`PG12`–`PG15` are **not read by the current firmware** - no stop, no display.
-PB1 is the only drive-fault stop. Qualify it before any coupled dual-Y motion.
+Add **2.2 kΩ 1% 0.25 W to Octopus 3.3 V** and **100 nF X7R, at least 25 V,
+to Octopus GND** at each of the five input nodes. Leave relay 12/22 empty.
+Keep the isolated COM− return separate from Octopus GND and the command
+supply return. Raw ALM/COM− does not go into a board signal pin. The converter
+input fuse is a separate wiring/inrush selection; do not use 0.25 A there.
 
-- [ ] **Later protected bench check:** remove each field alarm connection in turn and verify PB1 faults; also test drive power loss and a safely induced documented alarm. Never hot-unplug motor or encoder.
+The drive must conduct ALM-to-COM− while healthy, then release on fault or
+power loss. The exact configuration parameter and installed behavior are not
+yet verified. Prove every drive's healthy/fault/power-loss/open-wire states;
+do not swap to NC contacts to hide a failed test. Retain required cabinet and
+spindle healthy sources in PB1's complete chain.
+
+**PB1 is the only drive-fault stop.** The new firmware candidate reports
+**`MR1F:1,mask` snapshots** of PG12–PG15. It does not latch the first fault or
+stop from those individual inputs. Installed firmware is unknown until
+checked. Qualify PB1 before coupled dual-Y motion; retain the independent
+hardwired emergency stop because shorts or stuck relay contacts can mask faults.
+
+- [ ] All four relay modules and the isolated supply match the selected parts.
+- [ ] Output is measured at 23.0 V and never exceeds 24.0 V, loaded or unloaded.
+- [ ] Each alarm, lost drive power, lost alarm supply and opened alarm wire trips PB1.
+- [ ] Raw axis snapshots and latched PB1 recovery match the installed build.
+- [ ] Z is mechanically supported for power-loss tests; never hot-unplug motor or encoder.
 
 ---
 
@@ -270,7 +297,7 @@ Run every one of these:
 - [ ] All four drives: `S1`=4, `S3`=`5V`, `SW6`/`SW7` **off**
 - [ ] Every `STOP` 5 V cavity empty
 - [ ] Onboard `SW2` ("BOOT1") guarded or removed - it shares PB2, so pressing it is a cycle start
-- [ ] PB1, PB2 and PB7 have their interface-board 3.3 V pull-up and RC filter; every field input has its series resistor and TVS
+- [ ] PB1 and PG12–PG15 have the selected alarm pull-ups/RC; PB2/PB7 and external operator/sensor field inputs have the separately qualified protection in INTERFACE_BOARD.md
 - [ ] Exact conditioner circuitry qualified; no generic floating-VCC recipe
 - [ ] PUL/DIR waveforms/current and PB1 alarm supervision proved on the protected bench
 - [ ] Hardware stop, protective bonding and branch protection documented. **Blocking HOLD:** the reviewed stop design removes spindle-servo energy (mains contactor and/or certified STO, not just `SON`), removes 36 V motion power with a Z-drop analysis, puts coolant in the stop chain and has a terminal schedule (`WIRING.md`, "Scope and Safety Boundary")

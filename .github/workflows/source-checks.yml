@@ -8,6 +8,17 @@ permissions:
   contents: read
 
 jobs:
+  firmware-diagnostics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Test actual alarm module without controller hardware
+        working-directory: grblHAL-STM32F4
+        run: python tools/test_mr1_alarm.py --cc gcc
+
   windows-source:
     runs-on: windows-latest
     steps:

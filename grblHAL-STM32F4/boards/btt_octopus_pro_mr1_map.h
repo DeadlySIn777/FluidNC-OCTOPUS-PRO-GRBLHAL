@@ -123,7 +123,8 @@
 #endif
 #define LIMIT_INMODE                 GPIO_BITBAND
 
-/* Four fail-safe driver-ready/fault inputs on DIAG4-DIAG7. */
+/* Four raw diagnostic inputs on DIAG4-DIAG7, for conditioned healthy-low
+ * drive-alarm channels. PB1 remains the independent aggregate stop input. */
 #define X_MOTOR_FAULT_PORT           GPIOG
 #define X_MOTOR_FAULT_PIN            12
 #define Y_MOTOR_FAULT_PORT           GPIOG

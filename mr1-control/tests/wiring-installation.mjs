@@ -186,7 +186,7 @@ test("source ledger separates exact wiring authorities from the MR-1 community c
   assert.match(html, /DO NOT COPY FROM THE MESA BUILD/);
 });
 
-test("driver socket adapter routes only STEP, DIR and GND; EN stays reserved and unconnected", () => {
+test("driver socket routes STEP/DIR/GND plus one fused DRIVER0 supply; EN stays reserved", () => {
   assert.equal(OCTOPUS_DRIVER_SOCKET_PINOUT.length, 18);
   assert.deepEqual(
     OCTOPUS_DRIVER_SOCKET_PINOUT.filter((contact) => contact.disposition === "ROUTE")
@@ -198,7 +198,10 @@ test("driver socket adapter routes only STEP, DIR and GND; EN stays reserved and
       .map(({ pin, signal }) => [pin, signal]),
     [[1, "EN"]],
   );
-  assert.ok(OCTOPUS_DRIVER_SOCKET_PINOUT.every((contact) => ["ROUTE", "RESERVED", "NC"].includes(contact.disposition)));
+  assert.equal(OCTOPUS_DRIVER_SOCKET_PINOUT.find(contact => contact.pin === 10).disposition, "DRIVER0 ONLY: FUSED +5 V");
+  assert.equal(manifest.motion.octopus_driver_socket.command_supply_takeoff.socket, "DRIVER0");
+  assert.equal(manifest.motion.octopus_driver_socket.command_supply_takeoff.other_sockets_contact_10, "NC");
+  assert.equal(manifest.motion.octopus_driver_socket.command_supply_takeoff.physicalAcceptance, false);
   assert.equal(new Set(OCTOPUS_DRIVER_SOCKET_PINOUT.map((contact) => contact.pin)).size, 18);
   assert.equal(manifest.motion.octopus_driver_socket.positions, 18);
   assert.deepEqual(manifest.motion.octopus_driver_socket.routed_contacts, {
@@ -214,7 +217,7 @@ test("driver socket adapter routes only STEP, DIR and GND; EN stays reserved and
   const html = readFileSync(appHtmlUrl, "utf8");
   const harness = html.slice(html.indexOf('<section id="harness-panel"'), html.indexOf('<section id="probes-panel"'));
   assert.match(harness, /<code>1<\/code><strong>EN<\/strong><span>RESERVED<\/span>/);
-  assert.match(harness, /ONLY STEP, DIR, AND GND LEAVE THE BOARD/);
+  assert.match(harness, /DRIVER0 ALONE ALSO SUPPLIES VCC_IO/);
   assert.match(harness, /2x8 adapter candidate remains on HOLD/);
   assert.doesNotMatch(html, /12-channel MOSFET|ONLY EN, STEP, DIR, AND GND|pins 1-16|pins 3-18/);
 });
@@ -225,7 +228,7 @@ test("pigtail schedule separates build, fit-check, and held stock connectors", (
   assert.ok(WIRING_PIGTAIL_SCHEDULE.every((item) => ["exact", "meter", "hold"].includes(item.state)));
   const byId = Object.fromEntries(WIRING_PIGTAIL_SCHEDULE.map((item) => [item.id, item]));
   assert.equal(byId.motor_socket_adapters.quantity, 4);
-  assert.match(byId.motor_socket_adapters.populate, /7 STEP \/ 8 DIR \/ 9 GND ONLY/);
+  assert.match(byId.motor_socket_adapters.populate, /7 STEP \/ 8 DIR \/ 9 GND; DRIVER0 ALSO 10 VCC_IO/);
   assert.match(byId.motor_socket_adapters.populate, /PIN 1 EN RESERVED, NOT CONNECTED/);
   assert.match(byId.motor_socket_adapters.detail, /2x8 adapter candidate remains on HOLD/);
   assert.doesNotMatch(byId.motor_socket_adapters.detail, /pins 1-16/);
@@ -379,20 +382,22 @@ test('physical socket and motor polarity evidence cannot be inferred from schema
 
 test('alarm instructions require individual conditioning, supervised healthy state and safe fault injection', () => {
   const gate = WIRING_EVIDENCE_GATES.find(item => item.id === 'cl57t_alarm_truth');
-  assert.match(gate.detail, /Each raw ALM\/COMO pair has its own isolated, current-limited conditioner/);
-  assert.match(gate.detail, /Combine only conditioned healthy outputs/);
-  assert.match(gate.detail, /PG12-PG15 are not read by the current firmware/);
-  assert.match(gate.detail, /PB1 stops motion before any coupled dual-Y motion/);
+  assert.match(gate.detail, /Each ALM\/COM− pair uses its own isolated relay channel/);
+  assert.match(gate.detail, /Only the relay healthy contacts are chained into PB1/);
+  assert.match(gate.detail, /PG12-PG15 require firmware reporting MR1F version 1/);
+  assert.match(gate.detail, /sampled diagnostics only/);
+  assert.match(gate.detail, /PB1 stopping before coupled dual-Y motion/);
   for (const macro of ['X_MOTOR_FAULT', 'Y_MOTOR_FAULT', 'Z_MOTOR_FAULT', 'M3_MOTOR_FAULT']) {
     const signal = signalByMacro(macro);
     assert.equal(signal.stopsMotion, false);
-    assert.equal(signal.firmwareReadsState, false);
-    assert.match(signal.role, /not read by the current firmware/);
+    assert.equal(signal.firmwareReadsState, true);
+    assert.equal(signal.reportingProtocol, 'MR1F:1');
+    assert.equal(signal.installedFirmwareSupport, 'unknown');
   }
   const html = readFileSync(appHtmlUrl, 'utf8');
   const alarms = html.slice(html.indexOf('ROUTE EACH DRIVE ALARM'), html.indexOf('HARDWIRED STOP FIRST'));
-  assert.match(alarms, /the current firmware does not read them/);
-  assert.doesNotMatch(alarms, /axis diagnostics/);
+  assert.match(alarms, /MR1F version 1/);
+  assert.match(alarms, /sampled diagnostics/);
   assert.match(alarms, /Never series-chain raw alarm transistors/);
   assert.match(alarms, /software inversion cannot distinguish it from a broken cable/);
   assert.match(alarms, /never hot-unplug motor or encoder cables/);

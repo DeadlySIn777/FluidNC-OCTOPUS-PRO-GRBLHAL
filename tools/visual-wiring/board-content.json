@@ -83,6 +83,22 @@
       "id": "mr1-owner-home-harness",
       "path": "https://forum.langmuirsystems.com/t/z-limit-switch-not-functioning-replaced-switch-no-go/40432",
       "description": "Owner reports four-wire harness and Y2/Z series switches while troubleshooting a faulty harness; not manufacturer or installed-machine proof."
+    },
+    {
+      "id": "btt-v11-supply-schematic",
+      "title": "BTT V1.1 schematic: driver and power sheets",
+      "path": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/blob/master/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-sch.pdf",
+      "description": "Sheet 1: VCC_IO contact 10 = VCC_5V; contact 9 = logic GND. Sheet 4: regulator and J68 USB-power path."
+    },
+    {
+      "id": "btt-socket-physical-map",
+      "title": "BTT-hosted color socket map",
+      "path": "https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/blob/master/Hardware/BIGTREETECH-Octopus-Pro-V1.0-Color-PIN-V3.0.pdf",
+      "description": "Physical lower socket rows: STEP opposite VCC_IO; DIR opposite GND. Cross-checked against the V1.1 photo and electrical schematic."
+    },
+    {
+      "id": "alarm-plan",
+      "path": "docs/wiring/mr1/ALARM_INTERFACE.md"
     }
   ],
   "groups": [
@@ -207,10 +223,14 @@
         },
         {
           "terminal": "Logic GND",
-          "destination": "Controller-side return of the planned X command interface.",
+          "destination": "Right black socket row, bottom hole → CTRL_0V → all command-interface MOSFET sources. This is not the isolated alarm field return.",
           "relatedCableIds": [
             "CMD-X"
           ]
+        },
+        {
+          "terminal": "VCC_IO / +5 V",
+          "destination": "Right black socket row, second hole from bottom → 0.5 A fast fuse at source → +5_MOTION bus → every CL57T PUL+ and DIR+. One supply takeoff only; planned and unqualified."
         },
         {
           "terminal": "EN / PF14",
@@ -218,20 +238,22 @@
         },
         {
           "terminal": "Other driver-socket contacts",
-          "destination": "No connection: VM, VCC_IO, phase, mode/reset/sleep, DIAG and other unused contacts."
+          "destination": "No connection: VM, phase, mode/reset/sleep, DIAG and other unused contacts. VCC_IO is used only for the separately fused +5_MOTION supply above."
         }
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
+        "With motor plugs above and power screw terminals left: lower two socket rows are STEP opposite VCC_IO, then DIR opposite logic GND. Schematic identities are STEP 7, DIR 8, GND 9 and VCC_IO 10. Match the top-face view and prove the fitted harness; EN remains reserved.",
         "CMD-X labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
-        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+        "PUL+ and DIR+ on all four drives use the selected +5_MOTION bus: one DRIVER0 VCC_IO takeoff through a 0.5 A fast branch fuse. DRIVER0 logic GND supplies CTRL_0V. See Command supply. Circuit construction, loaded voltage/current, timing and power transitions remain unqualified."
       ],
       "sourceIds": [
         "pin-map",
         "interface",
         "pigtails",
-        "cable-schedule"
+        "cable-schedule",
+        "btt-v11-supply-schematic",
+        "btt-socket-physical-map"
       ]
     },
     {
@@ -271,15 +293,17 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
+        "With motor plugs above and power screw terminals left: lower two socket rows are STEP opposite VCC_IO, then DIR opposite logic GND. Schematic identities are STEP 7, DIR 8, GND 9 and VCC_IO 10. Match the top-face view and prove the fitted harness; EN remains reserved.",
         "CMD-YL labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
-        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+        "PUL+ and DIR+ on all four drives use the selected +5_MOTION bus: one DRIVER0 VCC_IO takeoff through a 0.5 A fast branch fuse. DRIVER0 logic GND supplies CTRL_0V. See Command supply. Circuit construction, loaded voltage/current, timing and power transitions remain unqualified."
       ],
       "sourceIds": [
         "pin-map",
         "interface",
         "pigtails",
-        "cable-schedule"
+        "cable-schedule",
+        "btt-v11-supply-schematic",
+        "btt-socket-physical-map"
       ]
     },
     {
@@ -319,15 +343,17 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
+        "With motor plugs above and power screw terminals left: lower two socket rows are STEP opposite VCC_IO, then DIR opposite logic GND. Schematic identities are STEP 7, DIR 8, GND 9 and VCC_IO 10. Match the top-face view and prove the fitted harness; EN remains reserved.",
         "CMD-Z labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
-        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+        "PUL+ and DIR+ on all four drives use the selected +5_MOTION bus: one DRIVER0 VCC_IO takeoff through a 0.5 A fast branch fuse. DRIVER0 logic GND supplies CTRL_0V. See Command supply. Circuit construction, loaded voltage/current, timing and power transitions remain unqualified."
       ],
       "sourceIds": [
         "pin-map",
         "interface",
         "pigtails",
-        "cable-schedule"
+        "cable-schedule",
+        "btt-v11-supply-schematic",
+        "btt-socket-physical-map"
       ]
     },
     {
@@ -367,15 +393,17 @@
       ],
       "notes": [
         "Use the actual driver socket with a mechanically supported, continuity-proved control-cable connection; no installed adapter is assumed and no plug-in motor driver is fitted.",
-        "Schematic identities are STEP 7, DIR 8, GND 9; EN 1 is reserved and not populated. They do not establish physical row order, pin-1 orientation or connector-face view. A 2x8 adapter candidate stays on HOLD until its contact map and fit are proved on the actual socket.",
+        "With motor plugs above and power screw terminals left: lower two socket rows are STEP opposite VCC_IO, then DIR opposite logic GND. Schematic identities are STEP 7, DIR 8, GND 9 and VCC_IO 10. Match the top-face view and prove the fitted harness; EN remains reserved.",
         "CMD-YR labels the interface-to-drive cable. This upstream socket-to-interface segment has no separate scheduled harness ID.",
-        "PUL+ and DIR+ come from the qualified protected +5 V command interface, never a guessed STOP power pin. Actual interface terminals, loaded signal levels and timing remain unverified."
+        "PUL+ and DIR+ on all four drives use the selected +5_MOTION bus: one DRIVER0 VCC_IO takeoff through a 0.5 A fast branch fuse. DRIVER0 logic GND supplies CTRL_0V. See Command supply. Circuit construction, loaded voltage/current, timing and power transitions remain unqualified."
       ],
       "sourceIds": [
         "pin-map",
         "interface",
         "pigtails",
-        "cable-schedule"
+        "cable-schedule",
+        "btt-v11-supply-schematic",
+        "btt-socket-physical-map"
       ]
     },
     {
@@ -542,61 +570,61 @@
     },
     {
       "id": "diagnostics-stop4-7",
-      "title": "STOP4–STOP7: per-axis drive-fault wiring (not read by current firmware)",
+      "title": "STOP4–STOP7: individual drive relay contacts",
       "status": "FUNCTIONAL SEGMENTS — HOLD",
       "rows": [
         {
           "terminal": "STOP4 signal / PG12",
-          "destination": "Optional qualified controller-side X drive-fault output for a future firmware candidate; not read by the current firmware.",
+          "destination": "K-X terminal 21. Add 2.2 kΩ to board 3.3 V. MR1F version 1 reports this raw level; diagnostic only.",
           "relatedCableIds": [
             "ALM-X"
           ]
         },
         {
           "terminal": "STOP4 GND",
-          "destination": "Verified controller-side return for that X per-axis output.",
+          "destination": "K-X terminal 24 (NO). Controller logic return only.",
           "relatedCableIds": [
             "ALM-X"
           ]
         },
         {
           "terminal": "STOP5 signal / PG13",
-          "destination": "Optional qualified controller-side Y-left drive-fault output for a future firmware candidate; not read by the current firmware.",
+          "destination": "K-YL terminal 21. Add 2.2 kΩ to board 3.3 V. MR1F version 1 reports this raw level; diagnostic only.",
           "relatedCableIds": [
             "ALM-YL"
           ]
         },
         {
           "terminal": "STOP5 GND",
-          "destination": "Verified controller-side return for that Y-left per-axis output.",
+          "destination": "K-YL terminal 24 (NO). Controller logic return only.",
           "relatedCableIds": [
             "ALM-YL"
           ]
         },
         {
           "terminal": "STOP6 signal / PG14",
-          "destination": "Optional qualified controller-side Z drive-fault output for a future firmware candidate; not read by the current firmware.",
+          "destination": "K-Z terminal 21. Add 2.2 kΩ to board 3.3 V. MR1F version 1 reports this raw level; diagnostic only.",
           "relatedCableIds": [
             "ALM-Z"
           ]
         },
         {
           "terminal": "STOP6 GND",
-          "destination": "Verified controller-side return for that Z per-axis output.",
+          "destination": "K-Z terminal 24 (NO). Controller logic return only.",
           "relatedCableIds": [
             "ALM-Z"
           ]
         },
         {
           "terminal": "STOP7 signal / PG15",
-          "destination": "Optional qualified controller-side Y-right drive-fault output for a future firmware candidate; not read by the current firmware.",
+          "destination": "K-YR terminal 21. Add 2.2 kΩ to board 3.3 V. MR1F version 1 reports this raw level; diagnostic only.",
           "relatedCableIds": [
             "ALM-YR"
           ]
         },
         {
           "terminal": "STOP7 GND",
-          "destination": "Verified controller-side return for that Y-right per-axis output.",
+          "destination": "K-YR terminal 24 (NO). Controller logic return only.",
           "relatedCableIds": [
             "ALM-YR"
           ]
@@ -607,14 +635,15 @@
         }
       ],
       "notes": [
-        "These are optional conditioned per-axis outputs, not raw ALM/COMO terminals and not the PB1 motor-fault stop input.",
-        "The ALM-X/YL/Z/YR cables end at their own field conditioners. These conditioner-to-STOP links need separate harness IDs and terminal schedules.",
-        "The current firmware never reads PG12–PG15: they give no stop, no status and no per-axis indication. PB1 is the only drive-fault stop; qualify it before any coupled dual-Y motion."
+        "New MR1F version 1 firmware reports PG12–PG15 as sampled diagnostics. Older or missing reports remain UNKNOWN. PB1 remains the drive-fault stop; diagnostic samples can miss brief events.",
+        "The selected Weidmüller relay second contact is 21/24; its first contact 11/14 belongs to the PB1 aggregate. Relay coil and contacts must stay separate.",
+        "LOW means a closed contact. Prove alarm/power loss/open cable releases the relay; no software value grants acceptance. Leave STOP +5 V empty and remove DIAG jumpers."
       ],
       "sourceIds": [
         "pin-map",
         "interface",
-        "pigtails"
+        "pigtails",
+        "alarm-plan"
       ]
     },
     {
@@ -720,14 +749,14 @@
       "rows": [
         {
           "terminal": "PB1",
-          "destination": "Qualified supervised combined healthy output from the fault conditioner.",
+          "destination": "K-X terminal 11 starts the relay healthy-contact chain. External 2.2 kΩ pull-up to board 3.3 V and 100 nF to logic GND; see selected alarm circuit.",
           "cableIds": [
             "FAULT-AGG"
           ]
         },
         {
           "terminal": "GND associated with PB1 circuit",
-          "destination": "Verified controller-side aggregate return.",
+          "destination": "K-YR terminal 14 through any other required healthy contacts ends the chain at logic GND.",
           "cableIds": [
             "FAULT-AGG"
           ]
@@ -753,10 +782,10 @@
       ],
       "notes": [
         "PB1 is the configured controller motor-fault input: all required contributors healthy = low; fault/open cable/lost power must make it high.",
-        "Every raw CL57T ALM/COMO pair first goes to its own isolated, current-limited and supervised conditioner. No raw transistor series chain or raw alarm GPIO connection.",
+        "Every CL57T ALM/COM− pair controls its own isolated relay coil circuit; only the 11/14 contacts form the aggregate. No raw transistor series chain or raw alarm GPIO connection.",
         "Include required spindle/cabinet fault contributors. PB1 remains separate from the independent hardwired safety chain.",
         "Use a verified keyed breakout and recorded return paths, not generic IDC pin numbering.",
-        "PB1 and PB2 have no board pull-up or RC filter (BTT v1.1 schematic). The interface board supplies series resistor, TVS, 3.3 V pull-up and RC.",
+        "PB1 and PB2 have no board pull-up or RC filter (BTT v1.1 schematic). The selected PB1 contact circuit adds a 2.2 kΩ pull-up to 3.3 V and 100 nF to logic GND; PB2 conditioning remains separately required.",
         "PB2 is net BTN_EN1, shared with the onboard SW2 (BOOT1) button to GND; pressing SW2 is a cycle start and can resume a feed hold. Guard or remove SW2 before commissioning. EXP2 pin 8 is the MCU reset line (RST) beside these contacts."
       ],
       "sourceIds": [
@@ -1077,7 +1106,7 @@
         },
         {
           "terminal": "CL57T P1 ALM / COMO",
-          "destination": "Its own isolated alarm-conditioner field input; not directly PB1 or STOP4–7.",
+          "destination": "ALM → its selected relay A2; COM−/COMO → isolated ALARM_0V. Relay A1 uses the fused isolated +23 V bus. Never directly PB1 or STOP4–7.",
           "relatedCableIds": [
             "ALM-X",
             "ALM-YL",
@@ -1148,11 +1177,11 @@
     "unmappedScheduledOctopusCableIds": [],
     "unscheduledFunctionalLinks": [
       "MOTOR0–3 socket-to-command-interface",
-      "Four optional conditioner-to-STOP4–7 per-axis links (not read by current firmware)",
+      "Four relay-to-STOP4–7 diagnostic links: terminal schedule in alarm-interface-wires.csv; MR1F version 1 firmware required",
       "Probe conditioner to T1/PF5",
       "Tool-setter conditioner to PB7",
       "FAN4 to spindle-enable relay input",
-      "Candidate I2C logic supply and other interface supply feeds"
+      "I2C 3.3 V alarm pull-ups are scheduled separately; other interface supply feeds remain incomplete"
     ]
   }
 }

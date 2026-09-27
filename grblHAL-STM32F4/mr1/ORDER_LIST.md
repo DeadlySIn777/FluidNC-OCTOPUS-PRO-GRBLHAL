@@ -38,7 +38,7 @@ pigtail only at the board end.
 | Octopus connector | Positions | Qty | Use |
 | --- | ---: | ---: | --- |
 | `STOP0`–`STOP3` | 3 | 4 | Home switches, from a qualified conditioner (on-hand module on HOLD). **5 V cavity stays empty** |
-| `STOP4`–`STOP7` | 3 | 4 | Optional per-axis drive-fault wiring, PG12–PG15 (not read by the current firmware; PB1 is the only drive-fault stop) |
+| `STOP4`–`STOP7` | 3 | 4 | Per-axis relay contacts to PG12–PG15; MR1F version 1 firmware required for sampled diagnostics. PB1 remains the drive-fault stop |
 | `PWR-DET` | 3 | 1 | Safety door (PC0) |
 | `TB` | 2 | 1 | E-stop / safety-relay monitor (PF3) |
 | `T0` | 2 | 1 | Feed hold (PF4) |
@@ -90,9 +90,14 @@ orientation, insulation, retention and strain relief.
 
 The required **schematic contact identities** are 7 STEP, 8 DIR and 9 GND;
 contact 1 EN stays reserved and unconnected. These numbers do not identify a
-physical row or a mating-face orientation. Leave phases, VM, VCC_IO, mode,
-reset, sleep and DIAG unconnected. See `PIGTAIL_SCHEDULE.md` for the control-cable
-boundary and physical checks.
+physical row or a mating-face orientation. Leave phases, VM, mode, reset,
+sleep and DIAG unconnected. **DRIVER0 VCC_IO contact 10 is the one exception:**
+it supplies the separate +5_MOTION branch through a 0.5 A fast fuse, with logic
+GND contact 9 as its return. Leave every other socket's VCC_IO unused. Select
+a retained source connection, suitable wire, and a DC-rated fuse/holder for
+this branch; none is physically accepted by this list. See
+[COMMAND_SUPPLY.md](COMMAND_SUPPLY.md) for the source circuit and physical
+lower-row reference, and `PIGTAIL_SCHEDULE.md` for the control-cable boundary.
 
 The Octopus four-pin A1/A2/B1/B2 output is a motor-phase connector, not the
 external drive's control source. CL57T motor wires go to `P3`; the qualified
@@ -201,10 +206,12 @@ or terminal pitch, so an aftermarket plug cannot be chosen from the datasheet.
 `CL57T_ARRIVAL_CAPTURE.md` §3 asks you to photograph and measure the pitch and
 position count first. Order after that, not before.
 
-**Additional optocouplers.** Quantity remains on HOLD. The on-hand home and
-sensor modules are unqualified. Plan four home, four alarm and two sensor field
-functions, then count the actual components needed for the approved circuitry.
-The alarms require a supervised PB1 aggregate; optional PG12-PG15 per-axis outputs are not read by the current firmware;
-raw ALM/COMO terminals are not series contacts and may need additional logic.
-Do not reduce the order to six or assume one optocoupler per function without
-the reviewed circuit and confirmed on-hand parts.
+**Alarm parts are now selected:** four Weidmüller 2618530000 relay modules,
+one Mean Well DDR-15G-24 isolated supply, plus the protection and five pull-up/RC
+networks listed in [ALARM_INTERFACE.md](ALARM_INTERFACE.md). Ownership and
+physical acceptance remain unconfirmed. Their 11/14 contacts form the PB1
+aggregate; 21/24 contacts feed PG12–PG15 diagnostic snapshots on MR1F version 1
+firmware. Raw ALM/COM− terminals are not series contacts.
+
+**Home and sensor optocouplers:** quantity remains on HOLD until the four home
+and two sensor field functions have qualified circuits and an on-hand inventory.

@@ -50,12 +50,17 @@ backlash, or gantry movement downstream of the motor remains invisible.
 | 4 | CL57T V4.1 drives + 23HS45-4204D-E1000 motors | `1-CL57T-S30A-V41` singles; no PSU included | **ACTIVE 2026-09-17.** Settings in `CL57T_QUICK_WIRING.md`: S1=4, SW1/3/4 on, SW2 off, SW5-8 off, S3=5V |
 | 4 | DM860T V3.0 drives + stock Langmuir motors | Exact 10-switch V3 face | **ROLLBACK SET - preserve intact.** Never commissioned; do not sell, modify, or scavenge until closed loop passes |
 | 1 | **`S-360-36` switch-mode supply (INSTALLED)** | AC in 110/220 V +/-15%, **DC out 36 V 10 A (360 W)** | **Historically identified 2026-09-20; not a fresh electrical test.** 36 V nominal lies within the drive range, but actual ripple/regen and four-drive capacity remain unqualified. The 9.6-11.2 A figure is a sizing heuristic only. Verify the actual supply input selector matches the measured facility service, with power isolated |
-| 1 | USB-to-RS232 adapter (DB9) | Genuine FTDI chipset preferred | **Not supplied with the kit** - the tuning cable has a PC-side DB9; drive-side P5 is a four-contact port. Optional: `S1` presets cover current and three rigidity settings, so commissioning does not need it. Buy only if an axis misbehaves after trying `S1` 4/5/6 |
-| 1 | 24 V control supply | Regulated, recognized, DIN mount preferred, at least 2.5 A after load calculation | Octopus main power and relay coils only |
+| 1 | USB-to-RS232 adapter (DB9) | Genuine FTDI chipset preferred | **Not supplied with the kit** - the tuning cable has a PC-side DB9; drive-side P5 is a four-contact port. Needed if the installed ALM polarity requires vendor-software configuration; the exact setting remains unverified. Preserve the drive parameter backup; S1 presets do not establish alarm polarity |
+| 1 | 24 V control supply | Regulated, recognized, DIN mount preferred, at least 2.5 A after load calculation | Octopus main power, selected alarm DC/DC input and other control loads; load budget remains required |
 | 2 | 24-to-5 V isolated DC/DC | Reinforced/functional isolation as required, current-limited output | Separate field domains: one for probe/setter and one for stock home/limit conditioning |
 | 1 | HW-399 TLP281-4-compatible four-channel module | Candidate only; trace actual circuit and isolated domains | On hand, HOLD pending circuit/terminal proof and bench qualification; two sensor channels planned |
 | 1 | **TLP281-4 four-channel opto isolation module (ON HAND)** | Actual module circuit, resistor values and isolation unverified | **HOLD, candidate for four homes only.** No floating-VCC recipe is approved; shared pullups may couple outputs. Trace and qualify all state combinations per `INTERFACE_BOARD.md` A2 |
-| 1 | Protected 5 V motion supply | At least 0.75 A, fused | CL57T `P1` PUL/DIR optocouplers only; `S3` on every drive must be `5V` |
+| 1 branch | +5_MOTION from DRIVER0 VCC_IO | One takeoff, 0.5 A fast DC-rated branch fuse, retained harness; DRIVER0 logic GND return | [COMMAND_SUPPLY.md](COMMAND_SUPPLY.md); no separate 5 V PSU selected. Budget and measure board loading; no overvoltage/isolation claim |
+| 4 | Weidmüller TRP 24VDC 2CO AU, **2618530000** complete modules | Gold contacts, 2CO, integrated coil flyback; 24 V nominal input | Selected alarm assembly, not confirmed owned/accepted; [ALARM_INTERFACE.md](ALARM_INTERFACE.md) |
+| 1 | Mean Well **DDR-15G-24** | Isolated 9–36 V input / 24 V nominal output; set and measure 23.0 V, never above 24.0 V under tested loads | New alarm-field supply, not confirmed owned; output return stays separate from controller/command/encoder returns |
+| 1 | Alarm output fuse and holder | 0.25 A fast, DC-rated at least 30 V, adequate breaking capacity | One common output branch for about 82 mA coil load; exact part/wire coordination pending. Input protection is separately selected for inrush |
+| 5 | Alarm input pull-ups | 2.2 kΩ, 1%, 0.25 W | PB1 and PG12–PG15 to Octopus 3.3 V; not confirmed owned/accepted |
+| 5 | Alarm input capacitors | 100 nF X7R, at least 25 V | Each signal to controller GND; not confirmed owned/accepted |
 | 1 | Safety relay | Dual-channel inputs, manual monitored reset, suitable diagnostic contacts | Select from risk assessment, not price alone |
 | 1 set | Motion/spindle contactors | Correct DC/AC utilization category, coil voltage, interrupt rating, auxiliary contacts | Sized after supply and stop analysis |
 | 1 | Lockable main disconnect | Rated for installed service | Mains design item |
@@ -78,21 +83,23 @@ voltage are known.
 
 ## Interface Board Parts
 
-Final values are released only after breadboard tests. The initial engineering
-allowance is:
+The selected command and alarm values are recorded in
+[COMMAND_SUPPLY.md](COMMAND_SUPPLY.md) and [ALARM_INTERFACE.md](ALARM_INTERFACE.md).
+Their physical qualification remains pending. Other interface parts remain
+engineering allowances until the corresponding circuit is characterized:
 
 | Qty | Part class | Purpose |
 | ---: | --- | --- |
-| 8 active + 4 reserved | 2N7002 or characterized N-MOSFET with guaranteed performance at 4.5-5 V gate | Eight candidate PUL/DIR sinks from 5 V HCT-buffered sockets; four ENA channels reserved and unpopulated |
+| 8 active + 4 reserved | Nexperia 2N7002 SOT23, verified fitted pinout and loaded behavior | Eight candidate PUL/DIR sinks from 5 V HCT-buffered sockets; four ENA channels reserved and unpopulated |
 | 8 active + 4 reserved | 100 ohm gate resistors | Limit edge current/ringing |
 | 8 active + 4 reserved | 100 kohm gate-source resistors | Defined gate state |
-| HOLD - count after circuit design | Input isolation and logic | Four home + four alarm + two sensor field functions planned. On-hand modules are unqualified. Alarm design must provide a supervised PB1 aggregate (the only drive-fault stop); optional per-axis PG12-PG15 outputs are not read by the current firmware and may require extra isolated outputs/logic. Do not equate ten field functions with a fixed ten-component BOM |
+| HOLD - remaining home/sensor circuit count | Input isolation and logic | Four home and two sensor field functions; on-hand modules remain unqualified. Four alarm channels use the separate selected relay assembly above. PB1 remains the sole drive-fault stop; candidate MR1F:1 reports raw PG12–PG15 snapshots without latching or stopping. Installed firmware is unknown until checked |
 | 2 | Schmitt/logic conditioners | Clean probe/tool-setter controller outputs if optocoupler edges require them |
-| 1 set | Polarity/configuration jumpers | Match characterized active CL57T; any DM860T rollback requires separate review |
+| As required after characterization | Home/sensor configuration links | Alarm polarity is a drive configuration acceptance item, not a guessed interface jumper; any DM860T rollback requires separate review |
 | 1 set | TVS, resettable fuses, reverse-polarity protection | Field-port protection |
 | 1 set | Pluggable terminal blocks | Keyed motion, alarms, probes, spindle, controls |
 | 1 set | Test points | 24 V, 5 V, isolated 5 V, every active PUL/DIR (ENA reserved), alarm, probe, analog command |
-| 4 | Retained MOTOR0–3 STEP/DIR/GND control-cable connections | Termination method on HOLD; no installed socket adapter or plug-in driver assumed. Schematic identities 7/8/9, EN 1 reserved; verify actual view, continuity, fit, insulation and retention |
+| 4 | Retained MOTOR0–3 STEP/DIR/GND control-cable connections | Termination method on HOLD; no installed socket adapter or plug-in driver assumed. Schematic identities 7/8/9 plus one DRIVER0 VCC_IO 10 supply takeoff; EN 1 reserved. Verify actual view, continuity, fit, insulation and retention |
 | 1 | Board support hardware | Standoffs/bracket so socket pins carry no cable load |
 
 Use recognized components with documented temperature and voltage ratings. The

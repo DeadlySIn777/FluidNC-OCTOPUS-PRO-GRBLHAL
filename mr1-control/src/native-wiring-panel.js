@@ -20,6 +20,14 @@ export function wiringDiagnostic(snapshot, now = Date.now()) {
     && Number.isFinite(status.motion?.feed) && Number.isFinite(status.motion?.spindleCommand));
   const inputs = INPUTS.map(([label, connector, group, key]) => ({ label, connector,
     value: valid ? status.pins[group][key] === true ? 'ACTIVE' : 'INACTIVE' : 'UNKNOWN' }));
+  for (const [axis, label, connector] of [
+    ['x', 'X drive input', 'STOP4 / PG12'], ['yl', 'Y-left drive input', 'STOP5 / PG13'],
+    ['z', 'Z drive input', 'STOP6 / PG14'], ['yr', 'Y-right drive input', 'STOP7 / PG15'],
+  ]) {
+    const high = valid && status.driveFaultInputs?.version === 1 ? status.driveFaultInputs.high?.[axis] : undefined;
+    inputs.push({ label, connector, value: typeof high !== 'boolean' ? 'UNKNOWN'
+      : high ? 'HIGH — fault / open' : 'LOW — contact closed' });
+  }
   const probe = valid && [0,1].includes(status.activeProbe) ? status.activeProbe : null;
   inputs.push({ label: probe === 0 ? 'Selected touch probe' : probe === 1 ? 'Selected tool setter' : 'Selected probe input',
     connector: probe === 0 ? 'T1 / PF5' : probe === 1 ? 'PB7 tool-setter input' : 'Selection unknown',
@@ -38,7 +46,7 @@ export function mountNativeWiringControls({ root, getSnapshot }) {
     <p><a href="/wiring/visual/index.html#octopus" target="_blank" rel="noopener">Open visual Octopus schematic</a></p>
     <p class="native-note">Keep motion and spindle power isolated during static input checks. This panel sends no controller commands and never marks commissioning checks as passed.</p>
     <p data-wiring-state></p><table class="native-input-table"><thead><tr><th>Input / board reference</th><th>Logical report</th></tr></thead><tbody></tbody></table>
-    <p class="native-note">Y is a combined logical indication, not independent proof of Y-left and Y-right. PG12–PG15 individual drive-fault pins are not read by the current firmware, so no per-drive state exists in this status stream. PB1 is the aggregate fault. Only the selected probe is shown.</p>
+    <p class="native-note">Y limit is a combined logical indication. Per-drive PG12–PG15 levels require firmware reporting MR1F version 1; older or missing reports show UNKNOWN. HIGH means fault/open with the specified healthy-closed relay circuit. LOW alone does not prove a healthy drive. These sampled inputs are diagnostic; PB1 remains the aggregate fault stop. Only the selected probe is shown.</p>
     <details><summary>Exact status frame</summary><pre data-wiring-raw>No valid report</pre></details>
     <label>Observation label<input data-wiring-label maxlength="120" placeholder="For example: X home switch held triggered"></label>
     <div class="native-row"><button type="button" data-wiring-capture>Capture displayed report</button><button type="button" data-wiring-download>Download observations</button></div>
@@ -71,7 +79,7 @@ export function mountNativeWiringControls({ root, getSnapshot }) {
   $('[data-wiring-download]').addEventListener('click', () => {
     if (!observations.length) return;
     const content = { protocol: 'mr1-wiring-observations-v1', qualificationGranted: false,
-      limitations: 'Logical status only; no voltage, independent dual-Y, per-axis fault or unselected probe proof.', observations };
+      limitations: 'Logical status only; per-drive levels are sampled diagnostics, not independent protection or installed qualification. No voltage, independent dual-Y limit or unselected probe proof.', observations };
     const url = URL.createObjectURL(new Blob([JSON.stringify(content, null, 2) + '\n'], { type: 'application/json' }));
     const link = document.createElement('a'); link.href = url; link.download = 'mr1-wiring-observations.json'; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);

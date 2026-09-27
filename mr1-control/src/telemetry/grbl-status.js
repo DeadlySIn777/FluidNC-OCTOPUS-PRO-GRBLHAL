@@ -97,6 +97,14 @@ function fieldMap(parts) {
   return fields;
 }
 
+// A fresh electrical-level snapshot, never proof of an installed/healthy drive.
+export function parseDriveFaultInputs(value) {
+  if (typeof value !== "string" || !/^1,(?:[0-9]|1[0-5])$/.test(value)) return null;
+  const rawHighMask = Number(value.slice(2));
+  return { version: 1, rawHighMask,
+    high: Object.fromEntries(["x", "yl", "z", "yr"].map((axis, bit) => [axis, Boolean(rawHighMask & (1 << bit))])) };
+}
+
 export function parseGrblStatus(line, previous = null, options = {}) {
   const raw = String(line ?? "").trim();
   if (!raw.startsWith("<") || !raw.endsWith(">")) return null;
@@ -122,7 +130,7 @@ export function parseGrblStatus(line, previous = null, options = {}) {
 
   const knownFields = new Set([
     "MPos", "WPos", "WCO", "Bf", "Ln", "DTG", "FS", "F", "Pn", "Ov", "A", "WCS", "Sc", "AR", "MPG",
-    "H", "T", "P", "TLR", "FW",
+    "H", "T", "P", "TLR", "FW", "MR1F",
   ]);
   const extra = {};
   for (const [key, value] of fields) {
@@ -147,6 +155,9 @@ export function parseGrblStatus(line, previous = null, options = {}) {
     },
     line: parseNumber(fields.get("Ln")),
     pins,
+    // Never carry this forward when a frame omits it (including older firmware).
+    driveFaultInputs: parts.filter(part => part.startsWith("MR1F:")).length === 1
+      ? parseDriveFaultInputs(fields.get("MR1F")) : null,
     overrides: fields.has("Ov")
       ? {
         feed: overrides[0] ?? null,
@@ -178,6 +189,9 @@ export function parseControllerLine(line, previous = null, options = {}) {
 
   const status = parseGrblStatus(raw, previous, options);
   if (status) return { type: "status", status };
+
+  const faultQuery = raw.match(/^\[MR1F:(.*)\]$/);
+  if (faultQuery) return { type: "drive-fault-inputs", inputs: parseDriveFaultInputs(faultQuery[1]), raw };
 
   let match = raw.match(/^ALARM:(\d+)$/i);
   if (match) return { type: "alarm", code: Number(match[1]), raw };

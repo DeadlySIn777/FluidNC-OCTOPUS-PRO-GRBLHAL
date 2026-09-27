@@ -67,6 +67,11 @@ Because the damaging direction requires 24 V to reach a drive set to 5 V,
 **prove no 24 V can reach the 5 V-selected PUL/DIR inputs before first power-up.** The
 protected 5 V command supply and the qualified interface must prevent cross-domain faults. The common-anode interface references controller logic return; it is not an independently isolated encoder supply. P1 also contains ENA and ALM/COMO with separate specifications; S3 selects PUL/DIR levels only. ENA remains unconnected.
 
+The selected +5 V takeoff, 0.5 A fuse and eight command sinks are in
+[COMMAND_SUPPLY.md](COMMAND_SUPPLY.md). Its controller-referenced return is
+separate from the floating alarm supply in [ALARM_INTERFACE.md](ALARM_INTERFACE.md);
+construction and loaded electrical behavior are still unqualified.
+
 ---
 
 ## `S1` rotating switch — peak current and gain
@@ -260,39 +265,50 @@ as necessary by this source comparison, and no image was rebuilt or flashed.
 
 ---
 
-## Alarm output — `ALM` / `COMO`
+## Alarm output — `ALM` / `COM−` (also `COMO`)
 
-§6.2: on over-voltage, over-current, or following error, the red LED blinks and
-*"the impedance state between ALM and COM- will change (from low to high or
-high to low depending on configuration)"*. Output is optional and may be wired
-sinking or sourcing.
+Use the selected [ALARM_INTERFACE.md](ALARM_INTERFACE.md) assembly and
+[alarm-interface-wires.csv](alarm-interface-wires.csv). Four Weidmüller
+**TRP 24VDC 2CO AU / 2618530000** relay modules provide isolated dry contacts;
+a dedicated **DDR-15G-24** converter powers the field side. Set and verify its
+output at **23.0 V**, never above 24.0 V at no load or with all four relays on.
+A common **0.25 A fast DC-rated output fuse** feeds all **A1** terminals;
+each **A2 → its drive ALM**. Converter **−Vo → all COM− / COMO** terminals.
+That return remains floating from Octopus GND, command return, encoder EGND,
+PE and converter input return. These new parts are not confirmed owned.
 
-**The direction is configuration-dependent and the manual does not state a
-default.** Characterize it with a current-limited test load and voltage/current
-measurements in healthy, alarm, lost-power and open-cable states. Do not use an
-ohmmeter on an energized output. Each pair enters an isolated conditioner; its
-controller-side output is low only when healthy and the cable is intact. A
-healthy-open alarm needs added supervision or a separate ready/power contact.
-Never hot-unplug motor or encoder connectors to force an alarm.
+The selected relay already contains its coil suppression diode. ALM must
+conduct while healthy and open on fault. The manufacturer says polarity is
+configuration-dependent, but gives neither the exact setting nor guaranteed
+unpowered behavior. Both remain bench acceptance items; no guessed parameter
+is specified. Do not use an ohmmeter on a powered output or hot-unplug motor
+or encoder connectors to force a fault. If healthy-conducting behavior cannot
+be obtained, this assembly remains unaccepted; an NC-contact substitution
+would conceal an open-cable failure.
 
-### Where the alarm must land
+### Where the alarm lands
 
-`Inc/mr1_octopus_config.h:49` enables `MOTOR_FAULT_ENABLE`, and the board map
-assigns per-axis fault inputs to PG12–PG15. **Those per-axis pins do not stop
-motion.** The only input that raises `Alarm_MotorFault` in grblHAL is the
-**PB1 aggregate** (`boards/btt_octopus_pro_mr1_map.h:223-225`; `WIRING.md`,
-the "Only PB1 stops the machine" box under "Drive Fault Inputs").
+Connect the four relay **11–14 NO contacts in series from PB1 to Octopus GND**.
+Connect each relay's second **21–24 NO contact** from its own diagnostic input
+to Octopus GND: **PG12 X; PG13 Y-left; PG14 Z; PG15 Y-right**. Leave 12/22
+empty. Every one of these five signal nodes gets **2.2 kΩ 1% 0.25 W to board
+3.3 V** and **100 nF X7R, at least 25 V, to board GND**. Only dry contacts
+reach the GPIOs; raw ALM/COM− outputs are not chained into PB1.
 
-> Combine the four **conditioned healthy outputs** into the **PB1 aggregate**:
-> all healthy = low; any fault, open cable or lost power = high. Never chain
-> raw ALM/COMO terminals into a GPIO. PG12–PG15 may be wired for a future
-> firmware candidate, but the current firmware does not read them: they neither
-> stop motion nor report which axis faulted. Qualify PB1 before any coupled
-> dual-Y motion.
+**PB1 remains the only drive-fault stop.** The new diagnostic firmware
+candidate reports PG12–PG15 in **`MR1F:1,mask` raw snapshots**; they do not
+latch the first axis fault or add a stop path. The installed firmware is
+unknown until checked. Retain any additional required qualified cabinet/
+spindle healthy contacts in the PB1 chain. Prove every alarm, power loss and
+open wire trips the complete chain before coupled dual-Y motion.
 
-The rollback DM860T also provides fault outputs, although it has no motor
-encoder following-error feedback. CL57T feedback is at the motor shaft; it
-does not detect a loose coupler or prove table position.
+Shorted alarm wires and stuck relay contacts can mask faults. Preserve the
+independent hardwired emergency stop and mechanically secure Z for tests
+that remove holding torque. ENA and BRK remain unconnected; completing this
+alarm circuit does not qualify command startup or machine safety.
+
+CL57T feedback is at the motor shaft; it does not detect a loose coupler or
+prove table position. A DM860T rollback needs its own output review.
 
 ---
 

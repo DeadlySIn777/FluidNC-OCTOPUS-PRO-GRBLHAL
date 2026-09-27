@@ -1,4 +1,4 @@
-# Firmware known issues (need a new firmware candidate)
+# Firmware known issues and candidate progress
 
 The accepted MR1 production image is the pinned historical build of
 `btt_octopus_pro_f429_mr1`: 221,304 bytes, SHA-256
@@ -8,6 +8,11 @@ image's source or configuration and cannot be fixed without building, reviewing
 and qualifying a **new** firmware candidate with a new hash. Application-side
 workarounds do not change the firmware; other senders connected to the same
 controller do not get them.
+
+The current source includes an unflashed, physically unqualified diagnostic
+candidate that partially addresses item (b): it reports raw per-axis input
+snapshots. The pinned historical image and application acceptance gate remain
+unchanged. No other issue below is claimed fixed by that addition.
 
 Items (a)-(g) concern the MR1 profiles (`Inc/mr1_octopus_config.h`,
 `Inc/mr1_servo_axis_lab_config.h`, `boards/btt_octopus_pro_mr1_map.h`) and (h)
@@ -24,14 +29,23 @@ stale-status watchdog while its own `$H` is running. Next candidate: enable
 report-when-homing (status-report bit 12, i.e. `$10` including 4096) and update
 `mr1/expected-settings.json`.
 
-**(b) Per-axis drive-fault inputs are never read.** PG12-PG15 are claimed as
+**(b) Historical image: per-axis drive-fault inputs are never read.** PG12-PG15 are claimed as
 `X/Y/Z/M3_MOTOR_FAULT` inputs and collected into the driver's
 `motor_fault_inputs` group, but nothing on this board reads them:
 `get_motor_fault_inputs()` in `Src/driver.c` has no caller for the MR1 map (only
 `boards/longboard32.c` calls it) and they get no interrupt. Only the aggregate
 safety-fault input on PB1 raises Alarm 17. `$744`/`$745` (per-motor fault
 enable/invert) therefore have no effect. Wire drive alarms into the PB1
-aggregate chain until a candidate implements per-axis monitoring.
+aggregate chain; that remains the protective stopping path.
+
+**Current candidate progress:** `Src/mr1_alarm.c` reads PG12-PG15 directly and
+reports `|MR1F:1,mask` in real-time reports, or `[MR1F:1,mask]` in response to
+`$MR1F`. These are raw HIGH-level snapshots in X, Y-left, Z, Y-right bit order,
+independent of `$744`/`$745`. They provide no per-axis fault latch or stopping
+action and do not change PB1's aggregate fault handling. The candidate is
+unflashed; installed firmware, input wiring, drive polarity and actual PB1 stop
+behavior still require physical acceptance. See the selected
+[alarm interface and bench checks](mr1/ALARM_INTERFACE.md).
 
 **(c) PE15 is exposed as a general-purpose output.** The production profile uses
 `SPINDLE_PWM0_NODIR`, so `AUXOUTPUT2` (PE15, on the EXP1-8 pin, reserved for a

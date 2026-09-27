@@ -91,3 +91,20 @@ test("does not coerce blank scalar status fields to zero", () => {
   assert.equal(status.tool, null);
   assert.equal(status.activeProbe, null);
 });
+
+test('versioned MR1 drive inputs decode all combinations without inventing hardware health', () => {
+  for (let mask = 0; mask < 16; mask++) {
+    const status = parseGrblStatus(`<Idle|MPos:0,0,0|MR1F:1,${mask}>`);
+    assert.equal(status.driveFaultInputs.rawHighMask, mask);
+    assert.deepEqual(Object.values(status.driveFaultInputs.high), [0,1,2,3].map(bit => Boolean(mask & (1 << bit))));
+  }
+  assert.equal(parseControllerLine('[MR1F:1,5]').inputs.rawHighMask, 5);
+});
+
+test('absent, malformed, duplicated and unsupported drive fields do not retain an old reading', () => {
+  const previous = parseGrblStatus('<Idle|MR1F:1,0>');
+  for (const field of ['', '|MR1F:', '|MR1F:2,0', '|MR1F:1,16', '|MR1F:1,-1', '|MR1F:1,1.0', '|MR1F:1,0,1', '|MR1F:1,00', '|MR1F:1, 0', '|MR1F:1,0|MR1F:1,1']) {
+    assert.equal(parseGrblStatus(`<Idle${field}>`, previous).driveFaultInputs, null, field);
+  }
+  assert.equal(parseControllerLine('[MR1F:1,99]').inputs, null);
+});

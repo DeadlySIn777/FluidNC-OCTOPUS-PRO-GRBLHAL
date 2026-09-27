@@ -644,7 +644,7 @@ def audit() -> list[str]:
     irq_inputs = sum(not name.endswith("_MOTOR_FAULT") for name in exti.values())
     notes.append(
         f"{len(occupied)} unique GPIO assignments; {len(exti)} inputs reserved on distinct EXTI "
-        "line numbers; the PG12-PG15 per-axis drive-fault inputs get no IRQ and are not read, "
+        "line numbers; PG12-PG15 get no IRQ and are sampled only for raw alarm diagnostics, "
         f"so at most {irq_inputs} EXTI lines are used"
     )
 
