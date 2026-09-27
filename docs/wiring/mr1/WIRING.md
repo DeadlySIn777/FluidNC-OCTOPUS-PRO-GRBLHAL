@@ -79,8 +79,9 @@ The community conversion corroborates useful MR-1 device identities and DB44
 test hypotheses. It also describes its stock input system as active-high and
 the limit/E-stop circuits as `NC 5V`; that is sufficient to prohibit assuming
 the stock limit harness is a dry contact. Its Mesa terminals, wire colors,
-common enable, and software polarity are not imported. Its README also conflicts with its HAL on Y2/Z input
-allocation and conflicts internally on DB44-30. See
+common enable, and software polarity are not imported. Its README and HAL
+describe different Y2/Z input arrangements; its DB44-30 descriptions also
+conflict. See
 `MR1_GITHUB_CROSSCHECK.md` for the pinned-revision audit and exact boundaries.
 
 ## Scope and Safety Boundary
@@ -138,7 +139,7 @@ neither the DM860T nor the CL57T V4.1 has a certified safe-torque-off input.
   Windows mini PC -- USB --> Octopus Pro v1.1 F429
                                |
                                +-- motion interface --> X / YL / Z / YR CL57T
-                               +-- isolated inputs <-- four CL57T alarms (series -> PB1)
+                               +-- qualified aggregate <-- four conditioned CL57T alarms -> PB1
                                +-- encoder stays drive-side: motor <-> CL57T P2
                                +-- isolated conditioner <-- four stock home channels
                                +-- isolated inputs <-- probe + tool setter
@@ -320,14 +321,17 @@ not a fourth logical axis.
 | Y-right | MOTOR3 | PG4 | PC1 | PA2 | YR drive |
 
 BTT schematic sheet 1 identifies the driver contacts as 1 EN, 7 STEP, 8 DIR,
-9 GND. These are schematic identifiers, not physical row counts. The active
-adapter uses STEP/DIR/GND; EN is reserved and unconnected. Other contacts,
+9 GND. These are schematic identifiers, not physical row counts. The planned
+control cable uses STEP/DIR/GND; EN is reserved and unconnected. Other contacts,
 including VCC_IO, VM, motor phases and DIAG, must not reach the external drive.
 
-Use a mechanically supported adapter. A 2x8 candidate is on HOLD until its
-complete contact map, actual orientation, clearance, keying and retention are
-proved on the 18-contact socket; do not infer that fit from numbering alone.
-No loose Dupont leads. Motor phase connectors do not expose STEP/DIR.
+No plug-in driver or installed socket adapter is assumed. The planned cable
+connection to each empty socket must have a verified contact map, actual viewing
+orientation, insulation, retention and strain relief. No physical cavity map is
+released here, and no loose Dupont lead may carry harness weight. The Octopus
+four-pin A1/A2/B1/B2 phase outputs do not expose STEP/DIR; the motor cable instead
+lands on the external CL57T `P3`. A control cable does not by itself qualify the
+5 V-buffered socket output to drive the CL57T input directly.
 
 The schematic also shows `MC74HCT125A` buffers powered from 5 V between the MCU
 and the socket EN/STEP/DIR pins. The interface gate input is therefore a 5 V
@@ -366,6 +370,15 @@ reserved ENA channel or to interlock motion power to controller health is a
 **design decision pending review** (`INTERFACE_BOARD.md` A). Until then, keep
 drive power off whenever the controller is reset, rebooted or flashed.
 
+### CL57T cable identities
+
+`P1` is control/output wiring, `P2` is the six-wire encoder plus separate shield,
+`P3` is the four motor phases, and `P4` is polarized DC power. Use the
+[manufacturer motor Option A/B and encoder pin/color tables](CL57T_QUICK_WIRING.md#motor-and-encoder--p3-and-p2)
+for the applicable cable, then record the actual continuity and connector view.
+The encoder's thin black `EA+` signal is separate from its thick black shield.
+No cable pin ID implies a CL57T terminal's physical position.
+
 ### CL57T V4.1 Starting Switches
 
 Power must be off before changing switches. All settings are read at power-up.
@@ -393,31 +406,34 @@ Label both ends X, YL, YR, or Z before routing.
 
 ## Home and Limit Inputs
 
-**Design intent: reuse all four factory home channels.** Langmuir ships the MR-1
-with two limit switches on the Y axis expressly for automatic gantry squaring,
-with independently adjustable Y1 and Y2 switches, and the machine re-squares on
-every homing cycle. Auto-squaring cannot work from a series-chained pair - the
-control has to know which end tripped first - so the factory harness necessarily
-carries Y1 and Y2 as **independent signals**. That preserves `Y_AUTO_SQUARE` and
-the 5.461 mm dual-axis fail distance through the conversion.
+**Design intent: four separate home inputs for X, Y-left, Z and Y-right.**
+This is the current Octopus configuration, not a claim that the factory harness
+already exposes four separate signals. Its `Y_AUTO_SQUARE` and 5.461 mm initial
+dual-axis fail distance remain unchanged.
 
-Expect a shared 5 V supply and a shared return with a separate signal conductor
-per switch. Shared supply and return are normal and fine; a shared *signal*
-would be fatal to squaring, and the evidence says the signals are separate. The
-community README's "Y2/Z limit" input label is stale - that repository's own HAL
-maps Y2 home and Z home to separate inputs. See `MR1_GITHUB_CROSSCHECK.md`.
+Langmuir's [support reply (post 4)](https://forum.langmuirsystems.com/t/what-does-this-mean/35369/4)
+confirms that Y2 and Z share one stock indicator and an open circuit trips it.
+An owner's [continuity investigation and actuation test](https://forum.langmuirsystems.com/t/z-limit-switch-not-functioning-replaced-switch-no-go/40432)
+reports normally closed Y2 and Z switches wired in series, with a fault inside
+that owner's harness. Together these explain the factory shared Y2/Z path;
+they do not verify this machine's connector colors, pin numbers, repairs or
+continuity. The earlier claim that Y2/Z sharing was merely stale documentation
+is withdrawn. Separate Y1 and Y2 motion control does not imply a separate Z wire.
 
-The harness remains a `METER FIRST` item, not an approved dry-contact harness. A
-pinned community conversion powers the stock limit port from 5 V and describes
-the inputs as active-high `NC 5V`. Its connector and polarity claims do not own
-this machine, and **no stock 5 V conductor may be connected to an Octopus STOP
-signal** - those inputs are 3.3 V with onboard pullups. Reusing the harness and
-requiring the isolated conditioner are not in tension: the conditioner is what
-makes reuse safe.
+With every supply and the stock controller disconnected, trace X, Y1, Y2 and Z
+individually: common, every junction, and released/actuated continuity. Record
+which physical side is Y-left/Y-right; do not assign it from a cable color.
+Separate the Y2/Z series path into independent Z and Y-right channels for this
+firmware. A new conductor or harness may be required. Do not bridge away a
+switch, reuse the shared output for both inputs, or expect a four-channel
+conditioner to split one shared signal. No firmware setting change is part of
+this wiring correction.
 
-Before trusting it, with the stock controller unplugged, meter at the connector:
-which conductor is supply, which is return, and confirm each of the four signals
-is independent - in particular that Y-left reads independently of Y-right.
+The stock controller's 5 V wiring must remain isolated from all Octopus STOP
+signals. Powered/electronic switches require a qualified conditioner and four
+independent field outputs. Only verified bare NC contacts, fully disconnected
+from every stock 5 V source and electronics, may use the alternate common-GND
+scheme below. Trace the actual harness before choosing either path.
 
 Route powered stock channels through a **qualified** isolated conditioner.
 The on-hand TLP281-labelled module remains on HOLD; its input topology,
@@ -430,8 +446,8 @@ approved, and a GPIO-facing pullup must never be powered from 5 V.
 The table below gives the required controller truth table, not a claim that
 the untested module achieves it. Test every channel healthy/triggered/open and
 with field power lost; also test combinations and either side unpowered.
-Keep STOP 5 V cavities empty. Preserve the stock harness until its actual
-supply, return and signal paths are documented.
+Keep STOP 5 V cavities empty. Preserve and label the original stock harness until its actual
+supply, return, series junction and signal paths are documented.
 
 | Function | Octopus connector | GPIO | Healthy | Trigger, broken wire, or field-power loss |
 | --- | --- | --- | --- | --- |
@@ -441,13 +457,18 @@ supply, return and signal paths are documented.
 | Y-right home | DIAG3 / E_MIN | PG11 | Conditioned low | Input open/high |
 
 A direct two-wire `SIG`/`GND` connection is allowed only for a separately
-proved bare positive-opening NC switch that is disconnected from the stock
-controller and measures open-circuit to every supply, frame, shield, and other
-conductor. That alternate path does not approve the untraced stock harness.
+proved bare positive-opening NC switch disconnected from the stock controller,
+5 V supply and any electronics. Verify isolation from supplies, frame and shield,
+and verify no shared signal remains. A documented common may then join one side
+of those four bare contacts to Octopus GND; each other side gets its own STOP
+signal. Common return is permitted only in this verified passive-contact case;
+it is not permission to ground the stock powered common. "Direct" means without
+an optoisolator, not an unprotected field cable: retain the interface input
+protection required by `INTERFACE_BOARD.md` E.
 
 Initial homing is Z positive/up, X negative/left, then both Y motors
-positive/rear. The two Y switches are not wired in series. grblHAL stops each Y
-motor from its own switch and uses the event to square the gantry.
+positive/rear. In the completed conversion all four switches must have separate
+signals; grblHAL stops each Y motor from its own switch to square the gantry.
 
 The connector names are printer-oriented labels, not MR-1 axis semantics. Verify
 signal and ground pin positions from the BTT v1.1 pin drawing and with a meter.
@@ -756,7 +777,7 @@ in its commanded state.
 
 - Bond the MR-1 frame, cabinet, spindle chassis, DIN rail, and exposed conductive enclosures to PE.
 - Use a PE stud and star washers; do not stack signal returns on the PE stud.
-- Terminate motor-cable shields 360 degrees at the cabinet entry and at a bonded motor connector shell when the cable system supports it.
+- The published STEPPERONLINE kit motor cable is unshielded; do not assume a drain exists. If a shielded replacement is selected, document its connector, conductor and shield-bond design before use.
 - Follow the encoder cable manufacturer's shield termination; never use a shield as encoder return.
 - Keep motor phase, 36 V bus, servo output, spindle mains, and pump conductors away from USB, probe, encoder, limit, and step/direction cable.
 - Cross unavoidable power and signal routes at approximately 90 degrees.
@@ -800,6 +821,6 @@ Before any supply is connected, the completed harness must show:
 - NC inputs closed in the healthy state and open for actuation or cable removal.
 - No connection from any stop-header 5 V pin into a switch harness.
 - Correct DB44 pin numbers from both ends of the actual cable, with shell orientation recorded.
-- No short between adjacent driver-socket pins on the motion adapter.
+- No short between adjacent driver-socket contacts at the planned control-cable connection; retention, strain relief and actual orientation recorded.
 
 Proceed to `grblHAL-STM32F4/mr1/COMMISSIONING.md` (repository path) only after a second-person check of those records.

@@ -82,7 +82,7 @@ export const WIRING_REFERENCE_SOURCES = Object.freeze([
       "Mesa terminal numbers are not Octopus pins.",
       "Wire colors and shared-enable wiring are installation-specific.",
       "Its stock limits are described as NC 5 V / active-high, so they are not approved as dry contacts.",
-      "The README conflicts with its HAL for Y2/Z inputs and conflicts internally on DB44-30.",
+      "README/HAL input differences do not prove the stock harness. Shared Y2/Z indication and a four-wire series harness are separately reported; DB44-30 also remains inconsistent.",
     ]),
   }),
 ]);
@@ -122,13 +122,13 @@ export const WIRING_EVIDENCE_GATES = Object.freeze([
     id: "cl57t_motor_coils",
     group: "METER",
     title: "ALL MOTOR COILS LABELLED",
-    detail: "Trace the matched factory motor and six-conductor encoder harness for each axis with power removed. Resistance identifies coil pairs, not the required phase-to-encoder polarity. Encoder VCC comes only from its own drive; internal galvanic isolation is not established by the manual.",
+    detail: "Trace each matched motor harness and six encoder functions plus the separate seventh shield lead with power removed. Published GX16/DB15 numbers and colors are references, not installed proof. Resistance identifies coil pairs, not the required phase-to-encoder polarity. Encoder VCC comes only from its drive; keep the shield insulated pending its bond plan, never on P2/EGND.",
   }),
   Object.freeze({
     id: "stock_limit_harness",
     group: "METER",
     title: "STOCK HOME HARNESS TRACED",
-    detail: "Every stock home cable's connector key, conductor count, supply, idle voltage, triggered voltage, and unplugged state are recorded; no stock 5 V lead reaches an Octopus GPIO.",
+    detail: "Record the actual stock connector, conductor count and each switch path. A four-wire Y2/Z series harness is reported; do not assume four independent inputs. Document any custom separation, supply, idle/trigger/open states and isolation. No stock 5 V lead reaches an Octopus GPIO.",
   }),
   Object.freeze({
     id: "cl57t_interface_scope",
@@ -252,7 +252,7 @@ export const WIRING_INSTALL_STEPS = Object.freeze([
     number: "08",
     state: "meter",
     title: "WIRE INPUTS",
-    detail: "Route all four stock home channels through a qualified conditioner. Test each channel and simultaneous states for coupling, current, polarity and power loss; floating shared output VCC is not proof of independence. Direct SIG/GND is allowed only for a proved bare NC dry contact disconnected from every stock powered circuit.",
+    detail: "The four-input plan requires verified separation of X, Y-left, Z and Y-right; reported stock sharing is Y2/Z, not Y1/Y2. Qualify powered channels through the actual conditioner. A proved bare-NC option needs four signals plus common, disconnected from stock 5 V and electronics. Test every channel, simultaneous states and open/lost-power behavior; floating shared VCC proves nothing.",
     action: "INPUT TEST / NO MOTION",
   }),
   Object.freeze({
@@ -387,8 +387,8 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     state: "exact",
     item: "CL57T P2 MATCHED ENCODER HARNESS",
     boardEnd: "EA+ / EA- / EB+ / EB- / VCC / EGND",
-    populate: "MATCHED MOTOR ENCODER / SIX CONDUCTORS",
-    detail: "Drive VCC supplies encoder 5 V. Never back-feed it from another supply or assume internal galvanic isolation. Keep encoder cable separate from motor and bus cables; do not hot-plug. Preserve matched factory polarity; no extension cavity order is approved without tracing.",
+    populate: "SIX ENCODER FUNCTIONS + SEPARATE SHIELD LEAD",
+    detail: "Published DB15 reference: 1 black EA+, 13 blue EA-, 11 yellow EB+, 12 green EB-, 2 red VCC (drive output), 3 white EGND. Confirm the actual numbered view and continuity. The seventh thick black shield is distinct from black EA+; no P2/EGND assignment. Keep it insulated pending the bond plan. No external encoder supply or hot-plugging.",
   }),
   Object.freeze({
     id: "cl57t_p3",
@@ -397,7 +397,7 @@ export const WIRING_PIGTAIL_SCHEDULE = Object.freeze([
     item: "SUPPLIED CL57T P3 FOUR-PIN MOTOR BLOCK",
     boardEnd: "A+ / A- / B+ / B-",
     populate: "FOUR VERIFIED MOTOR PHASE LEADS",
-    detail: "P3 carries motor phases only. P4 is the separate polarized bus input. Connect the matched encoder before power; never hot-plug.",
+    detail: "Published GX16 reference: pins 1/2/3/4 = A+/A-/B+/B-. Option A colors: white/green/blue/black; Option B: black/green/red/blue. Identify the actual option and numbered view; do not mix them. P3 carries phases; P4 is separate polarized power. Keep the matched encoder connected before power; never hot-plug.",
   }),
   Object.freeze({
     id: "cl57t_p4",

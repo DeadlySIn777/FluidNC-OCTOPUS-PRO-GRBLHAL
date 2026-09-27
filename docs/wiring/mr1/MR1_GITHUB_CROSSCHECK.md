@@ -1,6 +1,6 @@
 # MR-1 Community Wiring Cross-Check
 
-Audit date: 2026-08-26
+Community repository audit: 2026-08-26; factory-home correction: 2026-09-26
 
 Repository: [alexphredorg/mr1](https://github.com/alexphredorg/mr1)
 
@@ -18,7 +18,8 @@ Use the highest applicable source for each side of a connection:
 | Connection side | Authority |
 | --- | --- |
 | Octopus connector, GPIO, and onboard circuit | Compiled `io-manifest.json`, matching source map, and official BTT v1.1 schematic/pin drawing |
-| DM860T terminal, switch, timing, and electrical limit | Official STEPPERONLINE DM860T V3.0 manual |
+| Active CL57T terminal and motor/encoder cable map | Official CL57T V4.1 manual and manufacturer cable tables in `CL57T_QUICK_WIRING.md` |
+| Rollback DM860T terminal, switch, timing, and electrical limit | Official STEPPERONLINE DM860T V3.0 manual |
 | Stock MR-1 layout and factory assembly context | Official Langmuir assembly information |
 | Stock harness identity or undocumented DB44 function | Community hypothesis followed by continuity, voltage, and installed-drive proof |
 
@@ -58,21 +59,28 @@ pin:
 - Any wire color from that installation.
 - Direct stock-limit connection to an Octopus STOP input.
 - LinuxCNC input inversion, stepgen, PID, or PWM configuration.
-- The README's apparent Y2/Z input sharing.
+- Unchanged use of the stock shared Y2/Z circuit with this four-input firmware.
 - Direct spindle encoder or DB44 wiring without an isolated interface and
   installed-drive verification.
 
-Our Octopus design intentionally keeps the four home inputs separate and gives
-each drive alarm its own conditioner. It drives each CL57T with its own PUL/DIR
-pair through the qualified interface: eight active channels, with the four ENA
-channels reserved and unconnected. No common or per-drive enable wiring is
-imported.
+Our Octopus design requires four separate home inputs and an individual
+conditioner for each drive alarm, combined into the PB1 aggregate that stops
+motion. Optional PG12–PG15 wiring is for a future firmware candidate: the current
+firmware does not read or display those states. Active CL57T drives use eight
+qualified PUL/DIR channels; the four ENA channels remain reserved and unconnected.
+No common or per-drive enable wiring is imported. These are design requirements,
+not a description of an installed adapter or traced stock harness.
 
 ## Conflicts Found In The Community Repository
 
 1. The README wiring table labels Mesa `INPUT3` as `Y2/Z limit` and leaves
    `INPUT4` blank, while `mr1.hal` maps `INPUT3` to Y2 home and `INPUT4` to Z
-   home. The HAL supports separate inputs; the table appears stale.
+   home. Those are different circuit arrangements; the HAL does not prove the
+   factory harness exposes a separate Z wire. The earlier "table appears stale"
+   conclusion is withdrawn. [Langmuir support](https://forum.langmuirsystems.com/t/what-does-this-mean/35369/4)
+   confirms shared Y2/Z indication; a [firsthand harness test](https://forum.langmuirsystems.com/t/z-limit-switch-not-functioning-replaced-switch-no-go/40432)
+   reports NC Y2/Z series wiring. Trace this machine and separate those channels
+   for the current firmware; see `WIRING.md`, Home and Limit Inputs.
 2. The README table maps DB44-30 as encoder index negative, while the later
    spindle notes call DB44-30 encoder ground. Those statements cannot both be
    accepted as a wiring instruction.
@@ -93,8 +101,10 @@ Before the stock limit, probe, setter, or spindle interface is energized:
 4. Measure sensor metal, field return, spindle chassis, controller ground, and
    PE relationships with the harness disconnected and connected.
 5. Identify the installed spindle drive and archive its parameters.
-6. Trace the stock limit connector, conductor count, 5 V source, return, and
-   every individual healthy/triggered/unplugged signal state.
+6. Trace the stock limit connector, conductor count, 5 V source, return and Y2/Z
+   series junction; document four independent healthy/triggered/unplugged signals
+   after separation. Common GND is only for verified bare contacts isolated from
+   stock 5 V; powered/electronic switches require qualified conditioning.
 7. Bench-prove signal polarity and voltage through the selected isolated
    interface before connecting an Octopus GPIO.
 

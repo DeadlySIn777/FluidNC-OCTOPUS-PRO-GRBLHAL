@@ -96,3 +96,45 @@ export function boardGroupForCable(groups, cableId) {
 export function boardRegionsForGroup(regions, groupId) {
   return regions.filter(region=>region.groups.includes(groupId));
 }
+
+export function connectorGroupsForMode(groups, mode = 'all') {
+  const modes = {
+    motor: ['cl57t-p3', 'motor-option-a', 'motor-option-b'],
+    encoder: ['encoder-db15', 'cl57t-p2'],
+    command: ['cl57t-p1'],
+    power: ['cl57t-p4'],
+    home: ['stock-mr1-homes', 'custom-independent-homes'],
+    tuning: ['cl57t-p5'],
+  };
+  if (mode === 'all') return [...groups];
+  return (Object.hasOwn(modes, mode) ? modes[mode] : []).map(id => groups.find(group => group.id === id)).filter(Boolean);
+}
+
+// Read current notes independently from the retained legacy record. No earlier ticks migrate.
+export function loadPreparationRecords(currentText, legacyText, cableIds, scheduleHash) {
+  let legacy = null, previousRecordText = null;
+  if (legacyText) {
+    try { legacy = JSON.parse(legacyText); } catch { previousRecordText = legacyText; }
+    if (legacy && legacy.sourceScheduleSha256 !== scheduleHash) previousRecordText = legacyText;
+  }
+  const candidate = currentText ? JSON.parse(currentText) : previousRecordText ? null : legacy;
+  return { record: candidate ? normalizePreparation(candidate, cableIds, scheduleHash) : newPreparation(scheduleHash), previousRecordText };
+}
+
+export function wiringViewForHash(hash) {
+  const views = {
+    '': {view:'trace'}, '#trace': {view:'trace'}, '#cabinet': {view:'cabinet'}, '#octopus': {view:'board'},
+    '#connectors': {view:'connectors', mode:'all'}, '#encoder': {view:'connectors', mode:'encoder'},
+    '#motor': {view:'connectors', mode:'motor'}, '#endstops': {view:'connectors', mode:'home'},
+    '#command': {view:'connectors', mode:'command'}, '#power': {view:'connectors', mode:'power'},
+    '#tuning': {view:'connectors', mode:'tuning'}, '#named-alarms': {view:'trace', system:'alarms'},
+  };
+  return Object.hasOwn(views, hash) ? {...views[hash]} : null;
+}
+
+export function connectorReferenceMarkup(group, referenceSources, compact = false) {
+  const h = escapeHtml;
+  const sourceIds = new Set([...(group.sourceIds ?? []), ...group.rows.flatMap(row => row.sourceIds ?? [])]);
+  const sources = referenceSources.filter(source => sourceIds.has(source.id));
+  return `<article class="connector-card ${compact ? 'compact' : ''}"><p class="eyebrow">${h(group.status)}</p><h4>${h(group.title)}</h4><div class="connector-table-scroll"><table><caption>Reference names and numbered contacts; match the actual cable before connecting</caption><thead><tr><th scope="col">Connector / pin / terminal</th><th scope="col">Goes to / action</th><th scope="col">Published wire color</th></tr></thead><tbody>${group.rows.map(row => `<tr class="${/shield|drain/i.test(row.terminal) ? 'shield-row' : ''}"><th scope="row">${h(row.terminal)}</th><td>${h(row.destination)}${row.notes?.length ? '<ul class="connector-row-notes">'+row.notes.map(note => '<li>'+h(note)+'</li>').join('')+'</ul>' : ''}</td><td>${h(row.color ?? 'Not assigned by this reference')}</td></tr>`).join('')}</tbody></table></div><ul>${(group.notes ?? []).map(note => `<li>${h(note)}</li>`).join('')}</ul><p class="connector-sources">${sources.filter(source => /^https:\/\//.test(source.url)).map(source => `<a href="${h(source.url)}" target="_blank" rel="noopener noreferrer">${h(source.title)}</a>`).join(' · ')}</p></article>`;
+}

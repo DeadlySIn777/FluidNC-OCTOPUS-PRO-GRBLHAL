@@ -5,7 +5,7 @@ import {
   PREPARATION_STEPS, RECORD_SCHEMA, escapeHtml, visibleCables,
   normalizePreparation, newPreparation, preparationProgress, routesForCable, nextCable,
   connectionLabels, endpointNotice, boardContext, wireInstruction,
-  boardGroupForCable, boardRegionsForGroup,
+  boardGroupForCable, boardRegionsForGroup, connectorGroupsForMode, loadPreparationRecords, wiringViewForHash, connectorReferenceMarkup,
 } from './model.mjs';
 
 const readJson = name => JSON.parse(readFileSync(new URL(name, import.meta.url), 'utf8'));
@@ -14,6 +14,7 @@ const content = readJson('./route-content.json');
 const coverage = readJson('./coverage.json');
 const boardContent = readJson('./board-content.json');
 const boardRegions = readJson('./board-regions.json');
+const connectorReference = readJson('./connector-reference.json');
 const cables = data.cables;
 const cableIds = cables.map(cable => cable.cable_id);
 const hash = data.source.csv.sha256;
@@ -671,4 +672,160 @@ test('EXP2 highlights the pair of EXP housings without claiming that either pict
   assert.match(region.note, /Both EXP housings are highlighted/);
   assert.match(region.note, /Identify EXP2 from its actual board marking/);
   assert.doesNotMatch(`${region.label} ${region.note}`, /left housing|right housing|pin\s*1\s*(?:is|at)/i);
+});
+
+test('manufacturer motor alternatives preserve exact GX16 numbers and colors without choosing an installed variant', () => {
+  const variants = connectorReference.variantSelection;
+  assert.equal(variants.status, 'unselected');
+  assert.deepEqual(variants.allowedVariants, ['option-a', 'option-b']);
+  assert.deepEqual(variants.selectedByAxis, {X:null,YL:null,Z:null,YR:null});
+  for (const [id, colors] of [['motor-option-a',['White','Green','Blue','Black']],['motor-option-b',['Black','Green','Red','Blue']]]) {
+    const group = connectorReference.groups.find(group => group.id === id);
+    assert.equal(group.installedVariantConfirmed, false);
+    assert.equal(group.selectionRequired, true);
+    assert.deepEqual(group.rows.map(row => row.color), colors);
+    assert.deepEqual(group.rows.map(row => row.terminal), ['GX-16 motor pin 1 / A+','GX-16 motor pin 2 / A−','GX-16 motor pin 3 / B+','GX-16 motor pin 4 / B−']);
+    assert.deepEqual(group.rows.map(row => row.destination), ['CL57T P3 A+','CL57T P3 A−','CL57T P3 B+','CL57T P3 B−']);
+  }
+  assert.equal(connectorReference.physicalCheckComplete, false);
+  assert.equal(connectorReference.mayEnergize, false);
+  assert.equal(connectorReference.mayMachine, false);
+});
+
+test('encoder reference contains exactly six numbered functions plus a separate seventh shield with no EGND assignment', () => {
+  const group = connectorReference.groups.find(group => group.id === 'encoder-db15');
+  assert.equal(group.rows.length, 7);
+  const signals = group.rows.filter(row => /^DB15 pin /.test(row.terminal));
+  assert.deepEqual(signals.map(row => [Number(row.terminal.match(/pin (\d+)/)[1]), row.color, row.destination]), [
+    [2,'Red','CL57T P2 VCC'], [3,'White','CL57T P2 EGND'], [1,'Black','CL57T P2 EA+'],
+    [13,'Blue','CL57T P2 EA−'], [11,'Yellow','CL57T P2 EB+'], [12,'Green','CL57T P2 EB−'],
+  ]);
+  assert.match(signals[0].notes.join(' '), /supply flows from CL57T P2 VCC/);
+  const shield = group.rows.find(row => /seventh lead/.test(row.terminal));
+  assert.match(shield.destination, /Insulate.*no P2 terminal assignment/);
+  assert.match(shield.color, /not the black EA\+ signal/);
+  assert.match(shield.notes.join(' '), /separate.*including EGND/);
+  assert.doesNotMatch(shield.destination, /CL57T P2 EGND/);
+});
+
+test('all four encoder route views retain six wire steps and display shield separately from those steps', () => {
+  const pinOrder = [1,13,11,12,2,3];
+  for (const axis of ['X','YL','Z','YR']) {
+    const encoder = content.routes.find(route => route.id === `encoder-${axis}`);
+    assert.equal(encoder.connections.length, 6);
+    assert.match(encoder.shieldNote, /seventh.*thick black/);
+    assert.match(encoder.shieldNote, /no P2 or EGND assignment/);
+    assert.match(encoder.shieldNote, /insulated.*bond plan/);
+    for (let index=0; index<6; index++) {
+      assert.match(encoder.connections[index].reference, new RegExp(`DB15 pin ${pinOrder[index]},`));
+      assert.equal(wireInstruction(encoder,index).total,6);
+      assert.equal(wireInstruction(encoder,index).physicalCavityMapKnown,false);
+    }
+    const motor = content.routes.find(route => route.id === `motor-${axis}`);
+    assert.equal(motor.connections.length,4);
+    assert.ok(motor.connections.every((row,index) => row.reference.includes(`GX16 pin ${index+1}`) && row.reference.includes('Option A') && row.reference.includes('Option B')));
+  }
+});
+
+test('home references distinguish reported shared factory Y2/Z from the custom four-input passive-contact option', () => {
+  const stock = connectorReference.groups.find(group => group.id === 'stock-mr1-homes');
+  const custom = connectorReference.groups.find(group => group.id === 'custom-independent-homes');
+  assert.equal(stock.rows.length,4);
+  assert.match(stock.rows[3].terminal,/Y2 \+ Z/);
+  assert.match(stock.rows[3].destination,/Original shared Y2\/Z.*series switches reported/);
+  assert.ok(stock.rows.every(row => /^Original /.test(row.destination)));
+  assert.match(stock.notes.join(' '),/series connection.*owner troubleshooting, not a manufacturer pinout/);
+  assert.match(stock.notes.join(' '),/Do not connect the stock \+5V/);
+  assert.equal(custom.physicalRewireRequired,true);
+  assert.deepEqual(custom.rows.slice(0,4).map(row=>row.destination),[
+    'Octopus STOP0 signal / PG6','Octopus STOP1 signal / PG9','Octopus STOP2 signal / PG10','Octopus STOP3 signal / PG11']);
+  assert.match(custom.rows[4].destination,/logic GND only, after stock power\/electronics are disconnected/);
+  assert.match(custom.rows[5].destination,/do not land on Octopus signal or GND/);
+  assert.match(custom.notes.join(' '),/no LED, sensor electronics or external supply/);
+  assert.match(custom.notes.join(' '),/Four signals plus their return cannot be obtained by merely relabeling the stock four conductors/);
+});
+
+test('connector mode filtering returns the complete intended groups in display order and isolates unknown modes', () => {
+  const groups=connectorReference.groups, groupIds=rows=>rows.map(row=>row.id);
+  const expected={motor:['cl57t-p3','motor-option-a','motor-option-b'],encoder:['encoder-db15','cl57t-p2'],
+    command:['cl57t-p1'],power:['cl57t-p4'],home:['stock-mr1-homes','custom-independent-homes'],tuning:['cl57t-p5']};
+  for(const [mode,ids] of Object.entries(expected))assert.deepEqual(groupIds(connectorGroupsForMode(groups,mode)),ids);
+  assert.deepEqual(connectorGroupsForMode(groups),groups);
+  assert.notEqual(connectorGroupsForMode(groups),groups);
+  for(const bad of ['__proto__','toString','constructor','missing',null])assert.deepEqual(connectorGroupsForMode(groups,bad),[]);
+  assert.deepEqual(groupIds(connectorGroupsForMode(groups.filter(group=>group.id!=='cl57t-p3'),'motor')),['motor-option-a','motor-option-b']);
+});
+
+test('connector row notes render shield separation and drive-supplied VCC rather than being silently omitted', () => {
+  const encoder=connectorReference.groups.find(group=>group.id==='encoder-db15');
+  const markup=connectorReferenceMarkup(encoder,connectorReference.sources,true);
+  for(const row of encoder.rows) for(const note of row.notes ?? []) assert.ok(markup.includes(escapeHtml(note)),note);
+  assert.match(markup,/connector-card compact/);
+  assert.match(markup,/class="shield-row"/);
+  assert.match(markup,/including EGND/);
+  assert.match(markup,/supply flows from CL57T P2 VCC/);
+  assert.ok(markup.includes('Wiring Diagrams for Closed-Loop Stepper Motors'));
+});
+
+test('connector rendering escapes row notes and colors and includes only referenced HTTPS sources', () => {
+  const group={title:'<script>title</script>',status:'<unsafe>',rows:[{terminal:'"pin"',destination:'<dst>',color:'<red>',notes:['<img src=x onerror=bad()>'],sourceIds:['bad','good']}],notes:['A & B']};
+  const markup=connectorReferenceMarkup(group,[{id:'bad',url:'javascript:alert(1)',title:'Bad'},{id:'good',url:'https://example.test/?q="',title:'<Good>'},{id:'unused',url:'https://unused.test',title:'Unused'}]);
+  assert.ok(markup.includes('&lt;img src=x onerror=bad()&gt;'));
+  assert.ok(markup.includes('&lt;red&gt;'));
+  assert.ok(markup.includes('https://example.test/?q=&quot;'));
+  assert.doesNotMatch(markup,/<script>|<img |javascript:|unused.test/);
+});
+
+test('command reference distinguishes raw 3.3V GPIO from nominal 5V buffered socket outputs without releasing the interface', () => {
+  const notes=connectorReference.groups.find(group=>group.id==='cl57t-p1').notes.join(' ');
+  assert.match(notes,/Raw STM32 GPIO is 3\.3 V/);
+  assert.match(notes,/driver-socket outputs use nominal 5 V buffers/);
+  assert.match(notes,/loaded voltage\/current, polarity, timing and power-transition qualification/);
+  assert.doesNotMatch(notes,/Octopus 3\.3V STEP\/DIR/);
+  assert.match(notes,/not electrically qualified/);
+});
+
+test('hash routing covers four views, all connector categories and the alarm shortcut without prototype lookups', () => {
+  assert.deepEqual(wiringViewForHash(''),{view:'trace'});
+  assert.deepEqual(wiringViewForHash('#trace'),{view:'trace'});
+  assert.deepEqual(wiringViewForHash('#cabinet'),{view:'cabinet'});
+  assert.deepEqual(wiringViewForHash('#octopus'),{view:'board'});
+  for(const [hash,mode] of [['connectors','all'],['encoder','encoder'],['motor','motor'],['endstops','home'],['command','command'],['power','power'],['tuning','tuning']])
+    assert.deepEqual(wiringViewForHash('#'+hash),{view:'connectors',mode});
+  assert.deepEqual(wiringViewForHash('#named-alarms'),{view:'trace',system:'alarms'});
+  for(const hash of ['#missing','__proto__','toString','constructor'])assert.equal(wiringViewForHash(hash),null);
+  const selection=wiringViewForHash('#encoder');selection.mode='power';assert.equal(wiringViewForHash('#encoder').mode,'encoder');
+});
+
+test('legacy notes remain exactly exportable after new-schedule notes already exist, without importing old preparation ticks', () => {
+  const old=JSON.stringify(recordFile({'CMD-X':{...complete(),notes:'old exact note'}},{sourceScheduleSha256:'A'.repeat(64)}));
+  const current=JSON.stringify(recordFile({'ENC-X':{identified:false,notes:'new current note'}},{sourceScheduleSha256:hash}));
+  for(const currentText of [null,current]) {
+    const loaded=loadPreparationRecords(currentText,old,cableIds,hash);
+    assert.equal(loaded.previousRecordText,old);
+    assert.equal(loaded.record.sourceScheduleSha256,hash);
+    assert.equal(loaded.record.hardwareApproved,false);
+    assert.equal(loaded.record.records['CMD-X'],undefined);
+    if(currentText)assert.equal(loaded.record.records['ENC-X'].notes,'new current note');
+  }
+});
+
+test('same-schedule legacy record may load but malformed legacy text remains exportable alongside valid current notes', () => {
+  const text=JSON.stringify(recordFile({'CMD-X':{...complete(),notes:'same schedule'}},{sourceScheduleSha256:hash,hardwareApproved:true}));
+  const migrated=loadPreparationRecords(null,text,cableIds,hash);
+  assert.equal(migrated.previousRecordText,null);
+  assert.equal(migrated.record.records['CMD-X'].notes,'same schedule');
+  assert.equal(migrated.record.hardwareApproved,false);
+  const malformed='{incomplete previous record';
+  const current=loadPreparationRecords(text,malformed,cableIds,hash);
+  assert.equal(current.previousRecordText,malformed);
+  assert.equal(current.record.records['CMD-X'].notes,'same schedule');
+  assert.equal(loadPreparationRecords(null,malformed,cableIds,hash).previousRecordText,malformed);
+});
+
+test('invalid current saved record is rejected instead of being silently replaced with legacy notes', () => {
+  const old=JSON.stringify(recordFile({'CMD-X':complete()},{sourceScheduleSha256:'A'.repeat(64)}));
+  assert.throws(()=>loadPreparationRecords('{broken',old,cableIds,hash));
+  assert.throws(()=>loadPreparationRecords(old,null,cableIds,hash),/different or unidentified cable schedule/);
+  assert.deepEqual(loadPreparationRecords(null,null,cableIds,hash).record,newPreparation(hash));
 });

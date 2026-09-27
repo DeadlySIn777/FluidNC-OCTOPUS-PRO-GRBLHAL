@@ -99,8 +99,20 @@ def main():
             reference = (REPOSITORY / source['path']).resolve()
             assert reference.is_relative_to(REPOSITORY / 'docs' / 'wiring')
             source['sha256'] = sha256(reference.read_bytes()).hexdigest()
+    connector_reference = read_json('connector-reference.json')
+    assert connector_reference['physicalCheckComplete'] is False
+    assert connector_reference['mayEnergize'] is False and connector_reference['mayMachine'] is False
+    connector_ids = [group['id'] for group in connector_reference['groups']]
+    assert len(connector_ids) == len(set(connector_ids)) == 10
+    source_ids = {source['id'] for source in connector_reference['sources']}
+    for group in connector_reference['groups']:
+        assert group['rows'] and all(row.get('terminal') and row.get('destination') for row in group['rows'])
+        assert set(group.get('sourceIds', [])) <= source_ids
+        for row in group['rows']:
+            assert set(row.get('sourceIds', [])) <= source_ids
     bundle = dict(cables=cables, routes=routes, layout=layout, images=images, coverage=coverage,
-        boardContent=board_content, boardRegions=board_regions, boardReference=board_reference)
+        boardContent=board_content, boardRegions=board_regions, boardReference=board_reference,
+        connectorReference=connector_reference)
     data = json.dumps(bundle, ensure_ascii=False, separators=(',', ':')).replace('<', '\\u003c').replace('\u2028', '\\u2028').replace('\u2029', '\\u2029')
     assert not re.search(r'\b[A-Za-z]:(?:\\|/(?!/))|/(?:Users|home)/', data), 'Local absolute paths must not be embedded.'
     model = (ROOT / 'model.mjs').read_text(encoding='utf-8')
@@ -125,7 +137,7 @@ def main():
     temp = output / 'index.pending.html'
     temp.write_text(template, encoding='utf-8', newline='\n')
     temp.replace(previous)
-    sources = {name: sha256((ROOT/name).read_bytes()).hexdigest() for name in ('build.py','cable-data.py','app.js','model.mjs','style.css','index.template.html','cable-data.json','route-content.json','asset-layout.json','coverage.json','board-content.json','board-regions.json')}
+    sources = {name: sha256((ROOT/name).read_bytes()).hexdigest() for name in ('build.py','cable-data.py','app.js','model.mjs','style.css','index.template.html','cable-data.json','route-content.json','asset-layout.json','coverage.json','board-content.json','board-regions.json','connector-reference.json')}
     manifest = dict(schemaVersion=1, product='MR1 Visual Wiring Guide',
         stage='Unpowered cable preparation; physical connection/electrical acceptance pending',
         sourceFiles=sources, sourceScheduleSha256=cables['source']['csv']['sha256'],
@@ -133,6 +145,7 @@ def main():
         explicitlyMappedCableIds=len({route['cableLabel'] for route in routes['routes'] if route['labelKind']=='source-cable-id'}),
         systemGroups=len(coverage['groups']), pendingCoverageCategories=len(coverage['gaps']),
         boardSchematicGroups=len(board_ids), boardLocationRegions=len(board_regions['regions']),
+        connectorReferenceGroups=len(connector_ids),
         sourcePhotos={name:layout['assets'][name]['sha256'] for name in images}, boardReference=board_reference,
         files=[dict(path='index.html',bytes=previous.stat().st_size,sha256=sha256(previous.read_bytes()).hexdigest())],
         physicalMotionPermitted=False,

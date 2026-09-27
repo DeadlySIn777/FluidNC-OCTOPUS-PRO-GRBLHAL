@@ -111,29 +111,39 @@ One fused branch per drive, straight from the supply. **No daisy chains.**
 
 ## 5. Motor and encoder
 
-| Drive | Cable |
+| Drive block | Cable |
 | --- | --- |
-| `P3` | motor lead, `A+ A- B+ B-` |
-| `P2` | encoder lead, 6 wires + drain |
+| `P1` | Control cable from the qualified interface; separate alarm pair |
+| `P2` | Encoder: six signal/supply wires plus a separate shield braid |
+| `P3` | Motor: four phase wires `A+ A- B+ B-` |
+| `P4` | Polarized DC power `+VDC GND` |
 
-**Never power a drive with either one missing.** Alarm code 4 is "fail to lock
-motor shaft."
+Use the [motor Option A/B and six-wire encoder tables](CL57T_QUICK_WIRING.md#motor-and-encoder--p3-and-p2).
+They give manufacturer connector pin IDs and colors, **not** the drive's screw
+order or a mating-face drawing. Match the actual cable, then trace both ends.
+The thin black encoder conductor is `EA+`; the separate thick black braid is
+shield, never `EA+` or `EGND`. The published motor lead is unshielded.
 
-`P2 VCC` is an output from the drive. Never feed it from any field supply.
+`P2 VCC` supplies the encoder from the drive; never feed it from a field supply.
+Motor phases and encoder wires stay at the CL57T, not the Octopus motor plug.
+Never energize a drive without its matching motor and encoder connected; never
+hot-plug them. This card does not approve first power-up.
 
-Use the matched, verified kit encoder cable. Do not assign encoder pins from
-wire color or thickness. Record end-to-end continuity and connector orientation;
-the shield is not an encoder return and receives only its documented termination.
-
-- [ ] **Check:** no phase shorted to motor frame
+- [ ] **Check:** winding pairs, no phase-to-frame short, six encoder paths, and separate insulated/documented shield termination
 
 ---
 
 ## 6. Control signals — Octopus to `P1`
 
-Through the qualified driver-socket adapters and 5 V open-drain interface.
+The planned control cable takes STEP/DIR/GND from the empty Octopus driver
+socket to the interface, then qualified PUL/DIR outputs to CL57T `P1`. No plug-in
+motor driver or installed socket adapter is assumed. The connection method,
+retention and loaded interface behavior remain unqualified; a cable alone does
+not qualify direct HCT-buffer-to-drive loading. The four-pin A1/A2/B1/B2 motor
+output is not the control connector.
+
 These are **schematic contact identities**, not physical row counts or a mating
-view. Establish actual orientation and continuity before fitting an adapter:
+view. Establish actual orientation and continuity before terminating the cable:
 
 | Socket pin | Signal |
 | --- | --- |
@@ -157,19 +167,26 @@ view. Establish actual orientation and continuity before fitting an adapter:
 
 ## 7. Home switches
 
-**Count the conductors at the plug before anything else.**
+The stock MR-1's Y2/Z shared indication and reported NC series circuit are
+covered in [the factory-harness correction](WIRING.md#home-and-limit-inputs).
+This machine's actual harness still needs tracing. The current Octopus profile
+requires four independent inputs; separate Z and Y-right before connecting it.
+A conditioner cannot recover two independent signals from their shared output.
+
+**Count the conductors, then trace each switch with the harness isolated.**
 
 | Count | Meaning |
 | --- | --- |
-| 6 | **expected case** (`WIRING.md`, "Home and Limit Inputs"): shared 5 V supply + shared return + four independent signals. This is a powered circuit, not bare dry contacts - HOLD for the isolated conditioner until every conductor is traced |
+| 6 | Possible powered arrangement: supply + return + four outputs. Not an expectation or proof of this stock harness; trace every conductor and use qualified conditioning for powered channels |
 | 5 | candidate four signals plus common; trace every conductor to prove it |
 | 4 | cannot provide four independent dry-contact signals plus common; trace sharing before planning squaring |
 
 Then prove each switch is a bare contact:
 
 - [ ] Ohmmeter across each switch, then swap the leads — **same reading both ways**
-- [ ] Common conductor → one leg of **all four** switches = short
-- [ ] Y-left and Y-right read **independently**
+- [ ] Record the original common and any Y2/Z series junction before alteration
+- [ ] After the documented separation, X, Y-left, Z and Y-right each change only their own signal
+- [ ] If using bare contacts directly, verify the new common-to-contact wiring and isolation from all former stock 5 V circuits
 
 Also prove NC behavior (closed healthy, open actuated), no electronics in the
 contact path, and complete disconnection from every stock powered circuit.
@@ -179,6 +196,8 @@ Conductor count and an ohmmeter test alone do not establish those facts.
 goes to Octopus `GND`; X / Y-left / Z / Y-right signals go to `STOP_0` / `1` /
 `2` / `3` SIG. Use the board pull-ups. Otherwise retain the isolated conditioner
 and first identify the installed module circuit and required field supply.
+The bare-contact alternative still needs the required field-input protection;
+"direct" does not mean bypassing `INTERFACE_BOARD.md` E.
 
 **Otherwise: HOLD for a qualified conditioner.** The on-hand TLP281-labelled
 module is not approved from its IC name. Trace both faces, input/output networks,
@@ -198,7 +217,7 @@ its actual supplies and terminal map. See `INTERFACE_BOARD.md` A2.
 
 **Every `STOP` header's 5 V cavity stays empty.**
 
-- [ ] **Check:** Y-left and Y-right read independently. Squaring depends on it.
+- [ ] **Check:** all four switches read independently, especially Z versus Y-right and Y-left versus Y-right.
 
 ---
 

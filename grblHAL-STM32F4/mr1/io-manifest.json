@@ -99,7 +99,7 @@
     },
     {
       "name": "5v_home_isolated",
-      "rule": "A separate current-limited isolated 5 V field supply feeds the traced stock limit circuit through four energized-healthy optocoupler channels; no stock 5 V reaches a STOP GPIO."
+      "rule": "Planned isolated home circuit only: first trace and separate the factory-reported shared Y2/Z circuit into four independent channels. A separate current-limited isolated 5 V field supply may feed four qualified energized-healthy conditioner channels; no stock 5 V reaches a STOP GPIO. Direct GND-common wiring is a separate option only for fully verified bare NC contacts disconnected from stock power/electronics. Installed topology remains unverified."
     },
     {
       "name": "5v_probe_isolated",

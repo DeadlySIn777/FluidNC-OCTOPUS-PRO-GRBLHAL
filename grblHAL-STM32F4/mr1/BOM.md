@@ -92,7 +92,7 @@ allowance is:
 | 1 set | TVS, resettable fuses, reverse-polarity protection | Field-port protection |
 | 1 set | Pluggable terminal blocks | Keyed motion, alarms, probes, spindle, controls |
 | 1 set | Test points | 24 V, 5 V, isolated 5 V, every active PUL/DIR (ENA reserved), alarm, probe, analog command |
-| 4 | 18-position `2x9` driver-socket adapters | Active contacts 7/8/9; 1 EN reserved. Actual fit/orientation/continuity required; 2x8 candidate on HOLD until mechanically and electrically proved |
+| 4 | Retained MOTOR0–3 STEP/DIR/GND control-cable connections | Termination method on HOLD; no installed socket adapter or plug-in driver assumed. Schematic identities 7/8/9, EN 1 reserved; verify actual view, continuity, fit, insulation and retention |
 | 1 | Board support hardware | Standoffs/bracket so socket pins carry no cable load |
 
 Use recognized components with documented temperature and voltage ratings. The
@@ -130,22 +130,36 @@ break-before-make; it must never drive both at once.
 
 | Item | Guidance |
 | --- | --- |
-| Motion command cable | Three shielded twisted pairs per axis, small-gauge stranded industrial control cable |
+| Motion command cable | Two shielded twisted pairs per axis for PUL/DIR from the qualified interface; ENA remains unconnected. Final wire size, terminal fit and loaded interface behavior require qualification |
 | Alarm cable | One shielded pair or supervised multi-core per drive |
-| Stock home cable | Reuse only after supply/signal/return trace; route through the four-channel isolated conditioner |
+| Stock home cable | Trace actual supply, return and Y2/Z series junction; separate four signals for current firmware. Powered/electronic channels require qualified conditioning; common GND only for verified bare NC contacts isolated from stock 5 V |
 | Dry-contact control cable | Shielded twisted pair, coolant-resistant jacket where exposed |
 | Probe/tool-setter cable | Individually shielded flexible cable, isolated from motor routing |
 | 36 V branch wire | Sized from supply, fuse, run length, temperature, and panel standard |
 | 24 V control wire | Color-coded and ferruled; separate fused distribution |
 | PE conductors | Green/yellow where applicable, sized to code, ring terminals at bonded studs |
-| Cable entry | Metal EMC glands or bonded connector bulkheads plus strain relief |
+| Cable entry | Retained, strain-relieved pass-through sized for the actual moulded connector. Use shield clamps/EMC glands only where a qualified shield-bond plan specifies them; the published kit motor cable has no shield |
 | Termination | DIN terminals, end stops, ferrules, labels, heat shrink; no tinned wire in screw clamps |
 | Ventilation | Filtered fan and thermostat if thermal calculation requires it |
 | Service items | Spare fuses, one spare optocoupler channel, printed terminal labels; buy spare removable plugs only after actual pitch/family measurement |
 
-For the active CL57T kits, use the included separate motor and encoder
-extensions. Keep encoder and alarm cables away from motor phase conductors even
-if the connector bundles look convenient together.
+For the active CL57T kits, use the matched motor and encoder leads where their
+measured length, connector mapping and duty are suitable. Follow the
+manufacturer tables in `CL57T_QUICK_WIRING.md`: motor Option A/B colors are
+alternatives, not interchangeable assumptions. The published motor lead is
+unshielded; no motor drain or mandatory added braid sleeve is specified.
+
+The encoder has six signal/supply conductors plus a separate shield braid.
+Its thin black `EA+` wire is not the thick black braid, and its white `EGND`
+return is not the shield. Insulate and retain an unused exposed braid pending
+a qualified bond/termination plan; do not land it on `EGND`, a signal or an
+assumed spare connector pin. `P2 VCC` remains drive-supplied, never externally
+fed. Keep encoder and alarm cables away from motor phase conductors.
+
+This BOM specifies planned functions, not installed hardware or electrical
+acceptance. The socket-to-interface cable must be physically secured, and the
+actual interface must pass loaded current/level/timing and startup/shutdown
+checks; no direct HCT-buffer-to-CL57T connection is approved by a parts entry.
 
 ## Measure Before Buying
 

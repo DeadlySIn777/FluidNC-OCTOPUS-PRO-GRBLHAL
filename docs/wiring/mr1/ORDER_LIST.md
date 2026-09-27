@@ -75,43 +75,32 @@ The breakout option is worth the few dollars: it turns EXP2 into screw terminals
 and keeps the run short inside the cabinet, which is what `PIGTAIL_SCHEDULE.md`
 already asks for.
 
-**Insulate every unused conductor.** A 10-way ribbon where eight wires are
-unused is eight chances to short something against the board.
+**Insulate every unused conductor.** PB1, PB2 and GND use three conductors of
+the 10-way ribbon; insulate and retain the other seven separately.
 
 ---
 
-## 3. Driver-socket adapters — order carefully
+## 3. Octopus STEP/DIR control cable — termination on HOLD
 
-This is the one where Amazon is a trap.
+Plan four retained control-cable connections from the empty MOTOR0–MOTOR3
+sockets to the qualified interface. No plug-in motor driver or installed socket
+adapter is assumed or required by this parts list. Choose the actual mating
+contact/housing method only after identifying the board and verifying fit,
+orientation, insulation, retention and strain relief.
 
-You need an adapter that plugs into a **Pololu/StepStick driver socket** and
-breaks out `STEP`, `DIR` and `GND` so they can reach an external drive. Many
-adapters also break out `ENABLE`; that output stays unconnected because EN is
-reserved in this build. Searching Amazon for "stepper driver adapter" mostly returns **motor
-extension cables** and A4988 breakout boards, which are a different thing
-entirely and will not help.
+The required **schematic contact identities** are 7 STEP, 8 DIR and 9 GND;
+contact 1 EN stays reserved and unconnected. These numbers do not identify a
+physical row or a mating-face orientation. Leave phases, VM, VCC_IO, mode,
+reset, sleep and DIAG unconnected. See `PIGTAIL_SCHEDULE.md` for the control-cable
+boundary and physical checks.
 
-Candidate parts - no product in this list is physically qualified for this board:
-
-- [External Stepper Motor Driver Adapter — Bart Dring, Tindie](https://www.tindie.com/products/33366583/external-stepper-motor-driver-adapter/)
-- [External Stepper Driver Adapter for Pololu-style socket — Cohesion3D](https://cohesion3d.com/shop/peripherals/external-stepper-driver-adapter-for-pololu-style-socket/)
-- [Pololu Socket to External Driver Conversion Board — PiShop](https://www.pishop.us/product/pololu-socket-to-external-driver-conversion-board/)
-
-Quantity **4**, for MOTOR0–MOTOR3.
-
-**What to verify on any candidate**, per `PIGTAIL_SCHEDULE.md`:
-
-- Routes socket pin **7 = STEP**, pin **8 = DIR**, pin **9 = GND**. If it also
-  routes pin **1 = EN**, leave that output unconnected (EN is reserved)
-- Fits the actual **18-contact** socket with proved continuity, orientation,
-  clearance, keying and retention. A `2x8` candidate remains on HOLD until
-  those checks pass; schematic numbers are not physical row counts
-- Leaves phases, `VM`, `VCC_IO`, mode, reset, sleep and `DIAG` unconnected
-
-No fallback adapter is released solely from a generic StepStick description.
-A `2x8` candidate requires the same actual-board verification. **Loose Dupont leads into a driver socket
-are not acceptable** — a one-row offset puts motor-supply voltage onto a logic
-pin.
+The Octopus four-pin A1/A2/B1/B2 output is a motor-phase connector, not the
+external drive's control source. CL57T motor wires go to `P3`; the qualified
+interface feeds its `P1` PUL/DIR inputs. A cable or breakout alone does not
+qualify direct loading of the board's 5 V HCT outputs by the CL57T.
+`INTERFACE_BOARD.md` still requires the loaded current, level, timing and
+startup/shutdown checks. Loose unsupported Dupont leads are not a finished
+harness, and a generic StepStick product description does not release a part.
 
 ---
 
@@ -122,104 +111,79 @@ pin.
 | Ferrules + ferrule crimper, 22–16 AWG | Your BOM already forbids tinned wire in screw clamps. `MAIN POWER` and the CL57T `P1`/`P4` blocks all want ferrules |
 | Heat-shrink assortment | Every pigtail-to-cable splice |
 | Wire labels or a label printer | `cable-schedule.csv` assigns an ID to every run; unlabelled cable is how a 36 V pair ends up on a logic pin |
-| Shielded twisted-pair cable, 22–24 AWG | The long runs. Pigtails only terminate at the board |
+| Shielded twisted-pair cable, 22–24 AWG candidate | Command/signal runs only; final size and terminal fit require qualification. This does not describe the kit motor or encoder leads |
 
 ---
 
-## 5. Motor and encoder extensions — RESOLVED, order these
+## 5. Matched motor and encoder extensions — measure before ordering
 
-**The kit's 1.7 m leads are too short.** Measured against the machine
-2026-09-19: the required run is roughly **double** the kit length, so about
-3.4 m straight-line.
+The September 19 note estimated a roughly 3.4 m straight-line run against the
+1.7 m kit leads. That is a historical planning estimate, not a recorded routed
+length for all four axes. Measure each full-travel path, bend radius, drag-chain
+allowance and strain relief before selecting a replacement length.
 
-**Budget 4–5 m, not 3.4 m.** A cable laid beside the machine measures a straight
-line. The real path runs up the left rear leg, along the frame, through any drag
-chain, and out to the motor at its farthest travel — routinely 20–40% longer
-than the straight shot.
+The following are previously identified manufacturer candidates. Recheck the
+current listing and exact motor/encoder connector compatibility before buying;
+none is physically qualified merely by appearing in this table.
 
-| Part | What it is | Qty |
+| Part | What it is | Qty || Part | What it is | Qty |
 | --- | --- | ---: |
 | [**CE5-M5-20**](https://www.omc-stepperonline.com/4-7m-185-awg20-motor-and-encoder-extension-cable-kit-for-nema-23-and-24-closed-loop-stepper-motors-ce5-m5-20) | **4.7 m AWG20 motor + encoder kit, NEMA 23/24 closed loop.** One SKU covers both cables for one axis | **4** |
 | [CM5M-20](https://www.omc-stepperonline.com/4-7m-185-awg20-motor-extension-cable-with-gx16-aviation-connector-for-nema-23-and-24-closed-loop-stepper-motors-cm5m-20) | 4.7 m AWG20 motor cable only, GX16 | as needed |
 | [CL-ME-CABLE](https://www.omc-stepperonline.com/closed-loop-motor-and-encoder-extension-cables-with-various-lengths-only-for-replacing-cl-me-cable) | Custom lengths, if 4.7 m is short or you want exact cuts | as needed |
 
-`CE5-M5-20` is the straightforward choice. AWG20 is the vendor's own gauge for
-NEMA 23/24 — AWG18 is the NEMA 34 part — so it is matched to the
-`23HS45-4204D-E1000`. Verify the actual cable SKU, conductor and terminal
-ratings, route length, flex duty and temperature. No voltage-drop calculation
-or cable qualification is established by this shopping list.
+Identify the actual cable SKU and its motor/encoder compatibility, then verify
+conductor and terminal ratings, route length, flex duty, temperature and phase/
+encoder mapping. NEMA frame size or a matching plug shape alone does not prove
+compatibility. No voltage-drop calculation or cable qualification is established
+by this shopping list.
 
-**Measure the routed path before ordering.** If it exceeds 4.7 m, use
-`CL-ME-CABLE` and specify the length rather than coiling excess — coiled motor
-cable adds inductance and is an avoidable EMI source.
+**Measure the routed path before ordering.** If a listed length does not fit,
+identify a compatible replacement of the required length. Record the routing
+and separation from sensitive cables; do not hide excess cable in an unreviewed coil.
 
-### Shielding facts — from StepperOnline's own help centre
+### Kit cable and shield distinctions
 
-| Cable | Shielded? | Source |
-| --- | --- | --- |
-| **Motor** | **NO** — *"The motor cable is not shielded."* | StepperOnline closed-loop wiring guide |
-| **Encoder** | **YES** — *"The encoder cable is shielded. The thick black wire in the encoder cable is the shield braid; it does not need to be connected to any pin."* | same |
+The [manufacturer wiring reference](https://help.omc-stepperonline.com/hc/s/articles/wiring-diagram-for-closed-loop-stepper-motor)
+describes an **unshielded motor cable** and a **shielded encoder cable**.
+Use the pin/color tables in `CL57T_QUICK_WIRING.md` to identify the applicable
+motor Option A/B and all six encoder paths, then verify the actual cable.
 
-This matters twice over. First, the 4.7 m kit would **not** have satisfied this
-project's own rule that motor-cable shields terminate 360 degrees at the cabinet
-entry (`WIRING.md`, `BOM.md`) — the motor cable it ships is bare. Second, it
-means any custom alternative must be qualified for phase mapping, conductor
-ratings, flex life, retention, shielding and insulation; equivalence is not
-established simply because both motor cables are unshielded.
+There is no motor-cable drain to bond on that published kit lead. Do not order
+shield hardware on the assumption that it has one. The encoder's separate
+thick black shield braid is not its thin black `EA+` signal or its white `EGND`
+return. Keep an unused exposed braid insulated and retained; no blanket EGND,
+GPIO, or connector-pin assignment is approved. The final encoder shield bond
+or clamp location remains subject to a qualified cable/cabinet bonding plan.
 
-### Chosen approach (2026-09-19, revised): buy extensions, sleeve the motor runs
+Use the matched kit leads where the measured route and duty permit. A longer
+assembly must be independently checked for connector mapping, ratings,
+retention and flex suitability. A replacement cable replaces the corresponding
+short lead; no unreviewed extension splice or connector chain is specified here.
+Keep serviceable short leads for the separate protected bench setup.
 
-**Decision: buy ready-made extensions rather than building cable.**
-
-Home-made extensions looked cheaper per metre, but the real purchase is spools:
-roughly $90 for 100 m spools to serve about 15 m of need, plus connectors, plus
-around 80 solder joints across four axes, plus the risk of a bad joint inside a
-drag chain. Ready-made assemblies are the better trade at roughly $132.
-
-Buying extensions also **removes the splice entirely** - the bought cable
-replaces the 1.7 m lead rather than chaining onto it. No junction, no shield
-continuity problem at a joint, one fewer failure point per axis.
-
-**Measure each axis before ordering; do not buy four long ones.** The four axes
-are not equidistant from the left rear leg. Z sits on the column near the
-enclosure; the far Y is the long haul. Mixed 2.7 m and 4.7 m ordering is where
-the remaining savings are.
-
-| Axis | Measured routed run | Length ordered |
+| Axis | Measured routed run | Compatible length selected |
 | --- | --- | --- |
 | X | ________ m | ________ |
 | Y-left | ________ m | ________ |
 | Z | ________ m | ________ |
 | Y-right | ________ m | ________ |
 
-### Sleeving still applies to the motor runs
+### Additional shielding — optional design, not a construction instruction
 
-The motor extension is **unshielded** by vendor design, so the braided sleeve
-still has a job. Slide it over the **cabinet-side portion** of each motor run and
-bond at the cabinet; leave the far end toward the motor bare.
+The earlier mandatory cabinet-side motor braid sleeve and motor-shield rule
+are withdrawn for the published unshielded kit cable. Do not install or bond a
+sleeve from a generic one-end/both-end recipe. Additional shielding or a shielded
+replacement requires a documented design covering clearances, coverage,
+termination, connector/shell bonding and the manufacturer's requirements.
+Neither a partial sleeve nor a cable's shielding label proves EMC performance.
 
-Full-length coverage is not worth the sleeve cost, and the geometry favours
-partial coverage: the cabinet-side portion runs parallel to encoder, limit and
-probe wiring and to the Octopus itself, while the motor end sits out at the axis
-away from anything sensitive. Shielding is not binary - covering the section that
-parallels sensitive cable captures most of the benefit.
-
-Shield termination remains a cabinet-design hold point. A partial braid sleeve
-is a proposed EMC measure, not proof that an unshielded cable meets a shielded
-cable specification. Document its coverage, routing, connector/shell bonding
-and the selected cable/drive manufacturer's termination requirements. Do not
-choose one-end versus both-end bonding from a universal ground-loop rule.
-
-Use a suitable rated 360-degree clamp/gland where the design calls for one;
-proper pressure termination is not replaced by an unsupported blanket solder
-instruction. Keep braid clear of live phase pins. A shield is never protective
-earth or a phase/signal return. Verify motor/frame protective bonding separately;
-paint, mounting hardware and isolators can interrupt an assumed chassis path.
-
-**Record partial sleeving as a deliberate deviation**, not as compliance:
-`WIRING.md` and `BOM.md` call for shielded motor cable terminated 360 degrees at
-the cabinet. If phantom limit trips or encoder faults appear under spindle load,
-extending the sleeve toward the motor is the first remedy to try.
+Maintain separation between motor/power wiring and encoder, limit, probe and
+command wiring. If interference appears during authorized commissioning,
+stop and diagnose the actual routing, returns, signal levels and terminations;
+this document does not prescribe adding a shield as an automatic remedy.
+A shield is never PE or a phase/signal return. Verify motor/frame protective
+bonding separately from every cable shield.
 
 ### Keep the 1.7 m kit cables
 

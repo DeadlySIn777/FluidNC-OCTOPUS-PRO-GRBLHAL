@@ -18,7 +18,8 @@
   "instructions": [
     "Keep all supplies and USB isolated and discharged while preparing or changing wiring.",
     "Match the actual board revision, printed names, connector viewing side and continuity. A GPIO or schematic contact number is not a physical cavity position.",
-    "Planned interfaces remain on HOLD until actual modules, terminals and electrical behavior are proved. No status in this file records completed hardware acceptance."
+    "Planned interfaces remain on HOLD until actual modules, terminals and electrical behavior are proved. No status in this file records completed hardware acceptance.",
+    "Open the connector reference panel for published motor/encoder numbers and the stock-versus-custom home circuit. These references do not certify the installed connector view."
   ],
   "cableIdMeaning": "cableIds identify the same scheduled cable segment. relatedCableIds provide reference context only; use the referenced cable’s own view for its actual endpoints.",
   "sources": [
@@ -62,6 +63,26 @@
       "path": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg",
       "sha256": "d360491ad8e1f738b1e784bfd62cc2c0f2b4c396d6cd069b9743d62aab0ee285",
       "description": "Official BTT Octopus Pro V1.1-Pin, 2023-11-02."
+    },
+    {
+      "id": "stepperonline-motor-encoder",
+      "title": "STEPPERONLINE motor and encoder cable reference",
+      "path": "https://help.omc-stepperonline.com/hc/s/articles/wiring-diagram-for-closed-loop-stepper-motor",
+      "sections": [
+        "Motor Options A and B / GX16 numbered pins",
+        "DB15 encoder pins and shield lead"
+      ],
+      "caveat": "Published cable reference; actual kit variant, connector view and continuity remain unverified."
+    },
+    {
+      "id": "langmuir-shared-y2-z",
+      "path": "https://forum.langmuirsystems.com/t/what-does-this-mean/35369/4",
+      "description": "Langmuir reply explains shared Y2/Z indication; it does not document this installed harness."
+    },
+    {
+      "id": "mr1-owner-home-harness",
+      "path": "https://forum.langmuirsystems.com/t/z-limit-switch-not-functioning-replaced-switch-no-go/40432",
+      "description": "Owner reports four-wire harness and Y2/Z series switches while troubleshooting a faulty harness; not manufacturer or installed-machine proof."
     }
   ],
   "groups": [
@@ -435,7 +456,7 @@
     },
     {
       "id": "homes-stop0-3",
-      "title": "STOP0–STOP3: four independent home inputs",
+      "title": "STOP0–STOP3: planned four independent home inputs",
       "status": "CONDITIONER / HARNESS HOLD",
       "rows": [
         {
@@ -500,15 +521,23 @@
         }
       ],
       "notes": [
-        "X, Y-left, Z and Y-right are separate channels. Y-left and Y-right must remain independent for squaring.",
-        "Stock sensor type, field supply and actual conditioner circuit remain unverified. Do not assume a powered stock switch is a bare dry contact.",
-        "Required behavior is healthy low, trigger/open/lost field power high. A direct dry-contact route is only a separately proved alternative, not an assumed bypass."
+        "Stock reference: Langmuir describes a shared Y2/Z indication. An owner separately reports a four-wire harness with Y2 and Z in series; this does not mean Y1 and Y2 are in series, and is not proof of this machine.",
+        "The custom plan below needs verified rewiring to separate X, Y-left, Z and Y-right. Do not assume the stock four-wire connector already provides four independent inputs.",
+        "A proved bare-NC alternative needs four separate signal conductors plus a common return (five conductors), fully isolated from the stock controller and stock 5 V. No stock 5 V may reach STOP signals.",
+        "Powered field channels still need a traced, qualified conditioner. Required behavior is healthy low; trigger, open cable or lost field power high. Actual circuit, connector view and channel independence remain on HOLD.",
+        "See connector references stock-mr1-homes and custom-independent-homes before preparing this harness."
       ],
       "sourceIds": [
         "pin-map",
         "interface",
         "cable-schedule",
-        "pigtails"
+        "pigtails",
+        "langmuir-shared-y2-z",
+        "mr1-owner-home-harness"
+      ],
+      "connectorReferenceIds": [
+        "stock-mr1-homes",
+        "custom-independent-homes"
       ]
     },
     {
@@ -1064,7 +1093,8 @@
       "notes": [
         "All four motors have their own matched motor/encoder pair; Y-left and Y-right share logical Y.",
         "Supply capacity, branch protection, protective bonding, independent stopping and gravity-loaded Z support remain physical qualification tasks.",
-        "No wire size, fuse rating, encoder cable color or removable-plug cavity order is invented here."
+        "No wire size, fuse rating, encoder cable color or removable-plug cavity order is invented here.",
+        "Published GX16 motor Options A/B and DB15 encoder numbers are in the connector reference panel. Identify the actual cable option; the separate encoder shield has no P2/EGND assignment."
       ],
       "sourceIds": [
         "wiring",

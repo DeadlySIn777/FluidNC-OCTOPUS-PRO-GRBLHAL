@@ -1,0 +1,635 @@
+{
+  "schemaVersion": 1,
+  "title": "Researched connector references — motor, encoder, drive and home harnesses",
+  "scope": "Published connector functions and project signal assignments. No installed connector face, cable variant, continuity, interface or physical acceptance has been confirmed.",
+  "physicalCheckComplete": false,
+  "mayEnergize": false,
+  "mayMachine": false,
+  "variantSelection": {
+    "status": "unselected",
+    "allowedVariants": [
+      "option-a",
+      "option-b"
+    ],
+    "selectedByAxis": {
+      "X": null,
+      "YL": null,
+      "Z": null,
+      "YR": null
+    },
+    "confirmationRequired": "Match the complete actual harness to molded pin numbers, motor label and deenergized continuity; colors alone do not prove a variant."
+  },
+  "instructions": [
+    "Isolate all supplies and USB and allow discharge before identifying, tracing or altering cables.",
+    "Match actual drive revision, connector markings and viewing side before using any numbered pin.",
+    "Source evidence is not installed confirmation. Keep unresolved conductors unlanded and insulated."
+  ],
+  "sources": [
+    {
+      "id": "stepperonline-motor-encoder",
+      "title": "STEPPERONLINE: Wiring Diagrams for Closed-Loop Stepper Motors",
+      "url": "https://help.omc-stepperonline.com/hc/s/articles/wiring-diagram-for-closed-loop-stepper-motor",
+      "accessedDate": "2026-09-26",
+      "updatedDate": "2026-07-14",
+      "authority": "Manufacturer help article",
+      "notes": [
+        "Publishes two GX-16 motor variants and one DB-15 encoder table.",
+        "The article is for motors with these connectors; it does not identify which variant is installed on this machine."
+      ]
+    },
+    {
+      "id": "cl57t-v41-manual",
+      "title": "STEPPERONLINE CL57T V4.1 user manual — Revision4.1, May2023",
+      "url": "https://www.omc-stepperonline.com/download/CL57T-V41_user_manual.pdf",
+      "accessedDate": "2026-09-26",
+      "authority": "Manufacturer drive manual",
+      "sections": [
+        "3.1 P1",
+        "3.2 P2",
+        "3.3 P3",
+        "3.4 P4",
+        "3.5 P5",
+        "6.1 command inputs",
+        "6.2 fault output"
+      ],
+      "archivedSha256": "3eec9304c770ff68a5ccbd68f105789edfb35f5c91a9977531a30756a918d7da",
+      "notes": [
+        "P1–P5 verified against the manual text and archived printed pages3–4. Pin numbers never establish an unverified physical viewing side."
+      ]
+    },
+    {
+      "id": "langmuir-shared-y2-z",
+      "title": "Langmuir account langmuir-jake: shared Y2/Z limit indication",
+      "url": "https://forum.langmuirsystems.com/t/what-does-this-mean/35369/4",
+      "accessedDate": "2026-09-26",
+      "publishedDate": "2024-03-12",
+      "authority": "Manufacturer representative forum response",
+      "notes": [
+        "Confirms that Y2 and Z share the limit indicator and that an open circuit lights it. This post does not itself publish a series-wiring pinout."
+      ]
+    },
+    {
+      "id": "mr1-owner-home-harness",
+      "title": "MR1 owner: Z/Y2 harness continuity investigation",
+      "url": "https://forum.langmuirsystems.com/t/z-limit-switch-not-functioning-replaced-switch-no-go/40432",
+      "accessedDate": "2026-09-26",
+      "publishedDate": "2024-12-31 / 2025-01-01",
+      "authority": "Firsthand owner troubleshooting; not a manufacturer wiring drawing",
+      "notes": [
+        "Reports normally-closed switches, four cabinet conductors and series Y2/Z operation.",
+        "The author was investigating a faulty harness. Treat reported pins/colors as a tracing reference, not acceptance of any installed harness."
+      ]
+    },
+    {
+      "id": "mr1-project-map",
+      "title": "Current MR1 F429 board-map source",
+      "url": "https://github.com/DeadlySIn777/FluidNC-OCTOPUS-PRO-GRBLHAL/blob/main/grblHAL-STM32F4/boards/btt_octopus_pro_mr1_map.h",
+      "path": "grblHAL-STM32F4/boards/btt_octopus_pro_mr1_map.h",
+      "sha256": "7d759ac9f9a0f406f326296c03375658753390ed7a9e1ff306b40fe2362aeeb2",
+      "accessedDate": "2026-09-26",
+      "authority": "Project firmware signal assignment; physical wiring unverified",
+      "notes": [
+        "X=PG6, Y-left=PG9, Z=PG10, Y-right=PG11. Four separately observable switch signals are required for this custom plan."
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "id": "motor-option-a",
+      "title": "Motor cable — manufacturer Option A",
+      "status": "UNSELECTED VARIANT — match each actual harness",
+      "family": "motor",
+      "rows": [
+        {
+          "terminal": "GX-16 motor pin 1 / A+",
+          "destination": "CL57T P3 A+",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-a",
+          "color": "White"
+        },
+        {
+          "terminal": "GX-16 motor pin 2 / A−",
+          "destination": "CL57T P3 A−",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-a",
+          "color": "Green"
+        },
+        {
+          "terminal": "GX-16 motor pin 3 / B+",
+          "destination": "CL57T P3 B+",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-a",
+          "color": "Blue"
+        },
+        {
+          "terminal": "GX-16 motor pin 4 / B−",
+          "destination": "CL57T P3 B−",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-a",
+          "color": "Black"
+        }
+      ],
+      "notes": [
+        "Both published options are shown deliberately. No motor or axis has a selected/confirmed variant.",
+        "Use molded pin numbers, the motor label and deenergized continuity; never pick a variant from one color alone.",
+        "The table does not define a mating-face/solder-face view. Confirm that view before counting pins.",
+        "Motor winding wires end at the same axis’s external CL57T P3, not the Octopus A/B output plug."
+      ],
+      "sourceIds": [
+        "stepperonline-motor-encoder",
+        "cl57t-v41-manual"
+      ],
+      "selectionRequired": true,
+      "installedVariantConfirmed": false
+    },
+    {
+      "id": "motor-option-b",
+      "title": "Motor cable — manufacturer Option B",
+      "status": "UNSELECTED VARIANT — match each actual harness",
+      "family": "motor",
+      "rows": [
+        {
+          "terminal": "GX-16 motor pin 1 / A+",
+          "destination": "CL57T P3 A+",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-b",
+          "color": "Black"
+        },
+        {
+          "terminal": "GX-16 motor pin 2 / A−",
+          "destination": "CL57T P3 A−",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-b",
+          "color": "Green"
+        },
+        {
+          "terminal": "GX-16 motor pin 3 / B+",
+          "destination": "CL57T P3 B+",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-b",
+          "color": "Red"
+        },
+        {
+          "terminal": "GX-16 motor pin 4 / B−",
+          "destination": "CL57T P3 B−",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "variant": "option-b",
+          "color": "Blue"
+        }
+      ],
+      "notes": [
+        "Both published options are shown deliberately. No motor or axis has a selected/confirmed variant.",
+        "Use molded pin numbers, the motor label and deenergized continuity; never pick a variant from one color alone.",
+        "The table does not define a mating-face/solder-face view. Confirm that view before counting pins.",
+        "Motor winding wires end at the same axis’s external CL57T P3, not the Octopus A/B output plug."
+      ],
+      "sourceIds": [
+        "stepperonline-motor-encoder",
+        "cl57t-v41-manual"
+      ],
+      "selectionRequired": true,
+      "installedVariantConfirmed": false
+    },
+    {
+      "id": "encoder-db15",
+      "title": "Encoder cable — DB15 to the same axis’s CL57T P2",
+      "status": "SOURCE MAPPING — actual connector view and continuity pending",
+      "family": "encoder",
+      "rows": [
+        {
+          "terminal": "DB15 pin 2 / VCC",
+          "destination": "CL57T P2 VCC",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "notes": [
+            "Encoder supply flows from CL57T P2 VCC to the motor encoder; it does not come from Octopus."
+          ],
+          "color": "Red"
+        },
+        {
+          "terminal": "DB15 pin 3 / EGND",
+          "destination": "CL57T P2 EGND",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "notes": [],
+          "color": "White"
+        },
+        {
+          "terminal": "DB15 pin 1 / EA+",
+          "destination": "CL57T P2 EA+",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "notes": [
+            "This black signal conductor is distinct from the shield/drain lead."
+          ],
+          "color": "Black"
+        },
+        {
+          "terminal": "DB15 pin 13 / EA−",
+          "destination": "CL57T P2 EA−",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "notes": [],
+          "color": "Blue"
+        },
+        {
+          "terminal": "DB15 pin 11 / EB+",
+          "destination": "CL57T P2 EB+",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "notes": [],
+          "color": "Yellow"
+        },
+        {
+          "terminal": "DB15 pin 12 / EB−",
+          "destination": "CL57T P2 EB−",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ],
+          "notes": [],
+          "color": "Green"
+        },
+        {
+          "terminal": "Shield / drain (seventh lead)",
+          "destination": "Insulate loose end for now; no P2 terminal assignment",
+          "sourceIds": [
+            "stepperonline-motor-encoder"
+          ],
+          "notes": [
+            "Keep electrically separate from all six signal/supply conductors, including EGND.",
+            "Final shield/EMC bond location requires a reviewed cabinet plan; no automatic chassis or logic-ground bond is assigned here."
+          ],
+          "color": "Separate braid/drain; not the black EA+ signal conductor"
+        }
+      ],
+      "notes": [
+        "Match the actual connector’s pin numbering and viewing face. This table does not assume front/rear geometry.",
+        "Keep each motor’s encoder paired with its own drive. Do not connect this feedback cable to Octopus.",
+        "The supply/signal mapping is manufacturer reference; installed colors, extensions and terminations remain unverified."
+      ],
+      "sourceIds": [
+        "stepperonline-motor-encoder",
+        "cl57t-v41-manual"
+      ]
+    },
+    {
+      "id": "cl57t-p1",
+      "title": "CL57T P1 — command inputs and fault outputs",
+      "status": "PLANNED COMMAND / FAULT INTERFACES — electrically unqualified",
+      "family": "command",
+      "rows": [
+        {
+          "terminal": "PUL+",
+          "destination": "Qualified protected +5V command-interface supply",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "PUL−",
+          "destination": "Qualified STEP sinking interface output",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "DIR+",
+          "destination": "Qualified protected +5V command-interface supply",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "DIR−",
+          "destination": "Qualified DIR sinking interface output",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "ENA+ / ENA−",
+          "destination": "Leave unconnected in the current command plan",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "ALM / COMO",
+          "destination": "Separate isolated alarm-conditioner field input for this drive",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "BRK",
+          "destination": "Leave unconnected; no brake circuit is assigned",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        }
+      ],
+      "notes": [
+        "The planned common-anode interface is not electrically qualified. Its terminals and installed circuit remain unverified.",
+        "Raw STM32 GPIO is 3.3 V; the Octopus Pro v1.1 STEP/DIR driver-socket outputs use nominal 5 V buffers. These are different points. The planned drive interface still requires loaded voltage/current, polarity, timing and power-transition qualification; a nominal voltage alone does not approve direct drive wiring.",
+        "S3 selects command-signal voltage. The +5V command plan requires verified S3=5V; S3 is unrelated to P4 motor-bus voltage.",
+        "ALM/COMO are not assumed dry contacts. Do not series-chain raw outputs into PB1 or connect them directly to Octopus GPIO. Alarm polarity and power/cable-loss supervision still require proof.",
+        "No ENA connection does not mean that an energized motor is mechanically safe."
+      ],
+      "sourceIds": [
+        "cl57t-v41-manual"
+      ]
+    },
+    {
+      "id": "cl57t-p2",
+      "title": "CL57T P2 — six encoder functions",
+      "status": "SOURCE REFERENCE — installed harness unverified",
+      "family": "encoder",
+      "rows": [
+        {
+          "terminal": "EB+ / EB−",
+          "destination": "Matched encoder B differential pair",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "EA+ / EA−",
+          "destination": "Matched encoder A differential pair",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "VCC",
+          "destination": "+5V output supplying this motor’s encoder",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "EGND",
+          "destination": "Encoder supply return; not a shield terminal",
+          "sourceIds": [
+            "cl57t-v41-manual",
+            "stepperonline-motor-encoder"
+          ]
+        }
+      ],
+      "notes": [
+        "Use the six DB15 mapping rows above. The separate shield/drain has no P2 terminal assignment.",
+        "Read the drive’s printed terminal names; this list does not claim a physical left/right cavity order."
+      ],
+      "sourceIds": [
+        "cl57t-v41-manual",
+        "stepperonline-motor-encoder"
+      ]
+    },
+    {
+      "id": "cl57t-p3",
+      "title": "CL57T P3 — motor phases",
+      "status": "SELECT MOTOR CABLE VARIANT FIRST",
+      "family": "motor",
+      "rows": [
+        {
+          "terminal": "A+ / A− / B+ / B−",
+          "destination": "Same-named motor phases using confirmed Option A or B",
+          "sourceIds": [
+            "stepperonline-motor-encoder",
+            "cl57t-v41-manual"
+          ]
+        }
+      ],
+      "notes": [
+        "The two motor tables provide the pin/color alternatives; do not mix their colors.",
+        "Keep P3 disconnected while identifying and changing wiring. Never mate or unmate it powered."
+      ],
+      "sourceIds": [
+        "stepperonline-motor-encoder",
+        "cl57t-v41-manual"
+      ]
+    },
+    {
+      "id": "cl57t-p4",
+      "title": "CL57T P4 — polarized DC power",
+      "status": "POLARITY AND PROTECTION MUST BE VERIFIED",
+      "family": "power",
+      "rows": [
+        {
+          "terminal": "+VDC",
+          "destination": "This drive’s protected DC branch positive",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "GND",
+          "destination": "This drive’s DC branch negative/return",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        }
+      ],
+      "notes": [
+        "P4 is DC power, not a mains AC input. GND here does not identify protective earth.",
+        "Confirm terminal markings and polarity on the actual drive before termination. Never mate or unmate P4 powered.",
+        "The project’s 36V branch plan does not qualify supply capacity, branch protection or regeneration; those checks remain open."
+      ],
+      "sourceIds": [
+        "cl57t-v41-manual"
+      ]
+    },
+    {
+      "id": "cl57t-p5",
+      "title": "CL57T P5 — RS232 tuning only",
+      "status": "LEAVE EMPTY FOR NORMAL MACHINE CONTROL",
+      "family": "command",
+      "rows": [
+        {
+          "terminal": "Manual pin 1 / NC",
+          "destination": "No connection",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "Manual pin 2 / TXD",
+          "destination": "Unused; vendor tuning drawing routes to female DB9 pin 2",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "Manual pin 3 / GND",
+          "destination": "Unused; vendor tuning drawing routes to female DB9 pin 5",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        },
+        {
+          "terminal": "Manual pin 4 / RXD",
+          "destination": "Unused; vendor tuning drawing routes to female DB9 pin 3",
+          "sourceIds": [
+            "cl57t-v41-manual"
+          ]
+        }
+      ],
+      "notes": [
+        "Parameter tuning only. P5 is not the equipment-control path.",
+        "The vendor DB9 drawing is a front view. Prove the actual four-pin connector orientation and use the appropriate RS232 interface; do not substitute TTL, RS485 or direct USB wiring."
+      ],
+      "sourceIds": [
+        "cl57t-v41-manual"
+      ]
+    },
+    {
+      "id": "stock-mr1-homes",
+      "title": "Factory MR1 home harness — shared Y2/Z reference",
+      "status": "STOCK REFERENCE ONLY — NOT AN OCTOPUS PLUG-IN MAP",
+      "family": "home",
+      "rows": [
+        {
+          "terminal": "Reported stock pin 1 / common",
+          "destination": "Original controller +5V reference",
+          "sourceIds": [
+            "mr1-owner-home-harness"
+          ],
+          "color": "Red (reported)"
+        },
+        {
+          "terminal": "Reported stock pin 2 / X",
+          "destination": "Original X limit input",
+          "sourceIds": [
+            "mr1-owner-home-harness"
+          ],
+          "color": "Blue (reported)"
+        },
+        {
+          "terminal": "Reported stock pin 3 / Y1",
+          "destination": "Original Y1 limit input",
+          "sourceIds": [
+            "mr1-owner-home-harness"
+          ],
+          "color": "Yellow (reported)"
+        },
+        {
+          "terminal": "Reported stock pin 4 / Y2 + Z",
+          "destination": "Original shared Y2/Z input; series switches reported",
+          "sourceIds": [
+            "mr1-owner-home-harness",
+            "langmuir-shared-y2-z"
+          ],
+          "color": "Purple (reported)"
+        }
+      ],
+      "notes": [
+        "Langmuir’s representative confirms shared Y2/Z indication. The physical series connection and four-conductor pin/color list come from firsthand owner troubleshooting, not a manufacturer pinout.",
+        "Four stock conductors are common + X + Y1 + combined Y2/Z. They do not provide four independent switch signals.",
+        "The owner was diagnosing a faulty molded junction. Verify every installed conductor and switch; do not reproduce that reported fault or assume the colors match.",
+        "Do not connect the stock +5V common or powered harness directly to Octopus limit GPIOs."
+      ],
+      "sourceIds": [
+        "langmuir-shared-y2-z",
+        "mr1-owner-home-harness"
+      ]
+    },
+    {
+      "id": "custom-independent-homes",
+      "title": "Custom MR1 plan — four independent home signals",
+      "status": "REWIRING AND BARE-CONTACT VERIFICATION REQUIRED",
+      "family": "home",
+      "rows": [
+        {
+          "terminal": "Verified bare NC switch: X signal",
+          "destination": "Octopus STOP0 signal / PG6",
+          "sourceIds": [
+            "mr1-project-map"
+          ]
+        },
+        {
+          "terminal": "Verified bare NC switch: Y-left signal",
+          "destination": "Octopus STOP1 signal / PG9",
+          "sourceIds": [
+            "mr1-project-map"
+          ]
+        },
+        {
+          "terminal": "Verified bare NC switch: Z signal",
+          "destination": "Octopus STOP2 signal / PG10",
+          "sourceIds": [
+            "mr1-project-map"
+          ]
+        },
+        {
+          "terminal": "Verified bare NC switch: Y-right signal",
+          "destination": "Octopus STOP3 signal / PG11",
+          "sourceIds": [
+            "mr1-project-map"
+          ]
+        },
+        {
+          "terminal": "New common for proven passive NC contacts",
+          "destination": "Verified Octopus logic GND only, after stock power/electronics are disconnected",
+          "sourceIds": [
+            "mr1-project-map"
+          ]
+        },
+        {
+          "terminal": "Stock +5V common / powered sensor circuitry",
+          "destination": "Isolate from this bare-contact circuit; do not land on Octopus signal or GND",
+          "sourceIds": [
+            "mr1-owner-home-harness",
+            "mr1-project-map"
+          ]
+        }
+      ],
+      "notes": [
+        "This direct-contact option applies only after each isolated switch is proved to be a passive normally-closed contact, with no LED, sensor electronics or external supply remaining in circuit. Otherwise retain a separately qualified interface; do not treat a powered sensor as a bare switch.",
+        "Split the stock shared Y2/Z circuit into separate signals and trace the whole replacement harness. Four signals plus their return cannot be obtained by merely relabeling the stock four conductors.",
+        "Confirm NC state at rest, opening on actuation, correct axis assignment and loss-of-continuity behavior before accepting the inputs. Firmware pullups/polarity and the physical input report must be verified together.",
+        "STOP-header +5V cavities stay empty. These four home inputs are distinct from STOP4–7 drive diagnostics and the PB1 aggregate fault.",
+        "No stock harness connector cavity order or installed common is inferred from this functional map."
+      ],
+      "sourceIds": [
+        "mr1-project-map",
+        "mr1-owner-home-harness",
+        "langmuir-shared-y2-z"
+      ],
+      "physicalRewireRequired": true
+    }
+  ]
+}

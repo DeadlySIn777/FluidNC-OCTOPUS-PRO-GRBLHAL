@@ -1,10 +1,12 @@
-import {PREPARATION_STEPS, RECORD_SCHEMA, escapeHtml, visibleCables, normalizePreparation, newPreparation, preparationProgress, routesForCable, nextCable, connectionLabels, endpointNotice, boardContext, wireInstruction, boardGroupForCable, boardRegionsForGroup} from './model.mjs';
+import {PREPARATION_STEPS, RECORD_SCHEMA, escapeHtml, visibleCables, normalizePreparation, newPreparation, preparationProgress, routesForCable, nextCable, connectionLabels, endpointNotice, boardContext, wireInstruction, boardGroupForCable, boardRegionsForGroup, connectorGroupsForMode, loadPreparationRecords, wiringViewForHash, connectorReferenceMarkup} from './model.mjs';
 
 const bundle = JSON.parse(document.getElementById('wiring-data').textContent);
 const cables = bundle.cables.cables, content = bundle.routes, layout = bundle.layout;
 const $ = id => document.getElementById(id), h = escapeHtml;
-const storageKey = 'mr1.visual-wiring.preparation.v2';
 const scheduleHash = bundle.cables.source.csv.sha256;
+const legacyStorageKey = 'mr1.visual-wiring.preparation.v2';
+const storageKey = `${legacyStorageKey}.${scheduleHash}`;
+let previousRecordText = null;
 const familyNames = {command:'Step / direction',motor:'Motor phases',encoder:'Encoder feedback',power:'Power',home:'Home inputs',fault:'Drive faults',probe:'Probe / setter',controls:'Operator controls',spindle:'Spindle',other:'Other'};
 const familyColors = {command:'#247aa4',motor:'#b07049',encoder:'#7656aa',power:'#aa6143',home:'#368e83',fault:'#a48420',probe:'#ad527e',controls:'#726d4b',spindle:'#676c9a',other:'#627b68'};
 const filters = {axis:'X', family:'all', search:'', archived:false, cableIds:null};
@@ -13,14 +15,24 @@ let selectedId = 'CMD-X', routeId = null, view = 'trace', focusedWire = null, re
 let storageWorks = true, importGeneration = 0;
 let selectedBoardGroup = 'jumper-voltage', lastBoardCable = null;
 const cableIds = cables.map(cable => cable.cable_id);
+let connectorMode = 'all', connectorCableId = null;
 function notify(message, error = false) { $('save-status').textContent = message; $('save-status').classList.toggle('error', error); }
 try {
-  const stored = localStorage.getItem(storageKey);
-  if (stored) record = normalizePreparation(JSON.parse(stored), cableIds, scheduleHash);
+  const loaded = loadPreparationRecords(localStorage.getItem(storageKey), localStorage.getItem(legacyStorageKey), cableIds, scheduleHash);
+  record = loaded.record;
+  previousRecordText = loaded.previousRecordText;
+  $('export-previous-record').hidden = !previousRecordText;
+  if (previousRecordText) notify('Earlier preparation notes are preserved for export. They are not applied to this schedule; recheck these cable ends.');
 } catch {
   storageWorks = false;
   notify('Saved notes could not be read. Your old record has not been overwritten. Export any new notes before closing.', true);
 }
+$('export-previous-record').addEventListener('click', () => {
+  if (!previousRecordText) return;
+  const url = URL.createObjectURL(new Blob([previousRecordText], {type:'application/json'}));
+  const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'MR1-wiring-earlier-preparation.json'; anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+});
 function save() {
   if (storageWorks) {
     try { localStorage.setItem(storageKey, JSON.stringify(record)); }
@@ -70,9 +82,13 @@ function renderRoute(cable) {
     : route.labelKind === 'functional-route' ? `Related circuit segment — not cable ${cable.cable_id}. It has no assigned cable-schedule ID. Return to the scheduled cable view to print labels or record preparation.` : '';
   $('preparation').hidden = route.labelKind === 'functional-route';
   const connections = route.connections ?? [];
+  renderCablePinReference(cable, route);
   const instruction = wireInstruction(route, focusedWire);
   focusedWire = instruction?.index ?? null;
   $('wire-focus').hidden = !instruction;
+  const pinReference = instruction ? connections[instruction.index]?.reference : null;
+  $('wire-reference').hidden = !pinReference;
+  $('wire-reference').textContent = pinReference ? `Published cable reference: ${pinReference}. Confirm your cable by pin number and continuity.` : '';
   if(instruction) {
     $('wire-position').textContent = `WIRE ${instruction.index+1} OF ${instruction.total}`;
     $('wire-end-a').innerHTML = `<small>${h(instruction.endA.device)}</small><strong>${h(instruction.endA.terminal)}</strong>`;
@@ -131,7 +147,7 @@ function render() {
 function switchView(name, focus = false) {
   view = name;
   document.querySelectorAll('[data-view]').forEach(button => {const selected=button.dataset.view===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;if(selected&&focus)button.focus();});
-  ['trace','cabinet','board'].forEach(id=>$('view-'+id).hidden=id!==name);
+  ['trace','cabinet','board','connectors'].forEach(id=>$('view-'+id).hidden=id!==name);
 }
 const photo = $('cabinet-photo'), photoWidth = layout.assets.cabinet.width, photoHeight=layout.assets.cabinet.height;
 let photoBox = [0,0,photoWidth,photoHeight], lastPhotoAxis = null;
@@ -207,6 +223,31 @@ $('board-quick-picks').addEventListener('click',event=>{const button=event.targe
 $('board-group-rows').addEventListener('click',event=>{const button=event.target.closest('[data-board-cable]');if(!button)return;const cable=cables.find(item=>item.cable_id===button.dataset.boardCable);if(!cable)return;selectSystem(null);filters.archived=!cable.active_by_default;$('archived').checked=filters.archived;selectCable(cable.cable_id);switchView('trace',true);});
 $('open-board').addEventListener('click',()=>{if(!currentCable())selectSystem(null);switchView('board',true);$('view-board').scrollIntoView({behavior:'smooth',block:'start'});});
 
+
+function connectorTable(group, compact = false) {
+  return connectorReferenceMarkup(group, bundle.connectorReference.sources, compact);
+}
+function renderConnectorLibrary() {
+  $('connector-mode').value = connectorMode;
+  $('connector-tables').innerHTML = connectorGroupsForMode(bundle.connectorReference.groups, connectorMode).map(group => connectorTable(group)).join('');
+}
+function renderCablePinReference(cable, route) {
+  const mode = ['motor','encoder','command','power','home'].includes(cable.family) ? cable.family : cable.family === 'fault' ? 'command' : 'all';
+  if (connectorCableId !== cable.cable_id) { connectorCableId = cable.cable_id; connectorMode = mode; renderConnectorLibrary(); }
+  const relevant = ['motor','encoder','home'].includes(cable.family);
+  $('cable-pin-reference').hidden = !relevant;
+  const groups = relevant ? connectorGroupsForMode(bundle.connectorReference.groups, mode).filter(group => !['cl57t-p2','cl57t-p3'].includes(group.id)) : [];
+  $('cable-pin-tables').innerHTML = groups.map(group => connectorTable(group, true)).join('');
+  $('shield-reference').hidden = !route.shieldNote;
+  $('shield-reference').textContent = route.shieldNote ?? '';
+}
+$('connector-mode').addEventListener('change', event => { connectorMode = event.target.value; renderConnectorLibrary(); });
+$('open-connectors').addEventListener('click', () => {
+  if (!currentCable()) selectSystem(null);
+  connectorMode = 'all'; renderConnectorLibrary(); switchView('connectors', true);
+  $('view-connectors').scrollIntoView({behavior:'smooth', block:'start'});
+});
+
 for(const family of [...new Set(cables.map(cable=>cable.family))].sort()) {const option=document.createElement('option');option.value=family;option.textContent=familyNames[family]??family;$('family').append(option);}
 $('coverage-scope').textContent = bundle.coverage.scope;
 $('system-groups').innerHTML = bundle.coverage.groups.map(group=>{
@@ -236,7 +277,7 @@ $('wire-diagram').addEventListener('click',event=>{const button=event.target.clo
 $('wire-previous').addEventListener('click',()=>{focusedWire=(focusedWire??0)-1;renderRoute(currentCable());});
 $('wire-next').addEventListener('click',()=>{focusedWire=(focusedWire??0)+1;renderRoute(currentCable());});
 document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>switchView(button.dataset.view)));
-document.querySelector('.view-tabs').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const names=['trace','cabinet','board'];const index=names.indexOf(view);switchView(event.key==='Home'?names[0]:event.key==='End'?names[2]:names[(index+(event.key==='ArrowRight'?1:2))%3],true);});
+document.querySelector('.view-tabs').addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const names=['trace','cabinet','board','connectors'];const index=names.indexOf(view);switchView(event.key==='Home'?names[0]:event.key==='End'?names.at(-1):names[(index+(event.key==='ArrowRight'?1:names.length-1))%names.length],true);});
 $('previous').addEventListener('click',()=>selectCable(nextCable(candidates(),selectedId,-1)));$('next').addEventListener('click',()=>selectCable(nextCable(candidates(),selectedId,1)));
 document.querySelectorAll('[data-check]').forEach(input=>input.addEventListener('change',()=>{currentRecord()[input.dataset.check]=input.checked;save();renderList(candidates());}));
 $('cable-notes').addEventListener('input',event=>{currentRecord().notes=event.target.value;save();});
@@ -268,4 +309,14 @@ $('print-label').addEventListener('click',()=>{
   window.print();
 });
 render();
-if(location.hash==='#octopus'){switchView('board');$('view-board').scrollIntoView({block:'start'});}
+function applyLocationHash() {
+  const selection = wiringViewForHash(location.hash);
+  if (!selection) return;
+  if (selection.system) return selectSystem(selection.system);
+  if (selection.view !== 'trace' && !currentCable()) selectSystem(null);
+  if (selection.mode) { connectorMode = selection.mode; renderConnectorLibrary(); }
+  switchView(selection.view);
+  if (selection.view === 'board') $('view-board').scrollIntoView({block:'start'});
+}
+window.addEventListener('hashchange', applyLocationHash);
+applyLocationHash();

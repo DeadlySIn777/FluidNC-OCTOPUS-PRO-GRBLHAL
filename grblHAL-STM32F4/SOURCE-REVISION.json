@@ -8430,8 +8430,8 @@
     },
     {
       "path": "mr1/BOM.md",
-      "bytes": 14312,
-      "sha256": "c0bf47cac980ec77906817467980cdc3ac099a85ba1e65fef29a0751a31cce00"
+      "bytes": 15678,
+      "sha256": "f65d5d2ab7590773edd747f384739af66e328d3dd538158ea4d983c01ac83d8d"
     },
     {
       "path": "mr1/BUILD_REPORT.md",
@@ -8440,8 +8440,8 @@
     },
     {
       "path": "mr1/cable-schedule.csv",
-      "bytes": 16563,
-      "sha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12"
+      "bytes": 18775,
+      "sha256": "69c738abcc44fd351c9b2298005f6f4a59c1594a2926a12dc51246165f9d5228"
     },
     {
       "path": "mr1/CL57T_ARRIVAL_CAPTURE.md",
@@ -8450,8 +8450,8 @@
     },
     {
       "path": "mr1/CL57T_QUICK_WIRING.md",
-      "bytes": 18425,
-      "sha256": "c07af5e37010dbdbcc03c929f46eb89b9ba03ae8f7fe72f5414d1132b7e6d7cc"
+      "bytes": 20451,
+      "sha256": "f5f3a322078344c295db436a49967f573d6fbe68742a775224b4177f524e5b8b"
     },
     {
       "path": "mr1/COMMISSIONING.md",
@@ -8470,13 +8470,13 @@
     },
     {
       "path": "mr1/INTERFACE_BOARD.md",
-      "bytes": 25506,
-      "sha256": "8039985429e9e9143d72a05ba3a176673b0feedcec38d2f9bd5229a62b2e01f0"
+      "bytes": 26266,
+      "sha256": "fb29e1882190cdea367af7d12c30a1b818a40d6087848dfe9cf004b3fa754c83"
     },
     {
       "path": "mr1/io-manifest.json",
-      "bytes": 13342,
-      "sha256": "95d71acf8266852a0b592ec76cefc471ffb24c6fac0b59632e251d30b8d10094"
+      "bytes": 13619,
+      "sha256": "e67b0d3ac06e38767339f9476a1a6a5317f6dec9d193416268381fd1ec25557a"
     },
     {
       "path": "mr1/macros/manifest.json",
@@ -8500,8 +8500,8 @@
     },
     {
       "path": "mr1/MR1_GITHUB_CROSSCHECK.md",
-      "bytes": 5092,
-      "sha256": "7645f9785a6249d45a1f1254fff67ae3b9eb9b86ce1cd0fdd4cbd6083ce846ef"
+      "bytes": 6239,
+      "sha256": "d17a50f4e2b5768e74531973f09d3c8fd58ae49f3c5a0fe5d2d794b0a4b4c779"
     },
     {
       "path": "mr1/OCTOPUS_QUALIFICATION.md",
@@ -8515,13 +8515,13 @@
     },
     {
       "path": "mr1/ORDER_LIST.md",
-      "bytes": 13861,
-      "sha256": "0256a3af4721af5df9bd56acd85775c50de6fcb448891d616c872ca2c02d7472"
+      "bytes": 12201,
+      "sha256": "a4ae6f711f5b74cef0a6b8f92630667dd567ad37f099d7eab9bdc2c31608fc0d"
     },
     {
       "path": "mr1/PIGTAIL_SCHEDULE.md",
-      "bytes": 13993,
-      "sha256": "bcc7e4e1e7b56d8e8cf1c1d4191cfa1ecb8c506db07181ce853f2bff2d2dc833"
+      "bytes": 14355,
+      "sha256": "e5eb7e0037cfa2080f4eea3f39da041193b728b2f168b22d52480db434c80532"
     },
     {
       "path": "mr1/README.md",
@@ -8530,8 +8530,8 @@
     },
     {
       "path": "mr1/RESEARCH.md",
-      "bytes": 22078,
-      "sha256": "6396df1fb6cced1e8c46617fa5cfcffd1749e665de00f8f4f252eae35b0aef77"
+      "bytes": 22013,
+      "sha256": "1773ef4deab25aa6608ddef7dee309924b4384ba4eb8403eebcbb740d66437b0"
     },
     {
       "path": "mr1/RIGID_TAPPING.md",
@@ -8560,13 +8560,13 @@
     },
     {
       "path": "mr1/WIRING.md",
-      "bytes": 46923,
-      "sha256": "8d057aba6a847256ca69783b4048a0188982e9cd87bc0584e4601364ac15b97d"
+      "bytes": 48531,
+      "sha256": "53e7dd43bd860315ba47949047354f0b3ff6401592ad2390c7ffff4731b20f34"
     },
     {
       "path": "mr1/WIRING_SIMPLE.md",
-      "bytes": 12190,
-      "sha256": "283bd6cdbad3a197cb5a99c271eb10d6532ba015d45b83a2b4d29e33bd632fc3"
+      "bytes": 13806,
+      "sha256": "819c90e5b8bc0e190a1e0eaa8540e9889d949d54389e7b378e7b1da76c494fb3"
     },
     {
       "path": "platformio.ini",
@@ -9062,15 +9062,16 @@
   "releaseOverlayFiles": [
     "FIRMWARE-KNOWN-ISSUES.md",
     "Inc/my_machine.h",
-    "mr1/_vendor_docs/README.md",
+    "README.md",
+    "SOURCE-PROVENANCE.md",
+    "STM32F401CCUX_BL16K_FLASH.ld",
+    "WIRING_GUIDE.md",
     "mr1/BOM.md",
     "mr1/BUILD_REPORT.md",
-    "mr1/cable-schedule.csv",
     "mr1/CL57T_QUICK_WIRING.md",
     "mr1/COMMISSIONING.md",
     "mr1/DM860T_QUICK_WIRING.md",
     "mr1/INTERFACE_BOARD.md",
-    "mr1/io-manifest.json",
     "mr1/MR1_GITHUB_CROSSCHECK.md",
     "mr1/OPERATOR.md",
     "mr1/ORDER_LIST.md",
@@ -9080,13 +9081,12 @@
     "mr1/SPINDLE_SUPERVISION.md",
     "mr1/WIRING.md",
     "mr1/WIRING_SIMPLE.md",
+    "mr1/_vendor_docs/README.md",
+    "mr1/cable-schedule.csv",
+    "mr1/io-manifest.json",
     "platformio.ini",
-    "README.md",
-    "SOURCE-PROVENANCE.md",
-    "STM32F401CCUX_BL16K_FLASH.ld",
     "tools/validate_mr1_profile.py",
-    "tools/verify_source_export.py",
-    "WIRING_GUIDE.md"
+    "tools/verify_source_export.py"
   ],
   "lineEndingNormalization": "UTF-8/ASCII text is LF per inherited .gitattributes; upstream UTF-16 FatFs/library.json is preserved byte-identically.",
   "vendorMediaDistributed": false,
@@ -9098,9 +9098,10 @@
     "compiledImage": "Not included; binary-vector checks deferred",
     "physicalAcceptance": false,
     "sourceLogicIntegrity": "626 C/C++/assembly source and header files byte-identical to pinned revisions; except Inc/my_machine.h (credential placeholders, compiled by no environment)",
-    "canonicalProfiles": "Four canonical JSON files byte-identical to corrected reference bundle"
+    "canonicalProfiles": "Four canonical JSON files byte-identical to corrected reference bundle",
+    "documentationOverlay": "connector-home-upstream-merge-2026-09-26"
   },
-  "validatedAt": "2026-09-25T06:18:59.522412+00:00",
+  "validatedAt": "2026-09-27T03:40:12.817983+00:00",
   "postExportChanges": {
     "reason": "Post-audit corrections (2026-09-25): documentation, validator messages, credential placeholders and relocation of unsafe bench scripts. Production firmware C/C++ sources and the pinned image are unchanged.",
     "sourceExceptions": {
@@ -9150,5 +9151,185 @@
       "unlimited_test.py",
       "visual_test.py"
     ]
-  }
+  },
+  "documentationOverlays": [
+    {
+      "id": "connector-home-reference-2026-09-26",
+      "capturedUtc": "2026-09-27T03:32:27.592860+00:00",
+      "publicationStatus": "Working content revision; public commit not assigned at capture.",
+      "scope": "Researched motor/encoder connector mappings; shield separation; stock shared Y2/Z versus conditional independent bare-NC home wiring; matching BOM/order/interface/CSV/I-O narrative. No firmware code or setting values changed.",
+      "sourceRepository": "https://github.com/DeadlySIn777/FluidNC-OCTOPUS-PRO-GRBLHAL",
+      "files": [
+        {
+          "path": "mr1/BOM.md",
+          "previousSha256": "588e0398833e63f82a243af3ef4e2f8013256474a429eb69ecf7993df568abd8",
+          "sha256": "fca0a105c02598463c006ce772d63361a17d293cf3188294abdfd2271a7c53ff",
+          "previousBytes": 14233,
+          "bytes": 15599
+        },
+        {
+          "path": "mr1/cable-schedule.csv",
+          "previousSha256": "aa6f4fabd6448e260c43d9669d27a08fc8dff2151e80c841b5820c2039afba7b",
+          "sha256": "650e495542383e6acbcb6b3855feb9f26dcffbbebf7738aec863cbdd1bb3c3d3",
+          "previousBytes": 15266,
+          "bytes": 17478
+        },
+        {
+          "path": "mr1/CL57T_QUICK_WIRING.md",
+          "previousSha256": "9176f9b01a90c217191771eb7f4fabddd5ca3e0d11199081a0b24308828ca456",
+          "sha256": "569f147a07e3ccd8661a2b5a485808a852647af8642b9aa42ac28e0aa992ff9c",
+          "previousBytes": 17587,
+          "bytes": 19629
+        },
+        {
+          "path": "mr1/INTERFACE_BOARD.md",
+          "previousSha256": "15431a15717901b895a487dbc048cd0a0c15290fcb5f5cdd6e3eef64dd748e09",
+          "sha256": "d152a71e105d39a0d5dcacfa063c207cd0c94d1a22717a70e61827d517d8aea2",
+          "previousBytes": 20332,
+          "bytes": 21014
+        },
+        {
+          "path": "mr1/io-manifest.json",
+          "previousSha256": "5ff586c6a720151987b5612a30d96c6c6afb800194db1cd5e5d80b3b826a36f4",
+          "sha256": "984fd131b442823db2d133eac31cbad1ac476ccf606f731e224d26eaf65de481",
+          "previousBytes": 12431,
+          "bytes": 12708
+        },
+        {
+          "path": "mr1/MR1_GITHUB_CROSSCHECK.md",
+          "previousSha256": "60f69c35f0918b97b534fef15861df03ca21a0fe392a413f9b0e2ed438f4d8cc",
+          "sha256": "28ea6997fe26afdf5c455e1ba1c51739bc90850d2f31fb06387eaed5783c11a4",
+          "previousBytes": 4962,
+          "bytes": 6014
+        },
+        {
+          "path": "mr1/ORDER_LIST.md",
+          "previousSha256": "77e0e7ca5cb5f952237b1c5181fc08bc609c03703c70cdebaf521f1607a9733c",
+          "sha256": "1ee390eed9ef985639e86f075596bbbeb4129a0e211ba62cba8a2c51b2342843",
+          "previousBytes": 13546,
+          "bytes": 12042
+        },
+        {
+          "path": "mr1/PIGTAIL_SCHEDULE.md",
+          "previousSha256": "f64eacc58ba6f0d11ca59e0a11ea92a30ae48da5a5fbadf8c8c945d6a8362329",
+          "sha256": "7512e150ebbaf61dcfa3f7236d9630fa6d1ff6d06f25294a13722f217e90c02c",
+          "previousBytes": 13607,
+          "bytes": 14000
+        },
+        {
+          "path": "mr1/RESEARCH.md",
+          "previousSha256": "ab3652d44b1db684ef5a40569b25ce978f2ec20ea5f146a5098030b9223894cf",
+          "sha256": "c7614b2be15aee58daa54979b89e078b263dae76743892d70d10990ccf90ae5d",
+          "previousBytes": 21780,
+          "bytes": 21806
+        },
+        {
+          "path": "mr1/WIRING.md",
+          "previousSha256": "5d4069ca27c33cdb2273b6d5abf54ceac2bde3c37481f092d5389af49de6ba18",
+          "sha256": "70e49dc29e050fb071f00dcdd9b3b23bfd698542dc501511845bbb23e7b16f2c",
+          "previousBytes": 41264,
+          "bytes": 42726
+        },
+        {
+          "path": "mr1/WIRING_SIMPLE.md",
+          "previousSha256": "d32238ccb945aaa2bd0e777ea98a72055febf2726a736b70913aa27a380d0cee",
+          "sha256": "e8cf6f3a0a9a76472f4cbdc916a4377c2ee07819a5c0dc45363876c4f0508ac5",
+          "previousBytes": 11266,
+          "bytes": 12870
+        }
+      ],
+      "originalSourceRecordsPreserved": true,
+      "physicalAcceptance": false
+    },
+    {
+      "id": "connector-home-upstream-merge-2026-09-26",
+      "capturedUtc": "2026-09-27T03:40:12.817983+00:00",
+      "sourceRepository": "https://github.com/DeadlySIn777/FluidNC-OCTOPUS-PRO-GRBLHAL",
+      "upstreamBaseCommit": "8ad20263ebf4e1cff3a5a8a0df8001cee304ef4e",
+      "publicationStatus": "Merged working content; final merge commit not assigned at capture. Historical overlay entries retain their original capture status.",
+      "scope": "Merged the source audit corrections with researched motor/encoder connector mappings, shield separation, and stock shared Y2/Z versus independently rewired bare-NC home-circuit documentation. Production firmware code and setting values unchanged by this documentation merge.",
+      "files": [
+        {
+          "path": "mr1/BOM.md",
+          "upstreamSha256": "c0bf47cac980ec77906817467980cdc3ac099a85ba1e65fef29a0751a31cce00",
+          "sha256": "f65d5d2ab7590773edd747f384739af66e328d3dd538158ea4d983c01ac83d8d",
+          "upstreamBytes": 14312,
+          "bytes": 15678
+        },
+        {
+          "path": "mr1/cable-schedule.csv",
+          "upstreamSha256": "eef818c9637a6b7690ac43cb247b11dc18a206c0a923d0fa4303b015b6565b12",
+          "sha256": "69c738abcc44fd351c9b2298005f6f4a59c1594a2926a12dc51246165f9d5228",
+          "upstreamBytes": 16563,
+          "bytes": 18775
+        },
+        {
+          "path": "mr1/CL57T_QUICK_WIRING.md",
+          "upstreamSha256": "c07af5e37010dbdbcc03c929f46eb89b9ba03ae8f7fe72f5414d1132b7e6d7cc",
+          "sha256": "f5f3a322078344c295db436a49967f573d6fbe68742a775224b4177f524e5b8b",
+          "upstreamBytes": 18425,
+          "bytes": 20451
+        },
+        {
+          "path": "mr1/INTERFACE_BOARD.md",
+          "upstreamSha256": "8039985429e9e9143d72a05ba3a176673b0feedcec38d2f9bd5229a62b2e01f0",
+          "sha256": "fb29e1882190cdea367af7d12c30a1b818a40d6087848dfe9cf004b3fa754c83",
+          "upstreamBytes": 25506,
+          "bytes": 26266
+        },
+        {
+          "path": "mr1/io-manifest.json",
+          "upstreamSha256": "95d71acf8266852a0b592ec76cefc471ffb24c6fac0b59632e251d30b8d10094",
+          "sha256": "e67b0d3ac06e38767339f9476a1a6a5317f6dec9d193416268381fd1ec25557a",
+          "upstreamBytes": 13342,
+          "bytes": 13619
+        },
+        {
+          "path": "mr1/MR1_GITHUB_CROSSCHECK.md",
+          "upstreamSha256": "7645f9785a6249d45a1f1254fff67ae3b9eb9b86ce1cd0fdd4cbd6083ce846ef",
+          "sha256": "d17a50f4e2b5768e74531973f09d3c8fd58ae49f3c5a0fe5d2d794b0a4b4c779",
+          "upstreamBytes": 5092,
+          "bytes": 6239
+        },
+        {
+          "path": "mr1/ORDER_LIST.md",
+          "upstreamSha256": "0256a3af4721af5df9bd56acd85775c50de6fcb448891d616c872ca2c02d7472",
+          "sha256": "a4ae6f711f5b74cef0a6b8f92630667dd567ad37f099d7eab9bdc2c31608fc0d",
+          "upstreamBytes": 13861,
+          "bytes": 12201
+        },
+        {
+          "path": "mr1/PIGTAIL_SCHEDULE.md",
+          "upstreamSha256": "bcc7e4e1e7b56d8e8cf1c1d4191cfa1ecb8c506db07181ce853f2bff2d2dc833",
+          "sha256": "e5eb7e0037cfa2080f4eea3f39da041193b728b2f168b22d52480db434c80532",
+          "upstreamBytes": 13993,
+          "bytes": 14355
+        },
+        {
+          "path": "mr1/RESEARCH.md",
+          "upstreamSha256": "6396df1fb6cced1e8c46617fa5cfcffd1749e665de00f8f4f252eae35b0aef77",
+          "sha256": "1773ef4deab25aa6608ddef7dee309924b4384ba4eb8403eebcbb740d66437b0",
+          "upstreamBytes": 22078,
+          "bytes": 22013
+        },
+        {
+          "path": "mr1/WIRING.md",
+          "upstreamSha256": "8d057aba6a847256ca69783b4048a0188982e9cd87bc0584e4601364ac15b97d",
+          "sha256": "53e7dd43bd860315ba47949047354f0b3ff6401592ad2390c7ffff4731b20f34",
+          "upstreamBytes": 46923,
+          "bytes": 48531
+        },
+        {
+          "path": "mr1/WIRING_SIMPLE.md",
+          "upstreamSha256": "283bd6cdbad3a197cb5a99c271eb10d6532ba015d45b83a2b4d29e33bd632fc3",
+          "sha256": "819c90e5b8bc0e190a1e0eaa8540e9889d949d54389e7b378e7b1da76c494fb3",
+          "upstreamBytes": 12190,
+          "bytes": 13806
+        }
+      ],
+      "originalSourceRecordsPreserved": true,
+      "upstreamAuditCorrectionsPreserved": true,
+      "physicalAcceptance": false
+    }
+  ]
 }

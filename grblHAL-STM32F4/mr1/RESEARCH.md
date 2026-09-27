@@ -157,11 +157,14 @@ until the exact units are characterized.
 
 ### Homing and Y Squaring
 
-Four stock switch channels are retained as separate inputs, but the stock
-harness is not treated as four direct dry contacts. The pinned community build
-describes active-high inputs and `NC 5V` limit/E-stop wiring, so each channel
-passes through an energized-healthy isolated conditioner. A healthy channel is
-low at the Octopus; switch trigger, cable break, or lost field power is high.
+The current firmware requires four separate home inputs. The stock Y2/Z
+series arrangement must be traced and separated first; it is not already four
+independent field channels. See `WIRING.md`, Home and Limit Inputs, for the
+manufacturer shared-indicator statement and firsthand NC harness report.
+Powered/electronic channels require a qualified energized-healthy conditioner.
+Verified bare NC contacts may use common GND only after isolation from stock
+5 V and electronics. A healthy controller input is low; trigger, cable break,
+or required field-power loss must release it high.
 Z homes positive/up, X
 negative/left, and Y positive/rear. The firmware homes Y-left and Y-right
 independently to auto-square. Generic grblHAL defaults permit up to 25 mm of
@@ -268,20 +271,16 @@ These cannot be answered honestly from web research or source code:
    bench supply; continuity from probe 0 V to frame; continuity from stylus to
    body. Version 2 of the probe is reported to keep the V1 cabinet wiring.
 4. Actual home-switch contact arrangement, sealing, and repeatability.
-   **Working hypothesis (2026-09-21, same sources):** four passive two-wire NC
-   switches on a splitter harness sharing one common; the stock controller fed
-   that common 5 V (*"Limit and e-stop switches are NC 5V"*, input common on
-   GND at the Mesa). The conversion's input table carries only three limit
-   inputs - `X`, `Y1`, and `Y2/Z` on one input - so either the harness merges
-   Y2 and Z on one conductor or that builder did. **If the harness merges them,
-   `Y_AUTO_SQUARE` cannot work until one of them gets its own conductor.**
-   Closes with: count conductors at the plug (6 = shared supply + shared
-   return + four signals, the powered case `WIRING.md` expects; 5 = four
-   signals + common; 4 = a shared pair); ohmmeter across each switch with the leads both ways round
-   (identical readings = passive contact); continuity from the common to one
-   leg of all four. If all three pass, the common lands on Octopus `GND`, each
-   signal on its `STOP` SIG, and the isolated conditioner comes out of the
-   build.
+   **Corrected 2026-09-26:** manufacturer support confirms shared Y2/Z
+   indication; a firsthand owner test records NC switches in series. Source
+   links and limits are in `WIRING.md`, Home and Limit Inputs. Trace this
+   machine's actual connector, junctions and each switch with all power removed.
+   The current four-input configuration requires separate Z and Y-right signal
+   paths; an added conductor or replacement harness may be necessary. Do not
+   infer passive contacts or independence merely from wire count or one meter
+   reading. Verify NC behavior, isolation from stock 5 V/electronics, and each
+   switch affecting only its own signal. Only then may verified bare contacts
+   share a new Octopus GND common; otherwise retain qualified conditioning.
 5. Actual DB44 continuity, servo-drive model/firmware, analog scaling, enable polarity, and alarm configuration.
 6. Exact stock-motor phase current or original-driver current setting for DM860T `SW1-SW3` release.
 7. Actual DM860T ALM idle/fault impedance now, plus CL57T ALM behavior after the future upgrade.

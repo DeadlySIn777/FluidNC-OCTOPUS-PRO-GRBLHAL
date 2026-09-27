@@ -5,6 +5,13 @@ Open the [visual guide](visual/index.html) from your local checkout and choose
 Use cable tracing for motor, encoder, drive alarm, home-switch and other defined
 circuits. The BIGTREETECH image needs internet; the tables work offline.
 
+Choose **Drive plugs & colors** for P1 commands, P2 encoder, P3 motor, P4 power
+and P5 tuning. The tables show numbered GX16/DB15 pins, both published motor
+color options, all six encoder wires and the separate shield. Home references
+distinguish the reported factory shared Y2/Z circuit from this project's four
+independent inputs. Published mappings still require checking against each
+actual connector and cable.
+
 **Physical wiring and machining are not qualified.** No entry in the guide records
 completed electrical acceptance. Software tests have used synthetic controllers.
 The readiness worksheet lists the blocking holds before energizing: the E-stop /
@@ -36,7 +43,9 @@ Manufacturer references are linked, rather than redistributed:
 - [BIGTREETECH V1.1 pin drawing](https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/blob/master/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg)
 
 `source/` preserves audit inspection excerpts; it is not a build tree.
-`application-reference/wiring-installation.js` is a byte-identical copy of the
-current `mr1-control/src/wiring-installation.js`. Complete exported firmware is
+`application-reference/wiring-installation.js` matches the current
+`mr1-control/src/wiring-installation.js` after its reference-provenance header.
+Complete exported firmware is
 at [grblHAL-STM32F4](../../grblHAL-STM32F4/) and the current application is at
-[mr1-control](../../mr1-control/). The original local offline guide is unchanged.
+[mr1-control](../../mr1-control/). The private offline guide can be rebuilt from
+the same maintained source with the exact original board image.

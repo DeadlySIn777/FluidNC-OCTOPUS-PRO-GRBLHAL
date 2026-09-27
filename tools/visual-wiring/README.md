@@ -35,3 +35,9 @@ The builder rejects a different image before generating output. The private outp
 Project-provided cabinet imagery and component placement are reference material. Planned axis identities, actual terminals, interfaces, supplies, protection and physical measurements remain unverified. Manufacturer documents are referenced through official links rather than copied here.
 
 The one-time migration scripts and old generated artifacts were intentionally not included. Make changes in the maintained source files, run the commands above, and review the generated diff before publishing.
+
+## Connector references
+
+`connector-reference.json` contains the sourced GX16 motor and DB15 encoder mappings, separate encoder shield guidance, P1–P5 drive functions, and factory/custom home-harness distinctions. Both published motor color variants remain unselected. `route-content.json` places the same references next to individual motor/encoder conductors. These are published references, not a claim about installed continuity or connector viewing direction.
+
+The guide's **Drive plugs & colors** tab supports `#encoder`, `#motor`, `#endstops` and `#connectors` links. Preparation storage is bound to the cable-schedule hash. Older notes remain exportable without automatically applying old checks to revised wiring.

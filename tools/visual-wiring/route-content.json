@@ -7,7 +7,7 @@
   "closedLoop": "The encoder returns to its own CL57T drive. The PC receives commanded position, not independent table position; a loose coupler can still escape encoder detection.",
   "axisNote": "Four motors, three logical axes. Y-left and Y-right share logical Y; Y-right is not a rotary fourth axis.",
   "labelNote": "Source cable IDs come from the corrected cable schedule. Functional-route labels describe additional views and are not new approved harness IDs. Interface labels are planned functions, not proven terminal markings.",
-  "viewNote": "Functional endpoints only. No drawing order, wire color or GPIO name identifies a physical cavity. The actual mating view and continuity remain to be recorded.",
+  "viewNote": "Published connector numbers and colors are reference clues, not proof of the installed cable or its mating view. Match the actual variant, connector numbering and deenergized continuity before landing a wire.",
   "sources": [
     {
       "id": "readiness",
@@ -55,7 +55,7 @@
       "title": "Connector and harness schedule",
       "path": "docs/wiring/mr1/PIGTAIL_SCHEDULE.md",
       "sections": [
-        "Octopus Driver-Socket Adapters",
+        "Octopus STEP/DIR Control Cable",
         "CL57T-Side Schedule",
         "Moulded cable conflict"
       ]
@@ -99,6 +99,16 @@
         "Sheet 2 STOP / EXP2"
       ],
       "caveat": "Filename says V1.1; title blocks say Rev V1.0. Verify the actual board revision and mating view."
+    },
+    {
+      "id": "stepperonline-motor-encoder",
+      "title": "STEPPERONLINE motor and encoder cable reference",
+      "path": "https://help.omc-stepperonline.com/hc/s/articles/wiring-diagram-for-closed-loop-stepper-motor",
+      "sections": [
+        "Motor Options A and B / GX16 numbered pins",
+        "DB15 encoder pins and shield lead"
+      ],
+      "caveat": "Published cable reference; actual kit variant, connector view and continuity remain unverified."
     }
   ],
   "holds": [
@@ -140,12 +150,12 @@
     {
       "id": "motor-harness",
       "label": "Motor harness untraced",
-      "reason": "Match this motor to its drive and trace the supplied cable while deenergized. Phase identities, connector cavities, route length, fit and shielding are not yet recorded; colors are not proof."
+      "reason": "The manufacturer publishes two motor color options. Identify this kit, verify its numbered GX16 view and trace phases while deenergized. Actual phase/encoder pairing, length, fit and shielding remain unrecorded."
     },
     {
       "id": "encoder-harness",
       "label": "Encoder harness untraced",
-      "reason": "Match this encoder to the same motor and drive. Verify the kit cable and all six functions while deenergized. No replacement cavity map or internal galvanic-isolation claim is established."
+      "reason": "The manufacturer publishes six DB15 functions plus a separate shield lead. Verify this matched harness and the actual numbered view while deenergized. The shield has no P2/EGND assignment; no physical or internal-isolation proof is recorded."
     },
     {
       "id": "motion-supply",
@@ -405,23 +415,27 @@
       "connections": [
         {
           "from": "P3 A+",
-          "to": "Motor phase A+"
+          "to": "Motor phase A+",
+          "reference": "Published STEPPERONLINE GX16 pin 1 → A+: Option A white; Option B black. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 A−",
-          "to": "Motor phase A−"
+          "to": "Motor phase A−",
+          "reference": "Published STEPPERONLINE GX16 pin 2 → A−: Option A green; Option B green. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B+",
-          "to": "Motor phase B+"
+          "to": "Motor phase B+",
+          "reference": "Published STEPPERONLINE GX16 pin 3 → B+: Option A blue; Option B red. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B−",
-          "to": "Motor phase B−"
+          "to": "Motor phase B−",
+          "reference": "Published STEPPERONLINE GX16 pin 4 → B−: Option A black; Option B blue. Identify the actual option and numbered connector view; not measured."
         }
       ],
       "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
-      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "check": "Identify the actual Option A or B harness; do not mix color schemes. Trace numbered contacts and both coil pairs with all energy isolated and discharged. Never plug or unplug it while powered.",
       "holdIds": [
         "drive-terminals",
         "motor-harness",
@@ -430,7 +444,8 @@
       "sourceIds": [
         "pigtails",
         "cable-schedule",
-        "drive-manual"
+        "drive-manual",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "encoder-X",
@@ -439,7 +454,12 @@
       "endLabels": {
         "from": "MOT-X",
         "to": "MOT-X"
-      }
+      },
+      "connectorReferenceIds": [
+        "motor-option-a",
+        "motor-option-b",
+        "cl57t-p3"
+      ]
     },
     {
       "state": "HOLD",
@@ -485,36 +505,42 @@
         {
           "from": "Encoder A+",
           "to": "P2 EA+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 1, black → P2 EA+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder A−",
           "to": "P2 EA−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 13, blue → P2 EA−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B+",
           "to": "P2 EB+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 11, yellow → P2 EB+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B−",
           "to": "P2 EB−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 12, green → P2 EB−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder supply",
           "to": "P2 VCC",
-          "direction": "to-from"
+          "direction": "to-from",
+          "reference": "Published STEPPERONLINE DB15 pin 2, red → P2 VCC (drive supply output). Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder return",
           "to": "P2 EGND",
-          "direction": "return"
+          "direction": "return",
+          "reference": "Published STEPPERONLINE DB15 pin 3, white → P2 EGND. Confirm the actual numbered connector view and continuity; not measured."
         }
       ],
       "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
-      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "check": "Trace all six electrical functions and identify the separate shield lead while deenergized. Match the actual numbered DB15 view; route away from motor and bus wiring. Do not add ground bonds.",
       "holdIds": [
         "drive-terminals",
         "encoder-harness"
@@ -523,7 +549,8 @@
         "pigtails",
         "cable-schedule",
         "drive-manual",
-        "drive-guide"
+        "drive-guide",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "motor-X"
@@ -531,7 +558,12 @@
       "endLabels": {
         "from": "ENC-X",
         "to": "ENC-X"
-      }
+      },
+      "shieldNote": "The seventh, thick black lead is the published shield/drain reference, distinct from the thin black EA+ conductor. It has no P2 or EGND assignment. Keep it individually insulated pending the reviewed shield-bond plan.",
+      "connectorReferenceIds": [
+        "encoder-db15",
+        "cl57t-p2"
+      ]
     },
     {
       "state": "HOLD",
@@ -918,23 +950,27 @@
       "connections": [
         {
           "from": "P3 A+",
-          "to": "Motor phase A+"
+          "to": "Motor phase A+",
+          "reference": "Published STEPPERONLINE GX16 pin 1 → A+: Option A white; Option B black. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 A−",
-          "to": "Motor phase A−"
+          "to": "Motor phase A−",
+          "reference": "Published STEPPERONLINE GX16 pin 2 → A−: Option A green; Option B green. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B+",
-          "to": "Motor phase B+"
+          "to": "Motor phase B+",
+          "reference": "Published STEPPERONLINE GX16 pin 3 → B+: Option A blue; Option B red. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B−",
-          "to": "Motor phase B−"
+          "to": "Motor phase B−",
+          "reference": "Published STEPPERONLINE GX16 pin 4 → B−: Option A black; Option B blue. Identify the actual option and numbered connector view; not measured."
         }
       ],
       "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
-      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "check": "Identify the actual Option A or B harness; do not mix color schemes. Trace numbered contacts and both coil pairs with all energy isolated and discharged. Never plug or unplug it while powered.",
       "holdIds": [
         "drive-terminals",
         "motor-harness",
@@ -943,7 +979,8 @@
       "sourceIds": [
         "pigtails",
         "cable-schedule",
-        "drive-manual"
+        "drive-manual",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "encoder-YL",
@@ -952,7 +989,12 @@
       "endLabels": {
         "from": "MOT-YL",
         "to": "MOT-YL"
-      }
+      },
+      "connectorReferenceIds": [
+        "motor-option-a",
+        "motor-option-b",
+        "cl57t-p3"
+      ]
     },
     {
       "state": "HOLD",
@@ -998,36 +1040,42 @@
         {
           "from": "Encoder A+",
           "to": "P2 EA+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 1, black → P2 EA+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder A−",
           "to": "P2 EA−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 13, blue → P2 EA−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B+",
           "to": "P2 EB+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 11, yellow → P2 EB+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B−",
           "to": "P2 EB−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 12, green → P2 EB−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder supply",
           "to": "P2 VCC",
-          "direction": "to-from"
+          "direction": "to-from",
+          "reference": "Published STEPPERONLINE DB15 pin 2, red → P2 VCC (drive supply output). Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder return",
           "to": "P2 EGND",
-          "direction": "return"
+          "direction": "return",
+          "reference": "Published STEPPERONLINE DB15 pin 3, white → P2 EGND. Confirm the actual numbered connector view and continuity; not measured."
         }
       ],
       "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
-      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "check": "Trace all six electrical functions and identify the separate shield lead while deenergized. Match the actual numbered DB15 view; route away from motor and bus wiring. Do not add ground bonds.",
       "holdIds": [
         "drive-terminals",
         "encoder-harness"
@@ -1036,7 +1084,8 @@
         "pigtails",
         "cable-schedule",
         "drive-manual",
-        "drive-guide"
+        "drive-guide",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "motor-YL"
@@ -1044,7 +1093,12 @@
       "endLabels": {
         "from": "ENC-YL",
         "to": "ENC-YL"
-      }
+      },
+      "shieldNote": "The seventh, thick black lead is the published shield/drain reference, distinct from the thin black EA+ conductor. It has no P2 or EGND assignment. Keep it individually insulated pending the reviewed shield-bond plan.",
+      "connectorReferenceIds": [
+        "encoder-db15",
+        "cl57t-p2"
+      ]
     },
     {
       "state": "HOLD",
@@ -1431,23 +1485,27 @@
       "connections": [
         {
           "from": "P3 A+",
-          "to": "Motor phase A+"
+          "to": "Motor phase A+",
+          "reference": "Published STEPPERONLINE GX16 pin 1 → A+: Option A white; Option B black. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 A−",
-          "to": "Motor phase A−"
+          "to": "Motor phase A−",
+          "reference": "Published STEPPERONLINE GX16 pin 2 → A−: Option A green; Option B green. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B+",
-          "to": "Motor phase B+"
+          "to": "Motor phase B+",
+          "reference": "Published STEPPERONLINE GX16 pin 3 → B+: Option A blue; Option B red. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B−",
-          "to": "Motor phase B−"
+          "to": "Motor phase B−",
+          "reference": "Published STEPPERONLINE GX16 pin 4 → B−: Option A black; Option B blue. Identify the actual option and numbered connector view; not measured."
         }
       ],
       "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
-      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "check": "Identify the actual Option A or B harness; do not mix color schemes. Trace numbered contacts and both coil pairs with all energy isolated and discharged. Never plug or unplug it while powered.",
       "holdIds": [
         "drive-terminals",
         "motor-harness",
@@ -1456,7 +1514,8 @@
       "sourceIds": [
         "pigtails",
         "cable-schedule",
-        "drive-manual"
+        "drive-manual",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "encoder-Z",
@@ -1465,7 +1524,12 @@
       "endLabels": {
         "from": "MOT-Z",
         "to": "MOT-Z"
-      }
+      },
+      "connectorReferenceIds": [
+        "motor-option-a",
+        "motor-option-b",
+        "cl57t-p3"
+      ]
     },
     {
       "state": "HOLD",
@@ -1511,36 +1575,42 @@
         {
           "from": "Encoder A+",
           "to": "P2 EA+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 1, black → P2 EA+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder A−",
           "to": "P2 EA−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 13, blue → P2 EA−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B+",
           "to": "P2 EB+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 11, yellow → P2 EB+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B−",
           "to": "P2 EB−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 12, green → P2 EB−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder supply",
           "to": "P2 VCC",
-          "direction": "to-from"
+          "direction": "to-from",
+          "reference": "Published STEPPERONLINE DB15 pin 2, red → P2 VCC (drive supply output). Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder return",
           "to": "P2 EGND",
-          "direction": "return"
+          "direction": "return",
+          "reference": "Published STEPPERONLINE DB15 pin 3, white → P2 EGND. Confirm the actual numbered connector view and continuity; not measured."
         }
       ],
       "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
-      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "check": "Trace all six electrical functions and identify the separate shield lead while deenergized. Match the actual numbered DB15 view; route away from motor and bus wiring. Do not add ground bonds.",
       "holdIds": [
         "drive-terminals",
         "encoder-harness"
@@ -1549,7 +1619,8 @@
         "pigtails",
         "cable-schedule",
         "drive-manual",
-        "drive-guide"
+        "drive-guide",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "motor-Z"
@@ -1557,7 +1628,12 @@
       "endLabels": {
         "from": "ENC-Z",
         "to": "ENC-Z"
-      }
+      },
+      "shieldNote": "The seventh, thick black lead is the published shield/drain reference, distinct from the thin black EA+ conductor. It has no P2 or EGND assignment. Keep it individually insulated pending the reviewed shield-bond plan.",
+      "connectorReferenceIds": [
+        "encoder-db15",
+        "cl57t-p2"
+      ]
     },
     {
       "state": "HOLD",
@@ -1944,23 +2020,27 @@
       "connections": [
         {
           "from": "P3 A+",
-          "to": "Motor phase A+"
+          "to": "Motor phase A+",
+          "reference": "Published STEPPERONLINE GX16 pin 1 → A+: Option A white; Option B black. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 A−",
-          "to": "Motor phase A−"
+          "to": "Motor phase A−",
+          "reference": "Published STEPPERONLINE GX16 pin 2 → A−: Option A green; Option B green. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B+",
-          "to": "Motor phase B+"
+          "to": "Motor phase B+",
+          "reference": "Published STEPPERONLINE GX16 pin 3 → B+: Option A blue; Option B red. Identify the actual option and numbered connector view; not measured."
         },
         {
           "from": "P3 B−",
-          "to": "Motor phase B−"
+          "to": "Motor phase B−",
+          "reference": "Published STEPPERONLINE GX16 pin 4 → B−: Option A black; Option B blue. Identify the actual option and numbered connector view; not measured."
         }
       ],
       "summary": "P3 carries motor phase current. Keep this motor and its encoder paired with the same drive.",
-      "check": "Trace the matched kit harness with all energy isolated and discharged. Never plug or unplug it while powered.",
+      "check": "Identify the actual Option A or B harness; do not mix color schemes. Trace numbered contacts and both coil pairs with all energy isolated and discharged. Never plug or unplug it while powered.",
       "holdIds": [
         "drive-terminals",
         "motor-harness",
@@ -1969,7 +2049,8 @@
       "sourceIds": [
         "pigtails",
         "cable-schedule",
-        "drive-manual"
+        "drive-manual",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "encoder-YR",
@@ -1978,7 +2059,12 @@
       "endLabels": {
         "from": "MOT-YR",
         "to": "MOT-YR"
-      }
+      },
+      "connectorReferenceIds": [
+        "motor-option-a",
+        "motor-option-b",
+        "cl57t-p3"
+      ]
     },
     {
       "state": "HOLD",
@@ -2024,36 +2110,42 @@
         {
           "from": "Encoder A+",
           "to": "P2 EA+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 1, black → P2 EA+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder A−",
           "to": "P2 EA−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 13, blue → P2 EA−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B+",
           "to": "P2 EB+",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 11, yellow → P2 EB+. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder B−",
           "to": "P2 EB−",
-          "direction": "from-to"
+          "direction": "from-to",
+          "reference": "Published STEPPERONLINE DB15 pin 12, green → P2 EB−. Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder supply",
           "to": "P2 VCC",
-          "direction": "to-from"
+          "direction": "to-from",
+          "reference": "Published STEPPERONLINE DB15 pin 2, red → P2 VCC (drive supply output). Confirm the actual numbered connector view and continuity; not measured."
         },
         {
           "from": "Encoder return",
           "to": "P2 EGND",
-          "direction": "return"
+          "direction": "return",
+          "reference": "Published STEPPERONLINE DB15 pin 3, white → P2 EGND. Confirm the actual numbered connector view and continuity; not measured."
         }
       ],
       "summary": "The drive reads this encoder locally. P2 VCC supplies the encoder; never feed it from an external 5 V or 24 V supply.",
-      "check": "Trace all six functions in the matched harness while deenergized. Route it away from motor and bus wiring; do not add ground bonds.",
+      "check": "Trace all six electrical functions and identify the separate shield lead while deenergized. Match the actual numbered DB15 view; route away from motor and bus wiring. Do not add ground bonds.",
       "holdIds": [
         "drive-terminals",
         "encoder-harness"
@@ -2062,7 +2154,8 @@
         "pigtails",
         "cable-schedule",
         "drive-manual",
-        "drive-guide"
+        "drive-guide",
+        "stepperonline-motor-encoder"
       ],
       "relatedRouteIds": [
         "motor-YR"
@@ -2070,7 +2163,12 @@
       "endLabels": {
         "from": "ENC-YR",
         "to": "ENC-YR"
-      }
+      },
+      "shieldNote": "The seventh, thick black lead is the published shield/drain reference, distinct from the thin black EA+ conductor. It has no P2 or EGND assignment. Keep it individually insulated pending the reviewed shield-bond plan.",
+      "connectorReferenceIds": [
+        "encoder-db15",
+        "cl57t-p2"
+      ]
     },
     {
       "state": "HOLD",
@@ -2357,5 +2455,6 @@
       },
       "otherContributors": "Required cabinet/spindle fault sources and their conditioning remain to be established by the reviewed complete circuit."
     }
-  ]
+  ],
+  "homeNote": "See the home-switch connector references: the reported stock four-wire harness combines Y2 and Z. Our four independent Octopus inputs require verified rewiring; this is not a plug-in stock-harness adapter."
 }

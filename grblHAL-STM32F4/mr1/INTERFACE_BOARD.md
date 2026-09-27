@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The permanent interface board removes the Octopus pigtail problem while keeping
+The proposed permanent interface board addresses the Octopus control-cable connection while keeping
 the active CL57T V4.1 closed-loop drives, stock probe/tool
 setter, stock spindle servo, and field wiring electrically appropriate for a
 CNC cabinet.
@@ -22,10 +22,12 @@ It is not a motor driver and it is not a safety controller. It performs:
 
 ### P0 Bench Prototype
 
-Use four mechanically supported 18-position socket adapters, a DIN interface
-carrier, and pluggable terminals. A `2x8` candidate remains on HOLD until its
-contact map, fit, orientation, keying and retention are proved on the actual
-18-contact socket. Schematic contact numbers are not physical row counts.
+Plan four retained STEP/DIR/GND control-cable connections from the empty
+18-contact MOTOR0–3 sockets to the interface. No plug-in driver or installed
+socket adapter is assumed. Verify the actual connection method, contact map,
+orientation, insulation, retention and strain relief; schematic contact numbers
+are not physical row counts. The four-pin motor-phase outputs are not these
+control contacts. A cable alone does not qualify direct buffer-to-CL57T loading.
 Populate one X-axis motion channel,
 one fault channel, one probe channel, and the spindle analog channel first. Test
 the circuits under their real electrical loads before duplicating them.
@@ -35,7 +37,7 @@ enclosure or carry cable weight.
 
 ### P1 Permanent Board
 
-One PCB or PCB-plus-DIN assembly mates with MOTOR0 through MOTOR3 and the named
+A possible PCB or PCB-plus-DIN assembly would connect to MOTOR0 through MOTOR3 and the named
 I/O headers. It has keyed pluggable field connectors and is held by its own
 standoffs/bracket. The Octopus socket pins provide signals only and carry no
 mechanical load.
@@ -45,7 +47,7 @@ actual v1.1 board:
 
 - Center spacing and height of MOTOR0 through MOTOR3.
 - Driver-socket row spacing, pin size, and insertion depth.
-- Component and jumper keep-out volume under and beside the adapter.
+- Component and jumper keep-out volume around the proposed cable/PCB connection.
 - Standoff locations and enclosure clearances.
 - Header key direction for every I/O connection.
 
@@ -126,7 +128,7 @@ Use the same order on all axes and key the plugs. Provide test points for the
 socket side and field side of the eight active PUL/DIR channels. Four ENA
 channels are reserved only.
 
-Octopus schematic contact identities used by the adapter (BTT schematic sheet
+Octopus schematic contact identities for the planned control cable (BTT schematic sheet
 1). These numbers do not specify a viewing direction or housing orientation;
 prove each fitted contact by trace/continuity on the actual board:
 
@@ -139,6 +141,14 @@ prove each fitted contact by trace/continuity on the actual board:
 | 2-6, 10-18 | Mode/reset/sleep/VCC_IO/phases/GND/VM/NC/DIAG | No connection |
 
 ### A2. Home-Channel Conditioner - Unqualified On-Hand Module
+
+The [factory-harness correction](WIRING.md#home-and-limit-inputs) records the
+stock Y2/Z shared series path. This interface requires four independent field
+signals; it cannot split a shared Y2/Z signal. Trace the actual harness and
+separate Z from Y-right before assigning channels. Only verified bare NC
+contacts isolated from stock 5 V may instead share controller GND directly;
+no powered common may be repurposed as logic ground without that proof. The
+bare-contact alternative retains the field-input protection in section E.
 
 The on-hand module described as TLP281-4 is a **candidate, on HOLD**. An IC
 marking does not identify its input network, output topology, common rails,
@@ -155,7 +165,7 @@ other circuitry may change behavior. Never supply a GPIO-facing pullup from
 
 1. Both PCB faces, IC marking, resistor values and terminal markings are recorded;
    trace a complete circuit, including shared rails and every isolation crossing.
-2. The stock switch supply, return and independent signals are identified. Do
+2. The stock supply, return, series junction and four separated signals are identified. Do
    not assume a module has a field VCC terminal or that its input is active-high.
 3. Select the field current and output circuit from the actual parts' guaranteed
    limits and the BTT input circuit (STOP: 10 kohm pullup to 3.3 V, series/filter

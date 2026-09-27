@@ -159,6 +159,20 @@ mask so the drives stay identically configured — but record whichever you use.
 
 ---
 
+## Identify the connector before tracing a wire
+
+| Drive block | Function | Connects to |
+| --- | --- | --- |
+| `P1` | Commands and outputs | Qualified control interface; separate conditioned alarm circuit |
+| `P2` | Encoder | That drive's matched motor encoder |
+| `P3` | Motor phases | That drive's matched motor windings |
+| `P4` | DC power | Protected, polarized supply branch |
+| `P5` | Tuning | Optional verified tuning cable; no motion wiring |
+
+These are functional identities from manual sections 3.1–3.5. Table row order
+is **not** screw order, a connector mating view, or an Octopus socket position.
+Read the actual drive's printed terminal labels before landing each wire.
+
 ## Power — `P4`
 
 | Pin | Connect to |
@@ -284,27 +298,51 @@ does not detect a loose coupler or prove table position.
 
 ## Motor and encoder — `P3` and `P2`
 
-| `P3` (motor) | | `P2` (encoder) | |
+The [manufacturer's closed-loop motor wiring reference](https://help.omc-stepperonline.com/hc/s/articles/wiring-diagram-for-closed-loop-stepper-motor)
+publishes the following GX16 motor and DB15 encoder maps. Match the actual
+motor/cable revision to the reference and trace continuity with both ends
+isolated. Neither color nor thickness alone identifies an unknown cable.
+Connector pin IDs below are **not** CL57T screw positions; mating and wire-entry
+views can be mirrored. Record the actual key/view before assigning a cavity.
+
+### Motor cable: GX16 to `P3`
+
+| Published motor connector pin | `P3` terminal | Option A color | Option B color |
 | --- | --- | --- | --- |
-| `A+` | Motor A+ | `EA+` / `EA-` | Encoder A |
-| `A-` | Motor A- | `EB+` / `EB-` | Encoder B |
-| `B+` | Motor B+ | `VCC` | Encoder +5 V **output** from drive |
-| `B-` | Motor B- | `EGND` | Encoder ground |
+| 1 | `A+` | White | Black |
+| 2 | `A-` | Green | Green |
+| 3 | `B+` | Blue | Red |
+| 4 | `B-` | Black | Blue |
 
-`VCC` is supplied **by the drive**. Do not feed it from the interface board's
-isolated 5 V rail or from the 24 V field supply — that bonds two power domains
-the project deliberately keeps separate (`WIRING.md`, "Power Domains" table,
-CL57T encoder row).
+Select the option belonging to the actual cable; do not combine the two color
+sets. Verify the two winding pairs and absence of a phase-to-frame short.
+These motor wires terminate at the CL57T, never at the Octopus A1/A2/B1/B2
+motor-output plug. The manufacturer describes this motor cable as unshielded;
+do not invent a drain or a shield bond for it.
 
-The current WIRING and PIGTAIL documents include the encoder domain and its
-hot-plug prohibition. Do not add a bond from EGND to PE, another drive, or
-controller logic without an approved schematic. The manual identifies a
-drive-supplied encoder output; it does not establish galvanic isolation of
-that output from the drive power return.
+### Encoder cable: DB15 to `P2`
 
-Route encoder extensions away from motor and bus cable. §3.1 notes: shield the
-control signal wires, and *"don't tie control signal cables and power wires
-together."*
+| Published encoder connector pin | `P2` terminal | Published conductor color | Function |
+| --- | --- | --- | --- |
+| 2 | `VCC` | Red | +5 V supplied **from drive to encoder** |
+| 3 | `EGND` | White | Encoder return |
+| 1 | `EA+` | Thin black signal wire | Encoder A+ |
+| 13 | `EA-` | Blue | Encoder A- |
+| 11 | `EB+` | Yellow | Encoder B+ |
+| 12 | `EB-` | Green | Encoder B- |
+
+The separate **thick black shield braid is not the thin black `EA+` wire**.
+It is a shield, not a seventh encoder signal or `EGND`; the manufacturer says
+it need not connect to a connector pin. Insulate an unused exposed braid.
+Any cabinet shield clamp/bond needs a documented shield design; never land the
+braid on `EA+`, `EGND`, `VCC`, an Octopus GPIO, or an assumed spare pin.
+
+`P2 VCC` is a drive output. Do not feed it from an external 5 V or 24 V rail
+(see `WIRING.md`, "Power Domains", CL57T encoder row).
+Do not add an `EGND` bond to PE, another drive, or controller logic. The manual
+does not establish galvanic isolation from the drive power return. Route the
+encoder separately from motor and bus cable; preserve the matching motor/drive
+pair. Never hot-plug motor, encoder, control, alarm, or power connectors.
 
 ---
 

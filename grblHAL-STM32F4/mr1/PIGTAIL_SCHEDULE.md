@@ -11,8 +11,8 @@ separate blocks, and the bus pair now polarized. Board-side entries are
 unaffected.
 
 > **Buying guide:** `ORDER_LIST.md` turns this schedule into a shopping list -
-> connector kits with links, quantity per Octopus header, driver-socket adapter
-> sourcing, and the items that must not be ordered until something is measured.
+> connector candidates, quantity per Octopus header, and measurement hold points.
+> Any older adapter-shopping proposal is not evidence of an installed adapter.
 
 ## Status Key
 
@@ -24,10 +24,13 @@ unaffected.
 Connector color is never identity. A housing that appears to fit is not
 accepted until pin 1, contact retention, polarity, and continuity all pass.
 
-## Octopus Driver-Socket Adapters
+## Octopus STEP/DIR Control Cable
 
-The official v1.1 schematic defines an 18-position `2x9` driver footprint. Use
-four supported adapters, one each for MOTOR0 through MOTOR3.
+The official v1.1 schematic defines an 18-position `2x9` driver footprint.
+The planned cable takes control signals from the empty MOTOR0–3 sockets to the
+qualified interface. No plug-in motor driver or installed socket adapter is
+assumed. CL57T `P1` receives interface PUL/DIR; its `P3` receives motor phases.
+The Octopus four-pin A1/A2/B1/B2 output is not a STEP/DIR cable connection.
 
 | Schematic contact | Signal | Active use |
 | ---: | --- | --- |
@@ -37,17 +40,18 @@ four supported adapters, one each for MOTOR0 through MOTOR3.
 | 9 | GND | Controller logic return |
 | 2-6, 10-18 | Mode/reset/sleep/VCC_IO/phases/GND/VM/NC/DIAG | No connection |
 
-Schematic numbers are electrical identities, not row-major positions. A
-`2x8` candidate remains on HOLD until every contact, its physical orientation,
-clearance, keying and retention are verified on the actual 18-contact socket.
-No drawing here supplies the mating-face view. Use a supported adapter and
-prove continuity; loose Dupont leads are not a production adapter.
+Schematic numbers are electrical identities, not row-major positions. The
+actual cable termination, mating view, clearance, insulation, retention and
+strain relief remain HOLD until verified on the board. No drawing here supplies
+a physical cavity map. Loose Dupont leads are not a finished harness. Direct
+socket-buffer loading by a CL57T has not been qualified; retain the interface
+qualification in `INTERFACE_BOARD.md`.
 
 ## Board-Side Shopping Schedule
 
 | Qty | Status | Board end | Populate | Shop/build note |
 | ---: | --- | --- | --- | --- |
-| 4 | FIT CHECK | MOTOR0-3 18-position driver footprints | STEP contact 7, DIR 8, GND 9; EN 1 reserved | Verify contact map on actual board; `2x8` candidate remains HOLD until fit/keying proof |
+| 4 | FIT CHECK | MOTOR0-3 18-position driver footprints | STEP contact 7, DIR 8, GND 9; EN 1 reserved | Planned control cable; verify actual contact map, viewing orientation, retention and strain relief |
 | 8 | FIT CHECK | STOP0-7 three-position 2.54 mm headers | SIG and GND only; 16 contacts total | Leave every adjacent 5 V cavity empty |
 | 3 | FIT CHECK | TB, T0, T1 two-position 2.54 mm headers | Named signal and GND | Safety monitor, feed hold, Qualified sensor conditioner OUT1; module on HOLD |
 | 1 | FIT CHECK | PB7 tool-setter five-position 2.54 mm header (board silk: `BLTouch`) | PB7 and its adjacent GND only | Controller housing only; no BLTouch device or plugin; PB6 and 5 V remain empty |
@@ -107,8 +111,8 @@ pitch into `CL57T_ARRIVAL_CAPTURE.md` §3.
 | Qty | Status | Block | Populate | Cable |
 | ---: | --- | --- | --- | --- |
 | 4 | HOLD / QUALIFY | `P1` control + output | PUL+, PUL-, DIR+, DIR-, ALM, COMO | Two shielded twisted pairs for PUL/DIR; one separate shielded pair for ALM/COMO into its isolated conditioner. `ENA` left unconnected (drive default). `BRK` unused |
-| 4 | KIT CABLE | `P2` encoder | EA+, EA-, EB+, EB-, VCC, EGND | **Kit encoder extension, 1.7 m moulded.** `VCC` is a drive output - never feed it from a field supply |
-| 4 | KIT CABLE | `P3` motor | A+, A-, B+, B- | **Kit motor extension, 1.7 m moulded, GX16.** Phases only - no bus power on this block |
+| 4 | KIT CABLE / VERIFY | `P2` encoder | EA+, EA-, EB+, EB-, VCC, EGND | Six conductors plus separate shield braid; trace matched cable using manufacturer map below. `VCC` is a drive output |
+| 4 | KIT CABLE / VERIFY | `P3` motor | A+, A-, B+, B- | GX16 motor cable; identify Option A or B from manufacturer map, then trace. Published cable is unshielded; no bus power on this block |
 | 4 | USE / BUILD | `P4` power | **+VDC, GND** | That drive's own fused 36 V star branch. **POLARIZED** |
 | 4 | UNUSED | `P5` tuning | - | Drive-side four-contact RS232 tuning port; the supplied cable has a PC-side DB9. Do not mistake DB9 numbering for P5. Optional; verify the actual cable before use |
 
@@ -117,28 +121,27 @@ pitch into `CL57T_ARRIVAL_CAPTURE.md` §3.
 > polarized. A DM860T-era six-position power/motor pigtail must be re-terminated
 > and re-labelled, never adapted.
 
-Two of these are no longer "build" items: `P2` and `P3` ship as fixed-length
-moulded kit cables. That removes two harnesses from the build but creates a new
-problem - see "Moulded cable conflict" below.
+Use the [manufacturer motor Option A/B and encoder pin/color tables](CL57T_QUICK_WIRING.md#motor-and-encoder--p3-and-p2)
+for matching cables. The encoder's thin black `EA+` conductor and thick black
+shield are different items; the shield is not a seventh encoder signal or
+return. Connector pin IDs do not specify CL57T terminal order. Photograph the
+actual terminal legends and connector keys; trace all paths deenergized.
 
-Use the supplied blocks. STEPPERONLINE publishes their positions and functions
-but not a mating family or terminal pitch. Do not order aftermarket `P1`/`P4`
-plugs until the actual pitch, contact style, and moulded markings are recorded.
+Use the supplied blocks only after identification. Do not order aftermarket
+`P1`/`P4` plugs until actual pitch, contact style, and markings are recorded.
 
-### Moulded cable conflict
+### Moulded cable routing and shield distinction
 
-`BOM.md` ("Cable and Panel Materials", Cable entry row) specifies metal EMC
-glands or bonded connector bulkheads, and
-`WIRING.md` requires motor-cable shields terminated 360 degrees at the cabinet
-entry. Both assume cable that can be cut to length and terminated at the panel
-wall. The kit's motor and encoder extensions are **fixed-length with moulded
-ends** and cannot be cut without destroying the connector.
+Check the actual cable length, moulded ends and enclosure pass-through before
+drilling or cutting. The manufacturer's motor cable is unshielded, so the
+older instruction to bond its nonexistent motor drain is withdrawn. The
+encoder cable has a separate shield braid; it does not land on a signal pin.
+Do not cut a supplied connector merely to satisfy a generic gland plan.
 
-Resolve before drilling panel holes. The options are a bulkhead pass-through
-sized for the moulded connector with the shield bonded at a clamp just inside
-the wall, or replacing the kit cable with terminated shielded cable of the right
-length. Do not simply pass an unbonded moulded cable through a plastic gland and
-call the shield terminated.
+Choose a retained, strain-relieved pass-through suitable for the actual
+connector. Any shield clamp or replacement cable needs its own documented
+termination and conductor/connector suitability; a plastic gland is not a
+shield bond. Never use the encoder braid as `EGND`.
 
 For cabinet signal harnesses, start with fine-stranded industrial cable that
 fits both the chosen interface terminal and the supplied CL57T block. Three-pair
@@ -167,24 +170,27 @@ rollback requires the separate DM860T document and a fresh review.
 
 ## Stock Harness Hold List
 
-| Qty | Status | Harness | Required proof before an adapter exists |
+| Qty | Status | Harness | Required proof before termination |
 | ---: | --- | --- | --- |
-| 4 channels | HOLD | Home/limit system | Connector key and **conductor count first** (six is the expected case - shared 5 V supply, shared return and four independent signals, a powered circuit for the isolated conditioner; five may be four signals plus common; fewer conductors require tracing and do not identify which signals share), ohmmeter across each switch both polarities, common-to-all-four continuity, then healthy, triggered, unplugged, and lost-power voltages |
+| 4 channels | HOLD | Home/limit system | Trace actual X/Y1/Y2/Z contacts and factory Y2/Z series junction; document separation into four independent inputs, isolation from stock 5 V, connector view and each healthy/triggered/open state; qualify powered channels separately |
 | 2 | HOLD | Touch probe and tool setter | Mating key, **actual pin order (no numbered field terminal approved)**, idle/trigger voltage on a bench supply (expected open-collector, low when triggered), exposed-metal potential (expected 5 V), probe-0 V-to-frame and stylus-to-body continuity, DB44-11/12 continuity |
 | 1 | HOLD | Spindle DB44 | Exact servo model, parameter archive, end-to-end continuity, analog common, enable, alarm, and command range |
 | 1 | HOLD | Temperature sensor | Part number, voltage, interface, pinout, and cable colors |
 
-The pinned community MR-1 conversion describes its stock inputs as active-high
-and its limit/E-stop circuits as `NC 5V`, and its input table puts `Y2/Z limit`
-on a single input. Treat that as a warning and a hypothesis, not a pinout - it
-is the reason the conductor count is the first measurement on the home harness.
-Route the stock home channels through the four-channel isolated conditioner
-unless each switch is separately proved to be a bare NC dry contact; if all
-four prove out, the common lands on Octopus `GND`, each signal on its `STOP`
-SIG, and the conditioner comes out of the build. Never apply stock 5 V to
-STOP0-3. `grblHAL-STM32F4/mr1/RESEARCH.md` (repository path), "Unresolved
-Physical Checks" items 3 and 4, carries the probe and home hypotheses with their
-sources and the exact readings that close them.
+The [factory-harness correction](WIRING.md#home-and-limit-inputs) records the
+manufacturer's shared Y2/Z indication and the firsthand NC series-circuit
+report. The current configuration requires separate X/YL/Z/YR inputs; a shared
+Y2/Z path cannot be landed unchanged. Online source colors and connector pins
+are not this machine's continuity record.
+
+Four-channel conditioning does not separate a shared signal. Trace and separate
+Z/Y-right first, retaining the original harness and its recorded connections.
+Only individually verified bare NC contacts isolated from the stock 5 V circuit
+may share a new Octopus GND common. Signal runs retain the required field-input
+protection (`INTERFACE_BOARD.md` E). Powered or electronic devices remain on the
+qualified isolated path. Leave every STOP 5 V cavity empty. The full-source
+`grblHAL-STM32F4/mr1/RESEARCH.md` (repository path), "Unresolved Physical Checks",
+records the remaining physical evidence.
 
 ## Crimp And Label Rules
 
