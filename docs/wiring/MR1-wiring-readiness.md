@@ -1,6 +1,6 @@
 # MR1 wiring readiness and field worksheet
 
-**Second-pass update:** module supplies/terminals, physical connector orientation, FAN voltage selection, alarm aggregation and power-up instructions were corrected. Read [MR1-wiring-second-pass.md](<MR1-wiring-second-pass.md>) before using the refreshed bundle. Secure the test motor and support gravity-loaded Z before any permitted bench energization; a stopped command stream does not prevent holding torque or shaft movement.
+**Second-pass update:** module supplies/terminals, physical connector orientation, FAN voltage selection, alarm aggregation and power-up instructions were corrected. Read [MR1-wiring-second-pass.md](<MR1-wiring-second-pass.md>) before using the refreshed bundle. **2026-09-27:** the alarm conditioner is replaced by the selected relay assembly in [mr1/ALARM_INTERFACE.md](<mr1/ALARM_INTERFACE.md>), and the command supply is defined in [mr1/COMMAND_SUPPLY.md](<mr1/COMMAND_SUPPLY.md>). The one-page drawing is [MR1-SCHEMATIC.svg](<MR1-SCHEMATIC.svg>). Secure the test motor and support gravity-loaded Z before any permitted bench energization; a stopped command stream does not prevent holding torque or shaft movement.
 
 Audit date: 2026-09-24. Active design: Octopus Pro **v1.1 / STM32F429ZGT6**, four **CL57T V4.1** drives, four **23HS45-4204D-E1000** motors. Nothing was connected, energized, flashed, or moved during this audit. All physical acceptance boxes below remain open.
 
@@ -16,9 +16,9 @@ flowchart LR
   MCU -->|STEP / DIR via qualified interface| D[CL57T drive]
   D -->|P3 motor phases| M[Matched motor]
   M -->|P2 encoder feedback| D
-  D -->|ALM / COMO| C[Isolated fault conditioner]
-  C -->|Combined healthy output| PB1[PB1 aggregate stop input]
-  C -.->|Optional wiring, not read by current firmware| PG[PG12-15]
+  D -->|ALM / COM-| K[Alarm relay per drive]
+  K -->|Contacts 11-14 in series| PB1[PB1 aggregate stop input]
+  K -.->|Contacts 21-24, MR1F:1 report only| PG[PG12-15]
   SR[Independent safety relay] -->|Hazardous-energy permission| D
 ```
 
@@ -70,7 +70,7 @@ The following is the existing project starting configuration, verified against t
 | SW5 | OFF initially; physical direction remains unverified | X___ YL___ Z___ YR___ |
 | SW6 / SW7 / SW8 | OFF / OFF / OFF; closed loop / PUL-DIR / 1.5 ms filter | X___ YL___ Z___ YR___ |
 | S3 | 5 V command level | X___ YL___ Z___ YR___ |
-| P1 | PUL±, DIR±; ENA unconnected; ALM/COMO through conditioning; BRK unused | Photo / orientation___ |
+| P1 | PUL±, DIR±; ENA unconnected; ALM to relay A2, COM− to isolated alarm return; BRK unused | Photo / orientation___ |
 | P2 | EA±, EB±, drive-supplied VCC, EGND | Matched harness IDs___ |
 | P3 | A±, B± motor phases | Harness/continuity record___ |
 | P4 | Polarized +VDC/GND; separate fused 36 V star pair per drive | Markings/polarity___ |
@@ -88,8 +88,8 @@ No motor wire colors, GX16 cavity assignments or extension pin numbers are appro
 | Y-left home | STOP1 / PG9 | Same, independently sensed | ____ |
 | Z home | STOP2 / PG10 | Same | ____ |
 | Y-right home | STOP3 / PG11 | Same, independently sensed | ____ |
-| X / YL / Z / YR per-axis fault | STOP4–7 / PG12–15 | Wiring for a future firmware candidate only; the current firmware never reads these pins (no stop, no status, no per-axis indication) | ____ |
-| Aggregate fault | EXP2 / **PB1** | Combined conditioned healthy output low; any fault/open/power loss high | ____ |
+| X / YL / Z / YR per-axis fault | STOP4–7 / PG12–15 | Relay contact 21–24 to GND. Only the new firmware candidate reads these pins (`MR1F:1` raw snapshots); they never stop motion. Installed firmware support unknown | ____ |
+| Aggregate fault | EXP2 / **PB1** | Relay contacts 11–14 in series: low when all healthy; any fault/open/power loss high | ____ |
 | E-stop monitor | TB / PF3 | Safety-relay contact closed to GND while the relay is energized, open on E-stop/trip/broken wire (not an NC auxiliary; relay/terminal HOLD); never invert `$14` to suit a wrong contact; does not replace energy removal | ____ |
 | Door monitor | PWR-DET / PC0 | NC monitor; adjacent power cavity unused | ____ |
 | Feed hold | T0 / PF4 | NC contact | ____ |
@@ -99,7 +99,7 @@ No motor wire colors, GX16 cavity assignments or extension pin numbers are appro
 
 Source: F2–F5 and D1. Populate signal and verified logic return only. STOP-header 5 V cavities remain empty. PB7 uses its verified adjacent GND; do not populate PB6 or the header's 5 V cavity. Probe field supply/return and controller-side HW-399 HVCC/HGND must remain separated. The installed HW-399/TLP281 module circuit and sensor pinout remain unverified; a generic module name does not establish its terminals. Do not leave shared output VCC floating as a generic recipe: pullups may couple channels. Trace the actual circuit and test combinations, either side unpowered, open cables and lost field power before connecting GPIO.
 
-**Alarm topology:** each raw ALM/COMO pair needs its own isolated, current-limited conditioner. Combine the proven **conditioned healthy outputs** for PB1, the only drive-fault stop; optional outputs for PG12–15 are wiring only and are not read by the current firmware. Raw alarm transistors are not assumed dry contacts and must not be series-chained directly into PB1. Healthy-open alarm behavior cannot be made cable-break-safe by inversion alone; it needs added supervision or a separate ready/power contact. Test healthy, alarm, power loss and cable open independently on all four channels. Use an approved fault method; never hot-unplug a motor or encoder or put an ohmmeter across an energized output. [D1, F4]
+**Alarm topology:** each raw ALM/COM− pair drives its own relay coil from the isolated 23 V alarm supply ([mr1/ALARM_INTERFACE.md](<mr1/ALARM_INTERFACE.md>)). The relay NO contacts 11–14 are series-chained into PB1, the only drive-fault stop; contacts 21–24 report each axis on PG12–15 (`MR1F:1` candidate build only, never a stop). Raw alarm transistors are not dry contacts and must not be series-chained directly into PB1. Healthy-open alarm behavior cannot be made cable-break-safe by inversion alone; it needs added supervision or a separate ready/power contact. Test healthy, alarm, power loss and cable open independently on all four channels. Use an approved fault method; never hot-unplug a motor or encoder or put an ohmmeter across an energized output. [D1, F4]
 
 The stock home harness needs four independently proven channels. Conductor count is a clue, not proof. Direct connection is acceptable only after each switch is established as a bare NC contact, disconnected from every stock powered circuit. Otherwise use the isolated conditioner. Y-left and Y-right must never share a home signal. [D1, D2]
 
@@ -118,7 +118,7 @@ Nominal scale is X/Y 320 steps/mm, Z 533.333333 steps/mm. Initial travel is 566.
 | PE | Cabinet, frame, drive chassis and appropriate metallic parts | Protective-bond inspection and measurements; no reliance on painted mounting contact. |
 | 24 V control | Octopus POWER/MAIN, appropriate control interfaces | Actual supply, fuse, polarity, input selector and board terminal orientation. Not MOTOR POWER/BED POWER. |
 | 36 V motion | Four independently fused P4 star pairs | Historical S-360-36 record says 36 V/10 A. Full simultaneous load and regeneration remain unqualified. |
-| Protected 5 V command | P1 PUL/DIR common-anode interface | Loaded voltage/current/pulse waveform and power-transition behavior. |
+| Protected 5 V command | DRIVER0 VCC_IO through a 0.5 A fast fuse ([COMMAND_SUPPLY.md](<mr1/COMMAND_SUPPLY.md>)) to the P1 PUL/DIR common-anode interface | Loaded voltage/current/pulse waveform and power-transition behavior. |
 | Isolated home / probe field | Verified sensor-side circuits | Actual sensor and optocoupler topology, polarity, open-cable and lost-power behavior. |
 | Drive encoder supply | Each drive's matched motor only | Pairing, extension continuity, shielding and physical route. |
 | Logic return | Controller and interface logic | Document intentional control-0V/PE reference and any path added by USB/earthed PC. |
@@ -143,7 +143,7 @@ named; none is closed by this worksheet.
 | E-stop monitor contact | The PF3 contact is closed while the relay is energized and open on E-stop/trip/broken wire. Pressing E-stop and unplugging the monitor wire must each read `Pn:E`; releasing/resetting clears it. | Any motion test. |
 | Onboard `SW2` / PB2 | PB2 (cycle start) is net `BTN_EN1`, shared with the onboard `SW2` ("BOOT1") button to GND; pressing it during a feed hold resumes motion. Guard or remove `SW2`, and fit the interface-board pull-up/RC on PB1, PB2 and PB7 (none on the board). | Any motion test. |
 | STEP/DIR during MCU reset / bootloader | STEP/DIR are undefined while the MCU is in reset or the SD bootloader (always-enabled HCT buffers, no pulls) and ENA is unconnected, so the drives stay enabled. Scope STEP/DIR at the socket during reset, power-up and a bootloader pass with drive power off. Using the reserved ENA channel, or interlocking motion power to controller health, is a **design decision pending review**. | Energizing a drive with the controller connected, unless drive power is off during every controller reset, reboot or flash. |
-| PB1 aggregate drive-fault chain | PB1 is the only drive-fault stop; PG12–PG15 are not read by the current firmware. For every drive, an alarm, drive-power loss and an open alarm cable must each stop motion through PB1 (`Pn:F`, alarm 17). | Any coupled dual-Y motion (commissioning Stage 6 onward). |
+| PB1 aggregate drive-fault chain | PB1 is the only drive-fault stop; PG12–PG15 are raw `MR1F:1` reports on the candidate build only and never stop motion. For every drive, an alarm, drive-power loss and an open alarm cable must each stop motion through PB1 (`Pn:F`, alarm 17). | Any coupled dual-Y motion (commissioning Stage 6 onward). |
 
 ### Unscheduled Octopus-side harnesses (open gaps)
 
@@ -179,7 +179,7 @@ Mains and hazardous-energy circuit work needs an appropriately qualified person.
 | Finding | Work completed from available information | Evidence still needed |
 | --- | --- | --- |
 | Stale DM860T machine-readable manifest | Active CL57T metadata and encoder domain corrected; rollback retained | Actual installed identity |
-| Raw ALM series-chain wording | Corrected to isolated conditioned healthy aggregation | Four drive truth tables and complete conditioner circuit |
+| Raw ALM series-chain wording | Corrected to per-drive alarm relays with series contacts into PB1 (2026-09-27) | Four drive truth tables and the bench tests in `mr1/ALARM_INTERFACE.md` |
 | Grounding contradictions | Isolated assembly test distinguished from final connected topology | Actual PSU/USB/PE paths |
 | Supply-capacity acceptance contradiction | 10 A record preserved; qualification remains open | Load/current/temperature/transient measurements or new reviewed supply |
 | Unsafe alarm-test wording | Removed powered encoder-unplug and energized-ohmmeter instructions | Approved drive fault method and fault response |

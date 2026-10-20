@@ -52,6 +52,8 @@ jobs:
           python tools/visual-wiring/build.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           git diff --exit-code -- docs/wiring/visual
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/wiring-schematic/build_schematic.py --check
       - name: Check local import safeguards
         run: node --test tools/import-local-assets.test.mjs
       - name: Install pinned application dependencies

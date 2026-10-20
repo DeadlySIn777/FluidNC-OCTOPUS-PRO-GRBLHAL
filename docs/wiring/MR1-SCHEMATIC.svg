@@ -1,0 +1,544 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1650 1275" width="1650" height="1275" role="img" aria-labelledby="t d">
+<title id="t">MR-1 wiring schematic: Octopus Pro v1.1, four CL57T V4.1 drives</title>
+<desc id="d">One-page overview of power, command, alarm, home, probe, operator, spindle and coolant wiring. Planning drawing; dashed HOLD items are not designed or qualified.</desc>
+<rect x="0" y="0" width="1650" height="1275" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
+<text x="30" y="46" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="26" font-weight="800" fill="#1b1f24" text-anchor="start">MR-1 WIRING SCHEMATIC</text>
+<text x="372" y="46" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="500" fill="#5b6470" text-anchor="start">BTT Octopus Pro v1.1 (STM32F429, grblHAL)  ·  4 × CL57T V4.1 closed loop  ·  stock spindle servo</text>
+<text x="1620" y="34" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#5b6470" text-anchor="end">One-page overview  ·  2026-10-20</text>
+<text x="1620" y="50" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#5b6470" text-anchor="end">Pins: docs/wiring/mr1/io-manifest.json</text>
+<rect x="30" y="62" width="1590" height="22" rx="4" fill="#fff4e5" stroke="#d97706"/>
+<text x="825.0" y="77" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#8a4b00" text-anchor="middle">PLANNING DRAWING. NOT APPROVAL TO ENERGIZE OR MOVE. Dashed = HOLD (not designed or not qualified). Printed terminal names on the real parts win over this page.</text>
+<text x="30" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5b6470" text-anchor="start">FIELD DEVICES &amp; POWER</text>
+<text x="420" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5b6470" text-anchor="start">CONTROLLER</text>
+<text x="880" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5b6470" text-anchor="start">MR1 INTERFACE PANEL</text>
+<text x="1200" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5b6470" text-anchor="start">DRIVES</text>
+<text x="1460" y="104" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5b6470" text-anchor="start">MOTORS</text>
+<rect x="420" y="112" width="400" height="923" rx="10" fill="#eef4ee" stroke="#2e7d32" stroke-width="2"/>
+<rect x="30" y="116" width="250" height="44" rx="6" fill="#ffffff" stroke="#d97706" stroke-width="1.4"/>
+<text x="38" y="131" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#d97706" text-anchor="start">24 V CONTROL PSU</text>
+<text x="38" y="145" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">always on · feeds Octopus, PS-ALM, relays</text>
+<polyline points="280,138 420,138" fill="none" stroke="#d97706" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="300" y="132" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#d97706" text-anchor="start">+24 V / 0 V</text>
+<rect x="416" y="134" width="8" height="8" fill="#ffffff" stroke="#d97706" stroke-width="1.6"/>
+<text x="430" y="142" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">MAIN POWER +VIN/GND  24 V</text>
+<text x="430" y="152" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#b42318" text-anchor="start">24 V only · 28 V abs max · never 36 V</text>
+<rect x="30" y="172" width="250" height="36" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.4"/>
+<text x="38" y="187" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#1b1f24" text-anchor="start">WINDOWS PC</text>
+<text x="38" y="201" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">grblHAL sender over USB (data only)</text>
+<polyline points="280,190 420,190" fill="none" stroke="#1b1f24" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="300" y="184" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1b1f24" text-anchor="start">USB</text>
+<rect x="416" y="186" width="8" height="8" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<text x="430" y="194" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">USB-C  (J68 removed)</text>
+<rect x="30" y="230" width="250" height="186" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.4"/>
+<text x="38" y="245" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#2e7d32" text-anchor="start">OPERATOR &amp; SAFETY MONITORS</text>
+<text x="40" y="264" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#1b1f24" text-anchor="start">E-stop safety-relay monitor</text>
+<text x="40" y="276" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">closed while relay energized</text>
+<path d="M216,266 v7 M208,273 h16 M211,277 h10 M214,281 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<polyline points="216,266 230,266" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M230,266 h9 M239,266 l15,-8 M255,266 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="239" cy="266" r="3.4" fill="#2e7d32"/>
+<circle cx="255" cy="266" r="3.4" fill="#2e7d32"/>
+<polyline points="264,266 420,266" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="416" y="262" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="270" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">TB      PF3  E-STOP</text>
+<text x="40" y="300" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#1b1f24" text-anchor="start">Door interlock switch</text>
+<text x="40" y="312" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">NC, closed = healthy</text>
+<path d="M216,302 v7 M208,309 h16 M211,313 h10 M214,317 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<polyline points="216,302 230,302" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M230,302 h9 M239,302 l15,-8 M255,302 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="239" cy="302" r="3.4" fill="#2e7d32"/>
+<circle cx="255" cy="302" r="3.4" fill="#2e7d32"/>
+<polyline points="264,302 420,302" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="416" y="298" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="306" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">PWR-DET PC0  DOOR</text>
+<text x="40" y="336" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#1b1f24" text-anchor="start">Feed-hold button</text>
+<text x="40" y="348" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">NC, closed = healthy</text>
+<path d="M216,338 v7 M208,345 h16 M211,349 h10 M214,353 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<polyline points="216,338 230,338" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M230,338 h9 M239,338 l15,-8 M255,338 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="239" cy="338" r="3.4" fill="#2e7d32"/>
+<circle cx="255" cy="338" r="3.4" fill="#2e7d32"/>
+<polyline points="264,338 420,338" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="416" y="334" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="342" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">T0      PF4  FEED HOLD</text>
+<text x="40" y="372" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#1b1f24" text-anchor="start">Cycle-start button</text>
+<text x="40" y="384" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">NO, guarded; add protection</text>
+<path d="M216,374 v7 M208,381 h16 M211,385 h10 M214,389 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<polyline points="216,374 230,374" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M230,374 h9 M239,374 l15,-8 M255,374 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="239" cy="374" r="3.4" fill="#2e7d32"/>
+<circle cx="255" cy="374" r="3.4" fill="#2e7d32"/>
+<polyline points="264,374 420,374" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="416" y="370" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="378" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">EXP2    PB2  CYCLE START</text>
+<text x="40" y="400" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start" font-style="italic">Dry contacts to Octopus GND.</text>
+<text x="40" y="411" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start" font-style="italic">PF3 contact is part of the HOLD stop design.</text>
+<rect x="30" y="432" width="120" height="132" rx="6" fill="#ffffff" stroke="#00838f" stroke-width="1.4"/>
+<text x="38" y="447" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#00838f" text-anchor="start">HOME SWITCHES</text>
+<text x="38" y="461" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">stock harness:</text>
+<text x="38" y="474" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">trace it, split the</text>
+<text x="38" y="487" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">shared Y2/Z circuit</text>
+<text x="38" y="500" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">into 4 channels</text>
+<rect x="165" y="432" width="115" height="132" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="173" y="447" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#00838f" text-anchor="start">CONDITIONER</text>
+<text x="173" y="461" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">isolated, 4 ch</text>
+<text x="173" y="474" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">TLP281 module</text>
+<text x="173" y="487" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">not approved</text>
+<text x="173" y="500" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start"></text>
+<rect x="242" y="546" width="32" height="13" rx="3" fill="#d97706"/>
+<text x="258" y="556" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<polyline points="150,470 165,470" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<polyline points="280,470 420,470" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="416" y="466" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="474" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">STOP0   PG6   X HOME</text>
+<polyline points="150,502 165,502" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<polyline points="280,502 420,502" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="416" y="498" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="506" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">STOP1   PG9   Y-LEFT HOME</text>
+<polyline points="150,534 165,534" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<polyline points="280,534 420,534" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="416" y="530" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="538" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">STOP2   PG10  Z HOME</text>
+<polyline points="150,566 165,566" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<polyline points="280,566 420,566" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="416" y="562" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="570" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">STOP3   PG11  Y-RIGHT HOME</text>
+<text x="30" y="578" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start" font-style="italic">Healthy = low. Fully verified bare NC contacts may go direct to GND.</text>
+<rect x="30" y="606" width="120" height="84" rx="6" fill="#ffffff" stroke="#00838f" stroke-width="1.4"/>
+<text x="38" y="621" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#00838f" text-anchor="start">PROBE &amp; SETTER</text>
+<text x="38" y="635" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">3D touch probe</text>
+<text x="38" y="648" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">fixed tool setter</text>
+<text x="38" y="661" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">ISO 5 V field</text>
+<rect x="165" y="606" width="115" height="84" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="173" y="621" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#00838f" text-anchor="start">HW-399</text>
+<text x="173" y="635" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">opto isolator</text>
+<text x="173" y="648" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">field GND ≠ HGND</text>
+<text x="173" y="661" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start"></text>
+<rect x="242" y="672" width="32" height="13" rx="3" fill="#d97706"/>
+<text x="258" y="682" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<polyline points="150,636 165,636" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<polyline points="280,636 420,636" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="416" y="632" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="640" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">T1      PF5   PROBE</text>
+<polyline points="150,668 165,668" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<polyline points="280,668 420,668" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="416" y="664" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="430" y="672" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">J43     PB7   TOOL SETTER</text>
+<text x="430" y="684" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">(5-pin header silked BLTouch: PB7 + GND only; PC5 PROBE port unused)</text>
+<rect x="30" y="716" width="310" height="92" rx="6" fill="#fff4e5" stroke="#37474f" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="38" y="731" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#37474f" text-anchor="start">E-STOP + SAFETY RELAY  (needs a reviewed design)</text>
+<text x="38" y="745" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">Dual-channel E-stop and interlocks. On stop it must:</text>
+<text x="38" y="758" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start"> · open the motion contactor (36 V off, Z-drop plan)</text>
+<text x="38" y="771" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start"> · remove spindle-servo energy (contactor / STO, not SON)</text>
+<text x="38" y="784" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start"> · cut coolant pump and air-solenoid supply</text>
+<rect x="302" y="790" width="32" height="13" rx="3" fill="#d97706"/>
+<text x="318" y="800" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<rect x="30" y="826" width="140" height="50" rx="6" fill="#ffffff" stroke="#37474f" stroke-width="1.4"/>
+<text x="38" y="841" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#37474f" text-anchor="start">MAINS</text>
+<text x="38" y="855" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">120 VAC machine loads</text>
+<text x="38" y="868" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">240 VAC spindle servo</text>
+<rect x="200" y="826" width="140" height="50" rx="6" fill="#fff4e5" stroke="#37474f" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="208" y="841" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#37474f" text-anchor="start">MOTION CONTACTOR</text>
+<text x="208" y="855" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">opened by safety relay</text>
+<text x="208" y="868" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start"></text>
+<rect x="302" y="858" width="32" height="13" rx="3" fill="#d97706"/>
+<text x="318" y="868" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<polyline points="170,851 200,851" fill="none" stroke="#37474f" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="270,808 270,826" fill="none" stroke="#37474f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="200" y="896" width="140" height="50" rx="6" fill="#ffffff" stroke="#c62828" stroke-width="1.4"/>
+<text x="208" y="911" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#c62828" text-anchor="start">36 V MOTION PSU</text>
+<text x="208" y="925" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">S-360-36 · 36 V / 10 A</text>
+<text x="208" y="938" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">CL57T bus ≤ 50 V abs</text>
+<polyline points="270,876 270,896" fill="none" stroke="#37474f" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<polyline points="270,946 270,971" fill="none" stroke="#c62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M180,971.0 h201 l9,9.0 l-9,9.0 h-201 z" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="280.5" y="984" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="middle">36 V → F-X · F-YL · F-Z · F-YR</text>
+<polyline points="85,876 85,971" fill="none" stroke="#37474f" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M30,971.0 h91 l9,9.0 l-9,9.0 h-91 z" fill="#ffffff" stroke="#37474f" stroke-width="1.6"/>
+<text x="75.5" y="984" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#37474f" text-anchor="middle">to 24 V PSU</text>
+<text x="30" y="1008" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#c62828" text-anchor="start">One fused star branch per drive (no daisy chain). Never 36 V to the Octopus.</text>
+<text x="30" y="1024" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#5b6470" text-anchor="start">PE: bond backplate, frame, DIN rail and each drive chassis directly.</text>
+<text x="434" y="722" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="800" fill="#2e7d32" text-anchor="start">BTT OCTOPUS PRO v1.1</text>
+<text x="434" y="740" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#5b6470" text-anchor="start">STM32F429ZGT6 · grblHAL MR1 profile</text>
+<text x="434" y="754" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#b42318" text-anchor="start">All GPIO 3.3 V. No field 5 V or 24 V on any pin.</text>
+<rect x="434" y="768" width="210" height="160" rx="6" fill="#ffffff" stroke="#5b6470" stroke-width="1"/>
+<text x="444" y="785" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#1b1f24" text-anchor="start">LEAVE EMPTY / REMOVE</text>
+<text x="444" y="802" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· A1 A2 B1 B2 motor outputs, all 8</text>
+<text x="444" y="817" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· Driver EN contact 1 (reserved)</text>
+<text x="444" y="832" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· VM/VIN/HV, mode and DIAG jumpers</text>
+<text x="444" y="847" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· Every STOP 5 V cavity</text>
+<text x="444" y="862" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· MOTOR-POWER, BED-POWER, BED-OUT</text>
+<text x="444" y="877" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· J68 USB-power jumper</text>
+<text x="444" y="892" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· SW2 "BOOT1" shares PB2: guard it</text>
+<text x="444" y="907" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">· microSD (disabled)</text>
+<rect x="880" y="112" width="260" height="723" rx="10" fill="#f6f8fa" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="816" y="120" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<text x="810" y="128" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">DRIVER0 10  VCC_IO +5 V</text>
+<polyline points="820,124 894,124" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="119" width="26" height="10" rx="2" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<line x1="894" y1="124" x2="920" y2="124" stroke="#1565c0" stroke-width="1"/>
+<text x="907" y="115" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#1565c0" text-anchor="middle"></text>
+<polyline points="920,124 930,124" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="128" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="start">F_CMD 0.5 A fast → +5_MOTION</text>
+<rect x="816" y="142" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<text x="810" y="150" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">DRIVER0  9  GND (CTRL_0V)</text>
+<polyline points="820,146 930,146" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="150" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="start">CTRL_0V → 8 sink sources</text>
+<rect x="816" y="164" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="172" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">I2C 3.3 V  (TB-C3)</text>
+<polyline points="820,168 930,168" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="934" y="172" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#2e7d32" text-anchor="start">2.2 kΩ pull-ups on PB1, PG12–15</text>
+<rect x="816" y="200" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="208" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">EXP2 PB1  DRIVE-FAULT STOP</text>
+<polyline points="820,204 890,204" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M890,204 h9 M899,204 l15,-8 M915,204 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="899" cy="204" r="3.4" fill="#2e7d32"/>
+<circle cx="915" cy="204" r="3.4" fill="#2e7d32"/>
+<text x="907" y="219" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-X</text>
+<polyline points="924,204 942,204" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M942,204 h9 M951,204 l15,-8 M967,204 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="951" cy="204" r="3.4" fill="#2e7d32"/>
+<circle cx="967" cy="204" r="3.4" fill="#2e7d32"/>
+<text x="959" y="219" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-YL</text>
+<polyline points="976,204 994,204" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M994,204 h9 M1003,204 l15,-8 M1019,204 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="1003" cy="204" r="3.4" fill="#2e7d32"/>
+<circle cx="1019" cy="204" r="3.4" fill="#2e7d32"/>
+<text x="1011" y="219" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-Z</text>
+<polyline points="1028,204 1046,204" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1046,204 h9 M1055,204 l15,-8 M1071,204 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="1055" cy="204" r="3.4" fill="#2e7d32"/>
+<circle cx="1071" cy="204" r="3.4" fill="#2e7d32"/>
+<text x="1063" y="219" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-YR</text>
+<polyline points="1080,204 1098,204" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1098,204 v7 M1090,211 h16 M1093,215 h10 M1096,219 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<text x="890" y="190" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">relay contacts 11–14 in series · 100 nF on each input</text>
+<rect x="816" y="251" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<text x="810" y="259" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">MOTOR0  PF13 STEP · PF12 DIR</text>
+<rect x="816" y="311" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="319" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">STOP4  PG12  X ALARM</text>
+<text x="810" y="330" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="end">snapshot only (MR1F:1)</text>
+<polyline points="820,255 894,255" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="238" width="110" height="34" rx="4" fill="#ffffff" stroke="#1565c0" stroke-width="1.4"/>
+<text x="949" y="252" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="middle">2 × 2N7002 sink</text>
+<text x="949" y="265" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">drains to PUL−, DIR−</text>
+<polyline points="1004,255 1200,255" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="249" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#1565c0" text-anchor="start">CMD-X</text>
+<polyline points="820,315 894,315" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="289" width="232" height="52" rx="4" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.4"/>
+<text x="902" y="302" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="800" fill="#7b1fa2" text-anchor="start">K-X</text>
+<text x="938" y="302" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">Weidmüller 2618530000</text>
+<polyline points="894,315 904,315" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M904,315 h9 M913,315 l15,-8 M929,315 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="913" cy="315" r="3.4" fill="#2e7d32"/>
+<circle cx="929" cy="315" r="3.4" fill="#2e7d32"/>
+<text x="921" y="330" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">21–24</text>
+<polyline points="938,315 948,315" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M948,315 v7 M940,322 h16 M943,326 h10 M946,330 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<text x="964" y="319" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">11–14 → PB1 chain</text>
+<rect x="1070" y="307" width="30" height="16" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.8"/>
+<line x1="1070" y1="323" x2="1100" y2="307" stroke="#7b1fa2" stroke-width="1"/>
+<text x="1072" y="334" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="start">A1</text>
+<text x="1098" y="334" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">A2</text>
+<polyline points="1070,315 1060,315 1060,333" fill="none" stroke="#7b1fa2" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1056" y="335" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">+23 V</text>
+<polyline points="1100,315 1200,315" fill="none" stroke="#7b1fa2" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="309" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#7b1fa2" text-anchor="start">ALM-X</text>
+<rect x="1200" y="220" width="200" height="140" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<text x="1212" y="238" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="start">CL57T  X</text>
+<text x="1212" y="259" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="600" fill="#1565c0" text-anchor="start">P1  PUL+ PUL− DIR+ DIR−</text>
+<text x="1212" y="319" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="600" fill="#7b1fa2" text-anchor="start">P1  ALM → A2 · COM− → ALM 0V</text>
+<text x="1212" y="289" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">ENA, BRK: leave open</text>
+<rect x="1196" y="251" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="1196" y="311" width="8" height="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.6"/>
+<rect x="1396" y="246" width="8" height="8" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<polyline points="1400,250 1460,250" fill="none" stroke="#1b1f24" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="254" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#1b1f24" text-anchor="end">P3</text>
+<text x="1406" y="245" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#1b1f24" text-anchor="start">GX16</text>
+<rect x="1396" y="278" width="8" height="8" fill="#ffffff" stroke="#00838f" stroke-width="1.6"/>
+<polyline points="1400,282 1460,282" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="286" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#00838f" text-anchor="end">P2</text>
+<text x="1406" y="277" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#00838f" text-anchor="start">DB15</text>
+<rect x="1460" y="234" width="160" height="66" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1.4"/>
+<text x="1470" y="251" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#1b1f24" text-anchor="start">X MOTOR</text>
+<text x="1470" y="266" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">A+ A− B+ B− (pins 1–4)</text>
+<text x="1470" y="280" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">encoder: 6 wires + shield</text>
+<text x="1470" y="293" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">23HS45-4204D-E1000</text>
+<rect x="1396" y="328" width="8" height="8" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1392" y="336" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="end">P4</text>
+<polyline points="1400,332 1460,332" fill="none" stroke="#c62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1460,323.0 h151 l9,9.0 l-9,9.0 h-151 z" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1535.5" y="336" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="middle">36 V · F-X</text>
+<text x="1406" y="326" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#c62828" text-anchor="start">+VDC/GND</text>
+<rect x="816" y="406" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<text x="810" y="414" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">MOTOR1  PG0 STEP · PG1 DIR</text>
+<rect x="816" y="466" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="474" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">STOP5  PG13  Y-LEFT ALARM</text>
+<text x="810" y="485" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="end">snapshot only (MR1F:1)</text>
+<polyline points="820,410 894,410" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="393" width="110" height="34" rx="4" fill="#ffffff" stroke="#1565c0" stroke-width="1.4"/>
+<text x="949" y="407" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="middle">2 × 2N7002 sink</text>
+<text x="949" y="420" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">drains to PUL−, DIR−</text>
+<polyline points="1004,410 1200,410" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="404" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#1565c0" text-anchor="start">CMD-YL</text>
+<polyline points="820,470 894,470" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="444" width="232" height="52" rx="4" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.4"/>
+<text x="902" y="457" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="800" fill="#7b1fa2" text-anchor="start">K-YL</text>
+<text x="938" y="457" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">Weidmüller 2618530000</text>
+<polyline points="894,470 904,470" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M904,470 h9 M913,470 l15,-8 M929,470 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="913" cy="470" r="3.4" fill="#2e7d32"/>
+<circle cx="929" cy="470" r="3.4" fill="#2e7d32"/>
+<text x="921" y="485" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">21–24</text>
+<polyline points="938,470 948,470" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M948,470 v7 M940,477 h16 M943,481 h10 M946,485 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<text x="964" y="474" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">11–14 → PB1 chain</text>
+<rect x="1070" y="462" width="30" height="16" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.8"/>
+<line x1="1070" y1="478" x2="1100" y2="462" stroke="#7b1fa2" stroke-width="1"/>
+<text x="1072" y="489" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="start">A1</text>
+<text x="1098" y="489" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">A2</text>
+<polyline points="1070,470 1060,470 1060,488" fill="none" stroke="#7b1fa2" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1056" y="490" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">+23 V</text>
+<polyline points="1100,470 1200,470" fill="none" stroke="#7b1fa2" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="464" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#7b1fa2" text-anchor="start">ALM-YL</text>
+<rect x="1200" y="375" width="200" height="140" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<text x="1212" y="393" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="start">CL57T  Y-LEFT</text>
+<text x="1212" y="414" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="600" fill="#1565c0" text-anchor="start">P1  PUL+ PUL− DIR+ DIR−</text>
+<text x="1212" y="474" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="600" fill="#7b1fa2" text-anchor="start">P1  ALM → A2 · COM− → ALM 0V</text>
+<text x="1212" y="444" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">ENA, BRK: leave open</text>
+<rect x="1196" y="406" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="1196" y="466" width="8" height="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.6"/>
+<rect x="1396" y="401" width="8" height="8" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<polyline points="1400,405 1460,405" fill="none" stroke="#1b1f24" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="409" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#1b1f24" text-anchor="end">P3</text>
+<text x="1406" y="400" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#1b1f24" text-anchor="start">GX16</text>
+<rect x="1396" y="433" width="8" height="8" fill="#ffffff" stroke="#00838f" stroke-width="1.6"/>
+<polyline points="1400,437 1460,437" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="441" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#00838f" text-anchor="end">P2</text>
+<text x="1406" y="432" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#00838f" text-anchor="start">DB15</text>
+<rect x="1460" y="389" width="160" height="66" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1.4"/>
+<text x="1470" y="406" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#1b1f24" text-anchor="start">Y-LEFT MOTOR</text>
+<text x="1470" y="421" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">A+ A− B+ B− (pins 1–4)</text>
+<text x="1470" y="435" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">encoder: 6 wires + shield</text>
+<text x="1470" y="448" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">23HS45-4204D-E1000</text>
+<rect x="1396" y="483" width="8" height="8" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1392" y="491" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="end">P4</text>
+<polyline points="1400,487 1460,487" fill="none" stroke="#c62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1460,478.0 h151 l9,9.0 l-9,9.0 h-151 z" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1535.5" y="491" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="middle">36 V · F-YL</text>
+<text x="1406" y="481" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#c62828" text-anchor="start">+VDC/GND</text>
+<rect x="816" y="561" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<text x="810" y="569" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">MOTOR2  PF11 STEP · PG3 DIR</text>
+<rect x="816" y="621" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="629" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">STOP6  PG14  Z ALARM</text>
+<text x="810" y="640" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="end">snapshot only (MR1F:1)</text>
+<polyline points="820,565 894,565" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="548" width="110" height="34" rx="4" fill="#ffffff" stroke="#1565c0" stroke-width="1.4"/>
+<text x="949" y="562" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="middle">2 × 2N7002 sink</text>
+<text x="949" y="575" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">drains to PUL−, DIR−</text>
+<polyline points="1004,565 1200,565" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="559" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#1565c0" text-anchor="start">CMD-Z</text>
+<polyline points="820,625 894,625" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="599" width="232" height="52" rx="4" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.4"/>
+<text x="902" y="612" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="800" fill="#7b1fa2" text-anchor="start">K-Z</text>
+<text x="938" y="612" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">Weidmüller 2618530000</text>
+<polyline points="894,625 904,625" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M904,625 h9 M913,625 l15,-8 M929,625 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="913" cy="625" r="3.4" fill="#2e7d32"/>
+<circle cx="929" cy="625" r="3.4" fill="#2e7d32"/>
+<text x="921" y="640" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">21–24</text>
+<polyline points="938,625 948,625" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M948,625 v7 M940,632 h16 M943,636 h10 M946,640 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<text x="964" y="629" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">11–14 → PB1 chain</text>
+<rect x="1070" y="617" width="30" height="16" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.8"/>
+<line x1="1070" y1="633" x2="1100" y2="617" stroke="#7b1fa2" stroke-width="1"/>
+<text x="1072" y="644" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="start">A1</text>
+<text x="1098" y="644" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">A2</text>
+<polyline points="1070,625 1060,625 1060,643" fill="none" stroke="#7b1fa2" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1056" y="645" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">+23 V</text>
+<polyline points="1100,625 1200,625" fill="none" stroke="#7b1fa2" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="619" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#7b1fa2" text-anchor="start">ALM-Z</text>
+<rect x="1200" y="530" width="200" height="140" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<text x="1212" y="548" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="start">CL57T  Z</text>
+<text x="1212" y="569" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="600" fill="#1565c0" text-anchor="start">P1  PUL+ PUL− DIR+ DIR−</text>
+<text x="1212" y="629" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="600" fill="#7b1fa2" text-anchor="start">P1  ALM → A2 · COM− → ALM 0V</text>
+<text x="1212" y="599" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">ENA, BRK: leave open</text>
+<rect x="1196" y="561" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="1196" y="621" width="8" height="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.6"/>
+<rect x="1396" y="556" width="8" height="8" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<polyline points="1400,560 1460,560" fill="none" stroke="#1b1f24" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="564" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#1b1f24" text-anchor="end">P3</text>
+<text x="1406" y="555" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#1b1f24" text-anchor="start">GX16</text>
+<rect x="1396" y="588" width="8" height="8" fill="#ffffff" stroke="#00838f" stroke-width="1.6"/>
+<polyline points="1400,592 1460,592" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="596" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#00838f" text-anchor="end">P2</text>
+<text x="1406" y="587" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#00838f" text-anchor="start">DB15</text>
+<rect x="1460" y="544" width="160" height="66" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1.4"/>
+<text x="1470" y="561" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#1b1f24" text-anchor="start">Z MOTOR</text>
+<text x="1470" y="576" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">A+ A− B+ B− (pins 1–4)</text>
+<text x="1470" y="590" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">encoder: 6 wires + shield</text>
+<text x="1470" y="603" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">23HS45-4204D-E1000</text>
+<rect x="1396" y="638" width="8" height="8" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1392" y="646" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="end">P4</text>
+<polyline points="1400,642 1460,642" fill="none" stroke="#c62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1460,633.0 h151 l9,9.0 l-9,9.0 h-151 z" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1535.5" y="646" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="middle">36 V · F-Z</text>
+<text x="1406" y="636" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#c62828" text-anchor="start">+VDC/GND</text>
+<rect x="816" y="716" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<text x="810" y="724" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">MOTOR3  PG4 STEP · PC1 DIR</text>
+<rect x="816" y="776" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="784" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">STOP7  PG15  Y-RIGHT ALARM</text>
+<text x="810" y="795" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="end">snapshot only (MR1F:1)</text>
+<polyline points="820,720 894,720" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="703" width="110" height="34" rx="4" fill="#ffffff" stroke="#1565c0" stroke-width="1.4"/>
+<text x="949" y="717" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1565c0" text-anchor="middle">2 × 2N7002 sink</text>
+<text x="949" y="730" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">drains to PUL−, DIR−</text>
+<polyline points="1004,720 1200,720" fill="none" stroke="#1565c0" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="714" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#1565c0" text-anchor="start">CMD-YR</text>
+<polyline points="820,780 894,780" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<rect x="894" y="754" width="232" height="52" rx="4" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.4"/>
+<text x="902" y="767" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="800" fill="#7b1fa2" text-anchor="start">K-YR</text>
+<text x="938" y="767" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">Weidmüller 2618530000</text>
+<polyline points="894,780 904,780" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M904,780 h9 M913,780 l15,-8 M929,780 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="913" cy="780" r="3.4" fill="#2e7d32"/>
+<circle cx="929" cy="780" r="3.4" fill="#2e7d32"/>
+<text x="921" y="795" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">21–24</text>
+<polyline points="938,780 948,780" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M948,780 v7 M940,787 h16 M943,791 h10 M946,795 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<text x="964" y="784" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">11–14 → PB1 chain</text>
+<rect x="1070" y="772" width="30" height="16" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.8"/>
+<line x1="1070" y1="788" x2="1100" y2="772" stroke="#7b1fa2" stroke-width="1"/>
+<text x="1072" y="799" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="start">A1</text>
+<text x="1098" y="799" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">A2</text>
+<polyline points="1070,780 1060,780 1060,798" fill="none" stroke="#7b1fa2" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1056" y="800" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="700" fill="#7b1fa2" text-anchor="end">+23 V</text>
+<polyline points="1100,780 1200,780" fill="none" stroke="#7b1fa2" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1144" y="774" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#7b1fa2" text-anchor="start">ALM-YR</text>
+<rect x="1200" y="685" width="200" height="140" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<text x="1212" y="703" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="start">CL57T  Y-RIGHT</text>
+<text x="1212" y="724" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="600" fill="#1565c0" text-anchor="start">P1  PUL+ PUL− DIR+ DIR−</text>
+<text x="1212" y="784" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9" font-weight="600" fill="#7b1fa2" text-anchor="start">P1  ALM → A2 · COM− → ALM 0V</text>
+<text x="1212" y="754" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">ENA, BRK: leave open</text>
+<rect x="1196" y="716" width="8" height="8" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="1196" y="776" width="8" height="8" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.6"/>
+<rect x="1396" y="711" width="8" height="8" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<polyline points="1400,715 1460,715" fill="none" stroke="#1b1f24" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="719" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#1b1f24" text-anchor="end">P3</text>
+<text x="1406" y="710" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#1b1f24" text-anchor="start">GX16</text>
+<rect x="1396" y="743" width="8" height="8" fill="#ffffff" stroke="#00838f" stroke-width="1.6"/>
+<polyline points="1400,747 1460,747" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="1392" y="751" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#00838f" text-anchor="end">P2</text>
+<text x="1406" y="742" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#00838f" text-anchor="start">DB15</text>
+<rect x="1460" y="699" width="160" height="66" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1.4"/>
+<text x="1470" y="716" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#1b1f24" text-anchor="start">Y-RIGHT MOTOR</text>
+<text x="1470" y="731" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">A+ A− B+ B− (pins 1–4)</text>
+<text x="1470" y="745" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">encoder: 6 wires + shield</text>
+<text x="1470" y="758" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="start">23HS45-4204D-E1000</text>
+<rect x="1396" y="793" width="8" height="8" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1392" y="801" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="end">P4</text>
+<polyline points="1400,797 1460,797" fill="none" stroke="#c62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1460,788.0 h151 l9,9.0 l-9,9.0 h-151 z" fill="#ffffff" stroke="#c62828" stroke-width="1.6"/>
+<text x="1535.5" y="801" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#c62828" text-anchor="middle">36 V · F-YR</text>
+<text x="1406" y="791" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#c62828" text-anchor="start">+VDC/GND</text>
+<rect x="894" y="810" width="232" height="22" rx="4" fill="#ffffff" stroke="#7b1fa2" stroke-width="1.4"/>
+<text x="902" y="825" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="700" fill="#7b1fa2" text-anchor="start">PS-ALM DDR-15G-24 → 23.0 V · F-ALM 0.25 A</text>
+<text x="880" y="850" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#7b1fa2" text-anchor="start">PS-ALM +Vo → F-ALM → every relay A1 (+23 V).</text>
+<text x="880" y="863" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="600" fill="#7b1fa2" text-anchor="start">PS-ALM −Vo → every CL57T COM− (ALM 0V): floating.</text>
+<text x="880" y="876" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">Input from 24 V PSU via its own fuse. Relay 12/22 empty.</text>
+<rect x="816" y="826" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="834" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">EXP2 GND  (TB-C0)</text>
+<polyline points="820,830 858,830" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M858,830 v7 M850,837 h16 M853,841 h10 M856,845 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<text x="810" y="845" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="end">relay-contact + RC return</text>
+<text x="880" y="900" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5b6470" text-anchor="start">SPINDLE &amp; COOLANT</text>
+<text x="1200" y="900" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#5b6470" text-anchor="start">LOADS</text>
+<rect x="816" y="911" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="919" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">FAN0  PA8   SPINDLE PWM</text>
+<polyline points="820,915 880,915" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="880" y="902" width="260" height="26" rx="4" fill="#fff4e5" stroke="#00838f" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="888" y="919" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#00838f" text-anchor="start">PWM → isolated 0–5 V</text>
+<rect x="816" y="944" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="952" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">FAN4  PD14  SPINDLE ENABLE</text>
+<polyline points="820,948 880,948" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="880" y="935" width="260" height="26" rx="4" fill="#fff4e5" stroke="#d97706" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="888" y="952" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#d97706" text-anchor="start">Spindle-enable relay</text>
+<rect x="816" y="977" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="985" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">HE0   PA0   FLOOD</text>
+<polyline points="820,981 880,981" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="880" y="968" width="260" height="26" rx="4" fill="#fff4e5" stroke="#d97706" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="888" y="985" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#d97706" text-anchor="start">Flood relay</text>
+<rect x="816" y="1010" width="8" height="8" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<text x="810" y="1018" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="end">HE1   PA3   MIST / AIR</text>
+<polyline points="820,1014 880,1014" fill="none" stroke="#2e7d32" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="880" y="1001" width="260" height="26" rx="4" fill="#fff4e5" stroke="#d97706" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="888" y="1018" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#d97706" text-anchor="start">Mist / air relay</text>
+<text x="810" y="1030" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="end">low-side outputs: verify rail jumpers first</text>
+<rect x="1200" y="902" width="420" height="59" rx="4" fill="#fff4e5" stroke="#00838f" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1208" y="918" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#00838f" text-anchor="start">STOCK SPINDLE SERVO  (DB44, community map: meter first)</text>
+<text x="1208" y="933" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">26 = 0–5 V speed · 10 = analog return</text>
+<text x="1208" y="948" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">16 = SON via dry contact to 24 V I/O 0 V</text>
+<polyline points="1140,915 1200,915" fill="none" stroke="#00838f" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<polyline points="1140,948 1200,948" fill="none" stroke="#d97706" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="1200" y="968" width="420" height="26" rx="4" fill="#fff4e5" stroke="#d97706" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1208" y="985" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#d97706" text-anchor="start">FLOOD PUMP  (supply in hardwired stop chain)</text>
+<polyline points="1140,981 1200,981" fill="none" stroke="#d97706" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<rect x="1200" y="1001" width="420" height="26" rx="4" fill="#fff4e5" stroke="#d97706" stroke-width="1.4" stroke-dasharray="6 4"/>
+<text x="1208" y="1018" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#d97706" text-anchor="start">MIST / AIR SOLENOID  (supply in hardwired stop chain)</text>
+<polyline points="1140,1014 1200,1014" fill="none" stroke="#d97706" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<line x1="30" y1="1052" x2="1620" y2="1052" stroke="#d0d7de" stroke-width="1"/>
+<text x="30" y="1074" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#1b1f24" text-anchor="start">WIRE COLOURS</text>
+<polyline points="30,1090 64,1090" fill="none" stroke="#c62828" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="72" y="1094" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">36 V motion bus (CL57T P4)</text>
+<polyline points="30,1110 64,1110" fill="none" stroke="#d97706" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="72" y="1114" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">24 V control</text>
+<polyline points="30,1130 64,1130" fill="none" stroke="#1565c0" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="72" y="1134" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">+5_MOTION command domain</text>
+<polyline points="30,1150 64,1150" fill="none" stroke="#2e7d32" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="72" y="1154" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Octopus 3.3 V logic / GND</text>
+<polyline points="265,1090 299,1090" fill="none" stroke="#7b1fa2" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="307" y="1094" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 23 V alarm field</text>
+<polyline points="265,1110 299,1110" fill="none" stroke="#00838f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="307" y="1114" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 5 V field, encoder, analog</text>
+<polyline points="265,1130 299,1130" fill="none" stroke="#37474f" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+<text x="307" y="1134" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Mains / hardwired safety</text>
+<polyline points="265,1150 299,1150" fill="none" stroke="#1b1f24" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<text x="307" y="1154" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Dashed: HOLD, not approved</text>
+<text x="30" y="1184" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#1b1f24" text-anchor="start">Three separate returns: Octopus GND · CTRL_0V (DRIVER0 GND) · ALM 0V (PS-ALM −Vo).</text>
+<text x="30" y="1199" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#5b6470" text-anchor="start">Never join them because they are all called GND.</text>
+<text x="545" y="1074" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#1b1f24" text-anchor="start">ALL FOUR CL57T — SET WITH POWER OFF</text>
+<rect x="545" y="1084" width="60" height="40" rx="5" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="575" y="1100" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#5b6470" text-anchor="middle">S1</text>
+<text x="575" y="1118" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="800" fill="#1b1f24" text-anchor="middle">4</text>
+<rect x="611" y="1084" width="60" height="40" rx="5" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="641" y="1100" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#5b6470" text-anchor="middle">SW1</text>
+<text x="641" y="1118" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
+<rect x="677" y="1084" width="60" height="40" rx="5" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="707" y="1100" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#5b6470" text-anchor="middle">SW2</text>
+<text x="707" y="1118" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="800" fill="#1b1f24" text-anchor="middle">off</text>
+<rect x="743" y="1084" width="60" height="40" rx="5" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="773" y="1100" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#5b6470" text-anchor="middle">SW3</text>
+<text x="773" y="1118" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
+<rect x="809" y="1084" width="60" height="40" rx="5" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="839" y="1100" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#5b6470" text-anchor="middle">SW4</text>
+<text x="839" y="1118" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
+<rect x="875" y="1084" width="60" height="40" rx="5" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="905" y="1100" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#5b6470" text-anchor="middle">SW5–8</text>
+<text x="905" y="1118" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="800" fill="#1b1f24" text-anchor="middle">off</text>
+<rect x="941" y="1084" width="60" height="40" rx="5" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="971" y="1100" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#5b6470" text-anchor="middle">S3</text>
+<text x="971" y="1118" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="14" font-weight="800" fill="#1b1f24" text-anchor="middle">5V</text>
+<text x="545" y="1144" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#1b1f24" text-anchor="start">Socket STEP 7 · DIR 8 · GND 9 · VCC_IO 10 (DRIVER0 only) are schematic</text>
+<text x="545" y="1158" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#1b1f24" text-anchor="start">contact IDs, not a pin count. Find pin 1 on the real board first.</text>
+<text x="545" y="1176" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="700" fill="#1b1f24" text-anchor="start">PB1 is the only drive-fault stop. PG12–PG15 only report which axis.</text>
+<text x="545" y="1190" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="400" fill="#1b1f24" text-anchor="start">Never energize a drive without its motor and encoder connected.</text>
+<rect x="1090" y="1062" width="530" height="150" rx="8" fill="#fff5f5" stroke="#b42318" stroke-width="1.4"/>
+<text x="1104" y="1082" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#b42318" text-anchor="start">THE SIX THAT BREAK THINGS</text>
+<text x="1104" y="1102" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">1.  P4 reversed: kills the drive (P4 is polarized)</text>
+<text x="1104" y="1120" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">2.  36 V into Octopus MAIN POWER: kills the board</text>
+<text x="1104" y="1138" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">3.  S3 on 5V with 24 V signals: destroys the input</text>
+<text x="1104" y="1156" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">4.  Raw ALM, stock 5 V or 24 V on any Octopus GPIO</text>
+<text x="1104" y="1174" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">5.  Hot-plugging P3 motor or P4 power</text>
+<text x="1104" y="1192" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">6.  Driver jumpers or DIAG links left on the sockets</text>
+<text x="30" y="1263" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#5b6470" text-anchor="start">Generated by tools/wiring-schematic/build_schematic.py. Details: docs/wiring/mr1/WIRING_SIMPLE.md · ALARM_INTERFACE.md · COMMAND_SUPPLY.md · CL57T_QUICK_WIRING.md · INTERFACE_BOARD.md</text>
+</svg>

@@ -99,7 +99,7 @@ flowchart LR
   SVC -- "USB CDC<br/>one line in flight" --> OCT["Octopus Pro V1.1<br/>STM32F429 + grblHAL"]
   OCT -- "STEP / DIR x4<br/>interface board" --> DRV["CL57T V4.1 x4<br/>closed loop"]
   DRV --> MOT["23HS45 motors<br/>X, Y-left, Y-right, Z"]
-  DRV -- "ALM to PB1<br/>aggregate fault" --> OCT
+  DRV -- "ALM via 4 relays<br/>series into PB1" --> OCT
   OCT -- "0-5 V + enable<br/>isolated" --> SP["MR-1 servo spindle"]
   IN["Homes, E-stop monitor,<br/>probe, setter, door,<br/>hold, start"] --> OCT
   ES["Hardwired E-stop chain<br/>design hold"] -.->|removes power| DRV
@@ -170,7 +170,7 @@ Open [`docs/wiring/visual/index.html`](docs/wiring/visual/index.html) from your 
 - **Cabinet photo.** Locate the ends on the real cabinet.
 - **Notes.** Mark each cable identified, labelled and route-checked, and export your notes with the build.
 
-Start with the [readiness worksheet](docs/wiring/MR1-wiring-readiness.md): it lists the blocking holds before energizing.
+Start with the [readiness worksheet](docs/wiring/MR1-wiring-readiness.md): it lists the blocking holds before energizing. The [one-page schematic](docs/wiring/MR1-SCHEMATIC.svg) shows every connection on a single printable sheet.
 
 ## Repository map
 
@@ -179,6 +179,7 @@ Start with the [readiness worksheet](docs/wiring/MR1-wiring-readiness.md): it li
 | [`mr1-control/`](mr1-control/README.md) | Windows application: UI (`src/`), native service (`service/`), tests, CAM posts, packaging |
 | [`docs/wiring/`](docs/wiring/README.md) | Wiring plan, CL57T setup, interface board, cable schedule, I/O manifest, settings profile, visual guide |
 | [`tools/visual-wiring/`](tools/visual-wiring/README.md) | Generator and data for the visual guide (rebuilt reproducibly in CI) |
+| [`tools/wiring-schematic/`](tools/wiring-schematic/build_schematic.py) | Generator for the one-page schematic; checks every drawn GPIO against the I/O manifest (CI fails if stale) |
 | [`grblHAL-STM32F4/`](grblHAL-STM32F4/README.md) | Exported firmware source: MR-1 map in `boards/`, profile in `Inc/`, machine docs in `mr1/` |
 | [`tools/`](tools) | Hash-pinned local asset importer and wiring sync |
 | [`docs/`](docs) | Distribution scope, local assets, README media |
@@ -190,7 +191,7 @@ Start with the [readiness worksheet](docs/wiring/MR1-wiring-readiness.md): it li
 | --- | --- |
 | Native controller behavior | [NATIVE_CONTROL.md](mr1-control/NATIVE_CONTROL.md) · [Windows operator architecture](mr1-control/WINDOWS_OPERATOR_ARCHITECTURE.md) |
 | Commissioning and operation | [COMMISSIONING.md](grblHAL-STM32F4/mr1/COMMISSIONING.md) · [OPERATOR.md](grblHAL-STM32F4/mr1/OPERATOR.md) |
-| Wiring | [WIRING.md](docs/wiring/mr1/WIRING.md) · [short check card](docs/wiring/mr1/WIRING_SIMPLE.md) · [CL57T setup](docs/wiring/mr1/CL57T_QUICK_WIRING.md) · [interface board](docs/wiring/mr1/INTERFACE_BOARD.md) |
+| Wiring | [One-page schematic](docs/wiring/MR1-SCHEMATIC.svg) · [WIRING.md](docs/wiring/mr1/WIRING.md) · [short check card](docs/wiring/mr1/WIRING_SIMPLE.md) · [CL57T setup](docs/wiring/mr1/CL57T_QUICK_WIRING.md) · [interface board](docs/wiring/mr1/INTERFACE_BOARD.md) |
 | Spindle | [Spindle supervision](docs/wiring/mr1/SPINDLE_SUPERVISION.md) |
 | Parts | [BOM](docs/wiring/mr1/BOM.md) · [order list](docs/wiring/mr1/ORDER_LIST.md) |
 | CAM posts | [Post contract](mr1-control/post-processors/README.md) |

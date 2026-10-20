@@ -90,7 +90,7 @@ def endpoint_status(device: str, terminal: str) -> str:
         return "unresolved"
     if "community" in terminal.lower():
         return "community-reference"
-    if device == "MR1 interface" or "candidate" in device.lower() or "supervision interface" in device.lower() or device == "Fault conditioner":
+    if device == "MR1 interface" or "candidate" in device.lower() or "supervision interface" in device.lower() or "alarm relays" in device.lower():
         return "planned-interface"
     return "reference-only"
 

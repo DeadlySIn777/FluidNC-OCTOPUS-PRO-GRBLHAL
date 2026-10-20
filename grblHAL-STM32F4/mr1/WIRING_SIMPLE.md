@@ -5,7 +5,8 @@ guides before wiring an unresolved connector. No source audit proves a finished
 machine safe to energize.
 
 Full detail lives in `WIRING.md`, `CL57T_QUICK_WIRING.md` and `INTERFACE_BOARD.md`.
-This card is the short version.
+This card is the short version. Keep the one-page drawing,
+`docs/wiring/MR1-SCHEMATIC.svg` (repository path), beside you while you work.
 
 **Build deenergized. Step 10 is a hold-point review, not automatic permission
 to power or move the machine.** Separate supply/bench tests require their own

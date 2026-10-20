@@ -106,18 +106,22 @@ motion remains prohibited.
 ## Stage 1: Panel Power-Off Inspection
 
 Install the supplies, safety relay, contactors, fused distribution, Octopus,
-DM860Ts, interface prototype, PE hardware, and terminal blocks without connecting
+CL57Ts, interface prototype, alarm relays, PE hardware, and terminal blocks without connecting
 motors, spindle control, probe, tool setter, coolant, or USB.
 
 Verify against `WIRING.md` and `cable-schedule.csv`:
 
 - Octopus `MAIN POWER` is on the 24 V domain only.
 - Octopus `MOTOR POWER` and `BED POWER` are empty.
-- DM860T power comes from four independent 36 V star branches.
-- Every drive face says `DM860T(V3.0)` and has `SW1-SW10` plus top selector `S2`.
-- Every drive includes the supplied six-position P1, four-position P2, and six-position P3 removable blocks.
-- All four DM860T `S2` selectors say `5V` before signal wiring.
-- `SW1-SW3` remain a hold point until stock-motor or original-driver current evidence is recorded.
+- CL57T power comes from four independent, fused 36 V star branches, with
+  **polarized** `P4` `+VDC`/`GND` traced to the matching branch.
+- Every drive label says `CL57T V4.1` (rotating `S1`, top selector `S3`, `P5`
+  port present) and its P1-P4 blocks match `CL57T_ARRIVAL_CAPTURE.md`.
+- All four drives are set, with power off, to `S1`=`4`, `SW1`-`SW4`=
+  `on/off/on/on`, `SW5`-`SW8`=`off` and `S3`=`5V` before signal wiring
+  (`CL57T_QUICK_WIRING.md`). Photograph every switch face.
+- The alarm relays, PS-ALM supply and its fuses match `ALARM_INTERFACE.md` and
+  `alarm-interface-wires.csv`; relay contacts 12/22, `BRK` and `ENA` are empty.
 - No plug-in motor drivers or mode/voltage jumpers occupy MOTOR0-MOTOR3.
 - One driver-socket adapter and each low-voltage housing have passed pitch, key, latch, pin-1, insertion, and pull tests on the actual v1.1 board.
 - Safety contacts physically interrupt motion energy and spindle permit.
@@ -204,10 +208,11 @@ idle, actuated, and disconnected states.
 
 ### Conditioned Stock Home Inputs
 
-**Gate 0 - bench-verify the TLP281-4 module before it touches the machine.**
-These modules vary between vendors and some invert. With the module on the bench
-and the field side powered, jumper each input in turn and meter that output
-against output ground:
+**Gate 0 - the conditioner must be qualified before it touches the machine.**
+The generic TLP281-4 module is on HOLD (`INTERFACE_BOARD.md` A2); there is no
+approved floating-VCC recipe. Trace both faces and its supplies first. Then,
+with the module on the bench and its documented supplies connected, jumper each
+input in turn and meter that output against output ground:
 
 - Input active gives `OUT` near 0 V, input released gives `OUT` high: **correct**.
 - Input active gives `OUT` high, input released gives `OUT` low: **inverted and
@@ -215,9 +220,10 @@ against output ground:
   machine, and no firmware invert setting repairs that because both states would
   read identically. Stop and re-derive the channel.
 
-Record the measured pair of voltages for all four channels. Confirm the module's
-output-side `VCC` is **unconnected** - if that rail is fed 5 V the outputs rest
-at 5 V and will damage a 3.3 V Octopus input.
+Record the measured pair of voltages for all four channels. Confirm no output
+can rest above 3.3 V: an output-side rail fed from 5 V will damage a 3.3 V
+Octopus input. Do not leave a shared output rail floating as a workaround; it can
+couple channels (`docs/wiring/MR1-wiring-second-pass.md`).
 
 Then record the stock limit-bus supply, return, and all four signal voltages
 with the factory controller disconnected. Confirm each of the four signals is
@@ -291,14 +297,17 @@ behavior before any `G38` move.
 
 ### Drive and Aggregate Faults
 
-Use the interface simulator/test jumper, not a live motor fault yet:
+Use the relay contacts with drive power off, not a live motor fault yet
+(`ALARM_INTERFACE.md`, bench steps 2-3):
 
-- Four ready channels low: no motor fault.
-- Open X, YL, Z, then YR one at a time: PB1 reports a motor fault (`Pn:`
-  includes `F`, alarm 17). The current firmware does not read PG12-PG15, so no
-  per-axis fault is reported; identify the axis from the interface board.
-- Remove alarm-interface field power: a fault is reported.
-- Open PB1 aggregate fault: a cabinet/spindle fault is reported.
+- All four relays energized, every 11-14 and 21-24 contact closed: no motor fault.
+- Open the X, YL, Z, then YR 11-14 contact one at a time: PB1 reports a motor
+  fault (`Pn:` includes `F`, alarm 17).
+- Open each 21-24 contact: on the `MR1F:1` candidate build only, that axis's raw
+  bit appears in the `MR1F:1,mask` report and PB1 does not trip. Older builds
+  report nothing; identify the axis from the relay LEDs.
+- Remove PS-ALM output or open F-ALM: all relays drop and PB1 faults.
+- Open any additional cabinet/spindle healthy contact in the PB1 chain: a fault is reported.
 
 PB1 is the only drive-fault stop. The complete PB1 chain qualification (Stage 5
 step 13 on every drive) is a blocking prerequisite for Stage 6.
@@ -311,8 +320,8 @@ No stock spindle, coolant load, or motor may be connected.
 
 ### Motion Signals
 
-Attach the real DM860T input optocouplers or equivalent loads, with DM860T motor
-power still off. Scope every active PUL and DIR pair; ENA is reserved and
+Attach the real CL57T `P1` input optocouplers or equivalent loads, with CL57T
+motor power still off. Scope every active PUL and DIR pair; ENA is reserved and
 unconnected.
 
 - The Octopus socket side switches between logic low and its buffered 5 V high; it is not treated as raw 3.3 V GPIO.
@@ -372,7 +381,7 @@ Start with X. Clamp the motor securely with no coupler attached.
 10. Confirm DIR level changes and rotation reverses predictably. Correct direction in `DEFAULT_DIR_SIGNALS_INVERT_MASK` rather than `SW5`, so all four drives stay identically configured; record whichever you use.
 11. Command repeated equal reversals and verify the shaft returns to its witness mark. **Under closed loop this no longer tests what it used to.** An open-loop drive that lost steps would return short of the mark silently; a CL57T corrects the error internally and raises `ALM` instead. So this step now verifies *mechanical* behavior only - stall, resonance, binding, backlash. **Position loss is tested at step 12, not here.** Do not read a clean witness-mark return as evidence that no following error occurred.
 12. **Closed-loop position-integrity test.** With the axis uncoupled, run repeated full-travel reversals at increasing feed while watching for any `ALM` assertion. A following error that the drive corrects is still a following error, and it is the drive's own report - not the witness mark - that detects it. Record the highest feed that completes with no alarm; that is the evidence for any later rate increase.
-13. Remove the alarm cable and verify the controller faults. Then remove that drive's branch power and verify the controller faults again. Both must trip through the PB1 series chain - see `WIRING.md` "Drive Fault Inputs".
+13. Open that drive's ALM conductor and verify the controller faults. Then remove that drive's branch power and verify the controller faults again. Both must drop its relay and trip through the PB1 series chain - see `ALARM_INTERFACE.md` and `WIRING.md` "Drive Fault Inputs".
 
 Repeat for Y-left, Z, and Y-right one at a time. Record idle/running current,
 drive temperature, motor temperature, noise, and fault behavior.
@@ -383,26 +392,23 @@ and a mismatched pulse-filter setting makes the two sides respond to the same
 step train with different lag, racking the gantry. Photograph both switch faces
 side by side as the evidence.
 
-The stock motors and DM860Ts are open-loop. There is no motor-encoder cable or
-following-error test in this phase; those checks return with the CL57T upgrade.
-
 **Hold point:** all four loose axes pass independently.
 
 ## Stage 6: Direction and Ganged-Y Proof
 
 **Prerequisite:** the PB1 aggregate fault chain has passed Stage 5 step 13 on
-all four drives. PB1 is the only drive-fault stop; PG12-PG15 are not read by
-the current firmware. Do not run coupled dual-Y motion without it.
+all four drives. PB1 is the only drive-fault stop; PG12-PG15 are only raw
+`MR1F:1` reports on the candidate build and never stop motion. Do not run coupled dual-Y motion without it.
 
 Keep both Y motors uncoupled from the machine but powered together.
 
 1. Mark both shafts visibly.
 2. Jog positive Y at low speed.
 3. Determine which physical shaft rotations would move both sides of the gantry toward machine-positive Y.
-4. Correct motor rotation by changing one firmware inversion setting or, with all power removed, reversing one complete coil polarity. `SW5` is a DM860T microstep switch and must not be used as a direction control.
+4. Correct motor rotation by changing one firmware inversion setting or, with all power removed, reversing one complete coil polarity. Do not use a drive switch as a direction control; all four CL57Ts keep identical switch settings.
 5. Use `$3` only to establish logical machine direction.
 6. Use `$8` ganged-axis inversion only to correct the second Y motor relative to the first.
-7. Record final motor-phase polarity, `$3`, `$8`, and the unchanged DM860T switch map in the commissioning log.
+7. Record final motor-phase polarity, `$3`, `$8`, and the unchanged CL57T switch map in the commissioning log.
 
 Never couple both Y motors until a positive command has been proven to move both
 sides in the same linear direction. Opposite shaft rotation can be correct on
@@ -479,8 +485,8 @@ initial cap.
 ### Thermal Soak
 
 Run a representative dry program for at least four hours. Record cabinet
-ambient, each DM860T case, each motor body, 24/36/5 V rails, and connector
-temperature every 15 minutes. Follow the DM860T V3 manual's installation and
+ambient, each CL57T case, each motor body, 24/36/5 V rails, and connector
+temperature every 15 minutes. Follow the CL57T V4.1 manual's installation and
 temperature limits, mount each drive vertically, and add cabinet airflow if the
 recorded temperatures do not maintain margin.
 
@@ -606,9 +612,10 @@ by the risk assessment:
 - Open each E-stop channel and monitored-reset path.
 - Open the enclosure monitor and any safety-rated guard channels.
 - Unplug X, YL, YR, and Z home switches.
-- Unplug each DM860T alarm cable.
-- Remove power from each DM860T one branch at a time.
-- Verify each conditioned alarm input with its bench test fixture; do not create a fault by hot-unplugging a powered motor.
+- Open each CL57T ALM and COM− conductor (alarm field only; never a motor or encoder plug).
+- Remove power from each CL57T one branch at a time, with Z mechanically supported.
+- Remove the PS-ALM alarm supply.
+- Verify every row of the `ALARM_INTERFACE.md` test table; do not create a fault by hot-unplugging a powered motor or encoder.
 - Open aggregate spindle/cabinet fault.
 - Disconnect USB and close the sender unexpectedly.
 - Remove/reapply 24 V control power before 36 V motion power.
@@ -635,7 +642,7 @@ USB loss is never an acceptable substitute for E-stop performance.
 - [ ] Spindle command, tachometer, enable, alarm, and E-stop tests pass.
 - [ ] Probe and tool setter each pass electrical and low-speed motion tests.
 - [ ] Coolant/air switching causes no false input or USB event.
-- [ ] Final `$I+`, `$$`, offsets, DM860T switches/current evidence, and cable schedule are archived.
+- [ ] Final `$I+`, `$$`, offsets, CL57T switches and saved drive parameters, and cable schedule are archived.
 - [ ] Windows preflight passes and phase-zero macro/workflow tests pass.
 - [ ] Covers, labels, guards, strain relief, and cabinet fasteners are complete.
 

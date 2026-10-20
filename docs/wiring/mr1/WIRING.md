@@ -26,7 +26,8 @@ in `CL57T_QUICK_WIRING.md`:
 
 > **Wiring the machine right now?** `WIRING_SIMPLE.md` is the short version -
 > ten steps in safe order, one check each, no theory. Come back here for the
-> reasoning behind any step.
+> reasoning behind any step. The one-page drawing of every connection is
+> `docs/wiring/MR1-SCHEMATIC.svg` (repository path).
 
 ## Start-To-Finish Screen
 
@@ -139,7 +140,8 @@ neither the DM860T nor the CL57T V4.1 has a certified safe-torque-off input.
   Windows mini PC -- USB --> Octopus Pro v1.1 F429
                                |
                                +-- motion interface --> X / YL / Z / YR CL57T
-                               +-- qualified aggregate <-- four conditioned CL57T alarms -> PB1
+                               +-- four alarm relays <-- CL57T ALM: 11-14 in series -> PB1,
+                               |                                     21-24 -> PG12-PG15 (report)
                                +-- encoder stays drive-side: motor <-> CL57T P2
                                +-- isolated conditioner <-- four stock home channels
                                +-- isolated inputs <-- probe + tool setter
@@ -269,7 +271,7 @@ Octopus GND-to-PE may then be connected by design.
 | --- | --- | --- | --- |
 | Protective earth | Facility PE | Cabinet, DIN rail, MR-1 frame, spindle chassis, metal connector shells | Permanent bonding; never use PE as a signal return |
 | 36 V motion | `S-360-36`, 36 V 10 A | CL57T `P4` power inputs only | **18-50 VDC absolute, 50 V is a hard ceiling.** Four separately fused star branches; never daisy-chain drives. `P4` is POLARIZED `+VDC`/`GND` |
-| 24 V control | Separate regulated supply | Octopus `MAIN POWER`, relay coils, field interface | Octopus main input is limited to 28 V maximum; never apply 36 V |
+| 24 V control | Separate regulated supply | Octopus `MAIN POWER`, PS-ALM input, interposing relay coils, field interface | Octopus main input is limited to 28 V maximum; never apply 36 V |
 | 5 V motion logic | DRIVER0 VCC_IO through 0.5 A fast branch fuse; [COMMAND_SUPPLY.md](COMMAND_SUPPLY.md) | CL57T `P1` PUL/DIR optocouplers (ENA reserved, not connected) | Common-anode signal domain; **`S3` on every CL57T must be `5V`** (factory is 24V). Note the letter: `S2` is the DIP bank on a CL57T and the selector on a DM860T. Applying 24 V to an input set to 5 V destroys the photocoupler |
 | Isolated alarm field | Mean Well DDR-15G-24, set and measured at 23.0 V | Four Weidmüller alarm relay coils and CL57T ALM/COM− | Floating output return; common 0.25 A fast output fuse; [ALARM_INTERFACE.md](ALARM_INTERFACE.md), hardware qualification pending |
 | Isolated 5 V home field | Isolated, current-limited DC/DC | Stock limit bus through four-channel conditioner | Separate from Octopus GPIO and probe field; omit only if each switch is proved to be a bare dry contact |
@@ -523,8 +525,9 @@ PG15 ─ K-YR 21→24 ─ Octopus GND
 
 Each of the five input nodes gets **2.2 kΩ, 1%, 0.25 W to Octopus I2C 3.3 V**
 and **100 nF X7R, at least 25 V, to Octopus GND**. PB1 has no onboard pull-up
-or RC. Use only STOP4–STOP7 signal/GND contacts, leave their adjacent supply
-contacts empty, and remove DIAG jumpers. The selected modules include coil
+or RC. Use only the STOP4–STOP7 signal contacts (the contact return is EXP2 GND
+through TB-C0), leave their adjacent GND and supply contacts empty, and remove
+DIAG jumpers. The selected modules include coil
 suppression. Leave their unused 12/22 contacts empty. **Never series-chain
 raw ALM/COM− outputs into a GPIO.**
 

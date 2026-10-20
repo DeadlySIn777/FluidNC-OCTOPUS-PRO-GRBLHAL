@@ -1,5 +1,13 @@
 # MR1 wiring — current reference
 
+**One-page schematic:** [MR1-SCHEMATIC.svg](MR1-SCHEMATIC.svg) shows every
+connection on a single landscape page (power, command, alarm relays, homes,
+probe, operator inputs, spindle and coolant). Print it or open it in a browser.
+It is generated from `io-manifest.json` by
+`tools/wiring-schematic/build_schematic.py`.
+
+![MR1 one-page wiring schematic](MR1-SCHEMATIC.svg)
+
 Open the [visual guide](visual/index.html) from your local checkout and choose
 **Octopus schematic** for the board, driver jumpers and named terminal destinations.
 Use cable tracing for motor, encoder, drive alarm, home-switch and other defined
@@ -21,7 +29,10 @@ coupled dual-Y motion.
 
 - [Readiness worksheet](MR1-wiring-readiness.md)
 - [Second-pass corrections](MR1-wiring-second-pass.md)
+- [One-page schematic](MR1-SCHEMATIC.svg)
 - [Wiring plan](mr1/WIRING.md) and [short check card](mr1/WIRING_SIMPLE.md)
+- [Alarm relay interface](mr1/ALARM_INTERFACE.md), its [wire list](mr1/alarm-interface-wires.csv) and the [2026-09-27 alarm update](ALARM-UPDATE-2026-09-27.md)
+- [Command supply and STEP/DIR sinks](mr1/COMMAND_SUPPLY.md)
 - [CL57T setup](mr1/CL57T_QUICK_WIRING.md) and [arrival worksheet](mr1/CL57T_ARRIVAL_CAPTURE.md)
 - [Interface](mr1/INTERFACE_BOARD.md) and [connector schedule](mr1/PIGTAIL_SCHEDULE.md)
 - [Cable schedule](mr1/cable-schedule.csv) and [I/O manifest](mr1/io-manifest.json)

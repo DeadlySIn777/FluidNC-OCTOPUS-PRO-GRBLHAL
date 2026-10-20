@@ -8440,13 +8440,13 @@
     },
     {
       "path": "mr1/cable-schedule.csv",
-      "bytes": 19175,
-      "sha256": "6a3c44d772fcb101f139cb0dc2e2bbc1f4dcf8adf75f06b5d801b9c87be92901"
+      "bytes": 19203,
+      "sha256": "0c78ebcd197c71a845b5ed722c4c5a6226f81f16aa8c03ee37d07ba06e3d03d3"
     },
     {
       "path": "mr1/CL57T_ARRIVAL_CAPTURE.md",
-      "bytes": 10693,
-      "sha256": "94f798d930beef191341cd1a8315ae0710ab074519f018359114a8592f08d8fc"
+      "bytes": 10786,
+      "sha256": "4daa8f0f9ab5d692dc0dbb0a1a3a88b7949ed53841152fcaac3b543f4222ae6d"
     },
     {
       "path": "mr1/CL57T_QUICK_WIRING.md",
@@ -8455,13 +8455,13 @@
     },
     {
       "path": "mr1/COMMISSIONING.md",
-      "bytes": 35993,
-      "sha256": "bd24df90b1fbda549d5a57e4fb2b2b44ad7a9574f3483df3204af9c15b873032"
+      "bytes": 36755,
+      "sha256": "1779735cd238970030b48d06107d42557033382de1d02596d33d178b67f4d1af"
     },
     {
       "path": "mr1/DM860T_QUICK_WIRING.md",
-      "bytes": 8329,
-      "sha256": "2f4a9cc6ebe4a724a2b939a0e46c1cbe873bbe26f1b5d0e64d9515e786ecfecf"
+      "bytes": 8645,
+      "sha256": "f578014fce3556da3a08cf340517c367b1c3a0bad66a23336932020a373ff875"
     },
     {
       "path": "mr1/expected-settings.json",
@@ -8475,8 +8475,8 @@
     },
     {
       "path": "mr1/io-manifest.json",
-      "bytes": 14481,
-      "sha256": "7ab002e4b2b50230135b229504774b517c2431dc0a8f6f3b008aee17c7cbbbae"
+      "bytes": 14573,
+      "sha256": "9be4e609f521cd9664a4504fce9bfa1b2219ffe354a567a0a558d67b35d2094a"
     },
     {
       "path": "mr1/macros/manifest.json",
@@ -8500,8 +8500,8 @@
     },
     {
       "path": "mr1/MR1_GITHUB_CROSSCHECK.md",
-      "bytes": 6239,
-      "sha256": "d17a50f4e2b5768e74531973f09d3c8fd58ae49f3c5a0fe5d2d794b0a4b4c779"
+      "bytes": 6347,
+      "sha256": "1bd62dd6e4900c4999f9a7b50261dde5781305b1d12c6e2ec7de21131ff94b82"
     },
     {
       "path": "mr1/OCTOPUS_QUALIFICATION.md",
@@ -8520,13 +8520,13 @@
     },
     {
       "path": "mr1/PIGTAIL_SCHEDULE.md",
-      "bytes": 15088,
-      "sha256": "05d75aea72f73852b44d7dad3bae9388017051bba542514ddc1f054fbbab57ae"
+      "bytes": 15406,
+      "sha256": "414b65d404dcd060ebb6dfe42032b61c7c0bceb64cc98472046d0d0349beea87"
     },
     {
       "path": "mr1/README.md",
-      "bytes": 4223,
-      "sha256": "a4fc1b5e71ab1b9c3f5d0cc7ef88eaa3c6f9cf5b5146fd1df14dcb2e83285f36"
+      "bytes": 4277,
+      "sha256": "11f5550e49a124c69ef01faec88f46f1dea1dc4454f0c23f23ec4b5b740e7dc9"
     },
     {
       "path": "mr1/RESEARCH.md",
@@ -8560,13 +8560,13 @@
     },
     {
       "path": "mr1/WIRING.md",
-      "bytes": 48492,
-      "sha256": "28521179c31549572f53d7c6670a443abb579d8f62f0db46d3c670d954f102b3"
+      "bytes": 48763,
+      "sha256": "585cdb1550e870b079d8955d27f34dbae09ccd8ec149fb719a6c8b6320ee521f"
     },
     {
       "path": "mr1/WIRING_SIMPLE.md",
-      "bytes": 15259,
-      "sha256": "4de6ad30d8bf93f1c7e3a4d4acca57175c7f99e05b54474a924943d50b0f4e4b"
+      "bytes": 15364,
+      "sha256": "ce67a2cdf480e222fe1228b8450bc8ebaf911df2fc74e53193f6fbdcc1649f4c"
     },
     {
       "path": "platformio.ini",
@@ -9369,6 +9369,85 @@
       "originalSourceRecordsPreserved": true,
       "upstreamAuditCorrectionsPreserved": true,
       "physicalAcceptance": false
+    },
+    {
+      "id": "wiring-docs-reaudit-2026-10-20",
+      "capturedUtc": "2026-10-20T16:42:52+00:00",
+      "sourceRepository": "https://github.com/DeadlySIn777/FluidNC-OCTOPUS-PRO-GRBLHAL",
+      "publicationStatus": "Working content revision; public commit not assigned at capture.",
+      "scope": "Documentation re-audit after the 2026-09-27 alarm/command-supply update: replaced stale alarm-conditioner wording with the selected relay assembly, converted the commissioning procedure from DM860T to CL57T V4.1, withdrew the floating-VCC conditioner step, corrected STOP4-7 contact counts, and linked the generated one-page schematic (docs/wiring/MR1-SCHEMATIC.svg). No firmware code, pins or setting values changed.",
+      "files": [
+        {
+          "path": "mr1/CL57T_ARRIVAL_CAPTURE.md",
+          "previousSha256": "94f798d930beef191341cd1a8315ae0710ab074519f018359114a8592f08d8fc",
+          "sha256": "4daa8f0f9ab5d692dc0dbb0a1a3a88b7949ed53841152fcaac3b543f4222ae6d",
+          "previousBytes": 10693,
+          "bytes": 10786
+        },
+        {
+          "path": "mr1/COMMISSIONING.md",
+          "previousSha256": "bd24df90b1fbda549d5a57e4fb2b2b44ad7a9574f3483df3204af9c15b873032",
+          "sha256": "1779735cd238970030b48d06107d42557033382de1d02596d33d178b67f4d1af",
+          "previousBytes": 35993,
+          "bytes": 36755
+        },
+        {
+          "path": "mr1/DM860T_QUICK_WIRING.md",
+          "previousSha256": "2f4a9cc6ebe4a724a2b939a0e46c1cbe873bbe26f1b5d0e64d9515e786ecfecf",
+          "sha256": "f578014fce3556da3a08cf340517c367b1c3a0bad66a23336932020a373ff875",
+          "previousBytes": 8329,
+          "bytes": 8645
+        },
+        {
+          "path": "mr1/MR1_GITHUB_CROSSCHECK.md",
+          "previousSha256": "d17a50f4e2b5768e74531973f09d3c8fd58ae49f3c5a0fe5d2d794b0a4b4c779",
+          "sha256": "1bd62dd6e4900c4999f9a7b50261dde5781305b1d12c6e2ec7de21131ff94b82",
+          "previousBytes": 6239,
+          "bytes": 6347
+        },
+        {
+          "path": "mr1/PIGTAIL_SCHEDULE.md",
+          "previousSha256": "05d75aea72f73852b44d7dad3bae9388017051bba542514ddc1f054fbbab57ae",
+          "sha256": "414b65d404dcd060ebb6dfe42032b61c7c0bceb64cc98472046d0d0349beea87",
+          "previousBytes": 15088,
+          "bytes": 15406
+        },
+        {
+          "path": "mr1/README.md",
+          "previousSha256": "a4fc1b5e71ab1b9c3f5d0cc7ef88eaa3c6f9cf5b5146fd1df14dcb2e83285f36",
+          "sha256": "11f5550e49a124c69ef01faec88f46f1dea1dc4454f0c23f23ec4b5b740e7dc9",
+          "previousBytes": 4223,
+          "bytes": 4277
+        },
+        {
+          "path": "mr1/WIRING.md",
+          "previousSha256": "28521179c31549572f53d7c6670a443abb579d8f62f0db46d3c670d954f102b3",
+          "sha256": "585cdb1550e870b079d8955d27f34dbae09ccd8ec149fb719a6c8b6320ee521f",
+          "previousBytes": 48492,
+          "bytes": 48763
+        },
+        {
+          "path": "mr1/WIRING_SIMPLE.md",
+          "previousSha256": "4de6ad30d8bf93f1c7e3a4d4acca57175c7f99e05b54474a924943d50b0f4e4b",
+          "sha256": "ce67a2cdf480e222fe1228b8450bc8ebaf911df2fc74e53193f6fbdcc1649f4c",
+          "previousBytes": 15259,
+          "bytes": 15364
+        },
+        {
+          "path": "mr1/cable-schedule.csv",
+          "previousSha256": "6a3c44d772fcb101f139cb0dc2e2bbc1f4dcf8adf75f06b5d801b9c87be92901",
+          "sha256": "0c78ebcd197c71a845b5ed722c4c5a6226f81f16aa8c03ee37d07ba06e3d03d3",
+          "previousBytes": 19175,
+          "bytes": 19203
+        },
+        {
+          "path": "mr1/io-manifest.json",
+          "previousSha256": "7ab002e4b2b50230135b229504774b517c2431dc0a8f6f3b008aee17c7cbbbae",
+          "sha256": "9be4e609f521cd9664a4504fce9bfa1b2219ffe354a567a0a558d67b35d2094a",
+          "previousBytes": 14481,
+          "bytes": 14573
+        }
+      ]
     }
   ],
   "localAlarmUpdate": {
