@@ -2,430 +2,488 @@
 <title id="t">MR-1 wiring schematic on the Octopus Pro v1.1 board</title>
 <desc id="d">The official BIGTREETECH Octopus Pro V1.1 pin drawing with every connector used by the MR-1 build outlined and routed to what it connects to: four CL57T drives, alarm relays, homes, probe, operator inputs, spindle, coolant and power. Planning drawing; dashed HOLD items are not designed or qualified.</desc>
 <rect x="0" y="0" width="1650" height="1275" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="1.4"/>
-<text x="20" y="36" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="26" font-weight="800" fill="#1b1f24" text-anchor="start">MR-1 WIRING SCHEMATIC</text>
-<text x="362" y="36" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="500" fill="#5b6470" text-anchor="start">Octopus Pro v1.1 → 4 × CL57T V4.1 closed loop · every used connector, routed</text>
-<text x="1630" y="26" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#5b6470" text-anchor="end">One page · 2026-10-20</text>
+<text x="20" y="36" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" fill="#1b1f24"><tspan font-size="26" font-weight="800">MR-1 WIRING SCHEMATIC</tspan><tspan dx="14" font-size="14" font-weight="500" fill="#5b6470">Octopus Pro v1.1 → 4 × CL57T V4.1 closed loop · every used connector, routed</tspan></text>
+<text x="1630" y="26" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="600" fill="#5b6470" text-anchor="end">One page · print A3 / 11×17 landscape · 2026-10-20</text>
 <text x="1630" y="41" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#5b6470" text-anchor="end">Pins checked against io-manifest.json</text>
 <rect x="20" y="50" width="1610" height="22" rx="4" fill="#fff4e5" stroke="#c25e00"/>
 <text x="825" y="65" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="700" fill="#8a4b00" text-anchor="middle">PLANNING DRAWING — NOT APPROVAL TO ENERGIZE OR MOVE. Dashed = HOLD (not yet designed or qualified). Printed names on the real board and parts win over this page.</text>
-<rect x="340" y="300" width="956" height="767" rx="8" fill="#f3f5f7" stroke="#c9d1d9" stroke-width="1"/>
-<rect x="435" y="397.5" width="732.5" height="452.5" rx="14" fill="#e6e9ed" stroke="#8c959f" stroke-width="1.5"/>
-<text x="818" y="997" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#5b6470" text-anchor="middle">Octopus Pro V1.1 board photo loads from BIGTREETECH when this file is opened</text>
-<text x="818" y="1015" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#5b6470" text-anchor="middle">in a browser. The outlines below are at the same positions.</text>
-<image href="https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg" xlink:href="https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg" x="340" y="300" width="956" height="767" preserveAspectRatio="xMidYMid meet"/>
+<rect x="340" y="294" width="917.76" height="736.32" rx="8" fill="#f3f5f7" stroke="#c9d1d9" stroke-width="1"/>
+<rect x="431.2" y="387.6" width="703.2" height="434.4" rx="14" fill="#e6e9ed" stroke="#8c959f" stroke-width="1.5"/>
+<text x="348" y="310" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#5b6470" text-anchor="start">No board photo here? GitHub cannot load</text>
+<text x="348" y="323" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#5b6470" text-anchor="start">the linked BIGTREETECH image. Open a</text>
+<text x="348" y="336" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10" font-weight="600" fill="#5b6470" text-anchor="start">downloaded copy of this file in a browser.</text>
+<image href="https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg" xlink:href="https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro/60a01f412959b62c349ba00da15b45232b7d90c5/Hardware/BIGTREETECH%20Octopus%20Pro%20V1.1-Pin.jpg" x="340" y="294" width="917.76" height="736.32" preserveAspectRatio="xMidYMid meet"/>
 <mask id="lit"><rect x="0" y="0" width="100%" height="100%" fill="#fff"/>
-<rect x="493.5" y="430.5" width="80.5" height="102.5" fill="#000"/>
-<rect x="568.5" y="430.5" width="80.5" height="102.5" fill="#000"/>
-<rect x="643.5" y="430.5" width="80.5" height="102.5" fill="#000"/>
-<rect x="718.5" y="430.5" width="80.5" height="102.5" fill="#000"/>
-<rect x="1089.5" y="404" width="28" height="59" fill="#000"/>
-<rect x="416.5" y="545" width="79" height="97" fill="#000"/>
-<rect x="894.5" y="666" width="98" height="46" fill="#000"/>
-<rect x="873.5" y="741.5" width="72.5" height="24.5" fill="#000"/>
-<rect x="955" y="543" width="94" height="104" fill="#000"/>
-<rect x="870.5" y="708.5" width="55" height="34" fill="#000"/>
-<rect x="702" y="811" width="39" height="44" fill="#000"/>
-<rect x="817.5" y="811" width="38.5" height="44" fill="#000"/>
-<rect x="503" y="791" width="107.5" height="62" fill="#000"/>
-<rect x="1121.5" y="473.5" width="49.5" height="52" fill="#000"/>
-<rect x="936" y="745.5" width="128" height="111" fill="#000"/>
+<rect x="487.24" y="419.16" width="77.52" height="98.64" fill="#000"/>
+<rect x="559.24" y="419.16" width="77.52" height="98.64" fill="#000"/>
+<rect x="631.24" y="419.16" width="77.52" height="98.64" fill="#000"/>
+<rect x="703.24" y="419.16" width="77.52" height="98.64" fill="#000"/>
+<rect x="1061.32" y="393.72" width="25.2" height="56.88" fill="#000"/>
+<rect x="413.32" y="529.08" width="76.08" height="93.36" fill="#000"/>
+<rect x="1090.12" y="460.44" width="47.76" height="50.16" fill="#000"/>
+<rect x="930.28" y="527.16" width="90.48" height="100.08" fill="#000"/>
+<rect x="872.2" y="645.24" width="94.32" height="41.52" fill="#000"/>
+<rect x="849.16" y="690.36" width="53.04" height="24.72" fill="#000"/>
+<rect x="853.96" y="720.6" width="61.68" height="18" fill="#000"/>
+<rect x="919.24" y="725.88" width="115.92" height="51.12" fill="#000"/>
+<rect x="919.24" y="772.92" width="115.92" height="55.44" fill="#000"/>
+<rect x="687.4" y="784.44" width="37.68" height="42.48" fill="#000"/>
+<rect x="798.28" y="784.44" width="37.2" height="42.48" fill="#000"/>
+<rect x="496.36" y="765.24" width="92.4" height="59.76" fill="#000"/>
+<rect x="686.44" y="827.64" width="35.76" height="66.96" fill="#000"/>
+<rect x="800.68" y="827.64" width="35.76" height="66.96" fill="#000"/>
+<rect x="913" y="827.64" width="133.2" height="201.36" fill="#000"/>
+<rect x="749.8" y="946.2" width="164.4" height="42" fill="#000"/>
+<rect x="749.8" y="894.84" width="87.6" height="54.96" fill="#000"/>
+<rect x="838.6" y="293.4" width="81.36" height="66" fill="#000"/>
+<rect x="1013.8" y="291" width="87.6" height="81.36" fill="#000"/>
+<rect x="339.4" y="843" width="122.16" height="62.64" fill="#000"/>
+<rect x="1138.6" y="708.6" width="118.8" height="241.2" fill="#000"/>
+<rect x="340.84" y="527.64" width="70.8" height="93.36" fill="#000"/>
 </mask>
-<rect x="340" y="300" width="956" height="767" fill="#ffffff" fill-opacity="0.38" mask="url(#lit)"/>
-<rect x="515.5" y="391" width="580.5" height="30.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="515.5" y="391" width="580.5" height="30.5" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
-<rect x="505.5" y="416" width="568" height="34.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="505.5" y="416" width="568" height="34.5" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
-<rect x="506.5" y="490.5" width="588.5" height="48.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="506.5" y="490.5" width="588.5" height="48.5" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
-<rect x="952.5" y="718" width="99" height="29" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="952.5" y="718" width="99" height="29" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
-<rect x="415" y="450.5" width="84" height="96.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="415" y="450.5" width="84" height="96.5" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
-<rect x="415" y="640" width="84" height="185.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="415" y="640" width="84" height="185.5" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
-<rect x="494.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="494.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
-<rect x="569.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="569.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
-<rect x="644.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="644.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
-<rect x="719.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="719.5" y="431.5" width="78.5" height="100.5" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
-<rect x="1090.5" y="405" width="26" height="57" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="1090.5" y="405" width="26" height="57" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
-<rect x="417.5" y="546" width="77" height="95" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="417.5" y="546" width="77" height="95" rx="3" fill="none" stroke="#c25e00" stroke-width="3"/>
-<rect x="1122.5" y="474.5" width="47.5" height="50" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="1122.5" y="474.5" width="47.5" height="50" rx="3" fill="none" stroke="#1b1f24" stroke-width="3"/>
-<rect x="956" y="544" width="92" height="102" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="956" y="544" width="92" height="102" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
-<rect x="895.5" y="667" width="96" height="44" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="895.5" y="667" width="96" height="44" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
-<rect x="871.5" y="709.5" width="53" height="32" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="871.5" y="709.5" width="53" height="32" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
-<rect x="874.5" y="742.5" width="70.5" height="22.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="874.5" y="742.5" width="70.5" height="22.5" rx="3" fill="none" stroke="#00838f" stroke-width="3"/>
-<rect x="937" y="746.5" width="126" height="55.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="937" y="746.5" width="126" height="55.5" rx="3" fill="none" stroke="#00838f" stroke-width="3"/>
-<rect x="937" y="800" width="126" height="55.5" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="937" y="800" width="126" height="55.5" rx="3" fill="none" stroke="#7b1fa2" stroke-width="3"/>
-<rect x="703" y="812" width="37" height="42" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="703" y="812" width="37" height="42" rx="3" fill="none" stroke="#00838f" stroke-width="3"/>
-<rect x="818.5" y="812" width="36.5" height="42" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="818.5" y="812" width="36.5" height="42" rx="3" fill="none" stroke="#c25e00" stroke-width="3"/>
-<rect x="504" y="792" width="105.5" height="60" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
-<rect x="504" y="792" width="105.5" height="60" rx="3" fill="none" stroke="#c25e00" stroke-width="3"/>
-<rect x="521.35" y="470" width="24.8" height="16" rx="8" fill="#1565c0"/>
-<text x="533.75" y="482" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M0</text>
-<rect x="596.35" y="470" width="24.8" height="16" rx="8" fill="#1565c0"/>
-<text x="608.75" y="482" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M1</text>
-<rect x="671.35" y="470" width="24.8" height="16" rx="8" fill="#1565c0"/>
-<text x="683.75" y="482" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M2</text>
-<rect x="746.35" y="470" width="24.8" height="16" rx="8" fill="#1565c0"/>
-<text x="758.75" y="482" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M3</text>
-<circle cx="566" cy="512.5" r="4.5" fill="#c25e00" stroke="#fff" stroke-width="1.5"/>
-<circle cx="566" cy="523.5" r="4.5" fill="#1565c0" stroke="#fff" stroke-width="1.5"/>
-<polyline points="533.75,433.5 533.75,280 498.5,280 498.5,254" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="533.75,433.5 533.75,280 498.5,280 498.5,254" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="533.75" cy="433.5" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="340" y="84" width="317" height="170" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
-<rect x="340" y="84" width="5" height="170" rx="2" fill="#1565c0"/>
+<rect x="340" y="294" width="917.76" height="736.32" fill="#ffffff" fill-opacity="0.38" mask="url(#lit)"/>
+<rect x="508.4" y="381.28" width="546.88" height="25.6" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="508.4" y="381.28" width="546.88" height="25.6" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="498.8" y="412" width="545.44" height="26.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="498.8" y="412" width="545.44" height="26.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="927.92" y="695.2" width="95.2" height="26.08" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="927.92" y="695.2" width="95.2" height="26.08" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="502.64" y="478.24" width="48.16" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="502.64" y="478.24" width="48.16" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="574.16" y="478.24" width="50.56" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="574.16" y="478.24" width="50.56" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="647.12" y="478.24" width="49.6" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="647.12" y="478.24" width="49.6" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="717.68" y="478.24" width="51.04" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="717.68" y="478.24" width="51.04" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="789.2" y="478.24" width="53.44" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="789.2" y="478.24" width="53.44" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="865.04" y="478.24" width="49.6" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="865.04" y="478.24" width="49.6" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="935.12" y="478.24" width="52.48" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="935.12" y="478.24" width="52.48" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="1011.44" y="478.24" width="51.04" height="38.56" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="1011.44" y="478.24" width="51.04" height="38.56" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="411.92" y="438.4" width="80.8" height="92.8" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="411.92" y="438.4" width="80.8" height="92.8" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="411.92" y="620.32" width="80.8" height="178.24" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="411.92" y="620.32" width="80.8" height="178.24" rx="3" fill="none" stroke="#d32f2f" stroke-width="3" stroke-dasharray="5 3"/>
+<rect x="488.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="488.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
+<rect x="560.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="560.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
+<rect x="632.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="632.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
+<rect x="704.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="704.24" y="420.16" width="75.52" height="96.64" rx="3" fill="none" stroke="#1565c0" stroke-width="3"/>
+<rect x="1062.32" y="394.72" width="23.2" height="54.88" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="1062.32" y="394.72" width="23.2" height="54.88" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
+<rect x="414.32" y="530.08" width="74.08" height="91.36" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="414.32" y="530.08" width="74.08" height="91.36" rx="3" fill="none" stroke="#c25e00" stroke-width="3"/>
+<rect x="1091.12" y="461.44" width="45.76" height="48.16" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="1091.12" y="461.44" width="45.76" height="48.16" rx="3" fill="none" stroke="#1b1f24" stroke-width="3"/>
+<rect x="931.28" y="528.16" width="88.48" height="98.08" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="931.28" y="528.16" width="88.48" height="98.08" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
+<rect x="873.2" y="646.24" width="92.32" height="39.52" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="873.2" y="646.24" width="92.32" height="39.52" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
+<rect x="850.16" y="691.36" width="51.04" height="22.72" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="850.16" y="691.36" width="51.04" height="22.72" rx="3" fill="none" stroke="#2e7d32" stroke-width="3"/>
+<rect x="854.96" y="721.6" width="59.68" height="16" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="854.96" y="721.6" width="59.68" height="16" rx="3" fill="none" stroke="#00838f" stroke-width="3"/>
+<rect x="920.24" y="726.88" width="113.92" height="49.12" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="920.24" y="726.88" width="113.92" height="49.12" rx="3" fill="none" stroke="#00838f" stroke-width="3"/>
+<rect x="920.24" y="773.92" width="113.92" height="53.44" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="920.24" y="773.92" width="113.92" height="53.44" rx="3" fill="none" stroke="#7b1fa2" stroke-width="3"/>
+<rect x="688.4" y="785.44" width="35.68" height="40.48" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="688.4" y="785.44" width="35.68" height="40.48" rx="3" fill="none" stroke="#00838f" stroke-width="3"/>
+<rect x="799.28" y="785.44" width="35.2" height="40.48" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="799.28" y="785.44" width="35.2" height="40.48" rx="3" fill="none" stroke="#c25e00" stroke-width="3"/>
+<rect x="497.36" y="766.24" width="90.4" height="57.76" rx="3" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.85"/>
+<rect x="497.36" y="766.24" width="90.4" height="57.76" rx="3" fill="none" stroke="#c25e00" stroke-width="3"/>
+<rect x="519.6" y="456.8" width="24.8" height="16" rx="8" fill="#1565c0"/>
+<text x="532" y="468.8" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M0</text>
+<circle cx="496.96" cy="508.56" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<circle cx="556.96" cy="508.56" r="4" fill="#1b1f24" stroke="#ffffff" stroke-width="2"/>
+<rect x="591.6" y="456.8" width="24.8" height="16" rx="8" fill="#1565c0"/>
+<text x="604" y="468.8" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M1</text>
+<circle cx="568.96" cy="508.56" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<circle cx="628.96" cy="508.56" r="4" fill="#1b1f24" stroke="#ffffff" stroke-width="2"/>
+<rect x="663.6" y="456.8" width="24.8" height="16" rx="8" fill="#1565c0"/>
+<text x="676" y="468.8" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M2</text>
+<circle cx="640.96" cy="508.56" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<circle cx="700.96" cy="508.56" r="4" fill="#1b1f24" stroke="#ffffff" stroke-width="2"/>
+<rect x="735.6" y="456.8" width="24.8" height="16" rx="8" fill="#1565c0"/>
+<text x="748" y="468.8" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#ffffff" text-anchor="middle">M3</text>
+<circle cx="712.96" cy="508.56" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<circle cx="772.96" cy="508.56" r="4" fill="#1b1f24" stroke="#ffffff" stroke-width="2"/>
+<circle cx="556.96" cy="498" r="4.5" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
+<path d="M496.96,497.52 L496.96,276 L498.5,276 L498.5,258" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M496.96,497.52 L496.96,276 L498.5,276 L498.5,258" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="496.96" cy="497.52" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
+<circle cx="496.96" cy="497.52" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<rect x="340" y="84" width="317" height="174" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="340" y="84" width="5" height="174" rx="2" fill="#1565c0"/>
 <text x="353" y="101" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1565c0" text-anchor="start">X DRIVE · CL57T V4.1</text>
-<text x="353" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR0 socket: STEP PF13 · DIR PF12 · GND</text>
+<text x="353" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR0: STEP PF13 (7) · DIR PF12 (8) · GND (9)</text>
 <text x="353" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="353" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="353" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-X A2 · COM− → ALM 0V</text>
-<text x="353" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder, DB15: 6 wires + separate shield</text>
-<text x="353" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor, GX16: A+ A− B+ B− (pins 1–4)</text>
-<text x="353" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V branch F-X: +VDC / GND, POLARIZED</text>
-<text x="353" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">ENA and BRK: leave open</text>
-<polyline points="608.75,433.5 608.75,268 825.5,268 825.5,254" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="608.75,433.5 608.75,268 825.5,268 825.5,254" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="608.75" cy="433.5" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="667" y="84" width="317" height="170" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
-<rect x="667" y="84" width="5" height="170" rx="2" fill="#1565c0"/>
+<text x="353" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="353" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
+<text x="353" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
+<text x="353" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-X: +VDC / GND, POLARIZED, ≤ 50 V</text>
+<text x="353" y="233" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">ENA, BRK open. STEP/DIR float in MCU reset:</text>
+<text x="353" y="247.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">   36 V OFF to reset or flash. Motor + encoder on.</text>
+<path d="M568.96,497.52 L568.96,266 L825.5,266 L825.5,258" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M568.96,497.52 L568.96,266 L825.5,266 L825.5,258" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="568.96" cy="497.52" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
+<circle cx="568.96" cy="497.52" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<rect x="667" y="84" width="317" height="174" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="667" y="84" width="5" height="174" rx="2" fill="#1565c0"/>
 <text x="680" y="101" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1565c0" text-anchor="start">Y-LEFT DRIVE · CL57T V4.1</text>
-<text x="680" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR1 socket: STEP PG0 · DIR PG1 · GND</text>
+<text x="680" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR1: STEP PG0 (7) · DIR PG1 (8) · GND (9)</text>
 <text x="680" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="680" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="680" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-YL A2 · COM− → ALM 0V</text>
-<text x="680" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder, DB15: 6 wires + separate shield</text>
-<text x="680" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor, GX16: A+ A− B+ B− (pins 1–4)</text>
-<text x="680" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V branch F-YL: +VDC / GND, POLARIZED</text>
-<text x="680" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">ENA and BRK: leave open</text>
-<polyline points="683.75,433.5 683.75,280 1152.5,280 1152.5,254" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="683.75,433.5 683.75,280 1152.5,280 1152.5,254" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="683.75" cy="433.5" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="994" y="84" width="317" height="170" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
-<rect x="994" y="84" width="5" height="170" rx="2" fill="#1565c0"/>
+<text x="680" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="680" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
+<text x="680" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
+<text x="680" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-YL: +VDC / GND, POLARIZED, ≤ 50 V</text>
+<text x="680" y="233" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">ENA, BRK open. STEP/DIR float in MCU reset:</text>
+<text x="680" y="247.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">   36 V OFF to reset or flash. Motor + encoder on.</text>
+<path d="M640.96,497.52 L640.96,276 L1152.5,276 L1152.5,258" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M640.96,497.52 L640.96,276 L1152.5,276 L1152.5,258" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="640.96" cy="497.52" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
+<circle cx="640.96" cy="497.52" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<rect x="994" y="84" width="317" height="174" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="994" y="84" width="5" height="174" rx="2" fill="#1565c0"/>
 <text x="1007" y="101" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1565c0" text-anchor="start">Z DRIVE · CL57T V4.1</text>
-<text x="1007" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR2 socket: STEP PF11 · DIR PG3 · GND</text>
+<text x="1007" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR2: STEP PF11 (7) · DIR PG3 (8) · GND (9)</text>
 <text x="1007" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="1007" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="1007" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-Z A2 · COM− → ALM 0V</text>
-<text x="1007" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder, DB15: 6 wires + separate shield</text>
-<text x="1007" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor, GX16: A+ A− B+ B− (pins 1–4)</text>
-<text x="1007" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V branch F-Z: +VDC / GND, POLARIZED</text>
-<text x="1007" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">ENA and BRK: leave open</text>
-<polyline points="758.75,433.5 758.75,292 1479.5,292 1479.5,254" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="758.75,433.5 758.75,292 1479.5,292 1479.5,254" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="758.75" cy="433.5" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="1321" y="84" width="317" height="170" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
-<rect x="1321" y="84" width="5" height="170" rx="2" fill="#1565c0"/>
+<text x="1007" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="1007" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
+<text x="1007" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
+<text x="1007" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-Z: +VDC / GND, POLARIZED, ≤ 50 V</text>
+<text x="1007" y="233" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">ENA, BRK open. STEP/DIR float in MCU reset:</text>
+<text x="1007" y="247.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">   36 V OFF to reset or flash. Motor + encoder on.</text>
+<path d="M712.96,497.52 L712.96,286 L1479.5,286 L1479.5,258" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M712.96,497.52 L712.96,286 L1479.5,286 L1479.5,258" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="712.96" cy="497.52" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
+<circle cx="712.96" cy="497.52" r="4.2" fill="#ffffff" stroke="#1565c0" stroke-width="2.4"/>
+<rect x="1321" y="84" width="317" height="174" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
+<rect x="1321" y="84" width="5" height="174" rx="2" fill="#1565c0"/>
 <text x="1334" y="101" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1565c0" text-anchor="start">Y-RIGHT DRIVE · CL57T V4.1</text>
-<text x="1334" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR3 socket: STEP PG4 · DIR PC1 · GND</text>
+<text x="1334" y="117" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#1565c0" text-anchor="start">MOTOR3: STEP PG4 (7) · DIR PC1 (8) · GND (9)</text>
 <text x="1334" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="1334" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="1334" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-YR A2 · COM− → ALM 0V</text>
-<text x="1334" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder, DB15: 6 wires + separate shield</text>
-<text x="1334" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor, GX16: A+ A− B+ B− (pins 1–4)</text>
-<text x="1334" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V branch F-YR: +VDC / GND, POLARIZED</text>
-<text x="1334" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">ENA and BRK: leave open</text>
-<rect x="20" y="84" width="300" height="170" rx="6" fill="#ffffff" stroke="#d32f2f" stroke-width="1.6"/>
-<rect x="20" y="84" width="5" height="170" rx="2" fill="#d32f2f"/>
+<text x="1334" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="1334" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
+<text x="1334" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
+<text x="1334" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-YR: +VDC / GND, POLARIZED, ≤ 50 V</text>
+<text x="1334" y="233" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">ENA, BRK open. STEP/DIR float in MCU reset:</text>
+<text x="1334" y="247.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">   36 V OFF to reset or flash. Motor + encoder on.</text>
+<rect x="20" y="84" width="300" height="174" rx="6" fill="#ffffff" stroke="#d32f2f" stroke-width="1.6"/>
+<rect x="20" y="84" width="5" height="174" rx="2" fill="#d32f2f"/>
 <text x="33" y="101" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#d32f2f" text-anchor="start">DRIVER AREA: LEAVE EMPTY / REMOVE</text>
 <text x="33" y="117" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">A1 A2 B2 B1 motor-output plugs: EMPTY (all 8)</text>
 <text x="33" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">HV / VM / VIN jumper caps: REMOVE (all 8)</text>
 <text x="33" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Mode / SPI jumper caps: REMOVE (all 8)</text>
 <text x="33" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">M0–M7 DIAG caps: REMOVE (they sit on the</text>
 <text x="33" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">   PG6–PG15 home and alarm nets)</text>
-<text x="33" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">EN contact 1: reserved, not connected</text>
-<text x="33" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Nothing plugs into a socket; the control</text>
-<text x="33" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   cable lands on STEP, DIR, GND only.</text>
-<polyline points="507.5,433.25 335,433.25 335,170 320,170" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="507.5,433.25 335,433.25 335,170 320,170" fill="none" stroke="#d32f2f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="507.5" cy="433.25" r="4" fill="#d32f2f" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="20" y="264" width="300" height="150" rx="6" fill="#fff4e5" stroke="#37474f" stroke-width="1.6" stroke-dasharray="6 4"/>
-<rect x="20" y="264" width="5" height="150" rx="2" fill="#37474f"/>
-<text x="33" y="281" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#37474f" text-anchor="start">MAINS · E-STOP · 36 V MOTION</text>
-<rect x="280" y="270" width="34" height="14" rx="3" fill="#c25e00"/>
-<text x="297" y="280.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
-<text x="33" y="297" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start">Dual-channel E-stop → safety relay. On stop:</text>
-<text x="33" y="311.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start"> · motion contactor opens 36 V (plan Z drop)</text>
-<text x="33" y="326" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start"> · spindle-servo energy removed (not SON)</text>
-<text x="33" y="340.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start"> · coolant pump and air supply cut</text>
-<text x="33" y="355" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">36 V PSU S-360-36 → fused F-X F-YL F-Z F-YR</text>
-<text x="33" y="369.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">   → each CL57T P4. Never to the Octopus.</text>
-<text x="33" y="384" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">Monitor contact → TB · PF3 (right).</text>
-<rect x="20" y="424" width="300" height="132" rx="6" fill="#ffffff" stroke="#1565c0" stroke-width="1.6"/>
-<rect x="20" y="424" width="5" height="132" rx="2" fill="#1565c0"/>
-<text x="33" y="441" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1565c0" text-anchor="start">COMMAND SUPPLY · DRIVER0 socket</text>
-<text x="33" y="457" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c25e00" text-anchor="start">VCC_IO +5 V (orange dot) → F_CMD 0.5 A fast</text>
-<text x="33" y="471.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   → +5_MOTION → all 8 PUL+ / DIR+</text>
-<text x="33" y="486" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">Logic GND (blue dot) → CTRL_0V</text>
-<text x="33" y="500.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   → all 8 2N7002 sources</text>
-<text x="33" y="515" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">One takeoff only; other sockets’ VCC_IO unused.</text>
-<text x="33" y="529.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Remove J68 (USB power) for cabinet use.</text>
-<polyline points="566,512.5 320,512.5" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="566,512.5 320,512.5" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="566" cy="512.5" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="20" y="566" width="300" height="90" rx="6" fill="#ffffff" stroke="#c25e00" stroke-width="1.6"/>
-<rect x="20" y="566" width="5" height="90" rx="2" fill="#c25e00"/>
-<text x="33" y="583" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#c25e00" text-anchor="start">24 V CONTROL PSU → MAIN POWER</text>
-<text x="33" y="599" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c25e00" text-anchor="start">+24 V → +VIN · 0 V → GND (read the board marks)</text>
-<text x="33" y="613.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">24 V only, 28 V max. 36 V kills the board.</text>
-<text x="33" y="628" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Also feeds PS-ALM and the interposing relays.</text>
-<polyline points="419.5,593.5 320,593.5" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="419.5,593.5 320,593.5" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="419.5" cy="593.5" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="20" y="666" width="300" height="62" rx="6" fill="#ffffff" stroke="#d32f2f" stroke-width="1.6"/>
-<rect x="20" y="666" width="5" height="62" rx="2" fill="#d32f2f"/>
-<text x="33" y="683" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#d32f2f" text-anchor="start">MOTOR-POWER · BED-POWER · BED-OUT</text>
-<text x="33" y="699" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">All EMPTY. Drive power never touches the board.</text>
-<polyline points="417,679 320,679" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="417,679 320,679" fill="none" stroke="#d32f2f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="417" cy="679" r="4" fill="#d32f2f" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="20" y="738" width="300" height="104" rx="6" fill="#fff4e5" stroke="#c25e00" stroke-width="1.6" stroke-dasharray="6 4"/>
-<rect x="20" y="738" width="5" height="104" rx="2" fill="#c25e00"/>
-<text x="33" y="755" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#c25e00" text-anchor="start">HE0 · HE1 → COOLANT RELAYS</text>
-<rect x="280" y="744" width="34" height="14" rx="3" fill="#c25e00"/>
-<text x="297" y="754.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
-<text x="33" y="771" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#c25e00" text-anchor="start">HE0 · PA0 → flood-pump relay coil</text>
-<text x="33" y="785.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#c25e00" text-anchor="start">HE1 · PA3 → mist / air relay coil</text>
-<text x="33" y="800" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Coil across HE+ (fused VIN) and HE−.</text>
-<text x="33" y="814.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Pump and air supply in the stop chain.</text>
-<polyline points="506,816 320,816" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="506,816 320,816" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="506" cy="816" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="20" y="852" width="300" height="104" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
-<rect x="20" y="852" width="5" height="104" rx="2" fill="#1b1f24"/>
-<text x="33" y="869" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1b1f24" text-anchor="start">GROUNDING · THREE SEPARATE RETURNS</text>
-<text x="33" y="885" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">Octopus GND: logic, pull-ups, contacts</text>
-<text x="33" y="899.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">CTRL_0V: DRIVER0 GND, command sinks</text>
-<text x="33" y="914" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">ALM 0V: PS-ALM −Vo, all CL57T COM−</text>
-<text x="33" y="928.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Never join them because they say GND.</text>
-<rect x="20" y="966" width="300" height="100" rx="6" fill="#ffffff" stroke="#37474f" stroke-width="1.6"/>
-<rect x="20" y="966" width="5" height="100" rx="2" fill="#37474f"/>
-<text x="33" y="983" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#37474f" text-anchor="start">PROTECTIVE EARTH</text>
-<text x="33" y="999" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Bond backplate, frame, DIN rail, spindle</text>
-<text x="33" y="1013.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">   chassis and each drive chassis to PE.</text>
-<text x="33" y="1028" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Octopus on insulating standoffs.</text>
-<text x="33" y="1042.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Never use PE or a shield as a return.</text>
-<rect x="1310" y="262" width="320" height="76" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
-<rect x="1310" y="262" width="5" height="76" rx="2" fill="#2e7d32"/>
-<text x="1323" y="279" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">I2C header → pull-up supply</text>
-<text x="1323" y="295" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">3.3 V → TB-C3: five 2.2 kΩ pull-ups</text>
-<text x="1323" y="309.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">GND → spare. PB8, PB9 empty.</text>
-<polyline points="1114.5,433.5 1192,433.5 1310,300" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="1114.5,433.5 1192,433.5 1310,300" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="1114.5" cy="433.5" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="1310" y="346" width="320" height="60" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
-<rect x="1310" y="346" width="5" height="60" rx="2" fill="#1b1f24"/>
-<text x="1323" y="363" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1b1f24" text-anchor="start">USB-C → WINDOWS PC</text>
-<text x="1323" y="379" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Data only. J68 removed for the cabinet.</text>
-<polyline points="1168,499.5 1192,499.5 1310,370" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="1168,499.5 1192,499.5 1310,370" fill="none" stroke="#1b1f24" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="1168" cy="499.5" r="4" fill="#1b1f24" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="1310" y="414" width="320" height="132" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
-<rect x="1310" y="414" width="5" height="132" rx="2" fill="#2e7d32"/>
-<text x="1323" y="431" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">EXP2 (find it by its board marking)</text>
-<text x="1323" y="447" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PB1 ← alarm-relay chain, 11–14 in series</text>
-<text x="1323" y="461.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">    the ONLY drive-fault stop</text>
-<text x="1323" y="476" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PB2 ← cycle-start button, NO, guarded</text>
-<text x="1323" y="490.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">    onboard SW2 shares PB2: guard it</text>
-<text x="1323" y="505" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">GND → TB-C0, relay-contact + RC return</text>
-<text x="1323" y="519.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">EXP1 beside it stays empty.</text>
-<polyline points="1046,595 1192,595 1310,470" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="1046,595 1192,595 1310,470" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="1046" cy="595" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="1310" y="554" width="320" height="106" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
-<rect x="1310" y="554" width="5" height="106" rx="2" fill="#2e7d32"/>
-<text x="1323" y="571" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">TB · T0 · T1 thermistor headers</text>
-<text x="1323" y="587" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">TB  PF3 ← E-stop relay monitor contact</text>
-<text x="1323" y="601.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">          closed = relay energized</text>
-<text x="1323" y="616" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">T0  PF4 ← feed-hold button, NC</text>
-<text x="1323" y="630.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">T1  PF5 ← touch probe, HW-399 OUT1</text>
-<polyline points="989.5,689 1192,689 1310,600" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="989.5,689 1192,689 1310,600" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="989.5" cy="689" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="1310" y="670" width="320" height="154" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
-<text x="1322" y="688" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#1b1f24" text-anchor="start">WIRE COLOURS</text>
-<line x1="1322" y1="704" x2="1348" y2="704" stroke="#c62828" stroke-width="3"/>
-<text x="1354" y="708" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">36 V motion</text>
-<line x1="1476" y1="704" x2="1502" y2="704" stroke="#c25e00" stroke-width="3"/>
-<text x="1508" y="708" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">24 V control</text>
-<line x1="1322" y1="732" x2="1348" y2="732" stroke="#1565c0" stroke-width="3"/>
-<text x="1354" y="736" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">+5 V command</text>
-<line x1="1476" y1="732" x2="1502" y2="732" stroke="#2e7d32" stroke-width="3"/>
-<text x="1508" y="736" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">3.3 V logic / GND</text>
-<line x1="1322" y1="760" x2="1348" y2="760" stroke="#7b1fa2" stroke-width="3"/>
-<text x="1354" y="764" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 23 V alarm</text>
-<line x1="1476" y1="760" x2="1502" y2="760" stroke="#00838f" stroke-width="3"/>
-<text x="1508" y="764" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 5 V field</text>
-<line x1="1322" y1="788" x2="1348" y2="788" stroke="#d32f2f" stroke-width="3" stroke-dasharray="6 4"/>
-<text x="1354" y="792" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Leave empty / remove</text>
-<line x1="1476" y1="788" x2="1502" y2="788" stroke="#5b6470" stroke-width="3" stroke-dasharray="6 4"/>
-<text x="1508" y="792" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Dashed card = HOLD</text>
-<rect x="1310" y="834" width="320" height="76" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
-<text x="1322" y="852" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#1b1f24" text-anchor="start">ALL FOUR CL57T: SET WITH POWER OFF</text>
-<rect x="1320" y="862" width="40" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
-<text x="1340" y="876" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">S1</text>
-<text x="1340" y="894" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">4</text>
-<rect x="1363.5" y="862" width="40" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
-<text x="1383.5" y="876" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW1</text>
-<text x="1383.5" y="894" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
-<rect x="1407" y="862" width="40" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
-<text x="1427" y="876" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW2</text>
-<text x="1427" y="894" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">off</text>
-<rect x="1450.5" y="862" width="40" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
-<text x="1470.5" y="876" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW3</text>
-<text x="1470.5" y="894" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
-<rect x="1494" y="862" width="40" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
-<text x="1514" y="876" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW4</text>
-<text x="1514" y="894" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
-<rect x="1537.5" y="862" width="40" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
-<text x="1557.5" y="876" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW5–8</text>
-<text x="1557.5" y="894" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">off</text>
-<rect x="1581" y="862" width="40" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
-<text x="1601" y="876" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">S3</text>
-<text x="1601" y="894" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">5V</text>
-<rect x="1310" y="920" width="320" height="146" rx="6" fill="#fff5f5" stroke="#d32f2f" stroke-width="1.4"/>
-<text x="1322" y="938" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#d32f2f" text-anchor="start">THE SIX THAT BREAK THINGS</text>
-<text x="1322" y="958" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">1. P4 reversed: kills the drive</text>
-<text x="1322" y="976" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">2. 36 V into MAIN POWER: kills the board</text>
-<text x="1322" y="994" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">3. S3 on 5V with 24 V signals: kills the input</text>
-<text x="1322" y="1012" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">4. Raw ALM, stock 5 V or 24 V on any GPIO</text>
-<text x="1322" y="1030" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">5. Hot-plugging P3 motor or P4 power</text>
-<text x="1322" y="1048" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">6. Powering a drive without motor + encoder</text>
-<rect x="340" y="1076" width="280" height="178" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.6" stroke-dasharray="6 4"/>
-<rect x="340" y="1076" width="5" height="178" rx="2" fill="#00838f"/>
-<text x="353" y="1093" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#00838f" text-anchor="start">FAN0 · FAN4 → STOCK SPINDLE SERVO</text>
-<rect x="580" y="1082" width="34" height="14" rx="3" fill="#c25e00"/>
-<text x="597" y="1092.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
-<text x="353" y="1109" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">FAN0  PA8 → PWM → isolated 0–5 V</text>
-<text x="353" y="1123.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">      converter → DB44 26 (+), 10 (−)</text>
-<text x="353" y="1138" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#c25e00" text-anchor="start">FAN4  PD14 → spindle-enable relay</text>
-<text x="353" y="1152.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c25e00" text-anchor="start">      contact → DB44 16 SON</text>
-<text x="353" y="1167" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Set FAN0/FAN4 rail jumpers and verify</text>
-<text x="353" y="1181.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">them first. DB44 map is community-</text>
-<text x="353" y="1196" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">sourced: meter the real cable.</text>
-<text x="353" y="1210.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Never land Octopus pins on the DB44.</text>
-<text x="353" y="1225" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">E-stop must block enable in hardware.</text>
-<text x="353" y="1239.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start"></text>
-<polyline points="721.5,852 721.5,1056 440,1076" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="721.5,852 721.5,1056 440,1076" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="721.5" cy="852" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
-<polyline points="836.75,852 836.75,1048 540,1076" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="836.75,852 836.75,1048 540,1076" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="836.75" cy="852" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="630" y="1076" width="140" height="178" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
-<rect x="630" y="1076" width="5" height="178" rx="2" fill="#2e7d32"/>
-<text x="643" y="1093" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">PWR-DET → DOOR</text>
-<text x="643" y="1109" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PC0 ← door</text>
-<text x="643" y="1123.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">interlock switch</text>
-<text x="643" y="1138" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">NC, closed =</text>
-<text x="643" y="1152.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">healthy</text>
-<text x="643" y="1167" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">GND = return</text>
-<text x="643" y="1181.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">3.3 V pin: EMPTY</text>
-<polyline points="873.5,725.5 861.5,725.5 861.5,1056 700,1076" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="873.5,725.5 861.5,725.5 861.5,1056 700,1076" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="873.5" cy="725.5" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="780" y="1076" width="180" height="178" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.6" stroke-dasharray="6 4"/>
-<rect x="780" y="1076" width="5" height="178" rx="2" fill="#00838f"/>
-<text x="793" y="1093" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#00838f" text-anchor="start">J43 → TOOL SETTER</text>
-<rect x="920" y="1082" width="34" height="14" rx="3" fill="#c25e00"/>
-<text x="937" y="1092.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
-<text x="793" y="1109" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">PB7 ← tool setter,</text>
-<text x="793" y="1123.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">via HW-399 OUT2</text>
-<text x="793" y="1138" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">GND = return</text>
-<text x="793" y="1152.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">5 V, PB6: EMPTY</text>
-<text x="793" y="1167" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">5-pin header silked</text>
-<text x="793" y="1181.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">BLTouch; no BLTouch.</text>
-<polyline points="900.5,763 900.5,1056 870,1076" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="900.5,763 900.5,1056 870,1076" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="900.5" cy="763" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="970" y="1076" width="340" height="178" rx="6" fill="#fff4e5" stroke="#7b1fa2" stroke-width="1.6" stroke-dasharray="6 4"/>
-<rect x="970" y="1076" width="5" height="178" rx="2" fill="#7b1fa2"/>
-<text x="983" y="1093" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#7b1fa2" text-anchor="start">STOP4–7 → ALARM RELAYS (one per drive)</text>
-<rect x="1270" y="1082" width="34" height="14" rx="3" fill="#c25e00"/>
-<text x="1287" y="1092.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
-<text x="983" y="1109" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">K-X  K-YL  K-Z  K-YR  Weidmüller 2618530000</text>
-<text x="983" y="1123.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">A1 ← +23 V: PS-ALM DDR-15G-24, F-ALM 0.25 A</text>
-<text x="983" y="1138" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">A2 → that drive’s ALM · COM− → PS-ALM −Vo</text>
-<text x="983" y="1152.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">21–24 → STOP4 PG12 X · STOP5 PG13 YL</text>
-<text x="983" y="1167" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">        STOP6 PG14 Z · STOP7 PG15 YR</text>
-<text x="983" y="1181.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">        SIG pin only; return via EXP2 GND</text>
-<text x="983" y="1196" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">11–14 in series, PB1 (EXP2) to GND:</text>
-<text x="983" y="1210.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start"></text>
-<text x="983" y="1225" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start"></text>
-<text x="983" y="1239.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">2.2 kΩ to 3.3 V + 100 nF to GND on all 5 inputs</text>
-<text x="984" y="1211" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#2e7d32" text-anchor="start">PB1</text>
-<line x1="1006" y1="1207" x2="1010" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<path d="M1010,1207 h9 M1019,1207 l15,-8 M1035,1207 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="1019" cy="1207" r="2.6" fill="#2e7d32"/>
-<circle cx="1035" cy="1207" r="2.6" fill="#2e7d32"/>
-<text x="1027" y="1221" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-X</text>
-<line x1="1044" y1="1207" x2="1062" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<line x1="1062" y1="1207" x2="1066" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<path d="M1066,1207 h9 M1075,1207 l15,-8 M1091,1207 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="1075" cy="1207" r="2.6" fill="#2e7d32"/>
-<circle cx="1091" cy="1207" r="2.6" fill="#2e7d32"/>
-<text x="1083" y="1221" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-YL</text>
-<line x1="1100" y1="1207" x2="1118" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<line x1="1118" y1="1207" x2="1122" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<path d="M1122,1207 h9 M1131,1207 l15,-8 M1147,1207 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="1131" cy="1207" r="2.6" fill="#2e7d32"/>
-<circle cx="1147" cy="1207" r="2.6" fill="#2e7d32"/>
-<text x="1139" y="1221" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-Z</text>
-<line x1="1156" y1="1207" x2="1174" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<line x1="1174" y1="1207" x2="1178" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<path d="M1178,1207 h9 M1187,1207 l15,-8 M1203,1207 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
-<circle cx="1187" cy="1207" r="2.6" fill="#2e7d32"/>
-<circle cx="1203" cy="1207" r="2.6" fill="#2e7d32"/>
-<text x="1195" y="1221" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-YR</text>
-<line x1="1212" y1="1207" x2="1230" y2="1207" stroke="#2e7d32" stroke-width="2"/>
-<path d="M1230,1207 v7 M1222,1214 h16 M1225,1218 h10 M1228,1222 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
-<polyline points="1000,853.5 1000,1056 1140,1076" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="1000,853.5 1000,1056 1140,1076" fill="none" stroke="#7b1fa2" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<circle cx="1000" cy="853.5" r="4" fill="#7b1fa2" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="1320" y="1076" width="310" height="178" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.6" stroke-dasharray="6 4"/>
-<rect x="1320" y="1076" width="5" height="178" rx="2" fill="#00838f"/>
-<text x="1333" y="1093" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#00838f" text-anchor="start">STOP0–3 → HOME SWITCHES</text>
-<rect x="1590" y="1082" width="34" height="14" rx="3" fill="#c25e00"/>
-<text x="1607" y="1092.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
-<text x="1333" y="1109" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP0  PG6   X home</text>
-<text x="1333" y="1123.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP1  PG9   Y-left home</text>
-<text x="1333" y="1138" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP2  PG10  Z home</text>
-<text x="1333" y="1152.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP3  PG11  Y-right home</text>
-<text x="1333" y="1167" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">SIG + GND each; every STOP 5 V pin EMPTY.</text>
-<text x="1333" y="1181.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Via an isolated conditioner (TLP281 module</text>
-<text x="1333" y="1196" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">not approved), or direct only for verified</text>
-<text x="1333" y="1210.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">bare NC contacts. Split the stock shared</text>
-<text x="1333" y="1225" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Y2/Z circuit into four channels first.</text>
-<polyline points="1061,774.75 1075,774.75 1075,1056 1475,1076" fill="none" stroke="#ffffff" stroke-width="6" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<polyline points="1061,774.75 1075,774.75 1075,1056 1475,1076" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="1061" cy="774.75" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
-<rect x="20" y="1076" width="310" height="178" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
-<rect x="20" y="1076" width="5" height="178" rx="2" fill="#1b1f24"/>
-<text x="33" y="1093" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1b1f24" text-anchor="start">HOW TO READ THIS PAGE</text>
-<text x="33" y="1109" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Each outlined connector on the board has</text>
-<text x="33" y="1123.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">one line to a card. The card lists what</text>
-<text x="33" y="1138" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">lands on each of its pins.</text>
-<text x="33" y="1152.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Top: the four drive sockets → CL57T drives.</text>
-<text x="33" y="1167" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Red dashed: leave empty or remove.</text>
-<text x="33" y="1181.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Positions follow BTT’s V1.1 drawing. Confirm</text>
-<text x="33" y="1196" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">silkscreen names, STOP rows and pin 1 on</text>
-<text x="33" y="1210.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">the real board before crimping anything.</text>
-<text x="33" y="1225" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Details: docs/wiring/mr1/WIRING_SIMPLE.md</text>
-<text x="20" y="1268" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">Board image: BIGTREETECH Octopus Pro V1.1-Pin (2023-11-02), loaded at view time from github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro (pinned commit 60a01f4), not stored in this repository. Generated by tools/wiring-schematic/build_schematic.py.</text>
+<text x="33" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">No plug-in driver or socket adapter fitted.</text>
+<text x="33" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Per socket: 7 STEP, 8 DIR (rings), 9 GND (dot)</text>
+<text x="33" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">DRIVER0 10 VCC_IO (blue dot): +5 V branch</text>
+<text x="33" y="233" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">EN 1 reserved, not connected.</text>
+<rect x="20" y="266" width="300" height="146" rx="6" fill="#fff4e5" stroke="#37474f" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="20" y="266" width="5" height="146" rx="2" fill="#37474f"/>
+<text x="33" y="283" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#37474f" text-anchor="start">MAINS · E-STOP · 36 V MOTION</text>
+<rect x="280" y="272" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="297" y="282.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="33" y="299" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start">Dual-channel E-stop → safety relay. On stop:</text>
+<text x="33" y="313.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start"> · contactor opens 36 V: Z brake / support</text>
+<text x="33" y="328" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start"> · spindle-servo energy removed (not SON)</text>
+<text x="33" y="342.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#37474f" text-anchor="start"> · coolant pump and air supply cut</text>
+<text x="33" y="357" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c25e00" text-anchor="start"> · 24 V control stays ON so PF3 / PB1 report</text>
+<text x="33" y="371.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">36 V S-360-36 → 4 star branches, fused at PSU</text>
+<text x="33" y="386" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">   → each CL57T P4. 50 V hard max. Never Octopus.</text>
+<text x="33" y="400.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">Monitor contact → TB · PF3 (right).</text>
+<rect x="20" y="420" width="300" height="132" rx="6" fill="#fff4e5" stroke="#1565c0" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="20" y="420" width="5" height="132" rx="2" fill="#1565c0"/>
+<text x="33" y="437" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1565c0" text-anchor="start">COMMAND SUPPLY · DRIVER0 socket</text>
+<rect x="280" y="426" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="297" y="436.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="33" y="453" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">VCC_IO +5 V (blue dot) → F_CMD 0.5 A fast</text>
+<text x="33" y="467.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   → +5_MOTION → all 8 PUL+ / DIR+</text>
+<text x="33" y="482" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">Logic GND (black dot) → CTRL_0V</text>
+<text x="33" y="496.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   = Octopus GND → all 8 2N7002 sources</text>
+<text x="33" y="511" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">One takeoff only. Remove J68 (USB power).</text>
+<text x="33" y="525.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Reset / bootloader protection unfinished.</text>
+<path d="M562.96,525.36 H498.72 a6,6 0 0 0 -12,0 H417.92 a6,6 0 0 0 -12,0 L320,525.36" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M562.96,525.36 H498.72 a6,6 0 0 0 -12,0 H417.92 a6,6 0 0 0 -12,0 L320,525.36" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M556.96,498 L562.96,498 L562.96,525.36" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M556.96,498 L562.96,498 L562.96,525.36" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="556.96" cy="498" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="20" y="560" width="300" height="82" rx="6" fill="#ffffff" stroke="#c25e00" stroke-width="1.6"/>
+<rect x="20" y="560" width="5" height="82" rx="2" fill="#c25e00"/>
+<text x="33" y="577" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#c25e00" text-anchor="start">24 V CONTROL PSU → MAIN POWER</text>
+<text x="33" y="593" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c25e00" text-anchor="start">+24 V → +VIN · 0 V → GND (read the board marks)</text>
+<text x="33" y="607.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">24 V only, 28 V max. 36 V kills the board.</text>
+<text x="33" y="622" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Also feeds PS-ALM and the interposing relays.</text>
+<path d="M416.32,575.76 L320,575.76" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M416.32,575.76 L320,575.76" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="416.32" cy="575.76" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="20" y="650" width="300" height="62" rx="6" fill="#ffffff" stroke="#d32f2f" stroke-width="1.6"/>
+<rect x="20" y="650" width="5" height="62" rx="2" fill="#d32f2f"/>
+<text x="33" y="667" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#d32f2f" text-anchor="start">MOTOR-POWER · BED-POWER · BED-OUT</text>
+<text x="33" y="683" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">All EMPTY. Drive power never touches the board.</text>
+<path d="M413.92,678 L320,678" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M413.92,678 L320,678" fill="none" stroke="#d32f2f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="413.92" cy="678" r="4" fill="#d32f2f" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="20" y="720" width="300" height="104" rx="6" fill="#fff4e5" stroke="#c25e00" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="20" y="720" width="5" height="104" rx="2" fill="#c25e00"/>
+<text x="33" y="737" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#c25e00" text-anchor="start">HE0 · HE1 → COOLANT RELAYS</text>
+<rect x="280" y="726" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="297" y="736.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="33" y="753" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#c25e00" text-anchor="start">HE0 · PA0 → flood-pump relay coil</text>
+<text x="33" y="767.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#c25e00" text-anchor="start">HE1 · PA3 → mist / air relay coil</text>
+<text x="33" y="782" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Coil across HE+ (fused VIN) and switched HE−.</text>
+<text x="33" y="796.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">HE− never to GND. Supplies in the stop chain.</text>
+<path d="M499.36,812.4 L320,812.4" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M499.36,812.4 L320,812.4" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="499.36" cy="812.4" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="20" y="832" width="300" height="140" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<rect x="20" y="832" width="5" height="140" rx="2" fill="#1b1f24"/>
+<text x="33" y="849" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1b1f24" text-anchor="start">GROUNDING · KEEP THESE RETURNS APART</text>
+<text x="33" y="865" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">Octopus GND = DRIVER0 GND = CTRL_0V: one net</text>
+<text x="33" y="879.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   logic, pull-ups, contacts, 2N7002 sources</text>
+<text x="33" y="894" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">ALM 0V: PS-ALM −Vo → all CL57T COM−, floating</text>
+<text x="33" y="908.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">EGND: each CL57T P2 → its own encoder only</text>
+<text x="33" y="923" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">Probe / home ISO 0V: floating, never HGND</text>
+<text x="33" y="937.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">ANALOG_COM: converter OUT− → DB44 10 only</text>
+<text x="33" y="952" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Never join these because they say GND.</text>
+<rect x="20" y="980" width="300" height="64" rx="6" fill="#ffffff" stroke="#37474f" stroke-width="1.6"/>
+<rect x="20" y="980" width="5" height="64" rx="2" fill="#37474f"/>
+<text x="33" y="997" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#37474f" text-anchor="start">PROTECTIVE EARTH</text>
+<text x="33" y="1013" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Bond backplate, frame, rail, spindle, drives.</text>
+<text x="33" y="1027.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Octopus on nylon standoffs. PE is never a return.</text>
+<rect x="1340" y="300" width="300" height="76" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<rect x="1340" y="300" width="5" height="76" rx="2" fill="#2e7d32"/>
+<text x="1353" y="317" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">I2C header → 3.3 V logic supply</text>
+<text x="1353" y="333" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">3.3 V → TB-C3: five 2.2 kΩ alarm pull-ups</text>
+<text x="1353" y="347.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">3.3 V + GND → HW-399 HVCC / HGND (HOLD)</text>
+<text x="1353" y="362" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">PB8, PB9 empty. HGND never to field GND.</text>
+<path d="M1083.52,409.2 L1272,409.2 L1272,338 L1340,338" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1083.52,409.2 L1272,409.2 L1272,338 L1340,338" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="1083.52" cy="409.2" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="1340" y="384" width="300" height="48" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<rect x="1340" y="384" width="5" height="48" rx="2" fill="#1b1f24"/>
+<text x="1353" y="401" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1b1f24" text-anchor="start">USB-C → WINDOWS PC</text>
+<text x="1353" y="417" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Data only. Remove J68 for cabinet use.</text>
+<path d="M1134.88,478.8 L1290,478.8 L1290,408 L1340,408" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1134.88,478.8 L1290,478.8 L1290,408 L1340,408" fill="none" stroke="#1b1f24" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="1134.88" cy="478.8" r="4" fill="#1b1f24" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="1340" y="440" width="300" height="146" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<rect x="1340" y="440" width="5" height="146" rx="2" fill="#2e7d32"/>
+<text x="1353" y="457" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">EXP2 (find it by its board marking)</text>
+<text x="1353" y="473" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PB1 ← alarm-relay chain, 11–14 in series</text>
+<text x="1353" y="487.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">    the ONLY drive-fault stop</text>
+<text x="1353" y="502" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PB2 ← cycle-start button, NO, guarded</text>
+<text x="1353" y="516.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">    + series R, TVS, 3.3 V pull-up, RC</text>
+<text x="1353" y="531" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">    onboard SW2 (BOOT1) shares PB2: guard it</text>
+<text x="1353" y="545.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">GND → TB-C0, relay-contact + RC return</text>
+<text x="1353" y="560" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">RST is also on EXP2: keyed IDC only.</text>
+<text x="1353" y="574.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">EXP1 beside it stays empty.</text>
+<path d="M1017.76,582 L1308,582 L1308,515 L1340,515" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1017.76,582 L1308,582 L1308,515 L1340,515" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="1017.76" cy="582" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="1340" y="594" width="300" height="100" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<rect x="1340" y="594" width="5" height="100" rx="2" fill="#2e7d32"/>
+<text x="1353" y="611" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">TB · T0 · T1 thermistor headers</text>
+<text x="1353" y="627" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">TB  PF3 ← E-stop relay monitor (HOLD)</text>
+<text x="1353" y="641.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">    NO contact: closed = relay energized</text>
+<text x="1353" y="656" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">T0  PF4 ← feed-hold button, NC</text>
+<text x="1353" y="670.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">T1  PF5 ← probe, HW-399 OUT1 (HOLD)</text>
+<text x="1353" y="685" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Other pin of each header = GND return</text>
+<path d="M963.52,648.24 L1110.88,622.32 L1124.32,607.92 L1326,607.92 L1326,614 L1340,614" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M963.52,648.24 L1110.88,622.32 L1124.32,607.92 L1326,607.92 L1326,614 L1340,614" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="963.52" cy="648.24" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="1340" y="700" width="300" height="150" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="1352" y="718" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#1b1f24" text-anchor="start">CIRCUIT COLOURS</text>
+<line x1="1352" y1="734" x2="1378" y2="734" stroke="#c62828" stroke-width="3"/>
+<text x="1384" y="738" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">36 V motion</text>
+<line x1="1498" y1="734" x2="1524" y2="734" stroke="#c25e00" stroke-width="3"/>
+<text x="1530" y="738" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">24 V control</text>
+<line x1="1352" y1="754" x2="1378" y2="754" stroke="#1565c0" stroke-width="3"/>
+<text x="1384" y="758" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">+5 V command</text>
+<line x1="1498" y1="754" x2="1524" y2="754" stroke="#2e7d32" stroke-width="3"/>
+<text x="1530" y="758" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">3.3 V logic / GND</text>
+<line x1="1352" y1="774" x2="1378" y2="774" stroke="#7b1fa2" stroke-width="3"/>
+<text x="1384" y="778" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 23 V alarm</text>
+<line x1="1498" y1="774" x2="1524" y2="774" stroke="#00838f" stroke-width="3"/>
+<text x="1530" y="778" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 5 V field</text>
+<line x1="1352" y1="794" x2="1378" y2="794" stroke="#37474f" stroke-width="3"/>
+<text x="1384" y="798" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Mains / E-stop</text>
+<line x1="1498" y1="794" x2="1524" y2="794" stroke="#1b1f24" stroke-width="3"/>
+<text x="1530" y="798" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">USB data</text>
+<line x1="1352" y1="814" x2="1378" y2="814" stroke="#d32f2f" stroke-width="3" stroke-dasharray="6 4"/>
+<text x="1384" y="818" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Leave empty / remove</text>
+<rect x="1352" y="826" width="26" height="13" rx="2" fill="#fff4e5" stroke="#5b6470" stroke-width="1.2" stroke-dasharray="6 4"/>
+<rect x="1384" y="826" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="1401" y="836.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="1424" y="837" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Dashed card or line: not yet designed</text>
+<rect x="1340" y="856" width="300" height="72" rx="6" fill="#f6f8fa" stroke="#1b1f24" stroke-width="1"/>
+<text x="1352" y="874" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#1b1f24" text-anchor="start">ALL FOUR CL57T: SET WITH POWER OFF</text>
+<rect x="1350" y="883" width="38" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
+<text x="1369" y="897" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">S1</text>
+<text x="1369" y="915" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">4</text>
+<rect x="1390.5" y="883" width="38" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
+<text x="1409.5" y="897" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW1</text>
+<text x="1409.5" y="915" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
+<rect x="1431" y="883" width="38" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
+<text x="1450" y="897" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW2</text>
+<text x="1450" y="915" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">off</text>
+<rect x="1471.5" y="883" width="38" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
+<text x="1490.5" y="897" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW3</text>
+<text x="1490.5" y="915" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
+<rect x="1512" y="883" width="38" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
+<text x="1531" y="897" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW4</text>
+<text x="1531" y="915" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">on</text>
+<rect x="1552.5" y="883" width="38" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
+<text x="1571.5" y="897" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">SW5–8</text>
+<text x="1571.5" y="915" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">off</text>
+<rect x="1593" y="883" width="38" height="40" rx="4" fill="#ffffff" stroke="#1b1f24" stroke-width="1"/>
+<text x="1612" y="897" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="600" fill="#5b6470" text-anchor="middle">S3</text>
+<text x="1612" y="915" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="13" font-weight="800" fill="#1b1f24" text-anchor="middle">5V</text>
+<rect x="1340" y="932" width="300" height="102" rx="6" fill="#fff5f5" stroke="#d32f2f" stroke-width="1.4"/>
+<text x="1352" y="950" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11" font-weight="800" fill="#d32f2f" text-anchor="start">THE SIX THAT BREAK THINGS</text>
+<text x="1352" y="965" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">1. P4 reversed: kills the drive</text>
+<text x="1352" y="978" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">2. 36 V into MAIN POWER: kills the board</text>
+<text x="1352" y="991" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">3. S3 on 5V with 24 V signals: kills the input</text>
+<text x="1352" y="1004" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">4. Raw ALM, stock 5 V or 24 V on any GPIO</text>
+<text x="1352" y="1017" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">5. Hot-plugging P3 motor or P4 power</text>
+<text x="1352" y="1030" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">6. Over 50 V on the motion bus: kills drives</text>
+<rect x="20" y="1078" width="310" height="176" rx="6" fill="#ffffff" stroke="#1b1f24" stroke-width="1.6"/>
+<rect x="20" y="1078" width="5" height="176" rx="2" fill="#1b1f24"/>
+<text x="33" y="1095" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#1b1f24" text-anchor="start">HOW TO READ THIS PAGE</text>
+<text x="33" y="1111" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Each outlined connector has one line to a</text>
+<text x="33" y="1125.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">card listing what lands on each of its pins.</text>
+<text x="33" y="1140" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Top: the four driver sockets → CL57T drives.</text>
+<text x="33" y="1154.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Red dashed: leave empty or remove.</text>
+<text x="33" y="1169" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Dashed card + line: HOLD, not yet designed.</text>
+<text x="33" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Outlines follow BTT’s V1.1 drawing; it prints</text>
+<text x="33" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">no socket numbers: M0–M3 = MOTOR0–3 per BTT.</text>
+<text x="33" y="1212.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Confirm socket names, STOP rows and pin 1</text>
+<text x="33" y="1227" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">on the real board before crimping.</text>
+<rect x="340" y="1078" width="280" height="176" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="340" y="1078" width="5" height="176" rx="2" fill="#00838f"/>
+<text x="353" y="1095" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#00838f" text-anchor="start">FAN0 · FAN4 → SPINDLE SERVO</text>
+<rect x="580" y="1084" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="597" y="1094.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="353" y="1111" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">FAN0  PA8 → PWM → isolated 0–5 V</text>
+<text x="353" y="1125.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">      converter → DB44 26 (+), 10 (−)</text>
+<text x="353" y="1140" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#c25e00" text-anchor="start">FAN4  PD14 → enable relay coil</text>
+<text x="353" y="1154.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#c25e00" text-anchor="start">      contact: DB44 16 SON ↔ 23 (I/O 0 V)</text>
+<text x="353" y="1169" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Converter / coil across FAN+ and switched</text>
+<text x="353" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">FAN−. FAN− never to GND.</text>
+<text x="353" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Read each FAN rail jumper (5 / 12 V / VIN).</text>
+<text x="353" y="1212.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">DB44 map is community-sourced: meter it.</text>
+<text x="353" y="1227" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Never land Octopus pins on the DB44.</text>
+<text x="353" y="1241.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Enable contact in series with safety permit.</text>
+<path d="M690.4,823.92 L690.4,823.92 L690.4,1040 L440,1040 L440,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M690.4,823.92 L690.4,823.92 L690.4,1040 L440,1040 L440,1078" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="690.4" cy="823.92" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
+<path d="M802.24,823.92 L802.24,823.92 L802.24,1052 L540,1052 L540,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M802.24,823.92 L802.24,823.92 L802.24,1052 L540,1052 L540,1078" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="802.24" cy="823.92" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="630" y="1078" width="140" height="176" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
+<rect x="630" y="1078" width="5" height="176" rx="2" fill="#2e7d32"/>
+<text x="643" y="1095" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">PWR-DET → DOOR</text>
+<text x="643" y="1111" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PC0 ← door</text>
+<text x="643" y="1125.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">interlock switch, NC</text>
+<text x="643" y="1140" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">closed = healthy</text>
+<text x="643" y="1154.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">+ series R, TVS</text>
+<text x="643" y="1169" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">GND = return</text>
+<text x="643" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">3.3 V pin: EMPTY</text>
+<path d="M852.16,702.72 L840.64,702.72 L840.64,1064 L700,1064 L700,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M852.16,702.72 L840.64,702.72 L840.64,1064 L700,1064 L700,1078" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="852.16" cy="702.72" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="780" y="1078" width="180" height="176" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="780" y="1078" width="5" height="176" rx="2" fill="#00838f"/>
+<text x="793" y="1095" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#00838f" text-anchor="start">J43 → TOOL SETTER</text>
+<rect x="920" y="1084" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="937" y="1094.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="793" y="1111" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">PB7 ← tool setter,</text>
+<text x="793" y="1125.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">via HW-399 OUT2</text>
+<text x="793" y="1140" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">+ series R, TVS, 3.3 V</text>
+<text x="793" y="1154.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">pull-up + RC (none onboard)</text>
+<text x="793" y="1169" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">GND next to PB7 = return</text>
+<text x="793" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">far GND, 5 V, PB6: EMPTY</text>
+<text x="793" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">5-pin header silked</text>
+<text x="793" y="1212.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">BLTouch; no BLTouch.</text>
+<path d="M856.96,735.6 L856.96,753.36 L887.68,753.36 L887.68,1064 L870,1064 L870,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M856.96,735.6 L856.96,753.36 L887.68,753.36 L887.68,1064 L870,1064 L870,1078" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="856.96" cy="735.6" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="970" y="1078" width="340" height="176" rx="6" fill="#fff4e5" stroke="#7b1fa2" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="970" y="1078" width="5" height="176" rx="2" fill="#7b1fa2"/>
+<text x="983" y="1095" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#7b1fa2" text-anchor="start">STOP4–7 → ALARM RELAYS (one per drive)</text>
+<rect x="1270" y="1084" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="1287" y="1094.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="983" y="1111" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">K-X  K-YL  K-Z  K-YR  Weidmüller 2618530000</text>
+<text x="983" y="1125.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">A1 ← PS-ALM 23.0 V (≤ 24.0) · F-ALM 0.25 A</text>
+<text x="983" y="1140" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">A2 → that drive’s ALM · COM− → PS-ALM −Vo</text>
+<text x="983" y="1154.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">ALM must conduct when healthy: prove each.</text>
+<text x="983" y="1169" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">21–24 → PG12 X · PG13 YL · PG14 Z · PG15 YR</text>
+<text x="983" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">STOP4–7 SIG pins only; return via EXP2 GND</text>
+<text x="983" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">11–14 in series, PB1 (EXP2) to GND:</text>
+<text x="983" y="1241.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">2.2 kΩ to 3.3 V + 100 nF to GND on all 5 inputs</text>
+<text x="984" y="1217" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#2e7d32" text-anchor="start">PB1</text>
+<line x1="1006" y1="1213" x2="1010" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<path d="M1010,1213 h9 M1019,1213 l15,-8 M1035,1213 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="1019" cy="1213" r="2.6" fill="#2e7d32"/>
+<circle cx="1035" cy="1213" r="2.6" fill="#2e7d32"/>
+<text x="1027" y="1227" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-X</text>
+<line x1="1044" y1="1213" x2="1062" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<line x1="1062" y1="1213" x2="1066" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<path d="M1066,1213 h9 M1075,1213 l15,-8 M1091,1213 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="1075" cy="1213" r="2.6" fill="#2e7d32"/>
+<circle cx="1091" cy="1213" r="2.6" fill="#2e7d32"/>
+<text x="1083" y="1227" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-YL</text>
+<line x1="1100" y1="1213" x2="1118" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<line x1="1118" y1="1213" x2="1122" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<path d="M1122,1213 h9 M1131,1213 l15,-8 M1147,1213 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="1131" cy="1213" r="2.6" fill="#2e7d32"/>
+<circle cx="1147" cy="1213" r="2.6" fill="#2e7d32"/>
+<text x="1139" y="1227" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-Z</text>
+<line x1="1156" y1="1213" x2="1174" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<line x1="1174" y1="1213" x2="1178" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<path d="M1178,1213 h9 M1187,1213 l15,-8 M1203,1213 h9" stroke="#2e7d32" stroke-width="2" fill="none" stroke-linecap="round"/>
+<circle cx="1187" cy="1213" r="2.6" fill="#2e7d32"/>
+<circle cx="1203" cy="1213" r="2.6" fill="#2e7d32"/>
+<text x="1195" y="1227" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-YR</text>
+<line x1="1212" y1="1213" x2="1230" y2="1213" stroke="#2e7d32" stroke-width="2"/>
+<path d="M1230,1213 v7 M1222,1220 h16 M1225,1224 h10 M1228,1228 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<path d="M979.84,825.36 L979.84,825.36 L979.84,1056 L1140,1056 L1140,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M979.84,825.36 L979.84,825.36 L979.84,1056 L1140,1056 L1140,1078" fill="none" stroke="#7b1fa2" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="979.84" cy="825.36" r="4" fill="#7b1fa2" stroke="#ffffff" stroke-width="1.5"/>
+<rect x="1320" y="1078" width="310" height="176" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.6" stroke-dasharray="6 4"/>
+<rect x="1320" y="1078" width="5" height="176" rx="2" fill="#00838f"/>
+<text x="1333" y="1095" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#00838f" text-anchor="start">STOP0–3 → HOME SWITCHES</text>
+<rect x="1590" y="1084" width="34" height="14" rx="3" fill="#c25e00"/>
+<text x="1607" y="1094.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#ffffff" text-anchor="middle">HOLD</text>
+<text x="1333" y="1111" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP0  PG6   X home</text>
+<text x="1333" y="1125.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP1  PG9   Y-left home</text>
+<text x="1333" y="1140" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP2  PG10  Z home</text>
+<text x="1333" y="1154.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">STOP3  PG11  Y-right home</text>
+<text x="1333" y="1169" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">SIG + GND each; every STOP 5 V pin EMPTY.</text>
+<text x="1333" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Via an isolated conditioner (TLP281 module</text>
+<text x="1333" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">not approved), or direct only for verified</text>
+<text x="1333" y="1212.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">bare NC contacts. Split the stock shared</text>
+<text x="1333" y="1227" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Y2/Z circuit into four channels first.</text>
+<path d="M1032.16,751.44 L1045.6,751.44 L1045.6,1040 L1475,1040 L1475,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M1032.16,751.44 L1045.6,751.44 L1045.6,1040 L1475,1040 L1475,1078" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="1032.16" cy="751.44" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
+<text x="20" y="1268" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9" font-weight="400" fill="#5b6470" text-anchor="start">Board image: BIGTREETECH Octopus Pro V1.1-Pin (2023-11-02), linked from github.com/bigtreetech/BIGTREETECH-OCTOPUS-Pro (pinned commit 60a01f4); shows only when a local copy of this SVG is opened in a browser. Generated by tools/wiring-schematic/build_schematic.py.</text>
 </svg>
