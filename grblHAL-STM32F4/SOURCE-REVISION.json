@@ -5335,8 +5335,8 @@
     },
     {
       "path": "boards/btt_octopus_pro_mr1_map.h",
-      "bytes": 9631,
-      "sha256": "21a8891653c4d424bbd0f393e696685292a04476425d9293aeb952ad4569bcd7"
+      "bytes": 10073,
+      "sha256": "5b7a9a140f8fc8de2e14e8bfafebcd6d88316330c9409d3a6d2d1018c9277fa0"
     },
     {
       "path": "boards/btt_octopus_pro_slots345_map.h",
@@ -6340,8 +6340,8 @@
     },
     {
       "path": "FIRMWARE-KNOWN-ISSUES.md",
-      "bytes": 6998,
-      "sha256": "e85ab485d5fefd627944cd62bbfd81381d5d110bef6089d87743f94370a2d1a8"
+      "bytes": 7676,
+      "sha256": "1cc0a8e2e0ee157d71837b00c7c0cbf8cb8bd9f88bcf6c27210a6ab2ebdbe7c7"
     },
     {
       "path": "flexi_script.py",
@@ -8705,8 +8705,8 @@
     },
     {
       "path": "Src/driver.c",
-      "bytes": 125762,
-      "sha256": "869b3b74402d4d39829a9ad25244eadecfdd8c7bb9e8ebc81987f1d06c077cb6"
+      "bytes": 126209,
+      "sha256": "afe5ed56932adf88c75bf86fb68eceff05cb55bd150773dcc065ea186091632e"
     },
     {
       "path": "Src/driver_spindles.c",
@@ -8985,8 +8985,8 @@
     },
     {
       "path": "tools/validate_mr1_profile.py",
-      "bytes": 46312,
-      "sha256": "2814781946cd6830fccf29777e2b32dd70682573ad1adea27ee30693639bfee2"
+      "bytes": 46596,
+      "sha256": "8205b4f80891d2e5286e7837bed9c01153cfc6be108ecfd4327323d97805e915"
     },
     {
       "path": "tools/verify_source_export.py",
@@ -9092,6 +9092,11 @@
       "path": "tools/tests/mr1_alarm/test_mr1_alarm.c",
       "bytes": 3268,
       "sha256": "571734fa57f3790d51f47e81c09a791dd90a8cc9d309e357eaa47aa21c0ecd12"
+    },
+    {
+      "path": "tools/compile_check_mr1.py",
+      "bytes": 5736,
+      "sha256": "b8ccc22e5871805e9746eed40c563e8d18f1a86a57daaebe563c6a571f775505"
     }
   ],
   "releaseOverlayFiles": [
@@ -9138,13 +9143,13 @@
   },
   "validatedAt": "2026-09-27T05:57:30.428623+00:00",
   "postExportChanges": {
-    "reason": "Historical audit corrections are retained. Local 2026-09-27 changes add sampled MR1F diagnostics, host tests and selected alarm/command-supply wiring; original upstream commit metadata is not a claim that local source remains identical.",
+    "reason": "Historical audit corrections are retained. Local 2026-09-27 changes add sampled MR1F diagnostics, host tests and selected alarm/command-supply wiring; original upstream commit metadata is not a claim that local source remains identical. Local 2026-10-21 changes fix known issues (c), (d) and (g) in candidate source and add a system-compiler compile check.",
     "sourceExceptions": {
       "Inc/my_machine.h": "network credential placeholders; -D OVERRIDE_MY_MACHINE excludes it from every environment",
       "Inc/mr1_octopus_config.h": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged",
-      "Src/driver.c": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged",
+      "Src/driver.c": "MR1F:1 sampled raw GPIO diagnostics; MR1 cycle-start debounce (known issue g); PB1 protective path unchanged",
       "Src/mr1_alarm.c": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged",
-      "boards/btt_octopus_pro_mr1_map.h": "MR1F:1 sampled raw GPIO diagnostics; PB1 protective path unchanged"
+      "boards/btt_octopus_pro_mr1_map.h": "MR1F:1 sampled raw GPIO diagnostics; no unclaimed auxiliary outputs (known issues c, d); PB1 protective path unchanged"
     },
     "relocated": [
       "check_settings.py",
@@ -9606,6 +9611,59 @@
       "binaryVectors": "PASS: 0x08008000 load, 0x20030000 SP, 0x08032D25 reset"
     },
     "candidateSha256": "8e9318d9395fc43a7ee0674b55252d387327609f0ee7c4bb0101ad48af108d37",
+    "pinnedDeploymentImageChanged": false,
+    "hardwareFlashed": false,
+    "physicalAcceptance": false
+  },
+  "localCandidateFixes": {
+    "id": "candidate-output-claims-and-debounce-2026-10-21",
+    "capturedUtc": "2026-10-21T02:53:54+00:00",
+    "baseCommit": "f6f2e6dd2388557c10e451bf9f617f2e8588f4ed",
+    "fixes": {
+      "c": "PE15 AUXOUTPUT2 defined only with a spindle direction output",
+      "d": "lab image leaves PA8/PD14 undefined (no M62-M65 access to spindle outputs)",
+      "g": "Input_CycleStart gets the 40 ms software debounce in MR1 profiles"
+    },
+    "files": [
+      {
+        "path": "FIRMWARE-KNOWN-ISSUES.md",
+        "bytes": 7676,
+        "sha256": "1cc0a8e2e0ee157d71837b00c7c0cbf8cb8bd9f88bcf6c27210a6ab2ebdbe7c7",
+        "previousSha256": "e85ab485d5fefd627944cd62bbfd81381d5d110bef6089d87743f94370a2d1a8"
+      },
+      {
+        "path": "Src/driver.c",
+        "bytes": 126209,
+        "sha256": "afe5ed56932adf88c75bf86fb68eceff05cb55bd150773dcc065ea186091632e",
+        "previousSha256": "869b3b74402d4d39829a9ad25244eadecfdd8c7bb9e8ebc81987f1d06c077cb6"
+      },
+      {
+        "path": "boards/btt_octopus_pro_mr1_map.h",
+        "bytes": 10073,
+        "sha256": "5b7a9a140f8fc8de2e14e8bfafebcd6d88316330c9409d3a6d2d1018c9277fa0",
+        "previousSha256": "21a8891653c4d424bbd0f393e696685292a04476425d9293aeb952ad4569bcd7"
+      },
+      {
+        "path": "tools/validate_mr1_profile.py",
+        "bytes": 46596,
+        "sha256": "8205b4f80891d2e5286e7837bed9c01153cfc6be108ecfd4327323d97805e915",
+        "previousSha256": "2814781946cd6830fccf29777e2b32dd70682573ad1adea27ee30693639bfee2"
+      },
+      {
+        "path": "tools/compile_check_mr1.py",
+        "bytes": 5736,
+        "sha256": "b8ccc22e5871805e9746eed40c563e8d18f1a86a57daaebe563c6a571f775505",
+        "previousSha256": null
+      }
+    ],
+    "tests": [
+      "tools/compile_check_mr1.py (both images, system arm-none-eabi-gcc 13.2.1)",
+      "tools/validate_mr1_profile.py binary audit on the compile-check images",
+      "tools/test_mr1_alarm.py",
+      "tools/test_mr1_workflows.py"
+    ],
+    "candidateSha256": null,
+    "candidateSha256Note": "Not built with the release PlatformIO toolchain: api.registry.platformio.org was unreachable from the build environment. Compile-check images are never flashed and carry no candidate hash.",
     "pinnedDeploymentImageChanged": false,
     "hardwareFlashed": false,
     "physicalAcceptance": false

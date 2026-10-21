@@ -225,7 +225,8 @@ Tests use synthetic serial ports and temporary journals; they never open a real 
 
 **Firmware candidate:** see [known issues](grblHAL-STM32F4/FIRMWARE-KNOWN-ISSUES.md)
 - [x] Candidate source reports raw PG12–PG15 snapshots as `MR1F:1,mask`; it is unflashed and physically unqualified. It adds no per-axis fault latch or stop; PB1 remains the aggregate drive-fault stop.
-- [ ] Status reports during homing, lab-image output claims, a pinned toolchain and physical qualification of the candidate
+- [x] Candidate source fixes the spare PE15 output, the lab image's unclaimed spindle outputs and cycle-start debounce; compile-checked for both images, unflashed
+- [ ] Status reports during homing (changes `$10` together with the acceptance profile), a pinned toolchain and physical qualification of the candidate
 
 **Physical commissioning**
 - [ ] Every stage in [COMMISSIONING.md](grblHAL-STM32F4/mr1/COMMISSIONING.md): board identity, inputs, drives, homing, motion, probing, spindle, first cut

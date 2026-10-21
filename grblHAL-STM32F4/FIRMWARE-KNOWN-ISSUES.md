@@ -9,10 +9,13 @@ and qualifying a **new** firmware candidate with a new hash. Application-side
 workarounds do not change the firmware; other senders connected to the same
 controller do not get them.
 
-The current source includes an unflashed, physically unqualified diagnostic
-candidate that partially addresses item (b): it reports raw per-axis input
-snapshots. The pinned historical image and application acceptance gate remain
-unchanged. No other issue below is claimed fixed by that addition.
+The current source includes an unflashed, physically unqualified candidate. It
+partially addresses item (b) by reporting raw per-axis input snapshots, and it
+fixes items (c), (d) and (g) in source. The candidate has been compile- and
+link-checked for both MR1 images with Ubuntu's `arm-none-eabi-gcc` 13.2.1, which
+is **not** the release toolchain (see (h)); no candidate image hash is claimed
+from that check. The pinned historical image and the application acceptance gate
+remain unchanged. Items (a), (e), (f) and (h) are still open.
 
 Items (a)-(g) concern the MR1 profiles (`Inc/mr1_octopus_config.h`,
 `Inc/mr1_servo_axis_lab_config.h`, `boards/btt_octopus_pro_mr1_map.h`) and (h)
@@ -52,16 +55,19 @@ behavior still require physical acceptance. See the selected
 future spindle direction) is not claimed by the spindle and becomes digital
 output P0 for `M62`-`M65`. The application's program validator blocks
 `M62`-`M65`, but any other sender or MDI line can toggle PE15. Leave EXP1-8
-unconnected. Next candidate: claim or remove `AUXOUTPUT2` when no direction
-output is configured.
+unconnected. **Fixed in candidate source:** `boards/btt_octopus_pro_mr1_map.h`
+defines `AUXOUTPUT2` (PE15) only when the spindle has a direction output, so the
+candidate exposes no general-purpose output. Settings `$372`/`$373`, which apply
+to spare outputs, are not part of the 66-setting acceptance profile.
 
 **(d) Servo-axis lab image leaves the spindle outputs unclaimed.** The lab
 profile (`Inc/mr1_servo_axis_lab_config.h`) sets `SPINDLE0_ENABLE 0`
 (`SPINDLE_NONE`). PA8 (FAN0, spindle PWM/analog command) and PD14 (FAN4, spindle
 enable relay) are then ordinary auxiliary outputs, so `M62`-`M65` can energize
-the spindle enable relay and the analog speed command. Fix: `#undef AUXOUTPUT0`
-and `AUXOUTPUT1` (or claim them as safe-off outputs) in the lab branch of the
-MR1 board map.
+the spindle enable relay and the analog speed command. **Fixed in candidate
+source:** the board map does not define `AUXOUTPUT0`/`AUXOUTPUT1` in the lab
+image, so PA8 and PD14 stay in their reset state (inputs; the FAN MOSFETs stay
+off) and are not available to `M62`-`M65`.
 
 **(e) Lab A-axis enable polarity.** `DEFAULT_ENABLE_SIGNALS_INVERT_MASK 7` only
 covers X/Y/Z. In the four-axis lab image the A enable (bit 3) is not inverted,
@@ -83,8 +89,10 @@ PB2 (EXP2) gets no software debounce: `aux_claim_explicit()` in `Src/driver.c`
 enables debounce only for the safety door, reset and QEI-select inputs. PB2 is
 also connected to the Octopus' onboard SW2 (BOOT1) button, so that button is a
 second, unguarded cycle-start switch, and contact bounce or noise on the guarded
-cycle-start circuit can register repeated starts. Next candidate: debounce
-`Input_CycleStart` or move it to a pin without an onboard button.
+cycle-start circuit can register repeated starts. **Fixed in candidate source:**
+`aux_claim_explicit()` gives `Input_CycleStart` the same 40 ms software debounce
+as the safety door in the MR1 profiles. SW2 is still a second cycle-start
+switch: guard or remove it.
 
 **(h) The build is not reproducible from `platformio.ini`.** `[env]` uses
 `platform = ststm32` (unpinned) and `framework-stm32cubef4 @ ~1.26.2` (a range).
