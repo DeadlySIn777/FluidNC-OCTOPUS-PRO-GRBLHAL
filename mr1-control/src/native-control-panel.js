@@ -3,6 +3,7 @@ import { mountCommissioningControls } from './native-commissioning-panel.js';
 import { mountNativeWorkflowControls } from './native-workflow-panel.js';
 import { mountNativeWiringControls } from './native-wiring-panel.js';
 import { createNativeServiceLink } from './native-service-link.js';
+import { mountAdvisorControls } from './native-advisor-panel.js';
 
 export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState = () => {}, getReviewedSource }) {
   if (new URLSearchParams(location.search).get('native') !== '1') return;
@@ -85,6 +86,7 @@ export function mountNativeControlPanel({ loadPreview, connectTelemetry, onState
   const commissioningControls = mountCommissioningControls({ root: $('[data-commissioning]'), request, act, getSnapshot: () => snapshot });
   const workflowControls = mountNativeWorkflowControls({ root: panel, request, act, getSnapshot: () => snapshot });
   const wiringControls = mountNativeWiringControls({ root: panel, getSnapshot: () => snapshot });
+  mountAdvisorControls({ root: panel, request });
   for (const control of panel.querySelectorAll('[data-connect], [data-disconnect], [data-recovery], [data-shutdown], [data-command], [data-jog], [data-zero], [data-outputs], [data-probe]')) control.disabled = true;
   const render = () => {
     if (!snapshot) return;

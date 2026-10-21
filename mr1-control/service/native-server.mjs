@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createReadStream } from 'node:fs';
+import { createReadStream, existsSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve, dirname, extname, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -14,6 +14,7 @@ import { validateConfigurationJournalEvent } from './mr1-telemetry-service.mjs';
 import { createNativeCommissioning } from './native-commissioning.mjs';
 import { planNativeWorkflow, executeNativeWorkflow } from './native-workflows.mjs';
 import { verifyNativeFirmware } from './native-firmware.mjs';
+import { createClaudeAdvisor } from './claude-advisor.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.glb': 'model/gltf-binary', '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.jpg': 'image/jpeg', '.bin': 'application/octet-stream' };
@@ -50,6 +51,11 @@ export async function createNativeServer(options = {}) {
   let journalReady = reconciliation.requiresReview !== true;
   const clients = new Set();
   const fission = createFissionProcessor();
+  // Advice only: the advisor gets a copy of the controller snapshot, never the
+  // controller, so nothing it returns can reach the machine. It reads the
+  // project documents from a source checkout when one is present.
+  const advisor = options.advisor ?? createClaudeAdvisor({
+    cwd: existsSync(resolve(ROOT, '..', 'docs', 'wiring')) ? resolve(ROOT, '..') : ROOT });
   let qualification = null;
   let token = null;
   let ownerSeen = 0;
@@ -152,6 +158,7 @@ export async function createNativeServer(options = {}) {
           if (url.pathname === '/api/state') return json(res, 200, { ...controller.snapshot(), journalReady, reconciliation, qualification, firmwareArtifact, commissioning: commissioning.snapshot(), installationRoot: ROOT });
           if (url.pathname === '/health') return json(res, 200, bridge());
           if (url.pathname === '/controller/preflight') return json(res, 200, controller.preflight ?? pendingControllerPreflight('DISCONNECTED'));
+          if (url.pathname === '/api/advisor') return json(res, 200, advisor.status());
           if (url.pathname === '/latency/ping') return json(res, 200, { protocol: 'mr1-latency-ping-v1', serverReceivedEpochMs: requestReceivedEpochMs,
             serverSentEpochMs: Date.now(), serverReceivedAt: new Date(requestReceivedEpochMs).toISOString(), serverSentAt: new Date().toISOString(),
             serviceUptimeMs: Date.now() - Date.parse(startedAt), telemetrySequence: controller.sequence, bridgeMode: 'serial', connected: controller.connected });
@@ -182,6 +189,13 @@ export async function createNativeServer(options = {}) {
         if (url.pathname === '/optimize/fission') {
           if (controller.armed || controller.busy) throw new Error('Disarm before processing a new program.');
           return json(res, 200, await fission.optimize(input));
+        }
+        if (url.pathname === '/api/advisor/ask') {
+          // Same-origin only, no lease and no controller mutation slot: asking
+          // a question never blocks or waits behind a machine command.
+          try {
+            return json(res, 200, await advisor.ask(input, { snapshot: controller.snapshot(), programSource: controller.program?.source }));
+          } catch (error) { return json(res, error.busy ? 409 : 400, { error: error.message }); }
         }
         if (url.pathname === '/api/session') {
           if (token && Date.now() - ownerSeen < leaseMs) return json(res, 423, { error: 'Another browser owns the controller.' });

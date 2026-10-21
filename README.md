@@ -43,7 +43,7 @@ for a Langmuir MR-1 mill retrofit on a BIGTREETECH Octopus Pro.**
 
 | | |
 | --- | --- |
-| **MR-1 Control** · [`mr1-control/`](mr1-control/README.md) | Browser interface plus a local Node.js serial service that owns the controller: exclusive leases, typed commands, read-only preflight, durable journaling, NC validation, probing, conversational CAM, toolpath preview and staged commissioning. |
+| **MR-1 Control** · [`mr1-control/`](mr1-control/README.md) | Browser interface plus a local Node.js serial service that owns the controller: exclusive leases, typed commands, read-only preflight, durable journaling, NC validation, probing, conversational CAM, toolpath preview, staged commissioning and a read-only Claude advisor that uses your Claude Code login. |
 | **Wire-by-wire guide** · [`docs/wiring/`](docs/wiring/README.md) | One offline HTML page that traces all 56 scheduled cables end to end, plus an Octopus board view, the cable schedule, the I/O manifest and the 66-setting profile. |
 | **Firmware tree** · [`grblHAL-STM32F4/`](grblHAL-STM32F4/SOURCE-PROVENANCE.md) | The complete exported grblHAL STM32F4 driver with the MR-1 board map and profile, pinned component revisions and a hash-checked source manifest. |
 

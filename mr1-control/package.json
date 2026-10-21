@@ -9,7 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "telemetry": "node service/mr1-telemetry-service.mjs",
     "controller": "node service/native-server.mjs",
-    "test:native": "node --experimental-test-module-mocks --test tests/native-controller.mjs tests/native-server.mjs tests/commissioning-policy.mjs tests/native-commissioning.mjs tests/native-workflows.mjs tests/native-wiring-panel.mjs tests/native-service-link.mjs tests/native-firmware.mjs",
+    "test:native": "node --experimental-test-module-mocks --test tests/native-controller.mjs tests/native-server.mjs tests/claude-advisor.mjs tests/commissioning-policy.mjs tests/native-commissioning.mjs tests/native-workflows.mjs tests/native-wiring-panel.mjs tests/native-service-link.mjs tests/native-firmware.mjs",
     "telemetry:sim": "node service/mr1-telemetry-service.mjs --simulate",
     "telemetry:list": "node service/mr1-telemetry-service.mjs --list-ports",
     "test:gcode": "node --test tests/gcode-program.mjs",

@@ -134,6 +134,30 @@ reports. The panel issues no controller commands. Its observations are logical
 reports and operator notes, not measured voltages or accepted commissioning
 evidence; they never grant motion permission.
 
+## Claude advisor (advice only)
+
+The native panel's **Ask Claude (advice only)** section sends a question to
+Claude through the Claude Code CLI already installed and signed in on this PC
+(`claude -p`), so it uses that login, such as a Claude subscription, rather than
+an API key stored by MR1. Nothing is sent until the operator presses **Ask**.
+Each question carries the live controller summary from this service (state,
+alarm, fault, preflight issues, job and program validation) and, only when
+ticked, the loaded program source.
+
+The advisor cannot reach the machine. It receives a copy of the controller
+snapshot, never the controller or serial port, and its answer is shown as plain
+text. The CLI runs with read-only tools (`Read`, `Grep`, `Glob`) so it can look
+up the project documents in a source checkout, no MCP servers and no saved
+session. The prompt travels on stdin; the command line contains only constant
+flags. Questions are limited to 4,000 characters and programs to 64 KB, one
+question runs at a time, and an answer that takes over three minutes is
+cancelled. Asking needs no controller lease and never delays a command or stop.
+
+Install Claude Code and run `claude` once to sign in. Set `MR1_ADVISOR=off` to
+disable the advisor, or `MR1_CLAUDE_COMMAND` to point at a specific `claude`
+executable. Treat answers as suggestions to check against the documents; they
+never replace commissioning evidence or the physical E-stop.
+
 ## Commissioning boundary
 
 This build has no physical machine evidence. Nothing was connected during its
