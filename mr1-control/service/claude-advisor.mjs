@@ -69,8 +69,9 @@ export function summarizeSnapshot(snapshot) {
   return {
     connected: Boolean(snapshot.connected), armed: Boolean(snapshot.armed), busy: Boolean(snapshot.busy),
     motionQualified: Boolean(snapshot.motionQualified), fault: snapshot.fault ?? null,
-    state: status?.state ?? null, alarm: status?.alarm ?? null, pins: status?.pins ?? null,
-    machinePosition: status?.mpos ?? status?.machinePosition ?? null,
+    // Shape produced by parseGrblStatus: alarm codes arrive as the Alarm substate.
+    state: status?.state ?? null, alarm: status?.state?.name === 'Alarm' ? status.state.substate ?? null : null,
+    pins: status?.pins ?? null, machinePosition: status?.position?.machine ?? null, workPosition: status?.position?.work ?? null,
     preflight: snapshot.preflight ? { status: snapshot.preflight.status, counts: snapshot.preflight.counts,
       issues: (snapshot.preflight.issues ?? []).slice(0, 20).map(issue => issue.message ?? String(issue)) } : null,
     job: snapshot.job ? { state: snapshot.job.state, acknowledged: snapshot.job.acknowledged, total: snapshot.job.total } : null,

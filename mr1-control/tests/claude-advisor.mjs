@@ -4,12 +4,13 @@ import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseControllerLine } from '../src/telemetry/grbl-status.js';
 import { ADVISOR_ARGS, MAX_QUESTION_CHARS, MAX_PROGRAM_CHARS, buildAdvisorPrompt, createClaudeAdvisor,
   parseAdvisorOutput, resolveAdvisorCommand, summarizeSnapshot } from '../service/claude-advisor.mjs';
 
 const FAKE = fileURLToPath(new URL('./fixtures/fake-claude.mjs', import.meta.url));
 const snapshot = { connected: true, armed: false, busy: false, motionQualified: false, fault: null,
-  status: { state: { name: 'Alarm', raw: 'Alarm:17' }, alarm: 17, pins: { controls: { motorFault: true } } },
+  status: { state: { name: 'Alarm', substate: 17, raw: 'Alarm:17' }, pins: { controls: { motorFault: true } } },
   preflight: { status: 'PASS', counts: { settingsPassed: 66, settingsExpected: 66 }, issues: [] },
   job: { state: 'loaded', acknowledged: 0, total: 3 },
   program: { name: 'part.nc', sha256: 'a'.repeat(64), airRun: false, validation: { errors: [], warnings: [] } } };
@@ -97,4 +98,15 @@ test('the summary carries state and validation but not the session or port handl
   assert.deepEqual(summarizeSnapshot(null), { connected: false });
   assert.match(buildAdvisorPrompt({ question: 'q', snapshot: null }), /Operator question\nq$/);
   assert.throws(() => parseAdvisorOutput('{"result": 5}'), /reported an error/);
+});
+
+test('the summary carries the live position and alarm code from a real controller status report', () => {
+  const { status } = parseControllerLine('<Idle|MPos:12.5,-3.25,-40|FS:0,0|WCO:1,2,3|H:1,7|A:|P:0|FW:grblHAL>');
+  const summary = summarizeSnapshot({ connected: true, status });
+  assert.deepEqual(summary.machinePosition, { x: 12.5, y: -3.25, z: -40 });
+  assert.deepEqual(summary.workPosition, { x: 11.5, y: -5.25, z: -43 });
+  assert.equal(summary.alarm, null);
+  assert.match(buildAdvisorPrompt({ question: 'q', snapshot: { connected: true, status } }), /"x": 12\.5/);
+  const alarm = parseControllerLine('<Alarm:17|MPos:0,0,0|FS:0,0|WCO:1,2,3|Pn:F|H:1,7|A:|P:0|FW:grblHAL>').status;
+  assert.equal(summarizeSnapshot({ connected: true, status: alarm }).alarm, 17);
 });
