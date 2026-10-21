@@ -59,12 +59,12 @@ qualification in `INTERFACE_BOARD.md`.
 | ---: | --- | --- | --- | --- |
 | 4 | FIT CHECK | MOTOR0-3 18-position driver footprints | STEP contact 7, DIR 8, GND 9; EN 1 reserved | Planned control cable; verify actual contact map, viewing orientation, retention and strain relief |
 | 1 | FIT CHECK | DRIVER0 VCC_IO contact 10, separate source branch | +5 V through 0.5 A fast fuse to +5_MOTION; return at logic GND 9 | One source only; all other socket VCC_IO contacts unused. See [COMMAND_SUPPLY.md](COMMAND_SUPPLY.md); connector, wire and fuse coordination pending |
-| 8 | FIT CHECK | STOP0-7 three-position 2.54 mm headers | SIG and GND only; 16 contacts total | Leave every adjacent 5 V cavity empty |
+| 8 | FIT CHECK | STOP0-7 three-position 2.54 mm headers | STOP0-3: SIG and GND. STOP4-7: SIG only; 12 contacts total | Leave every adjacent 5 V cavity empty. STOP4-7 relay contacts return through EXP2 GND (TB-C0); see [ALARM_INTERFACE.md](ALARM_INTERFACE.md) |
 | 3 | FIT CHECK | TB, T0, T1 two-position 2.54 mm headers | Named signal and GND | Safety monitor, feed hold, Qualified sensor conditioner OUT1; module on HOLD |
 | 1 | FIT CHECK | PB7 tool-setter five-position 2.54 mm header (board silk: `BLTouch`) | PB7 and its adjacent GND only | Controller housing only; no BLTouch device or plugin; PB6 and 5 V remain empty |
 | 1 | FIT CHECK | PWR-DET three-position 2.54 mm header | PC0 and GND only | 3.3 V remains empty |
 | 1 | FIT CHECK | EXP2 `2x5` 2.54 mm header | PB1, PB2, GND only | Use keyed IDC breakout; short internal run; insulate unused wires. EXP2 also carries `RST`. PB1/PB2 have no board pull-up/RC (interface board adds them); onboard `SW2` shares PB2 - guard or remove it |
-| 1 | FIT CHECK | I2C four-position 2.54 mm header | 3.3 V and GND only | Candidate logic-side supply only; module circuit on HOLD; PB8/PB9 remain empty |
+| 1 | FIT CHECK | I2C four-position 2.54 mm header | 3.3 V and GND only | 3.3 V is TB-C3, the supply for the five 2.2 kΩ alarm pull-ups ([ALARM_INTERFACE.md](ALARM_INTERFACE.md)); also the candidate logic-side supply for conditioner modules on HOLD; PB8/PB9 remain empty |
 | 1 | USE / BUILD | Octopus MAIN POWER screw terminal | +24 V and 0 V, ferruled | No pigtail; MOTOR POWER and BED POWER remain empty |
 | 2 | HOLD | FAN0 and FAN4 two-position headers | None during motion commissioning | Spindle PWM/enable wait for servo and DB44 proof |
 | 1 | USE / BUILD | Octopus USB-C | Shielded USB data cable | Short, strain-relieved, known data cable |
@@ -117,7 +117,7 @@ pitch into `CL57T_ARRIVAL_CAPTURE.md` §3.
 
 | Qty | Status | Block | Populate | Cable |
 | ---: | --- | --- | --- | --- |
-| 4 | HOLD / QUALIFY | `P1` control + output | PUL+, PUL-, DIR+, DIR-, ALM, COMO | Two shielded twisted pairs for PUL/DIR; one separate shielded pair for ALM/COMO into its isolated conditioner. `ENA` left unconnected (drive default). `BRK` unused |
+| 4 | HOLD / QUALIFY | `P1` control + output | PUL+, PUL-, DIR+, DIR-, ALM, COMO | Two shielded twisted pairs for PUL/DIR; one separate shielded pair: ALM to its relay A2, COMO (COM−) to the isolated alarm return TB-A0; see [ALARM_INTERFACE.md](ALARM_INTERFACE.md). `ENA` left unconnected (drive default). `BRK` unused |
 | 4 | KIT CABLE / VERIFY | `P2` encoder | EA+, EA-, EB+, EB-, VCC, EGND | Six conductors plus separate shield braid; trace matched cable using manufacturer map below. `VCC` is a drive output |
 | 4 | KIT CABLE / VERIFY | `P3` motor | A+, A-, B+, B- | GX16 motor cable; identify Option A or B from manufacturer map, then trace. Published cable is unshielded; no bus power on this block |
 | 4 | USE / BUILD | `P4` power | **+VDC, GND** | That drive's own fused 36 V star branch. **POLARIZED** |

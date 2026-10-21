@@ -2,6 +2,11 @@
 
 **Ready for documented, deenergized preparation; not released to power the coupled machine or machine a part.** This pass corrected eight source documents/data files. It did not connect hardware, change GPIOs/firmware/settings, flash a board, or perform a physical test.
 
+> **Superseded in part (2026-09-27).** Where this record says the alarms use an
+> "isolated, current-limited conditioner", the selected design is now one relay
+> per drive: [mr1/ALARM_INTERFACE.md](<mr1/ALARM_INTERFACE.md>). This page is kept
+> as the audit record.
+
 The earlier reference ZIP is superseded by the refreshed bundle. Use its corrected documents, not older copies in other folders or an unreviewed generated wiring map. Original Drive edits were preserved.
 
 ## What changed

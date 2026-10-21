@@ -6,7 +6,7 @@ Active hardware plan: **Octopus Pro v1.1 / STM32F429ZGT6**, four external **CL57
 
 ## Read first
 
-- [Wiring plan](WIRING.md), [simple check card](WIRING_SIMPLE.md), [connector schedule](PIGTAIL_SCHEDULE.md)
+- [One-page schematic](../../docs/wiring/MR1-SCHEMATIC.svg), [wiring plan](WIRING.md), [simple check card](WIRING_SIMPLE.md), [connector schedule](PIGTAIL_SCHEDULE.md)
 - [CL57T guide](CL57T_QUICK_WIRING.md), [arrival evidence](CL57T_ARRIVAL_CAPTURE.md)
 - [Planned interface](INTERFACE_BOARD.md), [BOM](BOM.md), [order list](ORDER_LIST.md)
 - [Selected command +5 V circuit](COMMAND_SUPPLY.md), [selected ALM/COM− relay circuit](ALARM_INTERFACE.md), [alarm terminal schedule](alarm-interface-wires.csv)
@@ -18,7 +18,7 @@ The release-level corrected wiring reference and current visual guide are the pr
 
 ## Physical hold points
 
-Confirm actual board/MCU and all four drive revisions; photograph printed terminal names and switch settings; prove connector viewing sides and continuity. Qualify the actual command and sensor interfaces, independent homes, raw alarm conditioning and supervised aggregate, power domains/protection/earthing, independent E-stop, motor/encoder pairing and mechanical fit. Spindle/coolant load wiring, thermal sensor identity and oil/lubrication assignment remain unresolved. Secure test motors and support gravity-loaded Z before any separately permitted energization.
+Confirm actual board/MCU and all four drive revisions; photograph printed terminal names and switch settings; prove connector viewing sides and continuity. Qualify the actual command and sensor interfaces, independent homes, the alarm relay assembly and PB1 aggregate, power domains/protection/earthing, independent E-stop, motor/encoder pairing and mechanical fit. Spindle/coolant load wiring, thermal sensor identity and oil/lubrication assignment remain unresolved. Secure test motors and support gravity-loaded Z before any separately permitted energization.
 
 Generic TLP281/HW-399 names do not qualify module circuits or terminal assignments. The selected alarm design uses four Weidmüller 2618530000 relays and a separate isolated alarm supply; raw ALM/COM− outputs never reach PB1. New MR1F version 1 firmware samples STOP4–7 for diagnostics; older or missing reports remain UNKNOWN. PB1 remains the only drive-fault stop and requires physical qualification before coupled dual-Y motion. Neither the existing motor supply nor a proposed replacement is accepted for simultaneous four-drive loading/regeneration without evidence. The old unqualified 48 V capacitor/NTC/bleeder recipe is withdrawn.
 

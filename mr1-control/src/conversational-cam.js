@@ -655,8 +655,11 @@ export const CONVERSATIONAL_CYCLES = [
       }
       const stepOver = (setup.toolDiameter * stepOverPercent) / 100;
       const wallRadius = (diameter - setup.toolDiameter) / 2;
-      const entryRadius = Math.min(wallRadius, stepOver);
       const minimumRadius = minimumHelixRadius(setup);
+      // The entry orbit must stay inside the tool radius or the helix leaves a
+      // standing center core that the final cut-to-center would ram at full depth.
+      // The minimum helix radius is never above the tool radius (tools >= 0.1 mm).
+      const entryRadius = Math.min(wallRadius, stepOver, Math.max(setup.toolDiameter * 0.45, minimumRadius));
       if (entryRadius < minimumRadius - 1e-9) {
         throw new CycleParameterError(
           `Helical entry radius ${fmt(entryRadius)} mm is below the ${fmt(minimumRadius)} mm minimum (5% of the tool diameter); enlarge the pocket or the stepover.`,

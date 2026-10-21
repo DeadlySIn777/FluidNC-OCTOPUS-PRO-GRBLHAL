@@ -181,6 +181,11 @@ export function evaluateControllerPreflight(transcript, profile, options = {}) {
   if (activePins) {
     issues.push(issue("blocker", "ACTIVE_INPUTS", `Controller reports active inputs: ${activePins}.`));
   }
+  // A read-only query that never completed is missing evidence, not a pass.
+  for (const line of lines) {
+    const timeout = line.match(/^\[PREFLIGHT_TIMEOUT:([^\]]*)\]$/);
+    if (timeout) issues.push(issue("blocker", "PREFLIGHT_TIMEOUT", `The controller did not answer ${timeout[1]} within the preflight timeout.`));
+  }
 
   for (const comparison of comparisons) {
     if (comparison.status === "PASS") continue;

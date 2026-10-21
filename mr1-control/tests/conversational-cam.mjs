@@ -513,6 +513,48 @@ test("bore milling clears the standing core instead of ramming it", () => {
   assert.ok(!small.gcode.includes("CLEAR CORE"), "no core stage expected when the tool covers the center");
 });
 
+test("circular pocket clears its centre on every level at any allowed stepover", () => {
+  const cycle = getConversationalCycle("circ-pocket");
+  // A 0.1 mm tool's minimum helix radius equals its radius, so the entry cap
+  // must not drop the orbit below that minimum and reject the pocket.
+  const cases = [
+    ...[5, 45, 50, 55, 60, 70, 80].map((stepOverPercent) => ({ diameter: 30, toolDiameter: 6, stepOverPercent, depth: 8, stepDown: 1 })),
+    ...[50, 60, 80].map((stepOverPercent) => ({ diameter: 1, toolDiameter: 0.1, stepOverPercent, depth: 0.2, stepDown: 0.1 })),
+  ];
+  for (const geometry of cases) {
+    const { toolDiameter, stepOverPercent } = geometry;
+    const toolRadius = toolDiameter / 2;
+    const label = `${toolDiameter} mm tool at ${stepOverPercent}%`;
+    const params = { ...defaultCycleParams(cycle), ...geometry };
+    const { gcode } = generateConversationalProgram("circ-pocket", params);
+    assert.equal(validateMr1Nc(gcode).ok, true, label);
+    // Radii of the flat arcs milled at each level. A stepover above 50% used
+    // to put the entry orbit outside the tool radius, leaving a standing pin
+    // that the final cut to the centre rammed at full depth.
+    const levels = new Map();
+    let z = null;
+    for (const line of gcode.split("\n")) {
+      const zWord = line.match(/ Z(-?\d+\.\d+)/);
+      if (zWord) z = Number(zWord[1]);
+      const arc = line.match(/^G3 .* I(-?\d+\.\d+) J(-?\d+\.\d+)/);
+      if (!arc || zWord || z === null || z >= 0) continue;
+      if (!levels.has(z)) levels.set(z, []);
+      levels.get(z).push(Math.hypot(Number(arc[1]), Number(arc[2])));
+    }
+    assert.equal(levels.size, Math.round(params.depth / params.stepDown), `${label}: expected one set of rings per depth pass`);
+    for (const [level, radii] of levels) {
+      const bands = radii.map((radius) => [Math.max(0, radius - toolRadius), radius + toolRadius]).sort((a, b) => a[0] - b[0]);
+      let reach = 0;
+      for (const [inner, outer] of bands) {
+        assert.ok(inner <= reach + 1e-6, `${label}: Z${level} leaves material uncut from r=${reach.toFixed(3)} to r=${inner.toFixed(3)}`);
+        reach = Math.max(reach, outer);
+      }
+      assert.ok(reach >= params.diameter / 2 - 1e-6, `${label}: Z${level} stops at r=${reach.toFixed(3)}`);
+    }
+    assert.ok(gcode.includes("\nG1 X0.000 Y0.000 F"), `${label}: expected the final move to the pocket centre`);
+  }
+});
+
 test("pocket, slot, and inside-contour cycles ramp in instead of plunging into solid", () => {
   for (const id of ["rect-pocket", "circ-pocket", "slot", "rect-contour-inside"]) {
     const { gcode } = generateConversationalProgram(id, defaultCycleParams(getConversationalCycle(id)));

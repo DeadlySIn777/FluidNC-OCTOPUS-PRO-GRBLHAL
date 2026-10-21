@@ -18,6 +18,15 @@ jobs:
       - name: Test actual alarm module without controller hardware
         working-directory: grblHAL-STM32F4
         run: python tools/test_mr1_alarm.py --cc gcc
+      - name: Compile-check both MR1 images and audit them (system ARM GCC, check images only)
+        working-directory: grblHAL-STM32F4
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q gcc-arm-none-eabi libnewlib-arm-none-eabi
+          python tools/compile_check_mr1.py --out "$RUNNER_TEMP/mr1-check"
+          MR1_FIRMWARE_IMAGE="$RUNNER_TEMP/mr1-check/production/firmware.bin" \
+          MR1_LAB_IMAGE="$RUNNER_TEMP/mr1-check/lab/firmware.bin" \
+          python tools/validate_mr1_profile.py
 
   windows-source:
     runs-on: windows-latest
@@ -52,6 +61,8 @@ jobs:
           python tools/visual-wiring/build.py
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           git diff --exit-code -- docs/wiring/visual
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python tools/wiring-schematic/build_schematic.py --check
       - name: Check local import safeguards
         run: node --test tools/import-local-assets.test.mjs
       - name: Install pinned application dependencies

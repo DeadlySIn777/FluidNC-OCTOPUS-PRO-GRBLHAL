@@ -17,6 +17,8 @@ const number = (v, min, max, label) => {
 };
 const axisName = v => axes.includes(v) ? v : fail('Choose X, Y or Z.');
 const fmt = v => Number(v.toFixed(5)).toString();
+const outputsOff = status => status?.accessories.spindle === 'off' && !status.accessories.flood && !status.accessories.mist
+  && status.motion.spindleCommand === 0 && (status.motion.spindleActual === null || status.motion.spindleActual === 0);
 
 function nativeStatusContract(raw) {
   const fields = new Map();
@@ -83,11 +85,13 @@ export function prepareProgramOffThread(source, name, options) {
 
 // Exactly one owner and one outstanding acknowledged line. Never replay a line
 // after a timeout: the controller may already have executed it.
+// now() stamps wall time; clock() times staleness and deadlines, so an OS clock
+// step can neither hide a stalled link nor fault a healthy one.
 export class NativeController extends EventEmitter {
-  constructor({ profile, portFactory, now = Date.now, ackTimeout = 5000, portTimeout = 5000, staleMs = 1500, welcomeMs = 1000,
+  constructor({ profile, portFactory, now = Date.now, clock = () => performance.now(), ackTimeout = 5000, portTimeout = 5000, staleMs = 1500, welcomeMs = 1000,
     homeTimeout = 120000, jogCancelMs = 1000, motionQualified = false, beforeWrite = async () => {} } = {}) {
     super();
-    Object.assign(this, { profile, portFactory, now, ackTimeout, portTimeout, staleMs, welcomeMs, homeTimeout, jogCancelMs, motionQualified, beforeWrite });
+    Object.assign(this, { profile, portFactory, now, clock, ackTimeout, portTimeout, staleMs, welcomeMs, homeTimeout, jogCancelMs, motionQualified, beforeWrite });
     if (!this.profile.settings.some(s => s.id === 13)) this.profile = { ...profile, settings: [...profile.settings,
       { id: 13, name: 'Metric status reports', expected: 0, tolerance: 0, severity: 'blocker' }] };
     this.port = null;
@@ -110,6 +114,7 @@ export class NativeController extends EventEmitter {
     this.job = { state: 'empty', sent: 0, acknowledged: 0, total: 0 };
     this.fault = null;
     this.paused = false;
+    this.pauseHoldSeen = false;
     this.awaitingHome = false;
     this.parserState = null;
     this.lastProbeResult = null;
@@ -172,15 +177,26 @@ export class NativeController extends EventEmitter {
           continue;
         }
       }
-      const event = parseControllerLine(line, this.status, { receivedAt: new Date(this.now()).toISOString() });
+      let event = parseControllerLine(line, this.status, { receivedAt: new Date(this.now()).toISOString() });
+      // A [PRB] inside a $# reply is the result retained from an earlier G38, not a new contact.
+      if (event?.type === 'probe' && (this.readingPreflight || (this.pending?.written && this.pending.command === '$#'))) event = { ...event, type: 'probe-parameter' };
       if (event?.type === 'status') {
         const contract = nativeStatusContract(line);
         if (!contract.valid) { this.faulted('Controller status is incomplete or inconsistent with the verified native report format.'); continue; }
         this.status = { ...event.status, sequence: ++this.sequence };
         if (contract.full) this.lastFullStatusSequence = this.sequence;
-        this.lastStatusAt = this.now();
+        this.lastStatusAt = this.clock();
         if (this.pending?.written && this.pending.homing === false && this.status.state.name === 'Home') this.pending.homing = true;
         if (['Run', 'Hold'].includes(this.status.state.name)) this.lastPlannerWaitAt = this.lastStatusAt;
+        if (this.status.state.name === 'Hold') this.lastHoldAt = this.lastStatusAt;
+        // A wired cycle start (PB2/SW2) resumes the firmware without the host. Once a
+        // report confirmed this pause's Hold, a later Run/Idle report ends it here too;
+        // an M0 still awaiting its ok has not been passed yet.
+        if (this.paused && this.status.state.name === 'Hold') this.pauseHoldSeen = true;
+        else if (this.paused && this.pauseHoldSeen && !this.pending?.pause && ['Idle', 'Run'].includes(this.status.state.name)) {
+          this.paused = false; this.pauseHoldSeen = false;
+          if (this.job.state === 'paused') this.job.state = 'running';
+        }
         if (this.status.state.name !== 'Alarm' && !this.homingOperation) this.awaitingHome = false;
         if (this.armed && (this.status.pins.controls.eStop || this.status.pins.controls.motorFault
           || this.status.pins.controls.reset || this.status.pins.controls.safetyDoor
@@ -189,7 +205,7 @@ export class NativeController extends EventEmitter {
       } else if (event?.type === 'ok' && this.pending?.written) {
         const pending = this.pending; this.pending = null; clearTimeout(pending.timer);
         // The report that ends a silent homing cycle must still arrive within staleMs.
-        if (pending.homing) this.statusGraceFrom = this.now();
+        if (pending.homing) this.statusGraceFrom = this.clock();
         pending.resolve();
       } else if (event?.type === 'error') this.faulted(`Controller rejected command: error ${event.code}.`);
       else if (event?.type === 'alarm') this.faulted(`Controller alarm ${event.code}.`);
@@ -247,13 +263,13 @@ export class NativeController extends EventEmitter {
         fail('Connection cancelled.');
       }
       this.connected = true;
-      this.lastStatusAt = this.now();
+      this.lastStatusAt = this.clock();
       this.timer = setInterval(() => {
         this.realtime(REALTIME.status);
         // With $10 bit 12 clear, grblHAL sends one forced report as homing starts
         // and none until it ends; the bounded $H acknowledgement covers that gap.
         if (this.armed && !this.pending?.homing
-          && this.now() - Math.max(this.lastStatusAt, this.statusGraceFrom ?? -Infinity) > this.staleMs) this.faulted('Controller status timed out.');
+          && this.clock() - Math.max(this.lastStatusAt, this.statusGraceFrom ?? -Infinity) > this.staleMs) this.faulted('Controller status timed out.');
       }, 100);
       await this.awaitWelcome(generation);
       await this.preflightRead();
@@ -351,14 +367,14 @@ export class NativeController extends EventEmitter {
       throw error;
     } finally { this.closingPort = null; }
   }
-  line(command, timeout = this.ackTimeout, { plannerWait = false, homing = false, beforeSend } = {}) {
+  line(command, timeout = this.ackTimeout, { plannerWait = false, holdWait = false, homing = false, pause = false, beforeSend } = {}) {
     if (this.fault) return Promise.reject(new Error(this.fault));
     if (!this.port?.isOpen) return Promise.reject(new Error('Controller is disconnected.'));
     if (this.pending) return Promise.reject(new Error('A controller command is already awaiting acknowledgement.'));
     if (!/^[\x20-\x7e]+$/.test(command) || Buffer.byteLength(command) > 120) return Promise.reject(new Error('Invalid or oversized controller line.'));
     return new Promise((resolve, reject) => {
       // homing: false until the written $H produces the firmware's forced Home report.
-      const pending = { resolve, reject, timer: null, written: false, homing: homing ? false : undefined };
+      const pending = { command, resolve, reject, timer: null, written: false, homing: homing ? false : undefined, pause };
       this.pending = pending;
       const generation = this.generation, port = this.port;
       const current = () => this.pending === pending && generation === this.generation && this.port === port;
@@ -372,16 +388,20 @@ export class NativeController extends EventEmitter {
         if (!current()) return;
         beforeSend?.();
         if (!current()) return;
-        const sentAt = this.now();
+        const sentAt = this.clock();
         const checkAck = () => {
           if (this.pending !== pending) return;
           // grblHAL can withhold ok while its planner drains, and M0 blocks
           // inside the firmware suspend loop until the operator resumes.
           // Only a live, armed program may wait; Idle without ok still fails.
-          const idleBudgetLeft = Math.max(sentAt, this.lastPlannerWaitAt ?? 0) + timeout - this.now();
-          if (plannerWait && this.armed && !this.fault && this.now() - this.lastStatusAt <= this.staleMs
-            && (['Run', 'Hold'].includes(this.status?.state.name) || idleBudgetLeft > 0)) {
+          const idleBudgetLeft = Math.max(sentAt, this.lastPlannerWaitAt ?? 0) + timeout - this.clock();
+          const holdBudgetLeft = Math.max(sentAt, this.lastHoldAt ?? 0) + timeout - this.clock();
+          const live = this.armed && !this.fault && this.clock() - this.lastStatusAt <= this.staleMs;
+          if (plannerWait && live && (['Run', 'Hold'].includes(this.status?.state.name) || idleBudgetLeft > 0)) {
             pending.timer = setTimeout(checkAck, Math.max(10, Math.min(timeout, idleBudgetLeft)));
+          } else if (holdWait && live && (this.status?.state.name === 'Hold' || holdBudgetLeft > 0)) {
+            // A typed motion's budget pauses while fresh reports confirm a feed hold.
+            pending.timer = setTimeout(checkAck, Math.max(10, Math.min(timeout, holdBudgetLeft)));
           } else this.faulted('Controller acknowledgement timed out; command was not retried.');
         };
         pending.timer = setTimeout(checkAck, timeout);
@@ -392,24 +412,23 @@ export class NativeController extends EventEmitter {
       }).catch(error => { if (current()) this.faulted(error.message); });
     });
   }
-  async waitFor(predicate, timeout = 30000, generation = this.generation) {
-    const deadline = this.now() + timeout;
+  async waitFor(predicate, timeout = 30000, generation = this.generation, { holdWait = false } = {}) {
+    let deadline = this.clock() + timeout;
     while (!predicate()) {
       if (generation !== this.generation || !this.connected) fail(this.fault ?? 'Operation cancelled.');
-      if (this.now() > deadline) { this.faulted('Controller operation timed out.'); fail(this.fault); }
+      if (holdWait && this.armed && this.status?.state.name === 'Hold' && this.clock() - this.lastStatusAt <= this.staleMs) deadline = Math.max(deadline, this.clock() + timeout);
+      if (this.clock() > deadline) { this.faulted('Controller operation timed out.'); fail(this.fault); }
       await sleep(10);
     }
     if (generation !== this.generation) fail(this.fault ?? 'Operation cancelled.');
   }
   fresh() {
-    if (!this.connected || !this.status || this.now() - this.lastStatusAt > this.staleMs) fail('Fresh controller status is required.');
+    if (!this.connected || !this.status || this.clock() - this.lastStatusAt > this.staleMs) fail('Fresh controller status is required.');
     const c = this.status.pins.controls;
     if (c.eStop || c.motorFault || c.reset || c.safetyDoor || c.feedHold) fail('Clear the controller safety input before continuing.');
   }
   outputsStopped() {
-    const { accessories, motion } = this.status;
-    if (accessories.spindle !== 'off' || accessories.flood || accessories.mist || motion.spindleCommand !== 0
-      || (motion.spindleActual !== null && motion.spindleActual !== 0)) fail('Stop spindle and coolant before arming or starting a program.');
+    if (!outputsOff(this.status)) fail('Stop spindle and coolant before arming or starting a program.');
   }
   authorize(action, args = {}, options = {}) {
     if (this.authorizeCommand) return this.authorizeCommand(action, args, options);
@@ -440,14 +459,15 @@ export class NativeController extends EventEmitter {
   }
   async idleAfter(command, timeout = 30000, { target, ...options } = {}) {
     const generation = this.generation;
-    await this.line(command, timeout, options);
+    // A manual feed hold stays resumable: the budget pauses while it is confirmed.
+    await this.line(command, timeout, { holdWait: true, ...options });
     const afterAck = this.sequence;
     this.realtime(REALTIME.status);
     // grblHAL acknowledges a planned move before its cycle starts, so Idle alone
     // can precede the motion. A move with a known target must also arrive there.
     const arrived = () => !target || axes.every(axis => !Number.isFinite(target[axis])
       || Math.abs(this.status.position.machine?.[axis] - target[axis]) <= 0.01);
-    await this.waitFor(() => this.sequence > afterAck && this.status?.state.name === 'Idle' && arrived(), timeout, generation);
+    await this.waitFor(() => this.sequence > afterAck && this.status?.state.name === 'Idle' && arrived(), timeout, generation, { holdWait: true });
   }
   reserveTypedAction(action, args) {
     const receipt = this.authorize(action, args);
@@ -558,30 +578,38 @@ export class NativeController extends EventEmitter {
         }) });
     });
   }
-  hold() { this.paused = true; this.realtime(REALTIME.hold); if (this.job.state === 'running') this.job.state = 'paused'; this.publish(); }
+  hold() { this.paused = true; this.pauseHoldSeen = false; this.realtime(REALTIME.hold); if (this.job.state === 'running') this.job.state = 'paused'; this.publish(); }
   resume() {
     this.fresh();
     this.authorize('resume');
     if (!this.armed || this.fault || this.status.state.name !== 'Hold' || this.status.state.substate !== 0) fail('Controller must confirm a completed hold before resuming.');
-    this.paused = false; this.realtime(REALTIME.resume);
+    this.paused = false; this.pauseHoldSeen = false; this.realtime(REALTIME.resume);
     if (this.job.state === 'paused') this.job.state = 'running';
     this.publish();
   }
   async cancelJog() {
     const message = 'Jog cancelled. Reconnect to synchronize the command channel.';
-    if (!this.armed || !['Jog', 'Idle'].includes(this.status?.state.name)) return this.faulted(message, true);
+    const initial = this.status, state = initial?.state.name;
+    // grblHAL ignores 0x85 outside a jog, and a program between lines also
+    // reads Idle. A reset in Idle keeps position, so energized outputs reset now.
+    if (!this.armed || !(state === 'Jog' || (state === 'Idle' && outputsOff(initial)
+      && !['running', 'paused', 'draining'].includes(this.job.state)))) return this.faulted(message, true);
     // 0x85 decelerates a jog and flushes its queued line without the position
     // loss of a reset. That line may never be acknowledged, so still reconnect.
-    const port = this.port, before = this.sequence, deadline = this.now() + this.jogCancelMs;
+    const port = this.port, before = this.sequence, deadline = this.clock() + this.jogCancelMs;
     this.realtime(REALTIME.cancelJog); this.realtime(REALTIME.status);
     this.faulted(message, false);
     const generation = this.generation;
     // One report may predate the cancel; Idle must come from a later one.
     while (!(this.sequence > before + 1 && this.status?.state.name === 'Idle')) {
       if (generation !== this.generation || this.port !== port || !port?.isOpen) return;
-      if (this.now() > deadline) return this.faulted('Jog cancel was not confirmed; controller was reset. Reconnect and re-home before continuing.', true);
+      if (this.clock() > deadline) return this.faulted('Jog cancel was not confirmed; controller was reset. Reconnect and re-home before continuing.', true);
       await sleep(10);
     }
+    // Dropping authority must not leave outputs energized; a line already sent
+    // may have switched them on. faulted() cleared the status and A: is
+    // periodic, so the report from before the cancel is checked too.
+    if (!outputsOff(initial) || !outputsOff(this.status)) { this.realtime(REALTIME.hold); this.realtime(REALTIME.reset); }
   }
   disarm() { this.faulted('Disarmed. Reconnect and verify before continuing.', true); }
   stop() {
@@ -752,7 +780,7 @@ export class NativeController extends EventEmitter {
       this.ready();
       if (!this.program || sha256 !== this.program.sha256) fail('Reviewed program fingerprint does not match.');
       if (this.job.state !== 'loaded') fail('Reload and review the program before another run.');
-      this.paused = false; this.job.state = 'running';
+      this.paused = false; this.pauseHoldSeen = false; this.job.state = 'running';
       try {
         for (const line of program.lines) {
           await this.waitFor(() => { guard(); return !this.paused && ['Idle', 'Run'].includes(this.status?.state.name); }, 24 * 60 * 60 * 1000, generation);
@@ -760,19 +788,20 @@ export class NativeController extends EventEmitter {
           if (!this.armed || generation !== this.generation) fail('Program cancelled.');
           if (!['Idle', 'Run'].includes(this.status.state.name)) fail('Unexpected controller state while sending program.');
           const words = parseLine(line).words;
-          if (words.some(([letter, value]) => letter === 'M' && value === 0)) {
+          const pause = words.some(([letter, value]) => letter === 'M' && value === 0);
+          if (pause) {
             // Set before sending: firmware may acknowledge only after resume.
-            this.paused = true; this.job.state = 'paused';
+            this.paused = true; this.pauseHoldSeen = false; this.job.state = 'paused';
           }
           const dwell = words.some(([letter, value]) => letter === 'G' && value === 4)
             ? words.find(([letter]) => letter === 'P')[1] * 1000 : 0;
           this.job.sent++; this.publish();
-          await this.line(line, this.ackTimeout + dwell, { plannerWait: true, beforeSend: () => {
+          await this.line(line, this.ackTimeout + dwell, { plannerWait: true, pause, beforeSend: () => {
             guard();
             // Hold may arrive after this one line was admitted. It remains a
             // firmware-held line awaiting explicit resume, not a new permit.
             // Do not turn an intentional feed hold into an automatic reset.
-            if (!this.status || this.now() - this.lastStatusAt > this.staleMs) fail('Fresh controller status is required.');
+            if (!this.status || this.clock() - this.lastStatusAt > this.staleMs) fail('Fresh controller status is required.');
             if (!['Idle', 'Run', 'Hold'].includes(this.status.state.name)) fail('Unexpected controller state while sending program.');
           } });
           this.job.acknowledged++; this.publish();

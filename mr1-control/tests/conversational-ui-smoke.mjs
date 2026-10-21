@@ -48,7 +48,7 @@ try {
     { timeout: 5000 },
   );
   const latheProgram = await page.evaluate(() => document.getElementById("conversational-preview").value);
-  assert.match(latheProgram, /G21 G90 G94 G18 G40 G49 G80/);
+  assert.match(latheProgram, /G21 G90 G94 G18 G7 G40 G49 G80/);
   assert.ok(!/ Y-?\d/.test(latheProgram), "lathe program leaked a Y word");
 
   // Panel controls must follow the dark theme, not native light widgets.
@@ -95,7 +95,13 @@ try {
   assert.match(program, /^\(MR1 CONVERSATIONAL - DRILL BOLT CIRCLE\)/);
   assert.match(program, /\nM30\n?$/);
 
-  // The result must be scrolled into view and the gate strip must agree.
+  // The result must be scrolled into view and the gate strip must agree. The
+  // panel scrolls smoothly, so wait for it to settle before measuring.
+  await page.waitForFunction(() => {
+    const scrollBox = document.querySelector("#conversational-panel .probing-panel-scroll").getBoundingClientRect();
+    const statusBox = document.getElementById("conversational-status").getBoundingClientRect();
+    return statusBox.top >= scrollBox.top && statusBox.bottom <= scrollBox.bottom;
+  }, null, { timeout: 3000 }).catch(() => {});
   const resultView = await page.evaluate(() => {
     const scrollBox = document.querySelector("#conversational-panel .probing-panel-scroll").getBoundingClientRect();
     const statusBox = document.getElementById("conversational-status").getBoundingClientRect();

@@ -54,6 +54,18 @@ function redactCommandState(state) {
   return { ...state, owner: { ...ownerRest, ownerTag: ownerTagFor(ownerId) } };
 }
 
+// Error details go back to whichever client sent the failing request, so
+// they must never carry another session's owner ID.
+function redactErrorDetails(details) {
+  if (!details || typeof details !== "object") return details ?? null;
+  const { ownerId, transaction, ...rest } = details;
+  return {
+    ...rest,
+    ...(ownerId ? { ownerTag: ownerTagFor(ownerId) } : {}),
+    ...(transaction !== undefined ? { transaction: redactTransaction(transaction) } : {}),
+  };
+}
+
 const LOOPBACK_HOST = "127.0.0.1";
 const LAN_HOST = "0.0.0.0";
 const DEFAULT_HTTP_PORT = 8787;
@@ -394,6 +406,7 @@ export function createTelemetryService(options = {}) {
   let heartbeatTimer;
   let startupTimer;
   let latestStatus = null;
+  let latestStatusPerformanceAt = -Infinity;
   let latestSensor = null;
   let latestSpindle = null;
   let latestTransaction = null;
@@ -644,6 +657,7 @@ export function createTelemetryService(options = {}) {
   const publishStatus = (status, receivedPerformanceAt = performance.now()) => {
     if (!status) return;
     latestStatus = publishEnvelope(status, ++sequence, receivedPerformanceAt);
+    latestStatusPerformanceAt = receivedPerformanceAt;
     broadcast("telemetry", latestStatus);
     const stateKey = `${status.state?.name ?? "unknown"}:${status.state?.substate ?? ""}`;
     if (stateKey !== lastJournalMachineState || receivedPerformanceAt - lastJournalStatusAt >= 5000) {
@@ -736,8 +750,11 @@ export function createTelemetryService(options = {}) {
       journalEvent("controller.protocol-error", protocolError, { sync: true });
       return;
     }
-    const event = parseControllerLine(line, latestStatus, { receivedAt });
+    let event = parseControllerLine(line, latestStatus, { receivedAt });
     if (!event) return;
+    // grblHAL's $# reply ends with the [PRB:...] retained from an earlier G38.
+    // Inside a read-only preflight capture it is a parameter, not a new contact.
+    if (event.type === "probe" && controllerLineListeners.size > 0) event = { ...event, type: "probe-parameter" };
     if (event.type === "status") publishStatus(event.status, receivedPerformanceAt);
     else {
       const publishedEvent = { ...event, receivedAt, bridgePublishedAt: new Date().toISOString() };
@@ -1089,6 +1106,9 @@ export function createTelemetryService(options = {}) {
         }, { ...corsHeaders, "Retry-After": "1" });
         return;
       }
+      // Reserve the slot before awaiting so concurrent requests see it. A
+      // failed write keeps it too: retries wait out the 750 ms (fail closed).
+      lastSensorCommandAt = now;
       await writeSerialAndDrain(sensorSerial, command);
       lastSensorCommandAt = performance.now();
       journalEvent("sensor.calibration-command", {
@@ -1258,7 +1278,7 @@ export function createTelemetryService(options = {}) {
       sendJson(response, statusCode, {
         error: error instanceof Error ? error.message : String(error),
         code: error?.code ?? "MACHINE_TRANSACTION_FAILED",
-        details: error?.details ?? null,
+        details: redactErrorDetails(error?.details),
         machineCommands: redactCommandState(commandCoordinator.snapshot()),
       }, corsHeaders);
     }
@@ -1310,7 +1330,7 @@ export function createTelemetryService(options = {}) {
       sendJson(response, error instanceof MachineCommandError ? error.statusCode : 503, {
         error: error instanceof Error ? error.message : String(error),
         code: error?.code ?? "MACHINE_CANCEL_FAILED",
-        details: error?.details ?? null,
+        details: redactErrorDetails(error?.details),
         machineCommands: redactCommandState(commandCoordinator.snapshot()),
       }, corsHeaders);
     }
@@ -1801,7 +1821,11 @@ export function createTelemetryService(options = {}) {
     }
     writeClient(response, "retry: 1500\n\n");
     sendClientEvent(response, "bridge", bridge);
-    if (latestStatus) sendClientEvent(response, "telemetry", latestStatus);
+    // Replay status only inside the UI stale window, so a silent controller is not shown as live.
+    const statusStaleAfterMs = Math.max(1200, bridge.pollMs * 5);
+    if (latestStatus && performance.now() - latestStatusPerformanceAt <= statusStaleAfterMs) {
+      sendClientEvent(response, "telemetry", latestStatus);
+    }
     if (latestSensor) sendClientEvent(response, "sensor", latestSensor);
     if (latestSpindle) sendClientEvent(response, "spindle", latestSpindle);
     if (eventJournal.status().enabled) {

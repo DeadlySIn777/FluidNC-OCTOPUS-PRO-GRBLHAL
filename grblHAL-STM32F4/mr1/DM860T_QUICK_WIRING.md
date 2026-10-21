@@ -160,6 +160,11 @@ plug for rollback. No stock motor cable lands on an Octopus motor terminal.
 
 ## Alarm Output
 
+> **Rollback hardware only.** The active CL57T build uses one relay per drive
+> (`ALARM_INTERFACE.md`): series contacts into PB1, the only drive-fault stop,
+> and PG12-PG15 for raw per-axis reports. If the DM860T set is ever reinstated,
+> its alarms need the same PB1 aggregate; the table below is not a stop path.
+
 DM860T V3 provides `ALM+` and `ALM-`, rated up to 30 V / 100 mA. Route each
 through the isolated, polarity-configurable fault conditioner in
 `INTERFACE_BOARD.md`; never connect it directly to an Octopus input.

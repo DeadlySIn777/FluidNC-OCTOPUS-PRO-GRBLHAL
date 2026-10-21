@@ -74,7 +74,7 @@
       "ena": "unconnected by default; any reserved enable interface requires separate qualification",
       "power": "P4 +VDC/GND, polarized 36 V star branch; 18-50 V absolute bus range",
       "encoder": "P2 EA+/EA-/EB+/EB-/VCC/EGND; VCC is drive-supplied, never externally powered",
-      "fault": "ALM/COMO into individually isolated conditioners; combine proven healthy outputs into PB1, the only drive-fault stop, and qualify it before any coupled dual-Y motion. The new source candidate samples PG12-PG15 for MR1F:1 raw diagnostics only. Installed firmware support and physical interface qualification remain unknown; snapshots can miss brief faults and do not stop motion"
+      "fault": "ALM drives its own Weidmüller 2618530000 relay coil (COM− to the isolated alarm return); relay contacts 11-14 in series form PB1, the only drive-fault stop, and contacts 21-24 report each axis on PG12-PG15; and qualify it before any coupled dual-Y motion. The new source candidate samples PG12-PG15 for MR1F:1 raw diagnostics only. Installed firmware support and physical interface qualification remain unknown; snapshots can miss brief faults and do not stop motion"
     }
   },
   "electrical_domains": [

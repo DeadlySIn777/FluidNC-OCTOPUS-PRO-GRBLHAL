@@ -63,10 +63,11 @@ pin:
 - Direct spindle encoder or DB44 wiring without an isolated interface and
   installed-drive verification.
 
-Our Octopus design requires four separate home inputs and an individual
-conditioner for each drive alarm, combined into the PB1 aggregate that stops
-motion. Optional PG12–PG15 wiring is for a future firmware candidate: the current
-firmware does not read or display those states. Active CL57T drives use eight
+Our Octopus design requires four separate home inputs and one alarm relay per
+drive ([ALARM_INTERFACE.md](ALARM_INTERFACE.md)): contacts 11–14 form the PB1
+aggregate that stops motion, and contacts 21–24 report each axis on PG12–PG15.
+Only the new firmware candidate reports those states (`MR1F:1` raw snapshots);
+they never stop motion, and older installed builds do not read them. Active CL57T drives use eight
 qualified PUL/DIR channels; the four ENA channels remain reserved and unconnected.
 No common or per-drive enable wiring is imported. These are design requirements,
 not a description of an installed adapter or traced stock harness.

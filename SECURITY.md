@@ -9,6 +9,12 @@ Do not include credentials, serial numbers, machine journals or customer program
 in public reports. Use GitHub private vulnerability reporting when available;
 otherwise open an issue containing only a request for a private contact channel.
 
+The optional Claude advisor sends the operator's question, a summary of the
+live controller state and, when selected, the loaded program to Anthropic
+through the Claude Code CLI signed in on that PC. It has no command channel to
+the controller; leave it disabled (`MR1_ADVISOR=off`) where programs must not
+leave the workstation.
+
 Software feed hold, reset and unlock are not an electrical E-stop. Machine energy
 isolation, drive alarms, wiring and physical acceptance remain separate work.
 `legacy/` (including the former firmware-root scripts in

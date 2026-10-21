@@ -140,16 +140,25 @@
 #endif
 #define MOTOR_FAULT_INMODE           GPIO_BITBAND
 
-/* Low-side power outputs. Use interposing isolation; never wire the servo I/O directly. */
+/* Low-side power outputs. Use interposing isolation; never wire the servo I/O directly.
+ * Only outputs claimed by the spindle or coolant are defined. An unclaimed
+ * auxiliary output would become a general-purpose M62-M65 port that any sender
+ * or MDI line could switch, so the spindle-free lab image leaves PA8 and PD14
+ * undefined (reset state: input, FAN MOSFET off) and no image exposes PE15
+ * unless a direction output is configured. */
+#if !defined(MR1_SERVO_AXIS_LAB)
 #define AUXOUTPUT0_PORT              GPIOA /* FAN0: spindle PWM carrier */
 #define AUXOUTPUT0_PIN               8
 #define AUXOUTPUT1_PORT              GPIOD /* FAN4: spindle enable relay */
 #define AUXOUTPUT1_PIN               14
+#endif
+#if DRIVER_SPINDLE_ENABLE & SPINDLE_DIR
 #define AUXOUTPUT2_PORT              GPIOE /* Reserved spindle direction. NOTE: PE15 sits in the
                                              EXP1 block on the official v1.1 pinout; the FAN5
                                              connector is PD15. Re-audit before ever using this
                                              output or wiring the physical FAN5 header. */
 #define AUXOUTPUT2_PIN               15
+#endif
 #define AUXOUTPUT3_PORT              GPIOA /* HE0 on v1.1: flood relay */
 #define AUXOUTPUT3_PIN               0
 #define AUXOUTPUT4_PORT              GPIOA /* HE1: mist/air relay */

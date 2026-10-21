@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 import struct
 import sys
@@ -34,10 +35,12 @@ CORE_STEPPER_PATH = ROOT / "grbl" / "stepper.c"
 CORE_CONFIG_PATH = ROOT / "grbl" / "config.h"
 CORE_CONSTANTS_PATH = ROOT / "grbl" / "nuts_bolts.h"
 LINKER_PATH = ROOT / "STM32F429ZGTX_BL32K_I2C_FLASH.ld"
-FIRMWARE_PATH = ROOT / ".pio" / "build" / "btt_octopus_pro_f429_mr1" / "firmware.bin"
-SERVO_AXIS_FIRMWARE_PATH = (
-    ROOT / ".pio" / "build" / "btt_octopus_pro_f429_mr1_servo_axis_lab" / "firmware.bin"
-)
+# MR1_FIRMWARE_IMAGE / MR1_LAB_IMAGE point the binary audit at another build,
+# for example the images from tools/compile_check_mr1.py --out.
+FIRMWARE_PATH = Path(os.environ.get("MR1_FIRMWARE_IMAGE")
+                     or ROOT / ".pio" / "build" / "btt_octopus_pro_f429_mr1" / "firmware.bin")
+SERVO_AXIS_FIRMWARE_PATH = Path(os.environ.get("MR1_LAB_IMAGE")
+                                or ROOT / ".pio" / "build" / "btt_octopus_pro_f429_mr1_servo_axis_lab" / "firmware.bin")
 
 DEFINE_RE = re.compile(r"^\s*#define\s+([A-Za-z_][A-Za-z0-9_]*)\s+(.+?)\s*(?:/\*.*)?$")
 GPIO_RE = re.compile(r"GPIO([A-K])$")

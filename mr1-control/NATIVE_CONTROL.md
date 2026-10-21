@@ -58,7 +58,8 @@ port 8787.
   grblHAL reports nothing during a homing cycle: after its forced Home report
   the stale-status watchdog waits for the `$H` acknowledgement (at most 120 s),
   then requires a fresh report. Jog cancel sends realtime `0x85` and escalates to
-  hold and reset if Idle is not reported within one second.
+  hold and reset if Idle is not reported within one second. An active program
+  gets hold and reset instead, and spindle or coolant left on is reset too.
 - Large programs are validated in a worker thread, so loading one cannot delay
   status handling or a stop.
 - Server-side NC validation, SHA-256 binding to the reviewed source, manual M0
@@ -71,7 +72,9 @@ port 8787.
 - Deferred M0 acknowledgements follow the firmware's suspend/resume behavior.
   Fresh Run/Hold reports allow planner waits without replaying commands; a lost
   acknowledgement at Idle still faults. Explicit G4 dwells retain their declared
-  time after earlier motion drains, with a one-hour maximum per dwell.
+  time after earlier motion drains, with a one-hour maximum per dwell. A wired
+  cycle start (PB2/SW2) that resumes a reported hold, or an acknowledged M0,
+  also ends the host pause, so streaming continues under the same checks.
 - Two-touch probing from the current position, with explicit probe/setter input
   selection, bounded search and retract, contact-coordinate checks, 0.05 mm
   repeatability rejection, and restoration of units/distance/feed modes. Probe
@@ -133,6 +136,30 @@ While disarmed and stationary, the operator can label and export displayed
 reports. The panel issues no controller commands. Its observations are logical
 reports and operator notes, not measured voltages or accepted commissioning
 evidence; they never grant motion permission.
+
+## Claude advisor (advice only)
+
+The native panel's **Ask Claude (advice only)** section sends a question to
+Claude through the Claude Code CLI already installed and signed in on this PC
+(`claude -p`), so it uses that login, such as a Claude subscription, rather than
+an API key stored by MR1. Nothing is sent until the operator presses **Ask**.
+Each question carries the live controller summary from this service (state,
+alarm, fault, preflight issues, job and program validation) and, only when
+ticked, the loaded program source.
+
+The advisor cannot reach the machine. It receives a copy of the controller
+snapshot, never the controller or serial port, and its answer is shown as plain
+text. The CLI runs with read-only tools (`Read`, `Grep`, `Glob`) so it can look
+up the project documents in a source checkout, no MCP servers and no saved
+session. The prompt travels on stdin; the command line contains only constant
+flags. Questions are limited to 4,000 characters and programs to 64 KB, one
+question runs at a time, and an answer that takes over three minutes is
+cancelled. Asking needs no controller lease and never delays a command or stop.
+
+Install Claude Code and run `claude` once to sign in. Set `MR1_ADVISOR=off` to
+disable the advisor, or `MR1_CLAUDE_COMMAND` to point at a specific `claude`
+executable. Treat answers as suggestions to check against the documents; they
+never replace commissioning evidence or the physical E-stop.
 
 ## Commissioning boundary
 

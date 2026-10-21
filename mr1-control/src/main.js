@@ -1249,6 +1249,7 @@ const runtime = {
   continuousJogButton: null,
   continuousJogReleasePending: false,
   commandPending: false,
+  ownCommandInFlight: false,
   commandFeedback: null,
   transaction: null,
   typedProbeCycleActive: false,
@@ -3546,6 +3547,15 @@ function acceptMachineTransaction(transaction) {
     && Number.isInteger(transaction.sequence)
     && transaction.sequence < current.sequence
   ) return current;
+  // Another session's broadcast (e.g. its lease or gate rejection) must never
+  // replace or release this UI's own in-flight work: the dead-man cancel, the
+  // one-command-in-flight hold and typed-probe contact ownership all key off it.
+  if (
+    current?.id !== transaction.id
+    && !transactionOwnedByThisUi(transaction)
+    && (runtime.ownCommandInFlight
+      || (current && !transactionIsTerminal(current) && transactionOwnedByThisUi(current)))
+  ) return current;
   runtime.transaction = transaction;
   runtime.commandPending = !transactionIsTerminal(transaction);
   runtime.commandFeedback = transaction.error?.message ?? transactionStatusLabel(transaction);
@@ -3603,6 +3613,7 @@ async function submitMachineIntent(intent, label) {
   if (runtime.commandPending) return null;
   let submittedTransactionId = null;
   runtime.commandPending = true;
+  runtime.ownCommandInFlight = true;
   if (intent.type === "touch-probe") runtime.typedProbeCycleActive = true;
   runtime.commandFeedback = `SUBMITTING ${label}`;
   renderMachineCommandSurfaces();
@@ -3655,6 +3666,8 @@ async function submitMachineIntent(intent, label) {
       : error instanceof Error ? error.message.toUpperCase() : "COMMAND REJECTED";
     renderMachineCommandSurfaces();
     return null;
+  } finally {
+    runtime.ownCommandInFlight = false;
   }
 }
 
@@ -8310,6 +8323,11 @@ jogElements.directionButtons.forEach((button) => {
 
 window.addEventListener("pointerup", stopContinuousPreviewJog);
 window.addEventListener("blur", stopContinuousPreviewJog);
+// The held jog button is disabled while its transaction is pending, so focus
+// leaves it and its own keyup never fires; release the dead-man here instead.
+window.addEventListener("keyup", (event) => {
+  if (runtime.continuousJogButton && ["Enter", " "].includes(event.key)) stopContinuousPreviewJog();
+}, true);
 
 elements.openSceneRegistration.addEventListener("click", () => {
   setSceneRegistrationPanel(elements.sceneRegistrationPanel.getAttribute("aria-hidden") === "true");

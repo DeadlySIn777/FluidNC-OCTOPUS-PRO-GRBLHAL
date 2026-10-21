@@ -524,3 +524,39 @@ test('console close and crashes stop an armed controller before the process exit
     if (trigger !== 'SIGHUP') assert.match(stderr, /synthetic (crash|rejection)/);
   }
 });
+test('the Claude advisor answers same-origin questions without a lease and never touches the controller', async t => {
+  const asked = [];
+  let release;
+  const advisor = {
+    status: () => ({ protocol: 'mr1-claude-advisor-v1', available: true, busy: false, readOnly: true, commandChannel: false }),
+    ask: async (input, context) => {
+      asked.push({ input, context });
+      if (input.question === 'slow') await new Promise(resolve => { release = resolve; });
+      if (input.question === 'busy') throw Object.assign(new Error('still answering'), { busy: true });
+      return { answer: `advice for ${input.question}`, machineCommandsSent: 0 };
+    },
+  };
+  const { request, claim, port, origin } = await setup(t, { advisor });
+  assert.equal((await request('/api/advisor')).body.available, true);
+  // No session claim: advice needs no controller ownership.
+  const answered = await request('/api/advisor/ask', { question: 'why alarm 17?' });
+  assert.equal(answered.status, 200);
+  assert.equal(answered.body.answer, 'advice for why alarm 17?');
+  assert.equal(asked[0].context.snapshot.connected, false);
+  assert.equal((await request('/api/advisor/ask', { question: 'q' }, { Origin: 'https://untrusted.example' })).status, 403);
+  assert.equal((await request('/api/advisor/ask', { question: 'busy' })).status, 409);
+  // A slow answer holds no controller mutation slot.
+  await claim();
+  const pending = request('/api/advisor/ask', { question: 'slow' });
+  await delay(50);
+  assert.equal((await request('/api/connect', { port: 'COM7' })).status, 200);
+  release(); assert.equal((await pending).status, 200);
+  assert.ok(asked.every(entry => !('port' in entry.context) && !('controller' in entry.context)));
+  // The connected controller keeps polling status on its own timer; the
+  // advisor must add nothing else: no command line and no other realtime byte.
+  const before = port.writes.length;
+  await request('/api/advisor/ask', { question: 'after connect' });
+  const statusPoll = write => Array.isArray(write) && write.length === 1 && [REALTIME.status, REALTIME.statusAll].includes(write[0]);
+  assert.deepEqual(port.writes.slice(before).filter(write => !statusPoll(write)), []);
+  assert.ok(origin);
+});

@@ -148,14 +148,15 @@ mechanical coupling removed and an appropriate isolated test load:
 - [ ] Lost-drive-power and open-alarm-cable results: ______________________
 
 Never disconnect a powered motor or encoder to force a fault, and do not put
-an ohmmeter across an energized alarm output. A conditioner test input can
+an ohmmeter across an energized alarm output. Opening a relay contact can
 prove the controller path, but does not prove the drive actually signals a fault.
 
 - [ ] Is the direction configurable, and how? ______________________
 - [ ] Red LED blink count observed for the forced fault: __________
 
-This determines the conditioner polarity so that **healthy = loop closed** and
-a broken wire reads as a fault.
+This determines the drive's ALM output setting so that its relay is
+**energized while healthy** (ALM conducting to COM−) and a broken wire reads as
+a fault. See [ALARM_INTERFACE.md](ALARM_INTERFACE.md).
 
 ## 7. Cabinet fit
 

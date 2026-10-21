@@ -1781,6 +1781,13 @@ static bool aux_claim_explicit (aux_ctrl_t *aux_ctrl)
                 ((input_signal_t *)aux_ctrl->input)->mode.debounce = ((input_signal_t *)aux_ctrl->input)->cap.debounce && hal.driver_cap.software_debounce;
                 break;
 #endif
+#if defined(MR1_PRODUCTION_PROFILE) && defined(CYCLE_START_PIN)
+            // MR1: PB2 also carries the Octopus' onboard SW2 button. Debounce
+            // so contact bounce or a noise burst cannot register repeated starts.
+            case Input_CycleStart:
+                ((input_signal_t *)aux_ctrl->input)->mode.debounce = ((input_signal_t *)aux_ctrl->input)->cap.debounce && hal.driver_cap.software_debounce;
+                break;
+#endif
             default: break;
         }
     }

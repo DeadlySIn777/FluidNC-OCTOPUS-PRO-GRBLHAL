@@ -116,8 +116,9 @@ export class MachineTransactionCoordinator {
       throw new MachineCommandError("Another operator session owns the machine command lease.", {
         code: "COMMAND_LEASE_HELD",
         statusCode: 423,
+        // Only the expiry: the holder's owner ID is a bearer credential
+        // and this error goes back to the competing session.
         details: {
-          ownerId: this.lease.ownerId,
           expiresAt: new Date(this.lease.expiresAt).toISOString(),
         },
       });
