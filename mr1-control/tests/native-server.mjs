@@ -552,8 +552,11 @@ test('the Claude advisor answers same-origin questions without a lease and never
   assert.equal((await request('/api/connect', { port: 'COM7' })).status, 200);
   release(); assert.equal((await pending).status, 200);
   assert.ok(asked.every(entry => !('port' in entry.context) && !('controller' in entry.context)));
+  // The connected controller keeps polling status on its own timer; the
+  // advisor must add nothing else: no command line and no other realtime byte.
   const before = port.writes.length;
   await request('/api/advisor/ask', { question: 'after connect' });
-  assert.equal(port.writes.length, before);
+  const statusPoll = write => Array.isArray(write) && write.length === 1 && [REALTIME.status, REALTIME.statusAll].includes(write[0]);
+  assert.deepEqual(port.writes.slice(before).filter(write => !statusPoll(write)), []);
   assert.ok(origin);
 });
