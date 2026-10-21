@@ -91,7 +91,8 @@ test("virtual WCS transaction is acknowledged, observed, idempotent, and single-
 
   assert.throws(
     () => coordinator.submit(wcsRequest("owner-two", "request-two")),
-    (error) => error.code === "COMMAND_LEASE_HELD" && error.statusCode === 423,
+    (error) => error.code === "COMMAND_LEASE_HELD" && error.statusCode === 423
+      && error.details?.ownerId === undefined,
   );
 });
 

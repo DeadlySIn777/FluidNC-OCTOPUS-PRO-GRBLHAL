@@ -9,6 +9,7 @@ import {
   SENSOR_WRITE_POLICY,
   SERIAL_WRITE_POLICY,
   CONTROLLER_SETTINGS_WRITE_POLICY,
+  ownerTagFor,
 } from "../service/mr1-telemetry-service.mjs";
 import { CONTROLLER_SETTINGS_PLAN_PROTOCOL } from "../src/controller-settings.js";
 
@@ -485,6 +486,62 @@ test("machine cancel endpoint is owner-bound and aborts an active virtual move",
     }
     assert.equal(service.snapshot().latestTransaction.error.code, "COMMAND_CANCELLED");
     assert.equal(service.snapshot().latestStatus.state.name, "Hold");
+  } finally {
+    await service.stop();
+  }
+});
+
+test("a lease-held rejection never discloses the holder's owner ID", async () => {
+  const service = createTelemetryService({
+    mode: "simulate",
+    httpPort: 0,
+    fissionRoot: false,
+    virtualPhaseDelayMs: 300,
+  });
+  const address = await service.start();
+  const origin = "http://127.0.0.1:5173";
+  const holder = "operator-secret-owner-1";
+  const other = "other-owner-0001";
+  const post = (path, body) => fetch(`${address.url}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: origin },
+    body: JSON.stringify(body),
+  });
+  const jog = (ownerId, requestId) => ({
+    ownerId,
+    requestId,
+    observedStatusSequence: service.snapshot().latestStatus.sequence,
+    intent: {
+      type: "jog",
+      axis: "x",
+      direction: 1,
+      distance: 10,
+      feed: 100,
+      coordinateMode: "machine",
+    },
+  });
+  try {
+    const held = await post("/machine/transactions", jog(holder, "request-holder-1"));
+    assert.equal(held.status, 202);
+    const heldTransaction = (await held.json()).transaction;
+
+    const conflict = await post("/machine/transactions", jog(other, "request-other-1"));
+    assert.equal(conflict.status, 423);
+    const text = await conflict.text();
+    const body = JSON.parse(text);
+    assert.equal(body.code, "COMMAND_LEASE_HELD");
+    assert.equal(text.includes(holder), false, "The 423 body must not carry the holder's owner ID.");
+    assert.equal(body.details?.ownerId, undefined);
+    assert.equal(typeof body.details?.expiresAt, "string");
+    assert.equal(body.details?.transaction?.state, "rejected");
+    assert.equal(body.details?.transaction?.ownerId, undefined);
+    assert.equal(body.details?.transaction?.ownerTag, ownerTagFor(other));
+
+    const denied = await post("/machine/cancel", { ownerId: other, transactionId: heldTransaction.id });
+    assert.equal(denied.status, 403);
+    const deniedText = await denied.text();
+    assert.equal(JSON.parse(deniedText).code, "TRANSACTION_OWNER_MISMATCH");
+    assert.equal(deniedText.includes(holder), false, "A cancel rejection must not carry the holder's owner ID.");
   } finally {
     await service.stop();
   }

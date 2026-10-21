@@ -13,8 +13,11 @@ const CALIBRATION_RESULTS = new Set([
   "clear_failed",
 ]);
 
+// Only JSON numbers and numeric strings are converted. Number() would unwrap a
+// one-element array and throws on an object whose toString/valueOf is not a
+// function, which would escape the serial "data" listener.
 function finiteInRange(value, minimum, maximum) {
-  if (value === null || value === undefined || value === "") return null;
+  if ((typeof value !== "number" && typeof value !== "string") || value === "") return null;
   const number = Number(value);
   return Number.isFinite(number) && number >= minimum && number <= maximum ? number : null;
 }
@@ -79,7 +82,7 @@ const LEGACY_STATES = new Map([
 function legacyChatterPayload(payload) {
   const legacy = payload.chatter;
   if (payload.type !== undefined || !legacy || typeof legacy !== "object" || Array.isArray(legacy)) return null;
-  const state = LEGACY_STATES.get(String(legacy.state ?? "").toLowerCase());
+  const state = typeof legacy.state === "string" ? LEGACY_STATES.get(legacy.state.toLowerCase()) : undefined;
   if (!state) return null;
   return { type: "chatter", score: legacy.score, state, freq: legacy.freq };
 }
@@ -100,7 +103,7 @@ export function parseChatterSensorLine(line, options = {}) {
   if (!payload) return null;
 
   const score = finiteInRange(payload.score, 0, 100);
-  const state = String(payload.state ?? "").toLowerCase();
+  const state = typeof payload.state === "string" ? payload.state.toLowerCase() : "";
   if (!Number.isFinite(score) || !SENSOR_STATES.has(state)) return null;
 
   const espTemperatureC = finiteInRange(payload.esp_temp ?? payload.temp, -40, 125);

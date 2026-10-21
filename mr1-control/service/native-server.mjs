@@ -58,6 +58,7 @@ export async function createNativeServer(options = {}) {
     cwd: existsSync(resolve(ROOT, '..', 'docs', 'wiring')) ? resolve(ROOT, '..') : ROOT });
   let qualification = null;
   let token = null;
+  // Lease age is elapsed time: a wall-clock step must neither extend nor end a lease.
   let ownerSeen = 0;
   let stopPromise = null;
   let closing = false;
@@ -110,8 +111,8 @@ export async function createNativeServer(options = {}) {
     const value = req.headers['x-mr1-session'];
     if (!token || typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)
       || !timingSafeEqual(Buffer.from(value), Buffer.from(token))) throw rejectedSession('This browser does not own the controller session.');
-    if (Date.now() - ownerSeen > leaseMs) throw rejectedSession('Controller session expired. Reclaim it before continuing.');
-    ownerSeen = Date.now();
+    if (performance.now() - ownerSeen > leaseMs) throw rejectedSession('Controller session expired. Reclaim it before continuing.');
+    ownerSeen = performance.now();
   };
   const cancelAuthority = reason => {
     authorityEpoch++;
@@ -122,13 +123,17 @@ export async function createNativeServer(options = {}) {
     const disconnect = url.pathname === '/api/disconnect';
     const endCommissioning = url.pathname === '/api/commissioning/end';
     const priority = safety || disconnect || endCommissioning;
+    // Resume continues a dispatched typed operation that a feed hold paused. It
+    // starts nothing new, so it shares that slot; the controller still requires
+    // fresh status, authorization and a completed Hold.
+    const resumeHeld = url.pathname === '/api/command' && input.action === 'resume' && mutation?.dispatched === true && controller.busy;
     if (priority) {
       if (input.action === 'hold' && safety) {
         // A feed hold must remain resumable for an already dispatched job.
         // It still cancels a start that is only waiting for its request audit.
         if (mutation && !mutation.dispatched) mutation.cancelled = 'A feed hold cancelled the pending request.';
       } else cancelAuthority('A stop, disconnect or commissioning end cancelled the pending request.');
-    } else if (mutation) throw new Error('Another controller request is still completing.');
+    } else if (mutation && !resumeHeld) throw new Error('Another controller request is still completing.');
     const scope = {
       token: req.headers['x-mr1-session'], epoch: authorityEpoch,
       generation: priority || url.pathname === '/api/connect' ? null : controller.generation,
@@ -136,12 +141,12 @@ export async function createNativeServer(options = {}) {
       check() {
         if (closing) throw new Error('The local controller service is shutting down.');
         if (this.cancelled || this.epoch !== authorityEpoch) throw new Error(this.cancelled ?? 'Controller request was cancelled.');
-        if (!safety && (this.token !== token || expiredToken === this.token || Date.now() - ownerSeen > leaseMs)) throw rejectedSession('Controller session expired or changed before the request completed.');
+        if (!safety && (this.token !== token || expiredToken === this.token || performance.now() - ownerSeen > leaseMs)) throw rejectedSession('Controller session expired or changed before the request completed.');
         if (this.generation !== null && this.generation !== controller.generation) throw new Error('Controller connection changed before the request completed.');
       },
       dispatch(fn) { this.check(); this.dispatched = true; return fn(); },
     };
-    if (!priority) mutation = scope;
+    if (!priority && !resumeHeld) mutation = scope;
     try { return await requestScope.run(scope, () => { scope.check(); return operation(scope); }); }
     finally { if (mutation === scope) mutation = null; }
   };
@@ -198,13 +203,13 @@ export async function createNativeServer(options = {}) {
           } catch (error) { return json(res, error.busy ? 409 : 400, { error: error.message }); }
         }
         if (url.pathname === '/api/session') {
-          if (token && Date.now() - ownerSeen < leaseMs) return json(res, 423, { error: 'Another browser owns the controller.' });
+          if (token && performance.now() - ownerSeen < leaseMs) return json(res, 423, { error: 'Another browser owns the controller.' });
           // Losing the lease invalidates operation even if the watchdog has not
           // yet run. A replacement browser never inherits an armed session.
           cancelAuthority('Operator session changed.');
           if (controller.armed || controller.busy || mutation) controller.faulted('Operator session changed.');
           commissioning.revoke('Operator session changed.');
-          token = randomBytes(32).toString('hex'); expiredToken = null; ownerSeen = Date.now(); return json(res, 200, { token });
+          token = randomBytes(32).toString('hex'); expiredToken = null; ownerSeen = performance.now(); return json(res, 200, { token });
         }
         let leaseHeld = true;
         try { owner(req); }
@@ -323,7 +328,7 @@ export async function createNativeServer(options = {}) {
   });
   const watchdog = setInterval(() => {
     commissioning.watchdog();
-    if (token && token !== expiredToken && Date.now() - ownerSeen > leaseMs
+    if (token && token !== expiredToken && performance.now() - ownerSeen > leaseMs
       && (controller.armed || controller.busy || commissioning.snapshot().session || mutation)) {
       expiredToken = token; cancelAuthority('Operator session lost.');
       commissioning.revoke('Operator session lost.'); controller.faulted('Operator session lost.');

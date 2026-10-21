@@ -701,6 +701,26 @@ test('direct zero verifies current G92 and TLO in fresh parameter readback', asy
   assert.ok(port.writes.filter(line => line === '$#').length >= 3, 'fresh parameter queries before and after the zero write');
 });
 
+test('the retained [PRB] in a $# reply is a parameter readback, not a new probe contact', async t => {
+  const port = new DirectActionPort(), retained = '[PRB:-120,-80,-35.25:1]';
+  // grblHAL report_ngc_parameters() ends with the result of the last G38.
+  port.parameterReports = () => [...Object.entries(port.offsets), ['G92', port.g92], ['TLO', port.tlo]]
+    .map(([key, vector]) => `[${key}:${vector.join(',')}]`).concat(retained);
+  const controller = new NativeController({ profile, portFactory: async () => port, motionQualified: true, ackTimeout: 120 });
+  t.after(() => controller.disconnect());
+  const types = [];
+  controller.on('controller', event => { if (event?.raw === retained) types.push(event.type); });
+  await controller.connect('COM7');
+  assert.equal(controller.preflight.preflightPassed, true);
+  controller.arm(); await controller.zero({ axis: 'z' });
+  assert.equal(types.length, 3, 'the preflight and both zero readbacks carried the retained report');
+  assert.deepEqual([...new Set(types)], ['probe-parameter']);
+  assert.equal(controller.probe, null); assert.equal(controller.probeCounter, 0);
+  assert.equal(port.writes.some(line => typeof line === 'string' && line.includes('G38')), false);
+  port.send('[PRB:-100,-100,-21:1]\r\n');
+  assert.equal(controller.probeCounter, 1, 'a report outside a $# reply is still a contact');
+});
+
 test('direct zero rejects missing parameter replies before changing the offset', async t => {
   const { controller, port } = await setup(t, { port: new DirectActionPort() });
   port.parameterReports = () => [];
@@ -826,6 +846,36 @@ test('intentional feed hold during program persistence stays resumable without a
   assert.equal(controller.job.state, 'complete');
 });
 
+// MR1 wires a physical cycle start (PB2, CONTROL_ENABLE 70; onboard SW2 shares it).
+// grblHAL resumes a feed hold or an M0 suspend on it and only then sends the M0 ok.
+test('a wired cycle start that resumes the firmware also ends the host pause', async t => {
+  for (const kind of ['M0', 'feed hold']) {
+    const { controller, port } = await setup(t);
+    const loaded = controller.loadProgram(program); controller.arm();
+    if (kind === 'M0') port.deferPauseAck = true; else port.ignore = 'G0 X0 Y0';
+    const run = controller.runProgram(loaded.sha256);
+    if (kind === 'M0') await controller.waitFor(() => port.pauseAckPending, 1000);
+    else {
+      await controller.waitFor(() => controller.status?.state.name === 'Hold', 1000); controller.resume();
+      await controller.waitFor(() => port.writes.includes('G0 X0 Y0'), 1000);
+      port.state = 'Run'; port.send(port.status()); // a report generated before the hold byte
+      controller.hold();
+      port.state = 'Run'; port.send(port.status()); // still pre-hold: must not end the pause
+      assert.equal(controller.paused, true);
+      await controller.waitFor(() => controller.status?.state.name === 'Hold', 1000);
+    }
+    port.state = kind === 'M0' ? 'Idle' : 'Run'; port.send(port.status()); // physical cycle start
+    if (kind === 'M0') {
+      assert.equal(controller.job.state, 'paused', 'an M0 is not passed before its ok');
+      port.pauseAckPending = false; port.send('ok\r\n');
+    } else { port.send('ok\r\n'); port.state = 'Idle'; port.send(port.status()); }
+    await Promise.race([run, delay(2000).then(() => assert.fail(`${kind}: job stayed ${controller.job.state}`))]);
+    assert.equal(controller.job.state, 'complete'); assert.equal(controller.fault, null);
+    assert.equal(port.writes.filter(x => x === 'M0').length, 1);
+    assert.equal(port.writes.filter(bytes => Array.isArray(bytes) && bytes[0] === REALTIME.resume).length, kind === 'M0' ? 0 : 1);
+  }
+});
+
 // Pinned $10=511 leaves bit 12 (report while homing) clear: grblHAL sends one
 // forced report as the cycle starts and answers no status request until it ends.
 class SilentHomingPort extends WireController {
@@ -843,7 +893,7 @@ const energy = port => port.writes.filter(bytes => Array.isArray(bytes) && [REAL
 async function silentHome(t, options = {}) {
   let now = Date.now();
   const port = new SilentHomingPort();
-  const { controller } = await setup(t, { port, now: () => now, ...options });
+  const { controller } = await setup(t, { port, now: () => now, clock: () => now, ...options });
   port.state = 'Alarm'; port.homed = false; port.send(port.status()); controller.arm();
   const home = controller.home();
   return { controller, port, home, advance: ms => { now += ms; } };
@@ -945,6 +995,48 @@ test('an unconfirmed jog cancel escalates to hold and reset', async t => {
   controller.cancelJog();
   assert.ok(!port.writes.slice(-3).some(bytes => Array.isArray(bytes) && bytes[0] === REALTIME.cancelJog), 'a running program is reset, not jog-cancelled');
   assert.deepEqual(energy(port).slice(-2).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset]);
+});
+
+test('jog cancel while a program line is in flight at Idle resets instead of disarming with the spindle on', async t => {
+  const { controller, port } = await setup(t, { ackTimeout: 2000 });
+  const loaded = controller.loadProgram(program, 'part.nc'); controller.arm();
+  port.ignore = 'G54';
+  const run = controller.runProgram(loaded.sha256);
+  const rejected = assert.rejects(run, /Jog cancelled/);
+  await until(() => controller.job.state === 'paused');
+  port.send(port.status()); controller.resume();
+  await until(() => port.writes.includes('G54'));
+  assert.equal(controller.status.state.name, 'Idle', 'the planner is empty between program lines');
+  const stops = energy(port).length;
+  await controller.cancelJog(); await rejected;
+  assert.deepEqual(energy(port).slice(stops).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset]);
+  assert.equal(controller.armed, false); assert.equal(controller.job.state, 'fault');
+});
+
+test('jog cancel never drops authority with spindle or coolant still on', async t => {
+  for (const [state, flags, rpm] of [['Idle', 'S', 3000], ['Jog', 'F', 0]]) {
+    const { controller, port } = await setup(t);
+    controller.arm();
+    const base = port.status.bind(port);
+    port.status = full => base(full).replace('|FS:0,0', `|FS:0,${rpm}`).replace('|A:', `|A:${flags}`);
+    port.state = state; port.send(port.status()); port.state = 'Idle';
+    const mark = port.writes.length, stops = energy(port).length;
+    await controller.cancelJog();
+    const after = port.writes.slice(mark);
+    assert.deepEqual(energy(port).slice(stops).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset], `${state} with A:${flags}`);
+    if (state === 'Jog') assert.ok(after.findIndex(bytes => bytes[0] === REALTIME.cancelJog) < after.findIndex(bytes => bytes[0] === REALTIME.reset), 'a jog still decelerates first');
+    assert.equal(controller.armed, false);
+  }
+  // An output line already transmitted can energize the spindle after the cancel.
+  const { controller, port } = await setup(t);
+  controller.arm(); port.ignore = 'M3 S3000';
+  const rejected = assert.rejects(controller.outputs({ spindle: 'cw', rpm: 3000 }), /Jog cancelled/);
+  await until(() => port.writes.includes('M3 S3000'));
+  const base = port.status.bind(port);
+  port.status = full => base(full).replace('|FS:0,0', '|FS:0,3000').replace('|A:', '|A:S');
+  const stops = energy(port).length;
+  await controller.cancelJog(); await rejected;
+  assert.deepEqual(energy(port).slice(stops).map(bytes => bytes[0]), [REALTIME.hold, REALTIME.reset]);
 });
 
 test('a TAB separator is streamed as a space so a loaded program cannot fault mid-job', async t => {

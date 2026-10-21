@@ -229,3 +229,30 @@ test("the current type field takes precedence over a legacy chatter object", () 
   assert.equal(packet.state, "ok");
   assert.equal(packet.score, 10);
 });
+
+// JSON.parse can build objects whose toString/valueOf are not callable; Number()
+// or String() on them throws inside the serial "data" listener.
+test("drops sensor fields that are objects or arrays instead of throwing", () => {
+  const hostile = '{"toString":0,"valueOf":0}';
+  for (const line of [
+    '{"type":"chatter","score":3,"state":{"toString":1}}',
+    `{"type":"chatter","score":${hostile},"state":"ok"}`,
+    '{"chatter":{"state":{"toString":1},"score":3}}',
+    `{"chatter":{"state":"ok","score":${hostile}}}`,
+    '{"type":"chatter","score":[5],"state":"ok"}',
+    '{"type":"chatter","score":5,"state":["ok"]}',
+    '{"chatter":{"state":["ok"],"score":5}}',
+  ]) {
+    assert.doesNotThrow(() => parseChatterSensorLine(line), line);
+    assert.equal(parseChatterSensorLine(line), null, line);
+  }
+  for (const field of ["temp", "freq", "vib", "uptime_ms", "processing_us", "cal_count", "warn_score"]) {
+    const line = `{"type":"chatter","score":3,"state":"ok","${field}":${hostile}}`;
+    assert.doesNotThrow(() => parseChatterSensorLine(line), line);
+    assert.equal(parseChatterSensorLine(line).score, 3, line);
+  }
+  const packet = parseChatterSensorLine(`{"type":"chatter","score":3,"state":"ok","acc":{"x":${hostile},"y":0,"z":0}}`);
+  assert.equal(packet.acceleration, null);
+  assert.equal(packet.frequencyHz, null);
+  assert.equal(parseChatterSensorLine('{"type":"chatter","score":3,"state":"ok","freq":[1250]}').frequencyHz, null);
+});

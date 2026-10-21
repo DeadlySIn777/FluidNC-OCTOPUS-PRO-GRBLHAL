@@ -138,3 +138,12 @@ test("live preflight summary omits the heavy per-setting comparison list", () =>
   assert.equal(summary.issueCount, 0);
   assert.ok(JSON.stringify(summary).length < JSON.stringify(report).length / 4);
 });
+
+test("a read-only query that timed out blocks the preflight even when earlier replies passed", () => {
+  const transcript = `${createSimulatedPreflightTranscript(profile)}\r\n===== ? =====\r\n[PREFLIGHT_TIMEOUT:?]`;
+  const report = evaluateControllerPreflight(transcript, profile, { source: "serial:COM7@115200" });
+  assert.equal(report.status, "BLOCKED");
+  assert.equal(report.preflightPassed, false);
+  assert.equal(report.counts.blockers, 1);
+  assert.ok(report.issues.some((item) => item.code === "PREFLIGHT_TIMEOUT" && item.severity === "blocker"));
+});
