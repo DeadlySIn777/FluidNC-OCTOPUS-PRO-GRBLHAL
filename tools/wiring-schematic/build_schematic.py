@@ -44,7 +44,7 @@ C = {
     'cmd': '#1565c0',      # +5_MOTION command domain
     'logic': '#2e7d32',    # Octopus 3.3 V logic and GND
     'alarm': '#7b1fa2',    # isolated 23 V alarm field
-    'field': '#00838f',    # isolated 5 V field, encoder, analog spindle
+    'field': '#00838f',    # isolated 5 V field, analog spindle
     'mains': '#37474f',    # mains and hardwired safety
     'empty': '#d32f2f',    # leave empty / remove
     'ink': '#1b1f24',
@@ -313,7 +313,7 @@ def draw(regions):
             row('→ 2 × 2N7002 sinks → P1 PUL−, DIR−', 'cmd'),
             row('   P1 PUL+, DIR+ ← +5_MOTION', 'cmd'),
             row(f'P1 ALM → relay {relay} A2 · COM− → ALM 0V', 'alarm'),
-            row('P2 ← encoder DB15, 6 wires; braid NOT on P2', 'field'),
+            row('P2 ← encoder DB15, 6 wires; braid NOT on P2', 'ink'),
             row('   thin black = EA+; P2 VCC is a drive output', 'muted'),
             row('P3 → motor GX16: A+ A− B+ B− (pins 1–4)'),
             row(f'P4 ← 36 V {fuse}: +VDC / GND, POLARIZED, ≤ 50 V', 'motion'),
@@ -358,9 +358,10 @@ def draw(regions):
     # Down the gap beside DRIVER0's right row and under the socket, so the line
     # crosses no contact; it bridges the empty MOTOR-POWER terminal.
     mpx, mpy, mpw, mph = R(motor_power)
-    jx, jy = vx + 6, P(0, 482)[1]
-    leader([(jx, jy), (lx + lw, jy)], C['cmd'], dot=False, hops=(mpx - 2, mpx + mpw + 2))
-    leader([(vx, vy), (jx, vy), (jx, jy)], C['cmd'])
+    jx, jy = vx + 5, P(0, 482)[1]
+    leader([(jx, jy), (lx + lw, jy)], C['cmd'], dot=False, hops=(mpx - 2, mpx + mpw + 2), dash=True)
+    leader([(vx, vy), (jx, vy + 5), (jx, jy)], C['cmd'])
+    pin_mark(GND_PIN(0), 'gnd')
 
     x, y, w, h = R(mp)
     card(lx, 560, lw, 82, '24 V CONTROL PSU → MAIN POWER', [
@@ -390,8 +391,8 @@ def draw(regions):
         row('Octopus GND = DRIVER0 GND = CTRL_0V: one net', 'logic'),
         row('   logic, pull-ups, contacts, 2N7002 sources', 'cmd'),
         row('ALM 0V: PS-ALM −Vo → all CL57T COM−, floating', 'alarm'),
-        row('EGND: each CL57T P2 → its own encoder only', 'field'),
-        row('Probe / home ISO 0V: floating, never HGND', 'field'),
+        row('EGND: each CL57T P2 → its own encoder only', 'ink'),
+        row('Probe ISO 0V ≠ home ISO 0V; floating, never HGND', 'field'),
         row('ANALOG_COM: converter OUT− → DB44 10 only', 'field'),
         row('Never join these because they say GND.', 'muted'),
     ], C['ink'])
@@ -421,7 +422,7 @@ def draw(regions):
     exp = regions['exp-pair']
     right(P(exp[0] + exp[2], 600), 1308, 515, 440, 146, 'EXP2 (find it by its board marking)', [
         row('PB1 ← alarm-relay chain, 11–14 in series', 'logic', True),
-        row('    the ONLY drive-fault stop', 'logic'),
+        row('    + cabinet/spindle OKs · the ONLY drive-fault stop', 'logic'),
         row('PB2 ← cycle-start button, NO, guarded', 'logic', True),
         row('    + series R, TVS, 3.3 V pull-up, RC', 'muted'),
         row('    onboard SW2 (BOOT1) shares PB2: guard it', 'muted'),
@@ -435,7 +436,7 @@ def draw(regions):
         row('    NO contact: closed = relay energized', 'muted'),
         row('T0  PF4 ← feed-hold button, NC', 'logic', True),
         row('T1  PF5 ← probe, HW-399 OUT1 (HOLD)', 'field', True),
-        row('Other pin of each header = GND return'),
+        row('Other pin = GND return. TB, T0: + series R, TVS'),
     ], C['logic'], via=(P(1606, 684), P(1634, 654)))
 
     # legend, settings and the destructive mistakes
@@ -444,7 +445,7 @@ def draw(regions):
     text(rx + 12, ly + 18, 'CIRCUIT COLOURS', 11, C['ink'], 800)
     legend = [(C['motion'], False, '36 V motion'), (C['control'], False, '24 V control'),
               (C['cmd'], False, '+5 V command'), (C['logic'], False, '3.3 V logic / GND'),
-              (C['alarm'], False, 'Isolated 23 V alarm'), (C['field'], False, 'Isolated 5 V field'),
+              (C['alarm'], False, 'Isolated 23 V alarm'), (C['field'], False, 'Iso. field / analog'),
               (C['mains'], False, 'Mains / E-stop'), (C['ink'], False, 'USB data'),
               (C['empty'], True, 'Leave empty / remove')]
     for i, (col, dash, s) in enumerate(legend):
@@ -514,7 +515,7 @@ def draw(regions):
     a = P(f0[0], f0[1] + f0[3])
     drop(a, a[0], 1040, 440, C['field'], dash=True)
     a = P(f4[0] + 2, f4[1] + f4[3])
-    drop(a, a[0], 1052, 540, C['control'], dash=True)
+    drop(a, P(849, 0)[0], 1052, 540, C['control'], dash=True, via=(P(963, 1250),))
 
     card(630, bt, 140, bh2, 'PWR-DET → DOOR', [
         row('PC0 ← door', 'logic', True),
@@ -533,11 +534,13 @@ def draw(regions):
         row('pull-up + RC (none onboard)', 'field'),
         row('GND next to PB7 = return', 'logic', True),
         row('far GND, 5 V, PB6: EMPTY', 'empty'),
-        row('5-pin header silked', 'muted'),
-        row('BLTouch; no BLTouch.', 'muted'),
+        row('BTT drawing: "Probe";', 'muted'),
+        row('silk: BLTouch (none fitted)', 'muted'),
+        row('Touch probe → T1 PF5', 'empty'),
+        row('DC·GND·PC5 port: EMPTY', 'empty'),
     ], C['field'], hold=True)
-    drop(P(TOOL_RECT[0], TOOL_RECT[1] + TOOL_RECT[3]), P(1141, 0)[0], 1064, 870, C['field'], dash=True,
-         via=(P(TOOL_RECT[0], 957),))
+    drop(P(TOOL_RECT[0], TOOL_RECT[1] + TOOL_RECT[3]), P(1197, 0)[0], 1064, 870, C['field'], dash=True,
+         via=(P(TOOL_RECT[0], 957), P(1141, 957), P(1141, 1250)))
 
     card(970, bt, 340, bh2, 'STOP4–7 → ALARM RELAYS (one per drive)', [
         row('K-X  K-YL  K-Z  K-YR  Weidmüller 2618530000', 'alarm'),
@@ -546,7 +549,7 @@ def draw(regions):
         row('ALM must conduct when healthy: prove each.', 'empty'),
         row('21–24 → PG12 X · PG13 YL · PG14 Z · PG15 YR', 'logic', True),
         row('STOP4–7 SIG pins only; return via EXP2 GND', 'muted'),
-        row('11–14 in series, PB1 (EXP2) to GND:', 'logic'),
+        row('11–14 in series + cabinet/spindle OKs, PB1 to GND:', 'logic'),
         row(''), row(''),
         row('2.2 kΩ to 3.3 V + 100 nF to GND on all 5 inputs', 'muted'),
     ], C['alarm'], hold=True)
@@ -557,8 +560,12 @@ def draw(regions):
         el(f'<line x1="{x - 4}" y1="{cy0}" x2="{x}" y2="{cy0}" stroke="{C["logic"]}" stroke-width="2"/>')
         contact(x, cy0, C['logic'], k)
         el(f'<line x1="{x + 34}" y1="{cy0}" x2="{x + 52}" y2="{cy0}" stroke="{C["logic"]}" stroke-width="2"/>')
-    ground(cx0 + 26 + 4 * 56 - 4, cy0, C['logic'])
-    s47 = P(1333, STOP47_RECT[1] + STOP47_RECT[3])
+    gx = cx0 + 26 + 4 * 56 - 4
+    el(f'<line x1="{gx}" y1="{cy0}" x2="{gx + 30}" y2="{cy0}" stroke="{C["logic"]}" stroke-width="2" '
+       f'stroke-dasharray="3 3"/>')
+    text(gx + 15, cy0 - 5, 'cab/spdl OK', 8, C['muted'], anchor='middle')
+    ground(gx + 30, cy0, C['logic'])
+    s47 = P(1327, STOP47_RECT[1] + STOP47_RECT[3])  # on BTT's Stop1/Stop2 column divider
     drop(s47, s47[0], 1056, 1140, C['alarm'], dash=True)
 
     card(1320, bt, 310, bh2, 'STOP0–3 → HOME SWITCHES', [
@@ -571,6 +578,7 @@ def draw(regions):
         row('not approved), or direct only for verified', 'muted'),
         row('bare NC contacts. Split the stock shared', 'muted'),
         row('Y2/Z circuit into four channels first.', 'muted'),
+        row('Direct still needs series R + TVS per input.', 'muted'),
     ], C['field'], hold=True)
     s03 = P(STOP03_RECT[0] + STOP03_RECT[2], STOP03_RECT[1] + STOP03_RECT[3] / 2)
     drop(s03, P(1470, 0)[0], 1040, 1475, C['field'], dash=True)

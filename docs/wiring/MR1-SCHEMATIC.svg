@@ -128,7 +128,7 @@
 <text x="353" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="353" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="353" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-X A2 · COM− → ALM 0V</text>
-<text x="353" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="353" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
 <text x="353" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
 <text x="353" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
 <text x="353" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-X: +VDC / GND, POLARIZED, ≤ 50 V</text>
@@ -145,7 +145,7 @@
 <text x="680" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="680" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="680" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-YL A2 · COM− → ALM 0V</text>
-<text x="680" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="680" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
 <text x="680" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
 <text x="680" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
 <text x="680" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-YL: +VDC / GND, POLARIZED, ≤ 50 V</text>
@@ -162,7 +162,7 @@
 <text x="1007" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="1007" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="1007" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-Z A2 · COM− → ALM 0V</text>
-<text x="1007" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="1007" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
 <text x="1007" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
 <text x="1007" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
 <text x="1007" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-Z: +VDC / GND, POLARIZED, ≤ 50 V</text>
@@ -179,7 +179,7 @@
 <text x="1334" y="131.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">→ 2 × 2N7002 sinks → P1 PUL−, DIR−</text>
 <text x="1334" y="146" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   P1 PUL+, DIR+ ← +5_MOTION</text>
 <text x="1334" y="160.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">P1 ALM → relay K-YR A2 · COM− → ALM 0V</text>
-<text x="1334" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
+<text x="1334" y="175" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P2 ← encoder DB15, 6 wires; braid NOT on P2</text>
 <text x="1334" y="189.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">   thin black = EA+; P2 VCC is a drive output</text>
 <text x="1334" y="204" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">P3 → motor GX16: A+ A− B+ B− (pins 1–4)</text>
 <text x="1334" y="218.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#c62828" text-anchor="start">P4 ← 36 V F-YR: +VDC / GND, POLARIZED, ≤ 50 V</text>
@@ -221,11 +221,12 @@
 <text x="33" y="496.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   = Octopus GND → all 8 2N7002 sources</text>
 <text x="33" y="511" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">One takeoff only. Remove J68 (USB power).</text>
 <text x="33" y="525.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Reset / bootloader protection unfinished.</text>
-<path d="M562.96,525.36 H498.72 a6,6 0 0 0 -12,0 H417.92 a6,6 0 0 0 -12,0 L320,525.36" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M562.96,525.36 H498.72 a6,6 0 0 0 -12,0 H417.92 a6,6 0 0 0 -12,0 L320,525.36" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M556.96,498 L562.96,498 L562.96,525.36" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M556.96,498 L562.96,498 L562.96,525.36" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M561.96,525.36 H498.72 a6,6 0 0 0 -12,0 H417.92 a6,6 0 0 0 -12,0 L320,525.36" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M561.96,525.36 H498.72 a6,6 0 0 0 -12,0 H417.92 a6,6 0 0 0 -12,0 L320,525.36" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<path d="M556.96,498 L561.96,503 L561.96,525.36" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M556.96,498 L561.96,503 L561.96,525.36" fill="none" stroke="#1565c0" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
 <circle cx="556.96" cy="498" r="4" fill="#1565c0" stroke="#ffffff" stroke-width="1.5"/>
+<circle cx="556.96" cy="508.56" r="4" fill="#1b1f24" stroke="#ffffff" stroke-width="2"/>
 <rect x="20" y="560" width="300" height="82" rx="6" fill="#ffffff" stroke="#c25e00" stroke-width="1.6"/>
 <rect x="20" y="560" width="5" height="82" rx="2" fill="#c25e00"/>
 <text x="33" y="577" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#c25e00" text-anchor="start">24 V CONTROL PSU → MAIN POWER</text>
@@ -260,8 +261,8 @@
 <text x="33" y="865" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">Octopus GND = DRIVER0 GND = CTRL_0V: one net</text>
 <text x="33" y="879.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1565c0" text-anchor="start">   logic, pull-ups, contacts, 2N7002 sources</text>
 <text x="33" y="894" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#7b1fa2" text-anchor="start">ALM 0V: PS-ALM −Vo → all CL57T COM−, floating</text>
-<text x="33" y="908.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">EGND: each CL57T P2 → its own encoder only</text>
-<text x="33" y="923" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">Probe / home ISO 0V: floating, never HGND</text>
+<text x="33" y="908.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">EGND: each CL57T P2 → its own encoder only</text>
+<text x="33" y="923" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">Probe ISO 0V ≠ home ISO 0V; floating, never HGND</text>
 <text x="33" y="937.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">ANALOG_COM: converter OUT− → DB44 10 only</text>
 <text x="33" y="952" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Never join these because they say GND.</text>
 <rect x="20" y="980" width="300" height="64" rx="6" fill="#ffffff" stroke="#37474f" stroke-width="1.6"/>
@@ -289,7 +290,7 @@
 <rect x="1340" y="440" width="5" height="146" rx="2" fill="#2e7d32"/>
 <text x="1353" y="457" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#2e7d32" text-anchor="start">EXP2 (find it by its board marking)</text>
 <text x="1353" y="473" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PB1 ← alarm-relay chain, 11–14 in series</text>
-<text x="1353" y="487.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">    the ONLY drive-fault stop</text>
+<text x="1353" y="487.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">    + cabinet/spindle OKs · the ONLY drive-fault stop</text>
 <text x="1353" y="502" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">PB2 ← cycle-start button, NO, guarded</text>
 <text x="1353" y="516.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">    + series R, TVS, 3.3 V pull-up, RC</text>
 <text x="1353" y="531" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">    onboard SW2 (BOOT1) shares PB2: guard it</text>
@@ -306,7 +307,7 @@
 <text x="1353" y="641.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">    NO contact: closed = relay energized</text>
 <text x="1353" y="656" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">T0  PF4 ← feed-hold button, NC</text>
 <text x="1353" y="670.5" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#00838f" text-anchor="start">T1  PF5 ← probe, HW-399 OUT1 (HOLD)</text>
-<text x="1353" y="685" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Other pin of each header = GND return</text>
+<text x="1353" y="685" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#1b1f24" text-anchor="start">Other pin = GND return. TB, T0: + series R, TVS</text>
 <path d="M963.52,648.24 L1110.88,622.32 L1124.32,607.92 L1326,607.92 L1326,614 L1340,614" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
 <path d="M963.52,648.24 L1110.88,622.32 L1124.32,607.92 L1326,607.92 L1326,614 L1340,614" fill="none" stroke="#2e7d32" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
 <circle cx="963.52" cy="648.24" r="4" fill="#2e7d32" stroke="#ffffff" stroke-width="1.5"/>
@@ -323,7 +324,7 @@
 <line x1="1352" y1="774" x2="1378" y2="774" stroke="#7b1fa2" stroke-width="3"/>
 <text x="1384" y="778" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 23 V alarm</text>
 <line x1="1498" y1="774" x2="1524" y2="774" stroke="#00838f" stroke-width="3"/>
-<text x="1530" y="778" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Isolated 5 V field</text>
+<text x="1530" y="778" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Iso. field / analog</text>
 <line x1="1352" y1="794" x2="1378" y2="794" stroke="#37474f" stroke-width="3"/>
 <text x="1384" y="798" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="9.5" font-weight="400" fill="#1b1f24" text-anchor="start">Mains / E-stop</text>
 <line x1="1498" y1="794" x2="1524" y2="794" stroke="#1b1f24" stroke-width="3"/>
@@ -395,8 +396,8 @@
 <path d="M690.4,823.92 L690.4,823.92 L690.4,1040 L440,1040 L440,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
 <path d="M690.4,823.92 L690.4,823.92 L690.4,1040 L440,1040 L440,1078" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
 <circle cx="690.4" cy="823.92" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
-<path d="M802.24,823.92 L802.24,823.92 L802.24,1052 L540,1052 L540,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M802.24,823.92 L802.24,823.92 L802.24,1052 L540,1052 L540,1078" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<path d="M802.24,823.92 L802.24,894 L747.52,894 L747.52,1052 L540,1052 L540,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M802.24,823.92 L802.24,894 L747.52,894 L747.52,1052 L540,1052 L540,1078" fill="none" stroke="#c25e00" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
 <circle cx="802.24" cy="823.92" r="4" fill="#c25e00" stroke="#ffffff" stroke-width="1.5"/>
 <rect x="630" y="1078" width="140" height="176" rx="6" fill="#ffffff" stroke="#2e7d32" stroke-width="1.6"/>
 <rect x="630" y="1078" width="5" height="176" rx="2" fill="#2e7d32"/>
@@ -421,10 +422,12 @@
 <text x="793" y="1154.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#00838f" text-anchor="start">pull-up + RC (none onboard)</text>
 <text x="793" y="1169" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">GND next to PB7 = return</text>
 <text x="793" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">far GND, 5 V, PB6: EMPTY</text>
-<text x="793" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">5-pin header silked</text>
-<text x="793" y="1212.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">BLTouch; no BLTouch.</text>
-<path d="M856.96,735.6 L856.96,753.36 L887.68,753.36 L887.68,1064 L870,1064 L870,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M856.96,735.6 L856.96,753.36 L887.68,753.36 L887.68,1064 L870,1064 L870,1078" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<text x="793" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">BTT drawing: "Probe";</text>
+<text x="793" y="1212.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">silk: BLTouch (none fitted)</text>
+<text x="793" y="1227" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">Touch probe → T1 PF5</text>
+<text x="793" y="1241.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">DC·GND·PC5 port: EMPTY</text>
+<path d="M856.96,735.6 L856.96,753.36 L887.68,753.36 L887.68,894 L914.56,894 L914.56,1064 L870,1064 L870,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M856.96,735.6 L856.96,753.36 L887.68,753.36 L887.68,894 L914.56,894 L914.56,1064 L870,1064 L870,1078" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
 <circle cx="856.96" cy="735.6" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
 <rect x="970" y="1078" width="340" height="176" rx="6" fill="#fff4e5" stroke="#7b1fa2" stroke-width="1.6" stroke-dasharray="6 4"/>
 <rect x="970" y="1078" width="5" height="176" rx="2" fill="#7b1fa2"/>
@@ -437,7 +440,7 @@
 <text x="983" y="1154.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#d32f2f" text-anchor="start">ALM must conduct when healthy: prove each.</text>
 <text x="983" y="1169" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="600" fill="#2e7d32" text-anchor="start">21–24 → PG12 X · PG13 YL · PG14 Z · PG15 YR</text>
 <text x="983" y="1183.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">STOP4–7 SIG pins only; return via EXP2 GND</text>
-<text x="983" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">11–14 in series, PB1 (EXP2) to GND:</text>
+<text x="983" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#2e7d32" text-anchor="start">11–14 in series + cabinet/spindle OKs, PB1 to GND:</text>
 <text x="983" y="1241.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">2.2 kΩ to 3.3 V + 100 nF to GND on all 5 inputs</text>
 <text x="984" y="1217" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="9.5" font-weight="700" fill="#2e7d32" text-anchor="start">PB1</text>
 <line x1="1006" y1="1213" x2="1010" y2="1213" stroke="#2e7d32" stroke-width="2"/>
@@ -464,10 +467,12 @@
 <circle cx="1203" cy="1213" r="2.6" fill="#2e7d32"/>
 <text x="1195" y="1227" font-family="'JetBrains Mono', Consolas, 'DejaVu Sans Mono', monospace" font-size="8.5" font-weight="400" fill="#5b6470" text-anchor="middle">K-YR</text>
 <line x1="1212" y1="1213" x2="1230" y2="1213" stroke="#2e7d32" stroke-width="2"/>
-<path d="M1230,1213 v7 M1222,1220 h16 M1225,1224 h10 M1228,1228 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
-<path d="M979.84,825.36 L979.84,825.36 L979.84,1056 L1140,1056 L1140,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
-<path d="M979.84,825.36 L979.84,825.36 L979.84,1056 L1140,1056 L1140,1078" fill="none" stroke="#7b1fa2" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
-<circle cx="979.84" cy="825.36" r="4" fill="#7b1fa2" stroke="#ffffff" stroke-width="1.5"/>
+<line x1="1230" y1="1213" x2="1260" y2="1213" stroke="#2e7d32" stroke-width="2" stroke-dasharray="3 3"/>
+<text x="1245" y="1208" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="8" font-weight="400" fill="#5b6470" text-anchor="middle">cab/spdl OK</text>
+<path d="M1260,1213 v7 M1252,1220 h16 M1255,1224 h10 M1258,1228 h4" stroke="#2e7d32" stroke-width="1.6" fill="none"/>
+<path d="M976.96,825.36 L976.96,825.36 L976.96,1056 L1140,1056 L1140,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M976.96,825.36 L976.96,825.36 L976.96,1056 L1140,1056 L1140,1078" fill="none" stroke="#7b1fa2" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
+<circle cx="976.96" cy="825.36" r="4" fill="#7b1fa2" stroke="#ffffff" stroke-width="1.5"/>
 <rect x="1320" y="1078" width="310" height="176" rx="6" fill="#fff4e5" stroke="#00838f" stroke-width="1.6" stroke-dasharray="6 4"/>
 <rect x="1320" y="1078" width="5" height="176" rx="2" fill="#00838f"/>
 <text x="1333" y="1095" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="800" fill="#00838f" text-anchor="start">STOP0–3 → HOME SWITCHES</text>
@@ -482,6 +487,7 @@
 <text x="1333" y="1198" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">not approved), or direct only for verified</text>
 <text x="1333" y="1212.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">bare NC contacts. Split the stock shared</text>
 <text x="1333" y="1227" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Y2/Z circuit into four channels first.</text>
+<text x="1333" y="1241.5" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#5b6470" text-anchor="start">Direct still needs series R + TVS per input.</text>
 <path d="M1032.16,751.44 L1045.6,751.44 L1045.6,1040 L1475,1040 L1475,1078" fill="none" stroke="#ffffff" stroke-width="5" stroke-opacity="0.9" stroke-linejoin="round" stroke-linecap="round"/>
 <path d="M1032.16,751.44 L1045.6,751.44 L1045.6,1040 L1475,1040 L1475,1078" fill="none" stroke="#00838f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="7 5"/>
 <circle cx="1032.16" cy="751.44" r="4" fill="#00838f" stroke="#ffffff" stroke-width="1.5"/>
